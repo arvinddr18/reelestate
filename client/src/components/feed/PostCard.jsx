@@ -228,7 +228,7 @@ export default function PostCard({ post: initialPost }) {
 {post.location?.lat && post.location?.lng && (
   <div className="mt-2">
     <a 
-      href={`https://www.google.com/maps?q=${post.location.lat},${post.location.lng}`} 
+      href={`https://www.google.com/maps/search/?api=1&query=${post.location.lat},${post.location.lng}`}
       target="_blank" 
       rel="noreferrer" 
       className="inline-flex items-center gap-1 text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-full transition-colors"

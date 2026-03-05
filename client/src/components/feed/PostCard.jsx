@@ -243,7 +243,6 @@ export default function PostCard({ post: initialPost }) {
           </p>
         </div>
       </div>
-
       {/* ── Comment Sheet ── */}
       {showComments && (
         <CommentSheet

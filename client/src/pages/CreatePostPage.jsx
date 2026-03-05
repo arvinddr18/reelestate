@@ -220,7 +220,6 @@ export default function CreatePostPage() {
             <p className="text-xs text-zinc-400 text-right">{progress}% uploaded</p>
           </div>
         )}
-
         <button type="submit" disabled={loading} className="btn-primary w-full py-4 text-base">
           {loading ? 'Uploading...' : '🚀 Publish Property'}
         </button>

@@ -20,6 +20,7 @@ const createPost = async (req, res) => {
       area, bedrooms, bathrooms,
       taluk, district, state, country,
       hashtags, mediaType,
+      lat, lng, address,
     } = req.body;
 
     if (!title || !price || !propertyType || !mediaType) {
@@ -35,6 +36,7 @@ const createPost = async (req, res) => {
       taluk, district, state, country,
       mediaType,
       hashtags: hashtags ? JSON.parse(hashtags).map(h => h.toLowerCase().replace('#', '')) : [],
+      location: (lat && lng) ? { lat: parseFloat(lat), lng: parseFloat(lng), address } : undefined,
     };
 
     if (mediaType === 'video') {

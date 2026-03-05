@@ -23,6 +23,7 @@ export default function CreatePostPage() {
     propertyType: 'apartment', area: '', bedrooms: '', bathrooms: '',
     taluk: '', district: '', state: '', country: 'India',
     hashtags: '', // comma-separated string
+    lat: '', lng: '', address: '',
   });
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -180,6 +181,23 @@ export default function CreatePostPage() {
             <input name="country" value={form.country} onChange={handleChange} placeholder="Country" className="input-field" />
           </div>
         </div>
+        {/* Google Maps Pin */}
+          <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-700 mt-3">
+            <p className="text-sm font-semibold text-zinc-300 mb-3">📍 Pin Property on Map <span className="text-zinc-500 font-normal">(optional)</span></p>
+            <input name="address" value={form.address} onChange={handleChange} placeholder="Full address (e.g. 123 MG Road, Bangalore)" className="input-field mb-3" />
+            <div className="grid grid-cols-2 gap-3">
+              <input name="lat" type="number" step="any" value={form.lat} onChange={handleChange} placeholder="Latitude (e.g. 12.9716)" className="input-field" />
+              <input name="lng" type="number" step="any" value={form.lng} onChange={handleChange} placeholder="Longitude (e.g. 77.5946)" className="input-field" />
+            </div>
+            <button type="button" onClick={() => { navigator.geolocation.getCurrentPosition((pos) => { setForm(f => ({ ...f, lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6) })); toast.success('Location captured!'); }, () => toast.error('Could not get location. Enter manually.')); }} className="mt-3 w-full py-2 rounded-lg bg-zinc-800 text-zinc-300 text-sm hover:bg-zinc-700 transition-colors">
+              📡 Use My Current Location
+            </button>
+            {form.lat && form.lng && (
+              <a href={`https://www.google.com/maps?q=${form.lat},${form.lng}`} target="_blank" rel="noreferrer" className="mt-2 block text-center text-xs text-orange-400 hover:underline">
+                ✅ Preview on Google Maps →
+              </a>
+            )}
+          </div>
 
         {/* ── Hashtags ── */}
         <div>

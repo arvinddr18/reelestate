@@ -224,7 +224,20 @@ export default function PostCard({ post: initialPost }) {
               ))}
             </div>
           )}
-
+          {/* Google Maps Button */}
+{post.location?.lat && post.location?.lng && (
+  <div className="mt-2">
+    <a 
+      href={`https://www.google.com/maps?q=${post.location.lat},${post.location.lng}`} 
+      target="_blank" 
+      rel="noreferrer" 
+      className="inline-flex items-center gap-1 text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-full transition-colors"
+      onClick={e => e.stopPropagation()}
+    >
+      🗺️ View on Map
+    </a>
+  </div>
+)}
           <p className="text-xs text-zinc-600 mt-1">
             {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
           </p>

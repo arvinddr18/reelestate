@@ -42,6 +42,12 @@ const postSchema = new mongoose.Schema(
     district: { type: String, trim: true },
     state: { type: String, trim: true },
     country: { type: String, trim: true, default: 'India' },
+    // Google Maps coordinates
+    location: {
+      lat: { type: Number },
+      lng: { type: Number },
+      address: { type: String, trim: true },
+    },
 
     hashtags: [{ type: String, lowercase: true }], // e.g. ['luxury', '2bhk']
 

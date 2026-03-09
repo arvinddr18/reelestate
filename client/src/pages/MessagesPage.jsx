@@ -1,212 +1,142 @@
-/**
- * pages/MessagesPage.jsx
- * Real-time chat inbox and conversation view using Socket.io.
- */
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import EmojiPicker from 'emoji-picker-react';
+import { IoMdHappy, IoMdSend } from 'react-icons/io';
+import { BsReplyFill, BsPinAngleFill } from 'react-icons/bs';
 
-import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import toast from 'react-hot-toast';
-import api from '../services/api';
-import socketService from '../services/socket';
-import { useAuth } from '../context/AuthContext';
-
-export default function MessagesPage() {
-  const { userId: chatPartnerId } = useParams(); // Set when navigating to a specific chat
-  const { user } = useAuth();
-  const [conversations, setConversations] = useState([]);
+const MessagesPage = () => {
+  const { userId } = useParams();
   const [messages, setMessages] = useState([]);
-  const [activePartner, setActivePartner] = useState(null);
-  const [text, setText] = useState('');
-  const [loadingConvos, setLoadingConvos] = useState(true);
-  const messagesEndRef = useRef(null);
+  const [newMessage, setNewMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [replyTo, setReplyTo] = useState(null); // Track which message we are replying to
+  const scrollRef = useRef();
 
-  // Fetch inbox
+  // 1. Fetch Conversations
   useEffect(() => {
-    const fetchInbox = async () => {
+    const fetchMessages = async () => {
       try {
-        const { data } = await api.get('/messages/inbox');
-        setConversations(data.data);
-      } catch {
-        toast.error('Failed to load inbox.');
-      } finally {
-        setLoadingConvos(false);
+        const res = await axios.get(`/api/messages/${userId}`);
+        setMessages(res.data.data);
+      } catch (err) {
+        console.error(err);
       }
     };
-    fetchInbox();
-  }, []);
+    fetchMessages();
+  }, [userId]);
 
-  // Load conversation when chatPartnerId changes (from URL)
-  useEffect(() => {
-    if (!chatPartnerId) return;
-    loadConversation(chatPartnerId);
-  }, [chatPartnerId]);
+  // 2. Handle Sending (with Reply logic)
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
 
-  const loadConversation = async (partnerId) => {
     try {
-      // Load partner info
-      const { data: profileData } = await api.get(`/users/${partnerId}`);
-      setActivePartner(profileData.data.user);
-
-      const { data } = await api.get(`/messages/${partnerId}`);
-      setMessages(data.data);
-    } catch {
-      toast.error('Failed to load conversation.');
+      const res = await axios.post('/api/messages', {
+        receiverId: userId,
+        text: newMessage,
+        replyTo: replyTo ? replyTo._id : null
+      });
+      setMessages([...messages, res.data.data]);
+      setNewMessage("");
+      setReplyTo(null); // Clear reply after sending
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Listen for incoming messages via Socket.io
-  useEffect(() => {
-    const cleanup = socketService.onMessage((msg) => {
-      if (
-        (msg.sender._id === activePartner?._id && msg.receiver._id === user._id) ||
-        (msg.sender._id === user._id && msg.receiver._id === activePartner?._id)
-      ) {
-        setMessages(prev => [...prev, msg]);
-      }
-    });
-    return cleanup;
-  }, [activePartner, user]);
-
-  const handleSend = async () => {
-    if (!text.trim() || !activePartner) return;
-    const msgText = text;
-    setText('');
-
+  // 3. Handle Reactions
+  const handleReaction = async (messageId, emoji) => {
     try {
-      const { data } = await api.post('/messages', { receiverId: activePartner._id, text: msgText });
-      setMessages(prev => [...prev, data.data]);
-    } catch {
-      toast.error('Failed to send message.');
-      setText(msgText); // Restore text on failure
+      const res = await axios.post(`/api/messages/react/${messageId}`, { emoji });
+      // Update the message in local state
+      setMessages(messages.map(m => m._id === messageId ? res.data.data : m));
+    } catch (err) {
+      console.error(err);
     }
   };
 
   return (
-    <div className="flex h-screen bg-black">
-      {/* ── Conversations List ── */}
-      <div className={`w-full md:w-80 border-r border-zinc-800 flex flex-col ${chatPartnerId ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-zinc-800">
-          <h2 className="font-bold text-lg">Messages</h2>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {loadingConvos ? (
-            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>
-          ) : conversations.length === 0 ? (
-            <div className="text-center py-16 text-zinc-500 text-sm">
-              <p className="text-2xl mb-2">💬</p>
-              <p>No conversations yet</p>
-              <p className="mt-1">Message sellers from their posts</p>
-            </div>
-          ) : (
-            conversations.map(convo => (
-              <button
-                key={convo._id?._id}
-                onClick={() => loadConversation(convo._id?._id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-zinc-900 transition-colors text-left
-                  ${activePartner?._id === convo._id?._id ? 'bg-zinc-900' : ''}`}
-              >
-                {convo._id?.profilePhoto ? (
-                  <img src={convo._id.profilePhoto} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center font-bold flex-shrink-0">
-                    {convo._id?.username?.[0]?.toUpperCase()}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">@{convo._id?.username}</p>
-                  <p className="text-xs text-zinc-500 truncate">
-                    {convo.lastMessage?.text?.slice(0, 40)}...
-                  </p>
-                </div>
-                {convo.unreadCount > 0 && (
-                  <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                    {convo.unreadCount}
-                  </span>
-                )}
-              </button>
-            ))
-          )}
-        </div>
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Chat Header */}
+      <div className="p-4 bg-white border-b flex justify-between items-center">
+        <h2 className="font-bold text-lg">Chat</h2>
       </div>
 
-      {/* ── Chat Area ── */}
-      <div className={`flex-1 flex flex-col ${!chatPartnerId && !activePartner ? 'hidden md:flex' : 'flex'}`}>
-        {!activePartner ? (
-          <div className="flex-1 flex items-center justify-center text-zinc-500">
-            <div className="text-center">
-              <p className="text-4xl mb-3">💬</p>
-              <p>Select a conversation</p>
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((msg) => (
+          <div key={msg._id} className={`flex ${msg.sender === userId ? 'justify-start' : 'justify-end'}`}>
+            <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm ${
+              msg.sender === userId ? 'bg-white text-gray-800' : 'bg-blue-600 text-white'
+            }`}>
+              
+              {/* Show Reply Preview if this message is a reply */}
+              {msg.replyTo && (
+                <div className="bg-black/10 p-2 mb-2 rounded text-xs italic border-l-4 border-blue-300">
+                  Replying to: {msg.replyTo.text.substring(0, 30)}...
+                </div>
+              )}
+
+              <p>{msg.text}</p>
+
+              {/* Interaction Buttons (Small icons) */}
+              <div className="flex gap-2 mt-2 opacity-0 hover:opacity-100 transition-opacity">
+                <button onClick={() => setReplyTo(msg)} className="text-xs flex items-center gap-1">
+                  <BsReplyFill /> Reply
+                </button>
+                <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-xs">
+                  <IoMdHappy />
+                </button>
+              </div>
+
+              {/* Reactions Display */}
+              {msg.reactions?.length > 0 && (
+                <div className="absolute -bottom-2 right-2 flex bg-white rounded-full px-1 shadow-sm border text-sm">
+                  {msg.reactions.map((r, i) => <span key={i}>{r.emoji}</span>)}
+                </div>
+              )}
             </div>
           </div>
-        ) : (
-          <>
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800">
-              <Link to={`/profile/${activePartner._id}`}>
-                {activePartner.profilePhoto ? (
-                  <img src={activePartner.profilePhoto} alt="" className="w-10 h-10 rounded-full object-cover" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center font-bold text-sm">
-                    {activePartner.username?.[0]?.toUpperCase()}
-                  </div>
-                )}
-              </Link>
-              <div>
-                <p className="font-semibold text-sm">@{activePartner.username}</p>
-                <p className="text-xs text-zinc-500 capitalize">{activePartner.role}</p>
-              </div>
-            </div>
+        ))}
+        <div ref={scrollRef} />
+      </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-              {messages.map((msg, i) => {
-                const isMine = msg.sender?._id === user._id || msg.sender === user._id;
-                return (
-                  <div key={msg._id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm
-                      ${isMine
-                        ? 'bg-orange-500 text-white rounded-br-sm'
-                        : 'bg-zinc-800 text-zinc-100 rounded-bl-sm'
-                      }`}
-                    >
-                      <p>{msg.text}</p>
-                      <p className={`text-xs mt-1 ${isMine ? 'text-orange-200' : 'text-zinc-500'}`}>
-                        {formatDistanceToNow(new Date(msg.createdAt || Date.now()), { addSuffix: true })}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="p-4 border-t border-zinc-800 flex gap-2">
-              <input
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder="Type a message..."
-                className="flex-1 bg-zinc-800 rounded-full px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:ring-1 focus:ring-orange-500"
-              />
-              <button
-                onClick={handleSend}
-                disabled={!text.trim()}
-                className="bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
-              >
-                ➤
-              </button>
-            </div>
-          </>
+      {/* Input Area */}
+      <div className="p-4 bg-white border-t">
+        {/* Reply Bar (only shows when replying) */}
+        {replyTo && (
+          <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-blue-500">
+            <span className="text-sm text-gray-600">Replying to: <b>{replyTo.text}</b></span>
+            <button onClick={() => setReplyTo(null)} className="text-red-500 text-xs">Cancel</button>
+          </div>
         )}
+
+        <form onSubmit={handleSendMessage} className="flex items-center gap-3 relative">
+          <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-2xl text-gray-500">
+            <IoMdHappy />
+          </button>
+          
+          {showEmojiPicker && (
+            <div className="absolute bottom-14 left-0 z-50">
+              <EmojiPicker onEmojiClick={(emojiData) => setNewMessage(prev => prev + emojiData.emoji)} />
+            </div>
+          )}
+
+          <input 
+            type="text" 
+            value={newMessage} 
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 p-2 bg-gray-100 rounded-full outline-none px-4"
+          />
+          <button type="submit" className="text-blue-600 text-2xl">
+            <IoMdSend />
+          </button>
+        </form>
       </div>
     </div>
   );
-}
+};
+
+export default MessagesPage;

@@ -1,5 +1,5 @@
 /**
- * routes/users.js — Profile and social routes
+ * routes/users.js - Profile and social routes
  */
 const express = require('express');
 const router = express.Router();
@@ -8,9 +8,13 @@ const { uploadProfile } = require('../middleware/upload');
 const {
   getUserProfile, updateProfile,
   toggleFollow, getFollowers, getFollowing,
-  searchUsers,
+  searchUsers, getAllUsers // <-- We added the new function here!
 } = require('../controllers/userController');
 
+// --- The Missing Inbox Route ---
+router.get('/', getAllUsers); 
+
+// --- Existing Routes ---
 router.get('/search', searchUsers);
 router.get('/:id', getUserProfile);
 router.put('/profile/update', protect, uploadProfile.single('profilePhoto'), updateProfile);

@@ -136,4 +136,18 @@ const searchUsers = async (req, res) => {
   }
 };
 
-module.exports = { getUserProfile, updateProfile, toggleFollow, getFollowers, getFollowing, searchUsers };
+// --- Get All Users (For Inbox Sidebar) ---
+const getAllUsers = async (req, res) => {
+  try {
+    // Find all users and remove passwords from the data for safety
+    const users = await User.find({ isActive: true }).select('-password');
+    res.json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { 
+  getUserProfile, updateProfile, toggleFollow, 
+  getFollowers, getFollowing, searchUsers, getAllUsers 
+};

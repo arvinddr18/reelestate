@@ -1,16 +1,12 @@
-/**
- * controllers/messageController.js
- * Real-time messaging between buyers and sellers.
- */
-
 const { Message } = require('../models/index');
 const User = require('../models/User');
 
-// ─── Get Conversation ─────────────────────────────────────────────────────────
 /**
- * GET /api/messages/:userId
- * Returns the full chat history between the logged-in user and :userId
+ * messageController.js
+ * Real-time messaging with Replies, Reactions, and Inbox logic.
  */
+
+// --- 1. GET CONVERSATION ---
 const getConversation = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -25,12 +21,13 @@ const getConversation = async (req, res) => {
     .populate('sender', 'username profilePhoto')
     .populate('receiver', 'username profilePhoto')
     .populate('relatedPost', 'title images videoUrl')
-    .populate('replyTo') // ADD THIS LINE HERE
+    .populate('replyTo') // Populates the message being replied to
     .sort({ createdAt: 1 });
-    // Mark received messages as read
+
+    // Mark unread messages as read
     await Message.updateMany(
       { sender: userId, receiver: currentUserId, isRead: false },
-      { isRead: true }
+      { $set: { isRead: true } }
     );
 
     res.json({ success: true, data: messages });
@@ -39,36 +36,33 @@ const getConversation = async (req, res) => {
   }
 };
 
-// ─── Send Message ─────────────────────────────────────────────────────────────
-/**
- * POST /api/messages
- * Body: { receiverId, text, relatedPostId? }
- * Also emits via Socket.io for real-time delivery.
- */
+// --- 2. SEND MESSAGE ---
 const sendMessage = async (req, res) => {
   try {
-    const { receiverId, text, relatedPostId } = req.body;
+    const { receiverId, text, relatedPostId, replyTo } = req.body;
 
     if (!receiverId || !text) {
       return res.status(400).json({ success: false, message: 'Receiver and text are required.' });
     }
-
-    const receiver = await User.findById(receiverId);
-    if (!receiver) return res.status(404).json({ success: false, message: 'Receiver not found.' });
 
     const message = await Message.create({
       sender: req.user._id,
       receiver: receiverId,
       text,
       relatedPost: relatedPostId || null,
+      replyTo: replyTo || null,
     });
 
-    const populated = await message
+    const populated = await Message.findById(message._id)
       .populate('sender', 'username profilePhoto')
+      .populate('replyTo')
+      .populate('relatedPost');
 
-    // Emit via Socket.io (server-side)
+    // Emit via Socket.io for real-time delivery
     const io = req.app.get('io');
-    io.emit(`message:${receiverId}`, populated); // Target specific user's channel
+    if (io) {
+      io.emit(`message:${receiverId}`, populated); 
+    }
 
     res.status(201).json({ success: true, data: populated });
   } catch (error) {
@@ -76,16 +70,40 @@ const sendMessage = async (req, res) => {
   }
 };
 
-// ─── Get All Conversations (Inbox) ───────────────────────────────────────────
-/**
- * GET /api/messages/inbox
- * Returns last message from each unique conversation partner.
- */
+// --- 3. ADD EMOJI REACTION ---
+const addReaction = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user._id;
+
+    const message = await Message.findById(messageId);
+    if (!message) return res.status(404).json({ success: false, message: 'Message not found' });
+
+    const reactionIndex = message.reactions.findIndex(r => r.user.toString() === userId.toString());
+
+    if (reactionIndex > -1) {
+      if (message.reactions[reactionIndex].emoji === emoji) {
+        message.reactions.splice(reactionIndex, 1);
+      } else {
+        message.reactions[reactionIndex].emoji = emoji;
+      }
+    } else {
+      message.reactions.push({ user: userId, emoji });
+    }
+
+    await message.save();
+    res.json({ success: true, data: message });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// --- 4. GET INBOX (CONVERSATIONS) ---
 const getInbox = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Aggregate to get latest message per conversation
     const conversations = await Message.aggregate([
       {
         $match: {
@@ -97,29 +115,19 @@ const getInbox = async (req, res) => {
         $group: {
           _id: {
             $cond: [
-              { $eq: ['$sender', userId] },
-              '$receiver',
-              '$sender',
+              { $eq: ["$sender", userId] },
+              "$receiver",
+              "$sender",
             ],
           },
-          lastMessage: { $first: '$$ROOT' },
-          unreadCount: {
-            $sum: {
-              $cond: [
-                { $and: [{ $eq: ['$receiver', userId] }, { $eq: ['$isRead', false] }] },
-                1, 0,
-              ],
-            },
-          },
+          lastMessage: { $first: "$$ROOT" },
         },
       },
     ]);
 
-    // Populate the other user's info
     const populated = await User.populate(conversations, {
-      path: '_id',
-      select: 'username profilePhoto fullName isVerified',
-      model: 'User',
+      path: "_id",
+      select: "username profilePhoto fullName isVerified",
     });
 
     res.json({ success: true, data: populated });
@@ -128,4 +136,9 @@ const getInbox = async (req, res) => {
   }
 };
 
-module.exports = { getConversation, sendMessage, getInbox };
+module.exports = { 
+  getConversation, 
+  sendMessage, 
+  getInbox, 
+  addReaction 
+};

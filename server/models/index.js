@@ -75,8 +75,20 @@ const messageSchema = new mongoose.Schema(
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     text: { type: String, required: true, maxlength: 1000 },
     isRead: { type: Boolean, default: false },
-    // Optional: reference a post the buyer is inquiring about
     relatedPost: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', default: null },
+    
+    // --- NEW INSTAGRAM FEATURES ---
+    // 1. Reply: Link to another message
+    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Message', default: null },
+    
+    // 2. Pin: Keep important messages at top
+    isPinned: { type: Boolean, default: false },
+    
+    // 3. Reactions: WhatsApp/Insta style emojis
+    reactions: [{
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      emoji: String
+    }]
   },
   { timestamps: true }
 );

@@ -22,11 +22,11 @@ const getConversation = async (req, res) => {
         { sender: userId, receiver: currentUserId },
       ],
     })
-      .populate('sender', 'username profilePhoto')
-      .populate('receiver', 'username profilePhoto')
-      .populate('relatedPost', 'title images videoUrl')
-      .sort({ createdAt: 1 }); // Oldest first for chat display
-
+    .populate('sender', 'username profilePhoto')
+    .populate('receiver', 'username profilePhoto')
+    .populate('relatedPost', 'title images videoUrl')
+    .populate('replyTo') // ADD THIS LINE HERE
+    .sort({ createdAt: 1 });
     // Mark received messages as read
     await Message.updateMany(
       { sender: userId, receiver: currentUserId, isRead: false },

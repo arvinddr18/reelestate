@@ -193,7 +193,7 @@ export default function CreatePostPage() {
               📡 Use My Current Location
             </button>
             {form.lat && form.lng && (
-              <a href={`https://www.google.com/maps/search/?api=1&query=${form.lat},${form.lng}`}>
+              <a href={`https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=${form.lat},${form.lng}`}>
                 ✅ Preview on Google Maps →
               </a>
             )}

@@ -137,10 +137,11 @@ const searchUsers = async (req, res) => {
 };
 
 // --- Get All Users (For Inbox Sidebar) ---
+// --- Get All Users (For Inbox Sidebar) ---
 const getAllUsers = async (req, res) => {
   try {
-    // Find all users and remove passwords from the data for safety
-    const users = await User.find({ isActive: true }).select('-password');
+    // We removed 'isActive: true' so it grabs EVERY registered user
+    const users = await User.find({}).select('-password');
     res.json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

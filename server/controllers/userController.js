@@ -115,6 +115,7 @@ const getFollowing = async (req, res) => {
 };
 
 // ─── Search Users ─────────────────────────────────────────────────────────────
+// --- Search Users ---
 const searchUsers = async (req, res) => {
   try {
     const { q } = req.query;
@@ -124,11 +125,11 @@ const searchUsers = async (req, res) => {
       $or: [
         { username: new RegExp(q, 'i') },
         { fullName: new RegExp(q, 'i') },
-      ],
-      isActive: true,
+      ]
+      // We removed 'isActive: true' from here so it stops hiding your friends!
     })
-      .select('username fullName profilePhoto isVerified role')
-      .limit(20);
+    .select('username fullName profilePhoto isVerified role')
+    .limit(20);
 
     res.json({ success: true, data: users });
   } catch (error) {

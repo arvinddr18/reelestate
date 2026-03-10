@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-import { IoMdHappy, IoMdSend, IoMdSearch } from 'react-icons/io';
+import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
 const getApiUrl = (endpoint) => {
@@ -26,7 +26,6 @@ const getAuthConfig = () => {
   return config;
 };
 
-// --- NEW FORMATTER: Converts database time to "Mar 10, 3:22 PM" ---
 const formatTime = (timestamp) => {
   if (!timestamp) return '';
   const date = new Date(timestamp);
@@ -206,7 +205,6 @@ const MessagesPage = () => {
                   const senderStr = String(msg.sender._id || msg.sender);
                   const isMe = senderStr !== String(userId);
                   
-                  // Extract timestamp and read status safely
                   const timeString = formatTime(msg.createdAt || msg.timestamp);
                   const isSeen = msg.isRead || msg.read || false; 
                   
@@ -220,13 +218,24 @@ const MessagesPage = () => {
                         )}
                         <p className="text-sm md:text-base">{msg.text}</p>
                         
-                        {/* --- NEW: Timestamps and Seen Marks --- */}
-                        <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                           <span>{timeString}</span>
+                        {/* --- THE PSYCHOLOGICAL COLOR BADGES --- */}
+                        <div className={`flex items-center justify-end mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
+                           <span className="text-[10px] mr-2 font-medium">{timeString}</span>
+                           
                            {isMe && (
-                             <span className="text-[11px] font-bold ml-1 tracking-tighter">
-                               {isSeen ? '✓✓' : '✓'}
-                             </span>
+                             <div className="flex items-center">
+                               {isSeen ? (
+                                 /* HAPPY ZONE: Glowing Green Success Badge */
+                                 <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-green-600 shadow-[0_0_10px_rgba(34,197,94,0.6)] border border-green-400 transition-all duration-300">
+                                   <IoMdDoneAll className="text-[12px]" /> READ
+                                 </span>
+                               ) : (
+                                 /* DANGER ZONE: Glowing Red Alert Badge */
+                                 <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.6)] border border-red-400 transition-all duration-300">
+                                   <IoMdCheckmark className="text-[12px]" /> SENT
+                                 </span>
+                               )}
+                             </div>
                            )}
                         </div>
 

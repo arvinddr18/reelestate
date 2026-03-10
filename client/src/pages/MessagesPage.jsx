@@ -92,6 +92,7 @@ const MessagesPage = () => {
 
   const [typingLang, setTypingLang] = useState('en');
 
+  // Hardcoded to true for now, you will connect this to Socket.io later!
   const isOnline = true; 
 
   useEffect(() => {
@@ -191,8 +192,6 @@ const MessagesPage = () => {
     setIsSending(true);
     let finalMessage = newMessage;
 
-    // --- THE FIX: Reverted to the exact translation logic that worked perfectly before! ---
-    // Now it uses typingLang (what you typed in) and targetLang.code (what you want to send)
     if (targetLang.code !== 'none') {
       try {
         const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=${typingLang}|${targetLang.code}`;
@@ -329,13 +328,17 @@ const MessagesPage = () => {
                   </div>
                 </div>
 
-                <div>
-                  <h2 className="font-bold text-lg text-gray-800 leading-tight">
+                <div className="flex flex-col justify-center">
+                  
+                  {/* --- THE FIX: Clean glowing dot next to the name instead of text! --- */}
+                  <h2 className="font-bold text-lg text-gray-800 leading-tight flex items-center gap-2">
                     {chatUser?.fullName || chatUser?.username || "Loading..."}
+                    <span 
+                      className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500 shadow-[0_0_6px_#22c55e]' : 'bg-red-500 shadow-[0_0_6px_#ef4444]'}`} 
+                      title={isOnline ? "Online" : "Offline"}
+                    ></span>
                   </h2>
-                  <p className={`text-xs font-bold tracking-wide ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
-                    {isOnline ? 'Online' : 'Offline'}
-                  </p>
+
                 </div>
               </div>
               

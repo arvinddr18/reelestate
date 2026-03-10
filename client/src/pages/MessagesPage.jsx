@@ -130,9 +130,18 @@ const MessagesPage = () => {
     return user.profilePhoto || user.profilePic || user.avatar || null;
   };
 
+  // Helper to get the correct initial for the background!
+  const getInitial = (user) => {
+    if (!user) return 'U';
+    if (user.fullName) return user.fullName.charAt(0).toUpperCase();
+    if (user.username) return user.username.charAt(0).toUpperCase();
+    return 'U';
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       
+      {/* LEFT SIDEBAR */}
       <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
         <div className="p-4 border-b bg-white">
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
@@ -214,7 +223,7 @@ const MessagesPage = () => {
                   {getProfilePhoto(chatUser) ? (
                     <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    chatUser?.username ? chatUser.username.charAt(0).toUpperCase() : 'U'
+                    getInitial(chatUser)
                   )}
                 </div>
               </div>
@@ -229,25 +238,27 @@ const MessagesPage = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto relative bg-gray-50 flex flex-col">
+            {/* --- FIXED LAYOUT FOR BACKGROUND WATERMARK --- */}
+            <div className="flex-1 relative bg-gray-50 flex flex-col overflow-hidden">
               
-              {/* --- FIXED BACKGROUND WATERMARK --- */}
-              <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+              {/* This is the background layer - locked in the center, doesn't scroll! */}
+              <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
                 {getProfilePhoto(chatUser) ? (
                   <div 
-                    className="w-full h-full opacity-10"
+                    className="w-full h-full opacity-[0.15]" 
                     style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                   />
                 ) : (
-                  <div className="text-[30rem] font-black text-gray-800 opacity-[0.03] select-none">
-                    {chatUser?.username ? chatUser.username.charAt(0).toUpperCase() : 'U'}
+                  <div className="text-[20rem] md:text-[30rem] font-black text-gray-300 opacity-40">
+                    {getInitial(chatUser)}
                   </div>
                 )}
               </div>
 
-              <div className="p-4 space-y-4 relative z-10 flex flex-col min-h-full">
+              {/* This is the scrolling message layer - sits on top of the background */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
                 {messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center flex-1 text-gray-500">
+                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
                     <p className="text-lg font-medium bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p>
                   </div>
                 ) : (
@@ -259,7 +270,6 @@ const MessagesPage = () => {
                     
                     return (
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        {/* --- ADDED 'group' SO REPLY BUTTON SHOWS ON HOVER --- */}
                         <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm group ${isMe ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}>
                           {msg.replyTo && (
                             <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-blue-300' : 'bg-gray-100 border-gray-400'}`}>
@@ -270,7 +280,6 @@ const MessagesPage = () => {
                           
                           <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
                              
-                             {/* --- FIXED REPLY BUTTON (Now inside the bubble) --- */}
                              <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-blue-500'}`}>
                                <BsReplyFill /> Reply
                              </button>
@@ -301,7 +310,7 @@ const MessagesPage = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-white border-t">
+            <div className="p-4 bg-white border-t z-20">
               {replyTo && (
                 <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-blue-500">
                   <span className="text-sm text-gray-600 truncate">Replying to: <b>{replyTo.text}</b></span>

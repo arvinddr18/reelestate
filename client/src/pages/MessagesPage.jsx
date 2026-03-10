@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-// NEW: Added the Microphone icon!
-import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic } from 'react-icons/io';
+import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
 const getApiUrl = (endpoint) => {
@@ -34,6 +33,34 @@ const formatTime = (timestamp) => {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
 };
 
+// --- COMPLETE LIST OF INDIAN LANGUAGES + ENGLISH ---
+const indianLanguages = [
+  { code: 'none', name: 'Off (No Translation)', native: 'Off' },
+  { code: 'en', name: 'English', native: 'English' },
+  { code: 'hi', name: 'Hindi', native: 'हिंदी' },
+  { code: 'bn', name: 'Bengali', native: 'বাংলা' },
+  { code: 'te', name: 'Telugu', native: 'తెలుగు' },
+  { code: 'mr', name: 'Marathi', native: 'मराठी' },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
+  { code: 'ur', name: 'Urdu', native: 'اردو' },
+  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
+  { code: 'ml', name: 'Malayalam', native: 'മലയാളം' },
+  { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ' },
+  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
+  { code: 'as', name: 'Assamese', native: 'অসমীয়া' },
+  { code: 'mai', name: 'Maithili', native: 'मैथिली' },
+  { code: 'sat', name: 'Santali', native: 'ᱥᱟᱱᱛᱟᱲᱤ' },
+  { code: 'ks', name: 'Kashmiri', native: 'कॉशुर / كأشُر' },
+  { code: 'ne', name: 'Nepali', native: 'नेपाली' },
+  { code: 'kok', name: 'Konkani', native: 'कोंकणी' },
+  { code: 'sd', name: 'Sindhi', native: 'سنڌي' },
+  { code: 'doi', name: 'Dogri', native: 'डोगरी' },
+  { code: 'mni', name: 'Manipuri', native: 'ꯃꯤꯇꯩꯂꯣꯟ' },
+  { code: 'brx', name: 'Bodo', native: 'बड़ो' },
+  { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' }
+];
+
 const MessagesPage = () => {
   const { userId } = useParams();
   
@@ -48,12 +75,27 @@ const MessagesPage = () => {
   const [recentChats, setRecentChats] = useState([]);
   const [chatUser, setChatUser] = useState(null);
 
-  // --- NEW: Voice and Translation States ---
   const [isListening, setIsListening] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [targetLang, setTargetLang] = useState('none'); 
+  
+  // --- NEW CUSTOM DROPDOWN STATES ---
+  const [targetLang, setTargetLang] = useState(indianLanguages[0]); 
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [langSearch, setLangSearch] = useState("");
+  const langMenuRef = useRef(null);
 
   const isOnline = true; 
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
@@ -112,7 +154,6 @@ const MessagesPage = () => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // --- NEW: The AI Speech-to-Text Function ---
   const startListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -127,7 +168,6 @@ const MessagesPage = () => {
     
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      // Add the spoken words to whatever is already in the text box!
       setNewMessage(prev => prev + (prev ? " " : "") + transcript);
     };
     
@@ -144,11 +184,10 @@ const MessagesPage = () => {
     setIsSending(true);
     let finalMessage = newMessage;
 
-    // --- NEW: The Auto-Translation Engine ---
-    if (targetLang !== 'none') {
+    // Use "Autodetect" so they can type in their native language and it translates to the target!
+    if (targetLang.code !== 'none') {
       try {
-        // Uses a free, open translation API to convert the text instantly!
-        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=en|${targetLang}`;
+        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=Autodetect|${targetLang.code}`;
         const res = await axios.get(translateUrl);
         if (res.data && res.data.responseData && res.data.responseData.translatedText) {
           finalMessage = res.data.responseData.translatedText;
@@ -161,7 +200,7 @@ const MessagesPage = () => {
     try {
       const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
-        text: finalMessage, // Sends the Translated text (or original if no translation)
+        text: finalMessage,
         replyTo: replyTo ? replyTo._id : null
       }, getAuthConfig());
       
@@ -186,6 +225,12 @@ const MessagesPage = () => {
     if (user.username) return user.username.charAt(0).toUpperCase();
     return 'U';
   };
+
+  // Filter languages for the search dropdown
+  const filteredLanguages = indianLanguages.filter(lang => 
+    lang.name.toLowerCase().includes(langSearch.toLowerCase()) || 
+    lang.native.toLowerCase().includes(langSearch.toLowerCase())
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
@@ -262,7 +307,7 @@ const MessagesPage = () => {
           </div>
         ) : (
           <>
-            <div className="p-4 bg-white/90 backdrop-blur-md border-b flex items-center justify-between shadow-sm z-20">
+            <div className="p-4 bg-white/90 backdrop-blur-md border-b flex flex-wrap items-center justify-between shadow-sm z-30 gap-y-2">
               <div className="flex items-center gap-3">
                 <div className="relative flex items-center justify-center w-12 h-12 rounded-full">
                   <div 
@@ -288,21 +333,61 @@ const MessagesPage = () => {
                 </div>
               </div>
               
-              {/* --- NEW: The Translator Dropdown in Header --- */}
-              <div className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-2 shadow-sm">
-                 <span className="text-xs font-bold">🌐 Auto-Translate:</span>
-                 <select 
-                   value={targetLang} 
-                   onChange={(e) => setTargetLang(e.target.value)}
-                   className="bg-transparent text-sm font-bold outline-none cursor-pointer"
-                 >
-                   <option value="none">Off</option>
-                   <option value="hi">Hindi (हिंदी)</option>
-                   <option value="kn">Kannada (ಕನ್ನಡ)</option>
-                   <option value="te">Telugu (తెలుగు)</option>
-                   <option value="ta">Tamil (தமிழ்)</option>
-                   <option value="mr">Marathi (मराठी)</option>
-                 </select>
+              {/* --- CUSTOM SEARCHABLE DROPDOWN MENU --- */}
+              <div className="relative" ref={langMenuRef}>
+                <button 
+                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                  className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-2 shadow-sm hover:bg-blue-100 transition-colors"
+                >
+                  <span className="text-xs font-bold whitespace-nowrap">🌐 Translate to:</span>
+                  <span className="text-sm font-bold truncate max-w-[100px]">{targetLang.name}</span>
+                  <IoMdArrowDropdown className="text-lg" />
+                </button>
+
+                {isLangMenuOpen && (
+                  <div className="absolute top-12 right-0 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-fade-in-down z-50">
+                    
+                    {/* Search Bar inside the Menu */}
+                    <div className="p-2 border-b bg-gray-50 relative">
+                      <IoMdSearch className="absolute left-4 top-4 text-gray-400 text-lg" />
+                      <input 
+                        type="text" 
+                        placeholder="Search language..." 
+                        value={langSearch}
+                        onChange={(e) => setLangSearch(e.target.value)}
+                        className="w-full pl-8 pr-2 py-1.5 bg-white border border-gray-200 rounded-md text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                      />
+                      {langSearch && (
+                        <IoMdClose 
+                          className="absolute right-4 top-4 text-gray-400 cursor-pointer hover:text-gray-600" 
+                          onClick={() => setLangSearch("")}
+                        />
+                      )}
+                    </div>
+
+                    {/* Scrollable Language List */}
+                    <ul className="max-h-60 overflow-y-auto">
+                      {filteredLanguages.length === 0 ? (
+                        <li className="p-4 text-center text-sm text-gray-500">No languages found.</li>
+                      ) : (
+                        filteredLanguages.map((lang) => (
+                          <li 
+                            key={lang.code}
+                            onClick={() => {
+                              setTargetLang(lang);
+                              setIsLangMenuOpen(false);
+                              setLangSearch("");
+                            }}
+                            className={`px-4 py-2.5 flex justify-between items-center cursor-pointer text-sm hover:bg-blue-50 border-b border-gray-50 ${targetLang.code === lang.code ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-700'}`}
+                          >
+                            <span>{lang.name}</span>
+                            <span className="text-gray-400 text-xs font-medium">{lang.native}</span>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
 
             </div>
@@ -390,7 +475,6 @@ const MessagesPage = () => {
                   </div>
                 )}
                 
-                {/* --- INPUT BAR WITH MICROPHONE INSIDE --- */}
                 <div className="flex flex-1 items-center bg-gray-100 rounded-full pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                   <input 
                     type="text" 

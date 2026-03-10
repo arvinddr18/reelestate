@@ -13,10 +13,13 @@ const getApiUrl = (endpoint) => {
   return base + endpoint;
 };
 
-// --- THE FIX: Smart Auth Config ---
+// --- THE FINAL FIX: Using your exact custom token name ---
 const getAuthConfig = () => {
-  let token = localStorage.getItem('token');
+  // Grab the exact key we found in your browser memory!
+  let token = localStorage.getItem('reelestate_token');
   
+  // Fallbacks just in case
+  if (!token) token = localStorage.getItem('token');
   if (!token && localStorage.getItem('user')) {
     try { 
       const userData = JSON.parse(localStorage.getItem('user'));
@@ -24,15 +27,11 @@ const getAuthConfig = () => {
     } catch (e) {}
   }
 
-  // Check other common places just in case
-  if (!token) token = localStorage.getItem('jwt');
-  if (!token) token = localStorage.getItem('accessToken');
-
   const config = {
-    withCredentials: true // Crucial if your app uses Cookies instead of LocalStorage!
+    withCredentials: true 
   };
 
-  // Only attach the header if we actually found a real token string
+  // Attach the VIP Pass to the request
   if (token && token !== 'undefined' && token !== 'null') {
     config.headers = { Authorization: `Bearer ${token}` };
   }

@@ -4,6 +4,8 @@ import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
 import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
+import { ReactTransliterate } from "react-transliterate";
+import "react-transliterate/dist/index.css";
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -33,7 +35,6 @@ const formatTime = (timestamp) => {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
 };
 
-// --- COMPLETE LIST OF INDIAN LANGUAGES + ENGLISH ---
 const indianLanguages = [
   { code: 'none', name: 'Off (No Translation)', native: 'Off' },
   { code: 'en', name: 'English', native: 'English' },
@@ -49,16 +50,22 @@ const indianLanguages = [
   { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ' },
   { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
   { code: 'as', name: 'Assamese', native: 'অসমীয়া' },
-  { code: 'mai', name: 'Maithili', native: 'मैथिली' },
-  { code: 'sat', name: 'Santali', native: 'ᱥᱟᱱᱛᱟᱲᱤ' },
-  { code: 'ks', name: 'Kashmiri', native: 'कॉशुर / كأشُر' },
-  { code: 'ne', name: 'Nepali', native: 'नेपाली' },
-  { code: 'kok', name: 'Konkani', native: 'कोंकणी' },
-  { code: 'sd', name: 'Sindhi', native: 'سنڌي' },
-  { code: 'doi', name: 'Dogri', native: 'डोगरी' },
-  { code: 'mni', name: 'Manipuri', native: 'ꯃꯤꯇꯩꯂꯣꯟ' },
-  { code: 'brx', name: 'Bodo', native: 'बड़ो' },
   { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' }
+];
+
+const typingLanguages = [
+  { code: 'en', name: 'EN', fullName: 'English' },
+  { code: 'hi', name: 'हिंदी', fullName: 'Hindi' },
+  { code: 'kn', name: 'ಕನ್ನಡ', fullName: 'Kannada' },
+  { code: 'te', name: 'తెలుగు', fullName: 'Telugu' },
+  { code: 'ta', name: 'தமிழ்', fullName: 'Tamil' },
+  { code: 'mr', name: 'मराठी', fullName: 'Marathi' },
+  { code: 'bn', name: 'বাংলা', fullName: 'Bengali' },
+  { code: 'gu', name: 'ગુજરાતી', fullName: 'Gujarati' },
+  { code: 'ml', name: 'മലയാളം', fullName: 'Malayalam' },
+  { code: 'pa', name: 'ਪੰਜਾਬੀ', fullName: 'Punjabi' },
+  { code: 'ur', name: 'اردو', fullName: 'Urdu' },
+  { code: 'sa', name: 'संस्कृतम्', fullName: 'Sanskrit' }
 ];
 
 const MessagesPage = () => {
@@ -78,15 +85,15 @@ const MessagesPage = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSending, setIsSending] = useState(false);
   
-  // --- NEW CUSTOM DROPDOWN STATES ---
   const [targetLang, setTargetLang] = useState(indianLanguages[0]); 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [langSearch, setLangSearch] = useState("");
   const langMenuRef = useRef(null);
 
+  const [typingLang, setTypingLang] = useState('en');
+
   const isOnline = true; 
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
@@ -184,10 +191,11 @@ const MessagesPage = () => {
     setIsSending(true);
     let finalMessage = newMessage;
 
-    // Use "Autodetect" so they can type in their native language and it translates to the target!
+    // --- THE FIX: Reverted to the exact translation logic that worked perfectly before! ---
+    // Now it uses typingLang (what you typed in) and targetLang.code (what you want to send)
     if (targetLang.code !== 'none') {
       try {
-        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=Autodetect|${targetLang.code}`;
+        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=${typingLang}|${targetLang.code}`;
         const res = await axios.get(translateUrl);
         if (res.data && res.data.responseData && res.data.responseData.translatedText) {
           finalMessage = res.data.responseData.translatedText;
@@ -226,7 +234,6 @@ const MessagesPage = () => {
     return 'U';
   };
 
-  // Filter languages for the search dropdown
   const filteredLanguages = indianLanguages.filter(lang => 
     lang.name.toLowerCase().includes(langSearch.toLowerCase()) || 
     lang.native.toLowerCase().includes(langSearch.toLowerCase())
@@ -235,7 +242,6 @@ const MessagesPage = () => {
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       
-      {/* LEFT SIDEBAR */}
       <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
         <div className="p-4 border-b bg-white">
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
@@ -333,7 +339,6 @@ const MessagesPage = () => {
                 </div>
               </div>
               
-              {/* --- CUSTOM SEARCHABLE DROPDOWN MENU --- */}
               <div className="relative" ref={langMenuRef}>
                 <button 
                   onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
@@ -346,8 +351,6 @@ const MessagesPage = () => {
 
                 {isLangMenuOpen && (
                   <div className="absolute top-12 right-0 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-fade-in-down z-50">
-                    
-                    {/* Search Bar inside the Menu */}
                     <div className="p-2 border-b bg-gray-50 relative">
                       <IoMdSearch className="absolute left-4 top-4 text-gray-400 text-lg" />
                       <input 
@@ -365,7 +368,6 @@ const MessagesPage = () => {
                       )}
                     </div>
 
-                    {/* Scrollable Language List */}
                     <ul className="max-h-60 overflow-y-auto">
                       {filteredLanguages.length === 0 ? (
                         <li className="p-4 text-center text-sm text-gray-500">No languages found.</li>
@@ -475,14 +477,38 @@ const MessagesPage = () => {
                   </div>
                 )}
                 
-                <div className="flex flex-1 items-center bg-gray-100 rounded-full pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <input 
-                    type="text" 
-                    value={newMessage} 
-                    onChange={(e) => setNewMessage(e.target.value)} 
-                    placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} 
-                    className="flex-1 p-3 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none" 
-                  />
+                <div className="flex flex-1 items-center bg-gray-100 rounded-full pl-2 pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  
+                  <div className="relative border-r border-gray-300 pr-2 mr-2">
+                    <select 
+                      value={typingLang}
+                      onChange={(e) => setTypingLang(e.target.value)}
+                      className="bg-gray-200 text-gray-700 font-bold text-xs py-1.5 px-2 rounded-md outline-none cursor-pointer hover:bg-gray-300 transition-colors"
+                      title="Typing Keyboard Language"
+                    >
+                      {typingLanguages.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+                    </select>
+                  </div>
+
+                  {typingLang === 'en' ? (
+                    <input 
+                      type="text" 
+                      value={newMessage} 
+                      onChange={(e) => setNewMessage(e.target.value)} 
+                      placeholder={isListening ? "Listening... Speak now!" : "Type in English..."} 
+                      className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" 
+                    />
+                  ) : (
+                    <ReactTransliterate
+                      value={newMessage}
+                      onChangeText={(text) => setNewMessage(text)}
+                      lang={typingLang}
+                      placeholder={isListening ? "Listening..." : `Type in ${typingLanguages.find(l=>l.code === typingLang).fullName}... (Space to convert)`}
+                      containerClassName="flex-1 flex items-center w-full"
+                      className="w-full p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none"
+                    />
+                  )}
+
                   <button 
                     type="button" 
                     onClick={startListening} 

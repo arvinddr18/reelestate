@@ -27,7 +27,7 @@ const getAuthConfig = () => {
 };
 
 const MessagesPage = () => {
-  const { userId } = useParams();
+  const { userId } = useParams(); // THIS IS GAHANA'S ID!
   
   const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -39,13 +39,6 @@ const MessagesPage = () => {
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
 
-  // Get YOUR ID so we know which messages belong to you!
-  let myId = null;
-  try {
-    const loggedInUser = JSON.parse(localStorage.getItem('user'));
-    myId = loggedInUser ? (loggedInUser._id || loggedInUser.id) : null;
-  } catch(e) {}
-
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
     setRecentChats(savedChats);
@@ -53,14 +46,14 @@ const MessagesPage = () => {
     const fetchAllContacts = async () => {
       try {
         const res = await axios.get(getApiUrl('/api/users'), getAuthConfig());
-        const others = (res.data.data || []).filter(u => u._id !== myId);
-        setAllUsers(others);
+        // Show everyone in the search list
+        setAllUsers(res.data.data || []);
       } catch (err) {
         console.error("Error fetching users:", err);
       }
     };
     fetchAllContacts();
-  }, [myId]);
+  }, []);
 
   const cleanSearch = searchQuery.replace('@', '').trim().toLowerCase();
   const searchResults = allUsers.filter(user => 
@@ -97,7 +90,7 @@ const MessagesPage = () => {
     fetchChatData();
   }, [userId]);
 
-  // Automatically scroll to bottom when new messages load!
+  // Auto-scroll to bottom
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -124,6 +117,7 @@ const MessagesPage = () => {
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       
+      {/* LEFT SIDEBAR */}
       <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
         <div className="p-4 border-b bg-white">
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
@@ -179,6 +173,7 @@ const MessagesPage = () => {
         </div>
       </div>
 
+      {/* RIGHT SIDEBAR - CHAT AREA */}
       <div className="flex-1 flex flex-col bg-white">
         {!userId ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50">
@@ -201,8 +196,10 @@ const MessagesPage = () => {
                 <div className="flex flex-col items-center justify-center h-full text-gray-500"><p className="text-lg font-medium bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p></div>
               ) : (
                 messages.map((msg) => {
-                  // THE FIX: Check if you are the sender!
-                  const isMe = msg.sender === myId || (msg.sender && msg.sender._id === myId);
+                  
+                  // THE FOOLPROOF FIX: If the sender is NOT Gahana, it must be you!
+                  const senderStr = String(msg.sender._id || msg.sender);
+                  const isMe = senderStr !== String(userId);
                   
                   return (
                     <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>

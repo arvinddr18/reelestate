@@ -5,13 +5,25 @@ import EmojiPicker from 'emoji-picker-react';
 import { IoMdHappy, IoMdSend, IoMdSearch } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
-// Foolproof function to stop Vercel from intercepting API calls
+// 1. Foolproof function to bypass Vercel
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
   if (base.endsWith('/api') && endpoint.startsWith('/api')) {
     return base.replace('/api', '') + endpoint;
   }
   return base + endpoint;
+};
+
+// 2. VIP PASS: Automatically attach the user's Login Token to requests!
+const getAuthConfig = () => {
+  let token = localStorage.getItem('token');
+  if (!token && localStorage.getItem('user')) {
+    try { token = JSON.parse(localStorage.getItem('user')).token; } catch (e) {}
+  }
+  return {
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true // Also allows secure cookies
+  };
 };
 
 const MessagesPage = () => {
@@ -29,15 +41,14 @@ const MessagesPage = () => {
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
 
-  // 1. Fetch All Contacts ONCE
+  // 1. Fetch All Contacts ONCE (with Auth)
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
     setRecentChats(savedChats);
 
     const fetchAllContacts = async () => {
       try {
-        // Using the absolute URL so Vercel doesn't block it!
-        const res = await axios.get(getApiUrl('/api/users'));
+        const res = await axios.get(getApiUrl('/api/users'), getAuthConfig());
         setAllUsers(res.data.data || []);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -61,10 +72,11 @@ const MessagesPage = () => {
     }
     const fetchChatData = async () => {
       try {
-        const msgRes = await axios.get(getApiUrl(`/api/messages/${userId}`));
+        // Ask for messages with the VIP Pass!
+        const msgRes = await axios.get(getApiUrl(`/api/messages/${userId}`), getAuthConfig());
         setMessages(msgRes.data.data || []);
 
-        const userRes = await axios.get(getApiUrl(`/api/users/${userId}`));
+        const userRes = await axios.get(getApiUrl(`/api/users/${userId}`), getAuthConfig());
         const chatUser = userRes.data.data?.user || userRes.data.data;
 
         if (chatUser && chatUser._id) {
@@ -77,12 +89,14 @@ const MessagesPage = () => {
         }
       } catch (err) {
         console.error("Error fetching chat:", err);
+        // CRUCIAL: If there's an error, stop the infinite loading spinner!
+        setMessages([]); 
       }
     };
     fetchChatData();
   }, [userId]);
 
-  // 4. Handle Sending
+  // 4. Handle Sending (with Auth)
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
@@ -92,7 +106,8 @@ const MessagesPage = () => {
         receiverId: userId,
         text: newMessage,
         replyTo: replyTo ? replyTo._id : null
-      });
+      }, getAuthConfig());
+      
       setMessages([...(messages || []), res.data.data]);
       setNewMessage("");
       setReplyTo(null);
@@ -149,7 +164,7 @@ const MessagesPage = () => {
             </>
           ) : (
             
-            // --- SUGGESTED CONTACTS (RESTORED!) ---
+            // --- SUGGESTED CONTACTS ---
             <>
               <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Suggested Contacts</div>
               {allUsers.length === 0 ? (
@@ -176,7 +191,12 @@ const MessagesPage = () => {
             <p className="mt-2 text-sm">Select a user from the sidebar or search to start chatting.</p>
           </div>
         ) : !messages ? (
-          <div className="flex items-center justify-center h-full text-gray-500">Loading conversation...</div>
+          <div className="flex items-center justify-center h-full text-gray-500">
+            <div className="animate-pulse flex flex-col items-center">
+               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+               <p>Loading conversation...</p>
+            </div>
+          </div>
         ) : (
           <>
             <div className="p-4 bg-white border-b flex items-center shadow-sm z-10"><h2 className="font-bold text-lg text-gray-800">Conversation</h2></div>

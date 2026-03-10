@@ -15,41 +15,34 @@ const MessagesPage = () => {
   const [replyTo, setReplyTo] = useState(null);
   const scrollRef = useRef();
 
-  // Search & Inbox States
+  // Instant Search States
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
 
-  // 1. Load Recent Chats from local memory (WhatsApp style)
+  // 1. Fetch All Users ONCE for instant searching
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
     setRecentChats(savedChats);
-  }, []);
 
-  // 2. Professional Live Server Search (Instagram style)
-  useEffect(() => {
-    const searchDatabase = async () => {
-      if (!searchQuery.trim()) {
-        setSearchResults([]);
-        return;
-      }
-      setIsSearching(true);
+    const fetchAllContacts = async () => {
       try {
-        // This hits the specific search route we KNOW works in your backend
-        const res = await axios.get(`/api/users/search?q=${searchQuery}`);
-        setSearchResults(res.data.data || []);
+        // This grabs everyone instantly so we don't need to ask the server again
+        const res = await axios.get('/api/users');
+        setAllUsers(res.data.data || []);
       } catch (err) {
-        console.error("Search error:", err);
-      } finally {
-        setIsSearching(false);
+        console.error("Error fetching users:", err);
       }
     };
+    fetchAllContacts();
+  }, []);
 
-    // Add a 300ms delay so it doesn't spam your server while typing
-    const timer = setTimeout(searchDatabase, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  // 2. Smart Instant Filter (Ignores '@' symbols and capital letters!)
+  const cleanSearch = searchQuery.replace('@', '').trim().toLowerCase();
+  const searchResults = allUsers.filter(user => 
+    (user.username && user.username.toLowerCase().includes(cleanSearch)) ||
+    (user.fullName && user.fullName.toLowerCase().includes(cleanSearch))
+  );
 
   // 3. Fetch Active Chat & Save to Recents
   useEffect(() => {
@@ -123,10 +116,8 @@ const MessagesPage = () => {
         {/* Contact List Logic */}
         <div className="flex-1 overflow-y-auto">
           {searchQuery.trim() !== "" ? (
-            // --- USER IS SEARCHING ---
-            isSearching ? (
-              <div className="p-6 text-center text-sm text-gray-400">Searching database...</div>
-            ) : searchResults.length === 0 ? (
+            // --- INSTANT SEARCH RESULTS ---
+            searchResults.length === 0 ? (
               <div className="p-6 text-center text-sm text-gray-400">No matching users found.</div>
             ) : (
               searchResults.map((user) => (
@@ -148,11 +139,20 @@ const MessagesPage = () => {
               ))}
             </>
           ) : (
-            // --- NO RECENTS YET ---
-            <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400 h-full">
-              <div className="text-4xl mb-3">🔍</div>
-              <p className="text-sm">Search for a username above to start a conversation.</p>
-            </div>
+            // --- SUGGESTED CONTACTS (Shows everyone before you search) ---
+            <>
+              <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Suggested Contacts</div>
+              {allUsers.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-400">Loading your contacts...</div>
+              ) : (
+                allUsers.map((user) => (
+                   <Link key={user._id} to={`/messages/${user._id}`} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
+                    <div className="w-12 h-12 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">{user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
+                    <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-xs text-gray-400">Start a new chat</p></div>
+                  </Link>
+                ))
+              )}
+            </>
           )}
         </div>
       </div>

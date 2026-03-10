@@ -47,7 +47,6 @@ const MessagesPage = () => {
   const [recentChats, setRecentChats] = useState([]);
   const [chatUser, setChatUser] = useState(null);
 
-  // MOCK ONLINE STATUS: In the future, you will connect this to Socket.io to change dynamically!
   const isOnline = true; 
 
   useEffect(() => {
@@ -134,7 +133,6 @@ const MessagesPage = () => {
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       
-      {/* LEFT SIDEBAR */}
       <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
         <div className="p-4 border-b bg-white">
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
@@ -190,7 +188,6 @@ const MessagesPage = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR - CHAT AREA */}
       <div className="flex-1 flex flex-col bg-white">
         {!userId ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50">
@@ -208,19 +205,11 @@ const MessagesPage = () => {
         ) : (
           <>
             <div className="p-4 bg-white/90 backdrop-blur-md border-b flex items-center shadow-sm z-20 gap-3">
-              
-              {/* --- THE ANIMATED ONLINE STATUS RING --- */}
               <div className="relative flex items-center justify-center w-12 h-12 rounded-full">
-                {/* The Spinning Gradient Background */}
                 <div 
                   className={`absolute inset-0 rounded-full ${isOnline ? 'animate-spin' : ''}`}
-                  style={{ 
-                    background: isOnline ? 'conic-gradient(from 0deg, transparent 60%, #22c55e 100%)' : 'none',
-                    border: isOnline ? 'none' : '2px solid #e5e7eb'
-                  }}
+                  style={{ background: isOnline ? 'conic-gradient(from 0deg, transparent 60%, #22c55e 100%)' : 'none', border: isOnline ? 'none' : '2px solid #e5e7eb' }}
                 ></div>
-                
-                {/* The Profile Picture sitting on top */}
                 <div className="absolute inset-[2.5px] bg-white rounded-full overflow-hidden flex items-center justify-center text-white font-bold bg-gradient-to-tr from-blue-500 to-purple-500 z-10 shadow-inner">
                   {getProfilePhoto(chatUser) ? (
                     <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
@@ -240,13 +229,21 @@ const MessagesPage = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto relative bg-gray-50">
-              {getProfilePhoto(chatUser) && (
-                <div 
-                  className="absolute inset-0 z-0 opacity-[0.07] pointer-events-none"
-                  style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
-                />
-              )}
+            <div className="flex-1 overflow-y-auto relative bg-gray-50 flex flex-col">
+              
+              {/* --- FIXED BACKGROUND WATERMARK --- */}
+              <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+                {getProfilePhoto(chatUser) ? (
+                  <div 
+                    className="w-full h-full opacity-10"
+                    style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                  />
+                ) : (
+                  <div className="text-[30rem] font-black text-gray-800 opacity-[0.03] select-none">
+                    {chatUser?.username ? chatUser.username.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+              </div>
 
               <div className="p-4 space-y-4 relative z-10 flex flex-col min-h-full">
                 {messages.length === 0 ? (
@@ -262,7 +259,8 @@ const MessagesPage = () => {
                     
                     return (
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm ${isMe ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}>
+                        {/* --- ADDED 'group' SO REPLY BUTTON SHOWS ON HOVER --- */}
+                        <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm group ${isMe ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}>
                           {msg.replyTo && (
                             <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-blue-300' : 'bg-gray-100 border-gray-400'}`}>
                               Replying to: {msg.replyTo.text?.substring(0, 30)}...
@@ -270,27 +268,29 @@ const MessagesPage = () => {
                           )}
                           <p className="text-sm md:text-base">{msg.text}</p>
                           
-                          <div className={`flex items-center justify-end mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
-                             <span className="text-[10px] mr-2 font-medium">{timeString}</span>
-                             {isMe && (
-                               <div className="flex items-center">
-                                 {isSeen ? (
-                                   <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-green-600 shadow-[0_0_10px_rgba(34,197,94,0.6)] border border-green-400 transition-all duration-300">
-                                     <IoMdDoneAll className="text-[12px]" /> READ
-                                   </span>
-                                 ) : (
-                                   <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.6)] border border-red-400 transition-all duration-300">
-                                     <IoMdCheckmark className="text-[12px]" /> SENT
-                                   </span>
-                                 )}
-                               </div>
-                             )}
-                          </div>
-
-                          <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity absolute top-2 right-[-50px]">
-                            <button onClick={() => setReplyTo(msg)} className="text-xs flex items-center gap-1 opacity-80 hover:opacity-100 text-gray-500 bg-white shadow-md rounded-full px-2 py-1">
-                              <BsReplyFill /> Reply
-                            </button>
+                          <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
+                             
+                             {/* --- FIXED REPLY BUTTON (Now inside the bubble) --- */}
+                             <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-blue-500'}`}>
+                               <BsReplyFill /> Reply
+                             </button>
+                             
+                             <div className="flex items-center gap-1.5 ml-4">
+                               <span className="text-[10px] font-medium">{timeString}</span>
+                               {isMe && (
+                                 <div className="flex items-center">
+                                   {isSeen ? (
+                                     <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-green-600 shadow-[0_0_10px_rgba(34,197,94,0.6)] border border-green-400 transition-all duration-300">
+                                       <IoMdDoneAll className="text-[12px]" /> READ
+                                     </span>
+                                   ) : (
+                                     <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.6)] border border-red-400 transition-all duration-300">
+                                       <IoMdCheckmark className="text-[12px]" /> SENT
+                                     </span>
+                                   )}
+                                 </div>
+                               )}
+                             </div>
                           </div>
                         </div>
                       </div>
@@ -315,7 +315,6 @@ const MessagesPage = () => {
                     <EmojiPicker onEmojiClick={(emojiData) => { setNewMessage(prev => prev + emojiData.emoji); setShowEmojiPicker(false); }} />
                   </div>
                 )}
-                {/* --- INPUT BUG FIXED HERE (Added text-gray-900) --- */}
                 <input 
                   type="text" 
                   value={newMessage} 

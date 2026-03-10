@@ -5,7 +5,6 @@ import EmojiPicker from 'emoji-picker-react';
 import { IoMdHappy, IoMdSend, IoMdSearch } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
-// 1. Foolproof function to bypass Vercel
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
   if (base.endsWith('/api') && endpoint.startsWith('/api')) {
@@ -14,7 +13,6 @@ const getApiUrl = (endpoint) => {
   return base + endpoint;
 };
 
-// 2. VIP PASS: Automatically attach the user's Login Token to requests!
 const getAuthConfig = () => {
   let token = localStorage.getItem('token');
   if (!token && localStorage.getItem('user')) {
@@ -22,26 +20,27 @@ const getAuthConfig = () => {
   }
   return {
     headers: { Authorization: `Bearer ${token}` },
-    withCredentials: true // Also allows secure cookies
+    withCredentials: true 
   };
 };
 
 const MessagesPage = () => {
   const { userId } = useParams();
   
-  // Chat States
   const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const scrollRef = useRef();
 
-  // Search & Inbox States
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
 
-  // 1. Fetch All Contacts ONCE (with Auth)
+  // Find the logged-in user so we can hide them from the contact list!
+  const loggedInUser = JSON.parse(localStorage.getItem('user'));
+  const myId = loggedInUser ? (loggedInUser._id || loggedInUser.id) : null;
+
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
     setRecentChats(savedChats);
@@ -49,22 +48,22 @@ const MessagesPage = () => {
     const fetchAllContacts = async () => {
       try {
         const res = await axios.get(getApiUrl('/api/users'), getAuthConfig());
-        setAllUsers(res.data.data || []);
+        // Filter out the logged-in user so you don't chat with yourself
+        const others = (res.data.data || []).filter(u => u._id !== myId);
+        setAllUsers(others);
       } catch (err) {
         console.error("Error fetching users:", err);
       }
     };
     fetchAllContacts();
-  }, []);
+  }, [myId]);
 
-  // 2. Smart Instant Search Filter
   const cleanSearch = searchQuery.replace('@', '').trim().toLowerCase();
   const searchResults = allUsers.filter(user => 
     (user.username && user.username.toLowerCase().includes(cleanSearch)) ||
     (user.fullName && user.fullName.toLowerCase().includes(cleanSearch))
   );
 
-  // 3. Fetch Active Chat & Move to Recents
   useEffect(() => {
     if (!userId) {
       setMessages(null);
@@ -72,7 +71,6 @@ const MessagesPage = () => {
     }
     const fetchChatData = async () => {
       try {
-        // Ask for messages with the VIP Pass!
         const msgRes = await axios.get(getApiUrl(`/api/messages/${userId}`), getAuthConfig());
         setMessages(msgRes.data.data || []);
 
@@ -89,19 +87,18 @@ const MessagesPage = () => {
         }
       } catch (err) {
         console.error("Error fetching chat:", err);
-        // CRUCIAL: If there's an error, stop the infinite loading spinner!
         setMessages([]); 
       }
     };
     fetchChatData();
   }, [userId]);
 
-  // 4. Handle Sending (with Auth)
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
 
     try {
+      // Trying to send the message...
       const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
         text: newMessage,
@@ -112,6 +109,9 @@ const MessagesPage = () => {
       setNewMessage("");
       setReplyTo(null);
     } catch (err) {
+      // IF IT FAILS, POP UP AN ALERT WITH THE EXACT ERROR!
+      const errorMsg = err.response?.data?.message || err.message;
+      alert(`Backend Error: Could not send message.\nReason: ${errorMsg}`);
       console.error(err);
     }
   };
@@ -119,9 +119,7 @@ const MessagesPage = () => {
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       
-      {/* ================= LEFT SIDE: INBOX & SEARCH ================= */}
       <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
-        
         <div className="p-4 border-b bg-white">
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
           <div className="relative">
@@ -138,8 +136,6 @@ const MessagesPage = () => {
         
         <div className="flex-1 overflow-y-auto">
           {searchQuery.trim() !== "" ? (
-            
-            // --- SEARCH RESULTS ---
             searchResults.length === 0 ? (
               <div className="p-6 text-center text-sm text-gray-400">No matching users found.</div>
             ) : (
@@ -151,8 +147,6 @@ const MessagesPage = () => {
               ))
             )
           ) : recentChats.length > 0 ? (
-            
-            // --- RECENT CHATS ---
             <>
               <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Recent Conversations</div>
               {recentChats.map((user) => (
@@ -163,8 +157,6 @@ const MessagesPage = () => {
               ))}
             </>
           ) : (
-            
-            // --- SUGGESTED CONTACTS ---
             <>
               <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Suggested Contacts</div>
               {allUsers.length === 0 ? (
@@ -182,7 +174,6 @@ const MessagesPage = () => {
         </div>
       </div>
 
-      {/* ================= RIGHT SIDE: CHAT AREA ================= */}
       <div className="flex-1 flex flex-col bg-white">
         {!userId ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50">

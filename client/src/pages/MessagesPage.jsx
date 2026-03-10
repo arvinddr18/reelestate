@@ -26,8 +26,16 @@ const getAuthConfig = () => {
   return config;
 };
 
+// --- NEW FORMATTER: Converts database time to "Mar 10, 3:22 PM" ---
+const formatTime = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (isNaN(date)) return '';
+  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+};
+
 const MessagesPage = () => {
-  const { userId } = useParams(); // THIS IS GAHANA'S ID!
+  const { userId } = useParams();
   
   const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -46,7 +54,6 @@ const MessagesPage = () => {
     const fetchAllContacts = async () => {
       try {
         const res = await axios.get(getApiUrl('/api/users'), getAuthConfig());
-        // Show everyone in the search list
         setAllUsers(res.data.data || []);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -90,7 +97,6 @@ const MessagesPage = () => {
     fetchChatData();
   }, [userId]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -197,9 +203,12 @@ const MessagesPage = () => {
               ) : (
                 messages.map((msg) => {
                   
-                  // THE FOOLPROOF FIX: If the sender is NOT Gahana, it must be you!
                   const senderStr = String(msg.sender._id || msg.sender);
                   const isMe = senderStr !== String(userId);
+                  
+                  // Extract timestamp and read status safely
+                  const timeString = formatTime(msg.createdAt || msg.timestamp);
+                  const isSeen = msg.isRead || msg.read || false; 
                   
                   return (
                     <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -210,8 +219,19 @@ const MessagesPage = () => {
                           </div>
                         )}
                         <p className="text-sm md:text-base">{msg.text}</p>
-                        <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity">
-                          <button onClick={() => setReplyTo(msg)} className={`text-[10px] md:text-xs flex items-center gap-1 opacity-80 hover:opacity-100 ${isMe ? 'text-white' : 'text-gray-500'}`}>
+                        
+                        {/* --- NEW: Timestamps and Seen Marks --- */}
+                        <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
+                           <span>{timeString}</span>
+                           {isMe && (
+                             <span className="text-[11px] font-bold ml-1 tracking-tighter">
+                               {isSeen ? '✓✓' : '✓'}
+                             </span>
+                           )}
+                        </div>
+
+                        <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity absolute top-2 right-[-50px]">
+                          <button onClick={() => setReplyTo(msg)} className="text-xs flex items-center gap-1 opacity-80 hover:opacity-100 text-gray-500 bg-white shadow-md rounded-full px-2 py-1">
                             <BsReplyFill /> Reply
                           </button>
                         </div>

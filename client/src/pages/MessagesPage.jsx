@@ -45,6 +45,9 @@ const MessagesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
+  
+  // NEW: State to hold the specific user we are chatting with!
+  const [chatUser, setChatUser] = useState(null);
 
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
@@ -70,6 +73,7 @@ const MessagesPage = () => {
   useEffect(() => {
     if (!userId) {
       setMessages(null);
+      setChatUser(null);
       return;
     }
     const fetchChatData = async () => {
@@ -78,12 +82,15 @@ const MessagesPage = () => {
         setMessages(msgRes.data.data || []);
 
         const userRes = await axios.get(getApiUrl(`/api/users/${userId}`), getAuthConfig());
-        const chatUser = userRes.data.data?.user || userRes.data.data;
+        const fetchedUser = userRes.data.data?.user || userRes.data.data;
+        
+        // Save the chat user so we can use their photo for the background!
+        setChatUser(fetchedUser);
 
-        if (chatUser && chatUser._id) {
+        if (fetchedUser && fetchedUser._id) {
           setRecentChats(prev => {
-            const filtered = prev.filter(u => u._id !== chatUser._id);
-            const newRecent = [chatUser, ...filtered];
+            const filtered = prev.filter(u => u._id !== fetchedUser._id);
+            const newRecent = [fetchedUser, ...filtered];
             localStorage.setItem('geo_recent_chats', JSON.stringify(newRecent));
             return newRecent;
           });
@@ -117,6 +124,12 @@ const MessagesPage = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Helper to safely get the profile photo URL (checking common database field names)
+  const getProfilePhoto = (user) => {
+    if (!user) return null;
+    return user.profilePhoto || user.profilePic || user.avatar || null;
   };
 
   return (
@@ -195,61 +208,91 @@ const MessagesPage = () => {
           </div>
         ) : (
           <>
-            <div className="p-4 bg-white border-b flex items-center shadow-sm z-10"><h2 className="font-bold text-lg text-gray-800">Conversation</h2></div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500"><p className="text-lg font-medium bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p></div>
-              ) : (
-                messages.map((msg) => {
-                  
-                  const senderStr = String(msg.sender._id || msg.sender);
-                  const isMe = senderStr !== String(userId);
-                  
-                  const timeString = formatTime(msg.createdAt || msg.timestamp);
-                  const isSeen = msg.isRead || msg.read || false; 
-                  
-                  return (
-                    <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm ${isMe ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}>
-                        {msg.replyTo && (
-                          <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-blue-300' : 'bg-gray-100 border-gray-400'}`}>
-                            Replying to: {msg.replyTo.text?.substring(0, 30)}...
-                          </div>
-                        )}
-                        <p className="text-sm md:text-base">{msg.text}</p>
-                        
-                        {/* --- THE PSYCHOLOGICAL COLOR BADGES --- */}
-                        <div className={`flex items-center justify-end mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
-                           <span className="text-[10px] mr-2 font-medium">{timeString}</span>
-                           
-                           {isMe && (
-                             <div className="flex items-center">
-                               {isSeen ? (
-                                 /* HAPPY ZONE: Glowing Green Success Badge */
-                                 <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-green-600 shadow-[0_0_10px_rgba(34,197,94,0.6)] border border-green-400 transition-all duration-300">
-                                   <IoMdDoneAll className="text-[12px]" /> READ
-                                 </span>
-                               ) : (
-                                 /* DANGER ZONE: Glowing Red Alert Badge */
-                                 <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.6)] border border-red-400 transition-all duration-300">
-                                   <IoMdCheckmark className="text-[12px]" /> SENT
-                                 </span>
-                               )}
-                             </div>
-                           )}
-                        </div>
+            {/* UPGRADED HEADER WITH USER PROFILE INFO */}
+            <div className="p-4 bg-white/90 backdrop-blur-md border-b flex items-center shadow-sm z-20 gap-3">
+              <div className="w-10 h-10 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold overflow-hidden">
+                {getProfilePhoto(chatUser) ? (
+                  <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  chatUser?.username ? chatUser.username.charAt(0).toUpperCase() : 'U'
+                )}
+              </div>
+              <div>
+                <h2 className="font-bold text-lg text-gray-800 leading-tight">
+                  {chatUser?.fullName || chatUser?.username || "Loading..."}
+                </h2>
+                <p className="text-xs text-green-500 font-medium">Online</p>
+              </div>
+            </div>
 
-                        <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity absolute top-2 right-[-50px]">
-                          <button onClick={() => setReplyTo(msg)} className="text-xs flex items-center gap-1 opacity-80 hover:opacity-100 text-gray-500 bg-white shadow-md rounded-full px-2 py-1">
-                            <BsReplyFill /> Reply
-                          </button>
+            {/* MAIN CHAT WINDOW WITH BACKGROUND WATERMARK */}
+            <div className="flex-1 overflow-y-auto relative bg-gray-50">
+              
+              {/* THE BACKGROUND IMAGE (Faded to 10% opacity so text is readable) */}
+              {getProfilePhoto(chatUser) && (
+                <div 
+                  className="absolute inset-0 z-0 opacity-10 pointer-events-none"
+                  style={{ 
+                    backgroundImage: `url(${getProfilePhoto(chatUser)})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                  }}
+                />
+              )}
+
+              {/* MESSAGES LIST (z-10 keeps it above the background image) */}
+              <div className="p-4 space-y-4 relative z-10 flex flex-col min-h-full">
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center flex-1 text-gray-500">
+                    <p className="text-lg font-medium bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p>
+                  </div>
+                ) : (
+                  messages.map((msg) => {
+                    const senderStr = String(msg.sender._id || msg.sender);
+                    const isMe = senderStr !== String(userId);
+                    const timeString = formatTime(msg.createdAt || msg.timestamp);
+                    const isSeen = msg.isRead || msg.read || false; 
+                    
+                    return (
+                      <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm ${isMe ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}>
+                          {msg.replyTo && (
+                            <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-blue-300' : 'bg-gray-100 border-gray-400'}`}>
+                              Replying to: {msg.replyTo.text?.substring(0, 30)}...
+                            </div>
+                          )}
+                          <p className="text-sm md:text-base">{msg.text}</p>
+                          
+                          <div className={`flex items-center justify-end mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
+                             <span className="text-[10px] mr-2 font-medium">{timeString}</span>
+                             {isMe && (
+                               <div className="flex items-center">
+                                 {isSeen ? (
+                                   <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-green-600 shadow-[0_0_10px_rgba(34,197,94,0.6)] border border-green-400 transition-all duration-300">
+                                     <IoMdDoneAll className="text-[12px]" /> READ
+                                   </span>
+                                 ) : (
+                                   <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.6)] border border-red-400 transition-all duration-300">
+                                     <IoMdCheckmark className="text-[12px]" /> SENT
+                                   </span>
+                                 )}
+                               </div>
+                             )}
+                          </div>
+
+                          <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity absolute top-2 right-[-50px]">
+                            <button onClick={() => setReplyTo(msg)} className="text-xs flex items-center gap-1 opacity-80 hover:opacity-100 text-gray-500 bg-white shadow-md rounded-full px-2 py-1">
+                              <BsReplyFill /> Reply
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-              <div ref={scrollRef} />
+                    );
+                  })
+                )}
+                <div ref={scrollRef} />
+              </div>
             </div>
 
             <div className="p-4 bg-white border-t">

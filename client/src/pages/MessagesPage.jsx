@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose } from 'react-icons/io';
+// NEW: Added IoMdAttach for the paperclip icon!
+import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose, IoMdAttach } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
-import { ReactTransliterate } from "react-transliterate";
-import "react-transliterate/dist/index.css";
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -53,21 +52,6 @@ const indianLanguages = [
   { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' }
 ];
 
-const typingLanguages = [
-  { code: 'en', name: 'EN', fullName: 'English' },
-  { code: 'hi', name: 'हिंदी', fullName: 'Hindi' },
-  { code: 'kn', name: 'ಕನ್ನಡ', fullName: 'Kannada' },
-  { code: 'te', name: 'తెలుగు', fullName: 'Telugu' },
-  { code: 'ta', name: 'தமிழ்', fullName: 'Tamil' },
-  { code: 'mr', name: 'मराठी', fullName: 'Marathi' },
-  { code: 'bn', name: 'বাংলা', fullName: 'Bengali' },
-  { code: 'gu', name: 'ગુજરાતી', fullName: 'Gujarati' },
-  { code: 'ml', name: 'മലയാളം', fullName: 'Malayalam' },
-  { code: 'pa', name: 'ਪੰਜਾਬੀ', fullName: 'Punjabi' },
-  { code: 'ur', name: 'اردو', fullName: 'Urdu' },
-  { code: 'sa', name: 'संस्कृतम्', fullName: 'Sanskrit' }
-];
-
 const MessagesPage = () => {
   const { userId } = useParams();
   
@@ -75,6 +59,10 @@ const MessagesPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
+  
+  // NEW: State to hold the attached file
+  const [selectedFile, setSelectedFile] = useState(null);
+  
   const scrollRef = useRef();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,9 +78,6 @@ const MessagesPage = () => {
   const [langSearch, setLangSearch] = useState("");
   const langMenuRef = useRef(null);
 
-  const [typingLang, setTypingLang] = useState('en');
-
-  // Hardcoded to true for now, you will connect this to Socket.io later!
   const isOnline = true; 
 
   useEffect(() => {
@@ -185,16 +170,26 @@ const MessagesPage = () => {
     recognition.start();
   };
 
+  // Handle file selection from computer/phone
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !userId) return;
+    if (!newMessage.trim() && !selectedFile) return;
+    if (!userId) return;
 
     setIsSending(true);
     let finalMessage = newMessage;
 
-    if (targetLang.code !== 'none') {
+    if (targetLang.code !== 'none' && newMessage.trim()) {
       try {
-        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=${typingLang}|${targetLang.code}`;
+        // Defaults to translating from English (en) to the chosen target language
+        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=en|${targetLang.code}`;
         const res = await axios.get(translateUrl);
         if (res.data && res.data.responseData && res.data.responseData.translatedText) {
           finalMessage = res.data.responseData.translatedText;
@@ -205,6 +200,11 @@ const MessagesPage = () => {
     }
 
     try {
+      /* NOTE FOR THE FUTURE: 
+        Right now we are sending the text message properly. 
+        When your backend is ready to handle files (using Cloudinary or Multer),
+        you will need to change this to a FormData object to push 'selectedFile' to the database!
+      */
       const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
         text: finalMessage,
@@ -214,6 +214,7 @@ const MessagesPage = () => {
       setMessages([...(messages || []), res.data.data]);
       setNewMessage("");
       setReplyTo(null);
+      setSelectedFile(null); // Clear the attached file after sending
     } catch (err) {
       console.error(err);
     } finally {
@@ -329,8 +330,6 @@ const MessagesPage = () => {
                 </div>
 
                 <div className="flex flex-col justify-center">
-                  
-                  {/* --- THE FIX: Clean glowing dot next to the name instead of text! --- */}
                   <h2 className="font-bold text-lg text-gray-800 leading-tight flex items-center gap-2">
                     {chatUser?.fullName || chatUser?.username || "Loading..."}
                     <span 
@@ -338,7 +337,6 @@ const MessagesPage = () => {
                       title={isOnline ? "Online" : "Offline"}
                     ></span>
                   </h2>
-
                 </div>
               </div>
               
@@ -465,13 +463,26 @@ const MessagesPage = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-white border-t z-20">
+            <div className="p-4 bg-white border-t z-20 relative">
               {replyTo && (
                 <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-blue-500">
                   <span className="text-sm text-gray-600 truncate">Replying to: <b>{replyTo.text}</b></span>
                   <button onClick={() => setReplyTo(null)} className="text-red-500 text-xs font-bold px-2">X</button>
                 </div>
               )}
+
+              {/* --- NEW: Floating File Preview Box --- */}
+              {selectedFile && (
+                <div className="absolute -top-14 left-4 bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-xl flex items-center gap-3 z-50 animate-fade-in-up">
+                  <span className="text-2xl">📄</span>
+                  <div className="flex flex-col max-w-[150px]">
+                    <span className="text-xs font-bold text-gray-800 truncate">{selectedFile.name}</span>
+                    <span className="text-[10px] text-gray-500">{(selectedFile.size / 1024).toFixed(1)} KB</span>
+                  </div>
+                  <button type="button" onClick={() => setSelectedFile(null)} className="text-red-500 hover:text-red-700 font-bold ml-2">✕</button>
+                </div>
+              )}
+
               <form onSubmit={handleSendMessage} className="flex items-center gap-3 relative">
                 <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-2xl text-gray-500 hover:text-yellow-500"><IoMdHappy /></button>
                 {showEmojiPicker && (
@@ -482,35 +493,26 @@ const MessagesPage = () => {
                 
                 <div className="flex flex-1 items-center bg-gray-100 rounded-full pl-2 pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                   
-                  <div className="relative border-r border-gray-300 pr-2 mr-2">
-                    <select 
-                      value={typingLang}
-                      onChange={(e) => setTypingLang(e.target.value)}
-                      className="bg-gray-200 text-gray-700 font-bold text-xs py-1.5 px-2 rounded-md outline-none cursor-pointer hover:bg-gray-300 transition-colors"
-                      title="Typing Keyboard Language"
-                    >
-                      {typingLanguages.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
-                    </select>
-                  </div>
+                  {/* --- NEW: Paperclip File Attachment Button --- */}
+                  <label htmlFor="file-upload" className="p-2 text-gray-500 hover:text-blue-600 cursor-pointer transition-colors border-r border-gray-300 mr-2 pr-3" title="Attach a file">
+                    <IoMdAttach className="text-2xl" />
+                  </label>
+                  <input 
+                    type="file" 
+                    id="file-upload" 
+                    className="hidden" 
+                    onChange={handleFileChange} 
+                    accept="image/*,video/*,.pdf,.doc,.docx" 
+                  />
 
-                  {typingLang === 'en' ? (
-                    <input 
-                      type="text" 
-                      value={newMessage} 
-                      onChange={(e) => setNewMessage(e.target.value)} 
-                      placeholder={isListening ? "Listening... Speak now!" : "Type in English..."} 
-                      className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" 
-                    />
-                  ) : (
-                    <ReactTransliterate
-                      value={newMessage}
-                      onChangeText={(text) => setNewMessage(text)}
-                      lang={typingLang}
-                      placeholder={isListening ? "Listening..." : `Type in ${typingLanguages.find(l=>l.code === typingLang).fullName}... (Space to convert)`}
-                      containerClassName="flex-1 flex items-center w-full"
-                      className="w-full p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none"
-                    />
-                  )}
+                  {/* Clean Text Input */}
+                  <input 
+                    type="text" 
+                    value={newMessage} 
+                    onChange={(e) => setNewMessage(e.target.value)} 
+                    placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} 
+                    className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" 
+                  />
 
                   <button 
                     type="button" 

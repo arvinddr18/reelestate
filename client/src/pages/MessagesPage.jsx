@@ -13,29 +13,16 @@ const getApiUrl = (endpoint) => {
   return base + endpoint;
 };
 
-// --- THE FINAL FIX: Using your exact custom token name ---
 const getAuthConfig = () => {
-  // Grab the exact key we found in your browser memory!
   let token = localStorage.getItem('reelestate_token');
-  
-  // Fallbacks just in case
   if (!token) token = localStorage.getItem('token');
   if (!token && localStorage.getItem('user')) {
-    try { 
-      const userData = JSON.parse(localStorage.getItem('user'));
-      token = userData.token; 
-    } catch (e) {}
+    try { token = JSON.parse(localStorage.getItem('user')).token; } catch (e) {}
   }
-
-  const config = {
-    withCredentials: true 
-  };
-
-  // Attach the VIP Pass to the request
+  const config = { withCredentials: true };
   if (token && token !== 'undefined' && token !== 'null') {
     config.headers = { Authorization: `Bearer ${token}` };
   }
-
   return config;
 };
 
@@ -52,8 +39,12 @@ const MessagesPage = () => {
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
 
-  const loggedInUser = JSON.parse(localStorage.getItem('user'));
-  const myId = loggedInUser ? (loggedInUser._id || loggedInUser.id) : null;
+  // Get YOUR ID so we know which messages belong to you!
+  let myId = null;
+  try {
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    myId = loggedInUser ? (loggedInUser._id || loggedInUser.id) : null;
+  } catch(e) {}
 
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
@@ -106,6 +97,11 @@ const MessagesPage = () => {
     fetchChatData();
   }, [userId]);
 
+  // Automatically scroll to bottom when new messages load!
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
@@ -121,8 +117,6 @@ const MessagesPage = () => {
       setNewMessage("");
       setReplyTo(null);
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.message;
-      alert(`Backend Error: Could not send message.\nReason: ${errorMsg}`);
       console.error(err);
     }
   };
@@ -206,17 +200,28 @@ const MessagesPage = () => {
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-gray-500"><p className="text-lg font-medium bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p></div>
               ) : (
-                messages.map((msg) => (
-                  <div key={msg._id} className={`flex ${msg.sender === userId ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm ${msg.sender === userId ? 'bg-white text-gray-800 border' : 'bg-blue-600 text-white'}`}>
-                      {msg.replyTo && <div className="bg-black/10 p-2 mb-2 rounded text-xs italic border-l-4 border-blue-300">Replying to: {msg.replyTo.text.substring(0, 30)}...</div>}
-                      <p className="text-sm md:text-base">{msg.text}</p>
-                      <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity">
-                        <button onClick={() => setReplyTo(msg)} className="text-[10px] md:text-xs flex items-center gap-1 opacity-80 hover:opacity-100"><BsReplyFill /> Reply</button>
+                messages.map((msg) => {
+                  // THE FIX: Check if you are the sender!
+                  const isMe = msg.sender === myId || (msg.sender && msg.sender._id === myId);
+                  
+                  return (
+                    <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`relative max-w-[70%] p-3 rounded-2xl shadow-sm ${isMe ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border'}`}>
+                        {msg.replyTo && (
+                          <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-blue-300' : 'bg-gray-100 border-gray-400'}`}>
+                            Replying to: {msg.replyTo.text?.substring(0, 30)}...
+                          </div>
+                        )}
+                        <p className="text-sm md:text-base">{msg.text}</p>
+                        <div className="flex gap-2 mt-1 opacity-0 hover:opacity-100 transition-opacity">
+                          <button onClick={() => setReplyTo(msg)} className={`text-[10px] md:text-xs flex items-center gap-1 opacity-80 hover:opacity-100 ${isMe ? 'text-white' : 'text-gray-500'}`}>
+                            <BsReplyFill /> Reply
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
               <div ref={scrollRef} />
             </div>

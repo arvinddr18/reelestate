@@ -5,6 +5,15 @@ import EmojiPicker from 'emoji-picker-react';
 import { IoMdHappy, IoMdSend, IoMdSearch } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
+// Foolproof function to stop Vercel from intercepting API calls
+const getApiUrl = (endpoint) => {
+  const base = import.meta.env.VITE_API_URL || '';
+  if (base.endsWith('/api') && endpoint.startsWith('/api')) {
+    return base.replace('/api', '') + endpoint;
+  }
+  return base + endpoint;
+};
+
 const MessagesPage = () => {
   const { userId } = useParams();
   
@@ -15,20 +24,20 @@ const MessagesPage = () => {
   const [replyTo, setReplyTo] = useState(null);
   const scrollRef = useRef();
 
-  // Instant Search States
+  // Search & Inbox States
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
 
-  // 1. Fetch All Users ONCE for instant searching
+  // 1. Fetch All Contacts ONCE
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
     setRecentChats(savedChats);
 
     const fetchAllContacts = async () => {
       try {
-        // This grabs everyone instantly so we don't need to ask the server again
-        const res = await axios.get('/api/users');
+        // Using the absolute URL so Vercel doesn't block it!
+        const res = await axios.get(getApiUrl('/api/users'));
         setAllUsers(res.data.data || []);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -37,14 +46,14 @@ const MessagesPage = () => {
     fetchAllContacts();
   }, []);
 
-  // 2. Smart Instant Filter (Ignores '@' symbols and capital letters!)
+  // 2. Smart Instant Search Filter
   const cleanSearch = searchQuery.replace('@', '').trim().toLowerCase();
   const searchResults = allUsers.filter(user => 
     (user.username && user.username.toLowerCase().includes(cleanSearch)) ||
     (user.fullName && user.fullName.toLowerCase().includes(cleanSearch))
   );
 
-  // 3. Fetch Active Chat & Save to Recents
+  // 3. Fetch Active Chat & Move to Recents
   useEffect(() => {
     if (!userId) {
       setMessages(null);
@@ -52,10 +61,10 @@ const MessagesPage = () => {
     }
     const fetchChatData = async () => {
       try {
-        const msgRes = await axios.get(`/api/messages/${userId}`);
+        const msgRes = await axios.get(getApiUrl(`/api/messages/${userId}`));
         setMessages(msgRes.data.data || []);
 
-        const userRes = await axios.get(`/api/users/${userId}`);
+        const userRes = await axios.get(getApiUrl(`/api/users/${userId}`));
         const chatUser = userRes.data.data?.user || userRes.data.data;
 
         if (chatUser && chatUser._id) {
@@ -73,13 +82,13 @@ const MessagesPage = () => {
     fetchChatData();
   }, [userId]);
 
-  // 4. Handle Sending Message
+  // 4. Handle Sending
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
 
     try {
-      const res = await axios.post('/api/messages', {
+      const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
         text: newMessage,
         replyTo: replyTo ? replyTo._id : null
@@ -98,7 +107,6 @@ const MessagesPage = () => {
       {/* ================= LEFT SIDE: INBOX & SEARCH ================= */}
       <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
         
-        {/* Search Bar */}
         <div className="p-4 border-b bg-white">
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
           <div className="relative">
@@ -113,10 +121,10 @@ const MessagesPage = () => {
           </div>
         </div>
         
-        {/* Contact List Logic */}
         <div className="flex-1 overflow-y-auto">
           {searchQuery.trim() !== "" ? (
-            // --- INSTANT SEARCH RESULTS ---
+            
+            // --- SEARCH RESULTS ---
             searchResults.length === 0 ? (
               <div className="p-6 text-center text-sm text-gray-400">No matching users found.</div>
             ) : (
@@ -128,7 +136,8 @@ const MessagesPage = () => {
               ))
             )
           ) : recentChats.length > 0 ? (
-            // --- SHOW RECENT CHATS ---
+            
+            // --- RECENT CHATS ---
             <>
               <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Recent Conversations</div>
               {recentChats.map((user) => (
@@ -139,7 +148,8 @@ const MessagesPage = () => {
               ))}
             </>
           ) : (
-            // --- SUGGESTED CONTACTS (Shows everyone before you search) ---
+            
+            // --- SUGGESTED CONTACTS (RESTORED!) ---
             <>
               <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Suggested Contacts</div>
               {allUsers.length === 0 ? (

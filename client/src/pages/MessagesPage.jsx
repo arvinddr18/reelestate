@@ -15,36 +15,43 @@ const MessagesPage = () => {
   const [replyTo, setReplyTo] = useState(null);
   const scrollRef = useRef();
 
-  // Inbox & Search States
+  // Search & Inbox States
   const [searchQuery, setSearchQuery] = useState("");
-  const [allUsers, setAllUsers] = useState([]); // Holds all contacts for instant search
-  const [recentChats, setRecentChats] = useState([]); // Holds serial-wise texted users
+  const [searchResults, setSearchResults] = useState([]);
+  const [recentChats, setRecentChats] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  // 1. Fetch All Contacts & Load Recents
+  // 1. Load Recent Chats from local memory (WhatsApp style)
   useEffect(() => {
-    // A. Load Serial-Wise Recent Chats from local memory
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
     setRecentChats(savedChats);
-
-    // B. Fetch all users from the backend route we just created!
-    const fetchUsers = async () => {
-      try {
-        const res = await axios.get('/api/users');
-        setAllUsers(res.data.data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-      }
-    };
-    fetchUsers();
   }, []);
 
-  // 2. Instant Frontend Search Filtering
-  const searchResults = allUsers.filter(user => 
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    user.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // 2. Professional Live Server Search (Instagram style)
+  useEffect(() => {
+    const searchDatabase = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        // This hits the specific search route we KNOW works in your backend
+        const res = await axios.get(`/api/users/search?q=${searchQuery}`);
+        setSearchResults(res.data.data || []);
+      } catch (err) {
+        console.error("Search error:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    };
 
-  // 3. Fetch Active Chat & Move to Top of Recents
+    // Add a 300ms delay so it doesn't spam your server while typing
+    const timer = setTimeout(searchDatabase, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 3. Fetch Active Chat & Save to Recents
   useEffect(() => {
     if (!userId) {
       setMessages(null);
@@ -53,14 +60,13 @@ const MessagesPage = () => {
     const fetchChatData = async () => {
       try {
         const msgRes = await axios.get(`/api/messages/${userId}`);
-        setMessages(msgRes.data.data);
+        setMessages(msgRes.data.data || []);
 
         const userRes = await axios.get(`/api/users/${userId}`);
         const chatUser = userRes.data.data?.user || userRes.data.data;
 
         if (chatUser && chatUser._id) {
           setRecentChats(prev => {
-            // Remove them if they exist, then put them at the exact TOP
             const filtered = prev.filter(u => u._id !== chatUser._id);
             const newRecent = [chatUser, ...filtered];
             localStorage.setItem('geo_recent_chats', JSON.stringify(newRecent));
@@ -74,7 +80,7 @@ const MessagesPage = () => {
     fetchChatData();
   }, [userId]);
 
-  // 4. Handle Sending
+  // 4. Handle Sending Message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
@@ -117,21 +123,21 @@ const MessagesPage = () => {
         {/* Contact List Logic */}
         <div className="flex-1 overflow-y-auto">
           {searchQuery.trim() !== "" ? (
-            
-            // --- STATE 1: USER IS SEARCHING ---
-            searchResults.length === 0 ? (
+            // --- USER IS SEARCHING ---
+            isSearching ? (
+              <div className="p-6 text-center text-sm text-gray-400">Searching database...</div>
+            ) : searchResults.length === 0 ? (
               <div className="p-6 text-center text-sm text-gray-400">No matching users found.</div>
             ) : (
               searchResults.map((user) => (
                 <Link key={user._id} to={`/messages/${user._id}`} onClick={() => setSearchQuery('')} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
                   <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">{user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
-                  <div className="flex-1"><h3 className="font-semibold text-gray-800">{user.username}</h3><p className="text-xs text-blue-500">Tap to chat</p></div>
+                  <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-xs text-blue-500">Tap to chat</p></div>
                 </Link>
               ))
             )
           ) : recentChats.length > 0 ? (
-            
-            // --- STATE 2: SHOW RECENT CHATS (SERIAL WISE) ---
+            // --- SHOW RECENT CHATS ---
             <>
               <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Recent Conversations</div>
               {recentChats.map((user) => (
@@ -142,33 +148,22 @@ const MessagesPage = () => {
               ))}
             </>
           ) : (
-            
-            // --- STATE 3: NO RECENTS YET? SHOW ALL CONTACTS ---
-            <>
-              <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Suggested Contacts</div>
-              {allUsers.length === 0 ? (
-                 <div className="p-6 text-center text-sm text-gray-400">Loading your contacts...</div>
-              ) : (
-                allUsers.map((user) => (
-                  <Link key={user._id} to={`/messages/${user._id}`} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
-                    <div className="w-12 h-12 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">{user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
-                    <div className="flex-1"><h3 className="font-semibold text-gray-800">{user.username}</h3><p className="text-xs text-gray-400">Start a new chat</p></div>
-                  </Link>
-                ))
-              )}
-            </>
+            // --- NO RECENTS YET ---
+            <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400 h-full">
+              <div className="text-4xl mb-3">🔍</div>
+              <p className="text-sm">Search for a username above to start a conversation.</p>
+            </div>
           )}
         </div>
       </div>
 
       {/* ================= RIGHT SIDE: CHAT AREA ================= */}
       <div className="flex-1 flex flex-col bg-white">
-        
         {!userId ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50">
             <div className="text-6xl mb-4">💬</div>
             <h2 className="text-2xl font-semibold text-gray-600">Your Messages</h2>
-            <p className="mt-2 text-sm">Select a user from the sidebar to start chatting.</p>
+            <p className="mt-2 text-sm">Select a user from the sidebar or search to start chatting.</p>
           </div>
         ) : !messages ? (
           <div className="flex items-center justify-center h-full text-gray-500">Loading conversation...</div>

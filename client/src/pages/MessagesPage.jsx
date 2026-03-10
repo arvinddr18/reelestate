@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll } from 'react-icons/io';
+// NEW: Added the Microphone icon!
+import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
 const getApiUrl = (endpoint) => {
@@ -46,6 +47,11 @@ const MessagesPage = () => {
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
   const [chatUser, setChatUser] = useState(null);
+
+  // --- NEW: Voice and Translation States ---
+  const [isListening, setIsListening] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [targetLang, setTargetLang] = useState('none'); 
 
   const isOnline = true; 
 
@@ -106,14 +112,56 @@ const MessagesPage = () => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // --- NEW: The AI Speech-to-Text Function ---
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Sorry, your browser doesn't support Voice Typing! Try using Google Chrome.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      // Add the spoken words to whatever is already in the text box!
+      setNewMessage(prev => prev + (prev ? " " : "") + transcript);
+    };
+    
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
 
+    setIsSending(true);
+    let finalMessage = newMessage;
+
+    // --- NEW: The Auto-Translation Engine ---
+    if (targetLang !== 'none') {
+      try {
+        // Uses a free, open translation API to convert the text instantly!
+        const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=en|${targetLang}`;
+        const res = await axios.get(translateUrl);
+        if (res.data && res.data.responseData && res.data.responseData.translatedText) {
+          finalMessage = res.data.responseData.translatedText;
+        }
+      } catch (err) {
+        console.error("Translation failed, sending original text.", err);
+      }
+    }
+
     try {
       const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
-        text: newMessage,
+        text: finalMessage, // Sends the Translated text (or original if no translation)
         replyTo: replyTo ? replyTo._id : null
       }, getAuthConfig());
       
@@ -122,6 +170,8 @@ const MessagesPage = () => {
       setReplyTo(null);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -130,7 +180,6 @@ const MessagesPage = () => {
     return user.profilePhoto || user.profilePic || user.avatar || null;
   };
 
-  // Helper to get the correct initial for the background!
   const getInitial = (user) => {
     if (!user) return 'U';
     if (user.fullName) return user.fullName.charAt(0).toUpperCase();
@@ -213,35 +262,52 @@ const MessagesPage = () => {
           </div>
         ) : (
           <>
-            <div className="p-4 bg-white/90 backdrop-blur-md border-b flex items-center shadow-sm z-20 gap-3">
-              <div className="relative flex items-center justify-center w-12 h-12 rounded-full">
-                <div 
-                  className={`absolute inset-0 rounded-full ${isOnline ? 'animate-spin' : ''}`}
-                  style={{ background: isOnline ? 'conic-gradient(from 0deg, transparent 60%, #22c55e 100%)' : 'none', border: isOnline ? 'none' : '2px solid #e5e7eb' }}
-                ></div>
-                <div className="absolute inset-[2.5px] bg-white rounded-full overflow-hidden flex items-center justify-center text-white font-bold bg-gradient-to-tr from-blue-500 to-purple-500 z-10 shadow-inner">
-                  {getProfilePhoto(chatUser) ? (
-                    <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    getInitial(chatUser)
-                  )}
+            <div className="p-4 bg-white/90 backdrop-blur-md border-b flex items-center justify-between shadow-sm z-20">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-12 h-12 rounded-full">
+                  <div 
+                    className={`absolute inset-0 rounded-full ${isOnline ? 'animate-spin' : ''}`}
+                    style={{ background: isOnline ? 'conic-gradient(from 0deg, transparent 60%, #22c55e 100%)' : 'none', border: isOnline ? 'none' : '2px solid #e5e7eb' }}
+                  ></div>
+                  <div className="absolute inset-[2.5px] bg-white rounded-full overflow-hidden flex items-center justify-center text-white font-bold bg-gradient-to-tr from-blue-500 to-purple-500 z-10 shadow-inner">
+                    {getProfilePhoto(chatUser) ? (
+                      <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitial(chatUser)
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="font-bold text-lg text-gray-800 leading-tight">
+                    {chatUser?.fullName || chatUser?.username || "Loading..."}
+                  </h2>
+                  <p className={`text-xs font-bold tracking-wide ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
+                    {isOnline ? 'Online' : 'Offline'}
+                  </p>
                 </div>
               </div>
-
-              <div>
-                <h2 className="font-bold text-lg text-gray-800 leading-tight">
-                  {chatUser?.fullName || chatUser?.username || "Loading..."}
-                </h2>
-                <p className={`text-xs font-bold tracking-wide ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
-                  {isOnline ? 'Online' : 'Offline'}
-                </p>
+              
+              {/* --- NEW: The Translator Dropdown in Header --- */}
+              <div className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-2 shadow-sm">
+                 <span className="text-xs font-bold">🌐 Auto-Translate:</span>
+                 <select 
+                   value={targetLang} 
+                   onChange={(e) => setTargetLang(e.target.value)}
+                   className="bg-transparent text-sm font-bold outline-none cursor-pointer"
+                 >
+                   <option value="none">Off</option>
+                   <option value="hi">Hindi (हिंदी)</option>
+                   <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                   <option value="te">Telugu (తెలుగు)</option>
+                   <option value="ta">Tamil (தமிழ்)</option>
+                   <option value="mr">Marathi (मराठी)</option>
+                 </select>
               </div>
+
             </div>
 
-            {/* --- FIXED LAYOUT FOR BACKGROUND WATERMARK --- */}
             <div className="flex-1 relative bg-gray-50 flex flex-col overflow-hidden">
-              
-              {/* This is the background layer - locked in the center, doesn't scroll! */}
               <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
                 {getProfilePhoto(chatUser) ? (
                   <div 
@@ -255,7 +321,6 @@ const MessagesPage = () => {
                 )}
               </div>
 
-              {/* This is the scrolling message layer - sits on top of the background */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -324,14 +389,33 @@ const MessagesPage = () => {
                     <EmojiPicker onEmojiClick={(emojiData) => { setNewMessage(prev => prev + emojiData.emoji); setShowEmojiPicker(false); }} />
                   </div>
                 )}
-                <input 
-                  type="text" 
-                  value={newMessage} 
-                  onChange={(e) => setNewMessage(e.target.value)} 
-                  placeholder="Type your message..." 
-                  className="flex-1 p-3 bg-gray-100 text-gray-900 font-medium placeholder-gray-500 rounded-full outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner" 
-                />
-                <button type="submit" className="text-blue-600 text-3xl hover:text-blue-700"><IoMdSend /></button>
+                
+                {/* --- INPUT BAR WITH MICROPHONE INSIDE --- */}
+                <div className="flex flex-1 items-center bg-gray-100 rounded-full pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <input 
+                    type="text" 
+                    value={newMessage} 
+                    onChange={(e) => setNewMessage(e.target.value)} 
+                    placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} 
+                    className="flex-1 p-3 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none" 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={startListening} 
+                    className={`p-2 rounded-full text-xl transition-colors ${isListening ? 'text-red-500 animate-pulse bg-red-100' : 'text-gray-400 hover:text-blue-500 hover:bg-white'}`}
+                    title="Voice Typing"
+                  >
+                    <IoMdMic />
+                  </button>
+                </div>
+
+                <button type="submit" disabled={isSending} className="text-blue-600 text-3xl hover:text-blue-700 disabled:opacity-50 transition-opacity">
+                  {isSending ? (
+                    <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <IoMdSend />
+                  )}
+                </button>
               </form>
             </div>
           </>

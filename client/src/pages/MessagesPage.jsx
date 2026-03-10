@@ -13,15 +13,31 @@ const getApiUrl = (endpoint) => {
   return base + endpoint;
 };
 
+// --- THE FIX: Smart Auth Config ---
 const getAuthConfig = () => {
   let token = localStorage.getItem('token');
+  
   if (!token && localStorage.getItem('user')) {
-    try { token = JSON.parse(localStorage.getItem('user')).token; } catch (e) {}
+    try { 
+      const userData = JSON.parse(localStorage.getItem('user'));
+      token = userData.token; 
+    } catch (e) {}
   }
-  return {
-    headers: { Authorization: `Bearer ${token}` },
-    withCredentials: true 
+
+  // Check other common places just in case
+  if (!token) token = localStorage.getItem('jwt');
+  if (!token) token = localStorage.getItem('accessToken');
+
+  const config = {
+    withCredentials: true // Crucial if your app uses Cookies instead of LocalStorage!
   };
+
+  // Only attach the header if we actually found a real token string
+  if (token && token !== 'undefined' && token !== 'null') {
+    config.headers = { Authorization: `Bearer ${token}` };
+  }
+
+  return config;
 };
 
 const MessagesPage = () => {
@@ -37,7 +53,6 @@ const MessagesPage = () => {
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
 
-  // Find the logged-in user so we can hide them from the contact list!
   const loggedInUser = JSON.parse(localStorage.getItem('user'));
   const myId = loggedInUser ? (loggedInUser._id || loggedInUser.id) : null;
 
@@ -48,7 +63,6 @@ const MessagesPage = () => {
     const fetchAllContacts = async () => {
       try {
         const res = await axios.get(getApiUrl('/api/users'), getAuthConfig());
-        // Filter out the logged-in user so you don't chat with yourself
         const others = (res.data.data || []).filter(u => u._id !== myId);
         setAllUsers(others);
       } catch (err) {
@@ -98,7 +112,6 @@ const MessagesPage = () => {
     if (!newMessage.trim() || !userId) return;
 
     try {
-      // Trying to send the message...
       const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
         text: newMessage,
@@ -109,7 +122,6 @@ const MessagesPage = () => {
       setNewMessage("");
       setReplyTo(null);
     } catch (err) {
-      // IF IT FAILS, POP UP AN ALERT WITH THE EXACT ERROR!
       const errorMsg = err.response?.data?.message || err.message;
       alert(`Backend Error: Could not send message.\nReason: ${errorMsg}`);
       console.error(err);

@@ -45,9 +45,10 @@ const MessagesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]); 
   const [recentChats, setRecentChats] = useState([]);
-  
-  // NEW: State to hold the specific user we are chatting with!
   const [chatUser, setChatUser] = useState(null);
+
+  // MOCK ONLINE STATUS: In the future, you will connect this to Socket.io to change dynamically!
+  const isOnline = true; 
 
   useEffect(() => {
     const savedChats = JSON.parse(localStorage.getItem('geo_recent_chats')) || [];
@@ -84,7 +85,6 @@ const MessagesPage = () => {
         const userRes = await axios.get(getApiUrl(`/api/users/${userId}`), getAuthConfig());
         const fetchedUser = userRes.data.data?.user || userRes.data.data;
         
-        // Save the chat user so we can use their photo for the background!
         setChatUser(fetchedUser);
 
         if (fetchedUser && fetchedUser._id) {
@@ -126,7 +126,6 @@ const MessagesPage = () => {
     }
   };
 
-  // Helper to safely get the profile photo URL (checking common database field names)
   const getProfilePhoto = (user) => {
     if (!user) return null;
     return user.profilePhoto || user.profilePic || user.avatar || null;
@@ -146,7 +145,7 @@ const MessagesPage = () => {
               placeholder="Search accounts..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             />
           </div>
         </div>
@@ -208,40 +207,47 @@ const MessagesPage = () => {
           </div>
         ) : (
           <>
-            {/* UPGRADED HEADER WITH USER PROFILE INFO */}
             <div className="p-4 bg-white/90 backdrop-blur-md border-b flex items-center shadow-sm z-20 gap-3">
-              <div className="w-10 h-10 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold overflow-hidden">
-                {getProfilePhoto(chatUser) ? (
-                  <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  chatUser?.username ? chatUser.username.charAt(0).toUpperCase() : 'U'
-                )}
+              
+              {/* --- THE ANIMATED ONLINE STATUS RING --- */}
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-full">
+                {/* The Spinning Gradient Background */}
+                <div 
+                  className={`absolute inset-0 rounded-full ${isOnline ? 'animate-spin' : ''}`}
+                  style={{ 
+                    background: isOnline ? 'conic-gradient(from 0deg, transparent 60%, #22c55e 100%)' : 'none',
+                    border: isOnline ? 'none' : '2px solid #e5e7eb'
+                  }}
+                ></div>
+                
+                {/* The Profile Picture sitting on top */}
+                <div className="absolute inset-[2.5px] bg-white rounded-full overflow-hidden flex items-center justify-center text-white font-bold bg-gradient-to-tr from-blue-500 to-purple-500 z-10 shadow-inner">
+                  {getProfilePhoto(chatUser) ? (
+                    <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    chatUser?.username ? chatUser.username.charAt(0).toUpperCase() : 'U'
+                  )}
+                </div>
               </div>
+
               <div>
                 <h2 className="font-bold text-lg text-gray-800 leading-tight">
                   {chatUser?.fullName || chatUser?.username || "Loading..."}
                 </h2>
-                <p className="text-xs text-green-500 font-medium">Online</p>
+                <p className={`text-xs font-bold tracking-wide ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
+                  {isOnline ? 'Online' : 'Offline'}
+                </p>
               </div>
             </div>
 
-            {/* MAIN CHAT WINDOW WITH BACKGROUND WATERMARK */}
             <div className="flex-1 overflow-y-auto relative bg-gray-50">
-              
-              {/* THE BACKGROUND IMAGE (Faded to 10% opacity so text is readable) */}
               {getProfilePhoto(chatUser) && (
                 <div 
-                  className="absolute inset-0 z-0 opacity-10 pointer-events-none"
-                  style={{ 
-                    backgroundImage: `url(${getProfilePhoto(chatUser)})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                  }}
+                  className="absolute inset-0 z-0 opacity-[0.07] pointer-events-none"
+                  style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
                 />
               )}
 
-              {/* MESSAGES LIST (z-10 keeps it above the background image) */}
               <div className="p-4 space-y-4 relative z-10 flex flex-col min-h-full">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center flex-1 text-gray-500">
@@ -309,7 +315,14 @@ const MessagesPage = () => {
                     <EmojiPicker onEmojiClick={(emojiData) => { setNewMessage(prev => prev + emojiData.emoji); setShowEmojiPicker(false); }} />
                   </div>
                 )}
-                <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type your message..." className="flex-1 p-3 bg-gray-100 rounded-full outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                {/* --- INPUT BUG FIXED HERE (Added text-gray-900) --- */}
+                <input 
+                  type="text" 
+                  value={newMessage} 
+                  onChange={(e) => setNewMessage(e.target.value)} 
+                  placeholder="Type your message..." 
+                  className="flex-1 p-3 bg-gray-100 text-gray-900 font-medium placeholder-gray-500 rounded-full outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner" 
+                />
                 <button type="submit" className="text-blue-600 text-3xl hover:text-blue-700"><IoMdSend /></button>
               </form>
             </div>

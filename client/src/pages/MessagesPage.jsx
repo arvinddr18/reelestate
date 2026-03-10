@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-// NEW: Added IoMdAttach for the paperclip icon!
 import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose, IoMdAttach } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
@@ -34,6 +33,20 @@ const formatTime = (timestamp) => {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
 };
 
+// --- NEW: Function to convert files so the backend can accept them! ---
+const convertToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(file);
+    fileReader.onload = () => {
+      resolve(fileReader.result);
+    };
+    fileReader.onerror = (error) => {
+      reject(error);
+    };
+  });
+};
+
 const indianLanguages = [
   { code: 'none', name: 'Off (No Translation)', native: 'Off' },
   { code: 'en', name: 'English', native: 'English' },
@@ -59,10 +72,7 @@ const MessagesPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
-  
-  // NEW: State to hold the attached file
   const [selectedFile, setSelectedFile] = useState(null);
-  
   const scrollRef = useRef();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -170,7 +180,6 @@ const MessagesPage = () => {
     recognition.start();
   };
 
-  // Handle file selection from computer/phone
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -188,7 +197,6 @@ const MessagesPage = () => {
 
     if (targetLang.code !== 'none' && newMessage.trim()) {
       try {
-        // Defaults to translating from English (en) to the chosen target language
         const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=en|${targetLang.code}`;
         const res = await axios.get(translateUrl);
         if (res.data && res.data.responseData && res.data.responseData.translatedText) {
@@ -200,23 +208,30 @@ const MessagesPage = () => {
     }
 
     try {
-      /* NOTE FOR THE FUTURE: 
-        Right now we are sending the text message properly. 
-        When your backend is ready to handle files (using Cloudinary or Multer),
-        you will need to change this to a FormData object to push 'selectedFile' to the database!
-      */
+      // --- THE FIX: Convert the file into a string so it sends flawlessly ---
+      let base64File = null;
+      let isImage = false;
+      if (selectedFile) {
+        base64File = await convertToBase64(selectedFile);
+        isImage = selectedFile.type.startsWith('image/');
+      }
+
       const res = await axios.post(getApiUrl('/api/messages'), {
         receiverId: userId,
         text: finalMessage,
-        replyTo: replyTo ? replyTo._id : null
+        replyTo: replyTo ? replyTo._id : null,
+        image: isImage ? base64File : null,
+        file: !isImage && base64File ? base64File : null,
+        fileName: selectedFile ? selectedFile.name : null
       }, getAuthConfig());
       
       setMessages([...(messages || []), res.data.data]);
       setNewMessage("");
       setReplyTo(null);
-      setSelectedFile(null); // Clear the attached file after sending
+      setSelectedFile(null); 
     } catch (err) {
       console.error(err);
+      alert("Failed to send file. It might be too large for the current server settings.");
     } finally {
       setIsSending(false);
     }
@@ -314,19 +329,15 @@ const MessagesPage = () => {
         ) : (
           <>
             <div className="p-4 bg-white/90 backdrop-blur-md border-b flex flex-wrap items-center justify-between shadow-sm z-30 gap-y-2">
+              
+              {/* --- THE FIX: Cleaned up Avatar completely (No spinning ring) --- */}
               <div className="flex items-center gap-3">
-                <div className="relative flex items-center justify-center w-12 h-12 rounded-full">
-                  <div 
-                    className={`absolute inset-0 rounded-full ${isOnline ? 'animate-spin' : ''}`}
-                    style={{ background: isOnline ? 'conic-gradient(from 0deg, transparent 60%, #22c55e 100%)' : 'none', border: isOnline ? 'none' : '2px solid #e5e7eb' }}
-                  ></div>
-                  <div className="absolute inset-[2.5px] bg-white rounded-full overflow-hidden flex items-center justify-center text-white font-bold bg-gradient-to-tr from-blue-500 to-purple-500 z-10 shadow-inner">
-                    {getProfilePhoto(chatUser) ? (
-                      <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      getInitial(chatUser)
-                    )}
-                  </div>
+                <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full overflow-hidden flex items-center justify-center text-white font-bold shadow-sm border border-gray-200">
+                  {getProfilePhoto(chatUser) ? (
+                    <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    getInitial(chatUser)
+                  )}
                 </div>
 
                 <div className="flex flex-col justify-center">
@@ -429,14 +440,23 @@ const MessagesPage = () => {
                               Replying to: {msg.replyTo.text?.substring(0, 30)}...
                             </div>
                           )}
-                          <p className="text-sm md:text-base">{msg.text}</p>
+                          
+                          {/* --- THE FIX: Display Sent Images and Files inside the message bubble --- */}
+                          {msg.image && (
+                            <img src={msg.image} alt="Attached" className="rounded-lg max-h-48 w-auto object-cover mb-2 border border-white/20 shadow-sm" />
+                          )}
+                          {msg.file && (
+                            <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" className={`flex items-center gap-2 p-2 rounded-lg text-xs font-bold hover:underline mb-2 border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-gray-100 border-gray-200 text-gray-700'}`}>
+                              📄 {msg.fileName || "Download Document"}
+                            </a>
+                          )}
+
+                          {msg.text && <p className="text-sm md:text-base">{msg.text}</p>}
                           
                           <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
-                             
                              <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-blue-500'}`}>
                                <BsReplyFill /> Reply
                              </button>
-                             
                              <div className="flex items-center gap-1.5 ml-4">
                                <span className="text-[10px] font-medium">{timeString}</span>
                                {isMe && (
@@ -471,7 +491,6 @@ const MessagesPage = () => {
                 </div>
               )}
 
-              {/* --- NEW: Floating File Preview Box --- */}
               {selectedFile && (
                 <div className="absolute -top-14 left-4 bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-xl flex items-center gap-3 z-50 animate-fade-in-up">
                   <span className="text-2xl">📄</span>
@@ -493,7 +512,6 @@ const MessagesPage = () => {
                 
                 <div className="flex flex-1 items-center bg-gray-100 rounded-full pl-2 pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                   
-                  {/* --- NEW: Paperclip File Attachment Button --- */}
                   <label htmlFor="file-upload" className="p-2 text-gray-500 hover:text-blue-600 cursor-pointer transition-colors border-r border-gray-300 mr-2 pr-3" title="Attach a file">
                     <IoMdAttach className="text-2xl" />
                   </label>
@@ -505,7 +523,6 @@ const MessagesPage = () => {
                     accept="image/*,video/*,.pdf,.doc,.docx" 
                   />
 
-                  {/* Clean Text Input */}
                   <input 
                     type="text" 
                     value={newMessage} 

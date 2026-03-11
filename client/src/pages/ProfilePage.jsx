@@ -10,13 +10,9 @@ const getApiUrl = (endpoint) => {
     : base + endpoint;
 };
 
-// --- NEW FIX: This forces local 'uploads/...' images to use your Render backend URL ---
 const resolveMediaUrl = (source) => {
   if (!source || typeof source !== 'string') return null;
-  // If it's already a full web link (Cloudinary) or Base64, leave it alone
   if (source.startsWith('http') || source.startsWith('data:')) return source;
-  
-  // If it's a local database path, attach the backend server domain to it!
   const base = import.meta.env.VITE_API_URL || '';
   const cleanBase = base.endsWith('/api') ? base.replace('/api', '') : base;
   const separator = source.startsWith('/') ? '' : '/';
@@ -146,7 +142,6 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* --- GRID SECTION --- */}
         <div className="border-t border-gray-900 pt-8">
           <h3 className="mb-6 font-bold text-gray-500 uppercase tracking-widest text-sm flex items-center gap-2">
             <IoMdGrid /> MY LISTINGS ({userPosts.length})
@@ -154,12 +149,11 @@ const ProfilePage = () => {
           <div className="grid grid-cols-3 gap-2">
             {userPosts.length > 0 ? userPosts.map((post) => {
               
-              // 1. Find the raw data from the database
               let rawMediaSource = post.mediaUrl || post.image || post.media || post.videoUrl || post.video || post.file;
               if (!rawMediaSource && post.images && post.images.length > 0) rawMediaSource = post.images[0];
               if (!rawMediaSource && post.photos && post.photos.length > 0) rawMediaSource = post.photos[0];
+              if (!rawMediaSource && post.mediaUrls && post.mediaUrls.length > 0) rawMediaSource = post.mediaUrls[0];
               
-              // 2. Pass it through our new URL fixer!
               const finalMediaSource = resolveMediaUrl(rawMediaSource);
               
               const isVideo = post.mediaType === 'reel' || post.mediaType === 'video' || 
@@ -167,17 +161,30 @@ const ProfilePage = () => {
 
               return (
                 <div key={post._id} className="aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800 group relative flex items-center justify-center">
+                  
                   {!finalMediaSource ? (
-                    <span className="text-gray-600 text-xs font-bold px-2 text-center">{post.title || "No Media"}</span>
+                    
+                    /* --- THE X-RAY DETECTIVE BOX --- */
+                    <div className="w-full h-full p-3 bg-red-950/40 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+                      <span className="text-[10px] text-red-400 font-bold border-b border-red-900/50 pb-1 mb-1">IMAGE NOT FOUND</span>
+                      <span className="text-[11px] text-gray-300 font-bold">{post.title || 'Untitled'}</span>
+                      <span className="text-[9px] text-gray-500 mt-2 uppercase tracking-wider">Database Fields Found:</span>
+                      <span className="text-[10px] text-yellow-400 font-mono break-words">
+                        {Object.keys(post).join(', ')}
+                      </span>
+                    </div>
+
                   ) : isVideo ? (
                     <video src={finalMediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" muted loop autoPlay playsInline />
                   ) : (
                     <img src={finalMediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={post.title || "Listing"} />
                   )}
                   
-                  <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[10px]">{isVideo ? '🎥' : '📸'}</span>
-                  </div>
+                  {finalMediaSource && (
+                    <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[10px]">{isVideo ? '🎥' : '📸'}</span>
+                    </div>
+                  )}
                 </div>
               );
             }) : (

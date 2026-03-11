@@ -34,7 +34,6 @@ const ProfilePage = () => {
         const id = userId || loggedInUser?._id;
         const res = await axios.get(getApiUrl(`/api/users/${id}`), getAuthConfig());
         
-        // Ensure we capture both user and their posts
         const userData = res.data.data.user || res.data.data;
         const postsData = res.data.data.posts || [];
 
@@ -69,13 +68,24 @@ const ProfilePage = () => {
   const handleUpdate = async () => {
     try {
       const payload = { ...formData, profilePhoto: avatarPreview };
+      
+      // We are logging the payload to the browser console for debugging
+      console.log("Sending data to backend...");
+      
       const res = await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
       if(res.data.success) {
         setIsEditing(false);
+        alert("Profile Successfully Updated!");
         window.location.reload(); 
       }
     } catch (err) {
-      alert("Update failed. Make sure server limit is updated in server.js");
+      // THIS IS THE FIX: We stop guessing and grab the REAL error from the server
+      console.error("FULL ERROR DETAILS:", err);
+      
+      const realError = err.response?.data?.message || err.message;
+      const statusCode = err.response?.status || "Unknown";
+      
+      alert(`REAL BACKEND ERROR (Code ${statusCode}): \n\n${realError}`);
     }
   };
 

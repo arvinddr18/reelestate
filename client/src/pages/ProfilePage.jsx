@@ -98,11 +98,7 @@ const ProfilePage = () => {
 
     try {
       await axios.delete(getApiUrl(`/api/posts/${postId}`), getAuthConfig());
-      
-      // Remove the deleted post from the grid instantly without refreshing
       setUserPosts(userPosts.filter(post => post._id !== postId));
-      
-      // Close the popup window
       setSelectedPost(null); 
     } catch (err) {
       const realError = err.response?.data?.message || err.message;
@@ -219,7 +215,7 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 CLICKABLE POPUP MODAL WITH DELETE BUTTON 🚀 */}
+      {/* 🚀 CRASH-PROOF POPUP MODAL WITH DELETE 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
@@ -243,7 +239,7 @@ const ProfilePage = () => {
               })()}
             </div>
 
-            {/* Right Side: Details & Action Footer */}
+            {/* Right Side: Details */}
             <div className="md:w-[45%] flex flex-col h-[50vh] md:h-auto bg-[#0a0a0a]">
               
               <div className="p-4 border-b border-gray-900 flex items-center gap-3">
@@ -268,8 +264,9 @@ const ProfilePage = () => {
               <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
                 
                 <div className="mb-6">
+                  {/* SAFE PRICE CHECK */}
                   <h2 className="text-2xl font-black text-white mb-1">
-                    {selectedPost.price ? `₹${Number(selectedPost.price).toLocaleString()}` : 'Price on Request'}
+                    {selectedPost.price ? `₹${selectedPost.price}` : 'Price on Request'}
                   </h2>
                   <h3 className="text-lg font-medium text-gray-300">{selectedPost.title || 'Untitled Property'}</h3>
                 </div>
@@ -308,6 +305,7 @@ const ProfilePage = () => {
                   </p>
                 </div>
 
+                {/* SAFE HASHTAG CHECK */}
                 {selectedPost.hashtags && typeof selectedPost.hashtags === 'string' && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {selectedPost.hashtags.split(',').map((tag, i) => (
@@ -319,14 +317,14 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* --- NEW: The Big Red Delete Button at the Bottom --- */}
+              {/* --- DELETE BUTTON SAFELY AT THE BOTTOM --- */}
               {isOwnProfile && (
                 <div className="p-4 border-t border-gray-900 bg-black mt-auto">
                   <button 
                     onClick={() => handleDeletePost(selectedPost._id)}
-                    className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-red-900/10"
+                    className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all"
                   >
-                    <IoMdTrash size={20} /> Delete This Post
+                    <IoMdTrash size={20} /> Delete Post
                   </button>
                 </div>
               )}

@@ -92,7 +92,6 @@ const ProfilePage = () => {
     }
   };
 
-  // --- NEW: Delete Post Logic ---
   const handleDeletePost = async (postId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this post forever?");
     if (!confirmDelete) return;
@@ -125,7 +124,6 @@ const ProfilePage = () => {
 
   if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
 
-  // Check if viewing own profile to show edit/delete buttons
   const isOwnProfile = !userId || userId === JSON.parse(localStorage.getItem('user'))?._id;
 
   return (
@@ -136,7 +134,6 @@ const ProfilePage = () => {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
-        {/* Profile Header section */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-10">
           <div className="relative">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500 bg-gray-800 flex items-center justify-center text-4xl font-bold relative">
@@ -172,7 +169,6 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Edit Form */}
         {isEditing && (
           <div className="bg-[#0a0a0a] border border-gray-900 rounded-2xl p-6 shadow-xl mb-12">
             <div className="space-y-4">
@@ -186,7 +182,6 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* Grid Section */}
         <div className="border-t border-gray-900 pt-8">
           <h3 className="mb-6 font-bold text-gray-500 uppercase tracking-widest text-sm flex items-center gap-2">
             <IoMdGrid /> MY LISTINGS ({userPosts.length})
@@ -224,7 +219,7 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 BULLETPROOF CLICKABLE POPUP MODAL 🚀 */}
+      {/* 🚀 CLICKABLE POPUP MODAL WITH DELETE BUTTON 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
@@ -248,7 +243,7 @@ const ProfilePage = () => {
               })()}
             </div>
 
-            {/* Right Side: Details */}
+            {/* Right Side: Details & Action Footer */}
             <div className="md:w-[45%] flex flex-col h-[50vh] md:h-auto bg-[#0a0a0a]">
               
               <div className="p-4 border-b border-gray-900 flex items-center gap-3">
@@ -267,24 +262,12 @@ const ProfilePage = () => {
                     {selectedPost.location || selectedPost.district || 'Location not specified'}
                   </p>
                 </div>
-                
-                {/* --- NEW: Delete Button (Trash Can) --- */}
-                {isOwnProfile && (
-                  <button 
-                    onClick={() => handleDeletePost(selectedPost._id)}
-                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-950/30 rounded-full transition-all"
-                    title="Delete Post"
-                  >
-                    <IoMdTrash size={20} />
-                  </button>
-                )}
               </div>
 
               {/* Property Details (Scrollable) */}
               <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
                 
                 <div className="mb-6">
-                  {/* Fixed Crash: Checks if price exists before formatting */}
                   <h2 className="text-2xl font-black text-white mb-1">
                     {selectedPost.price ? `₹${Number(selectedPost.price).toLocaleString()}` : 'Price on Request'}
                   </h2>
@@ -325,7 +308,6 @@ const ProfilePage = () => {
                   </p>
                 </div>
 
-                {/* Fixed Crash: Safely handles hashtags string */}
                 {selectedPost.hashtags && typeof selectedPost.hashtags === 'string' && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {selectedPost.hashtags.split(',').map((tag, i) => (
@@ -336,6 +318,18 @@ const ProfilePage = () => {
                   </div>
                 )}
               </div>
+
+              {/* --- NEW: The Big Red Delete Button at the Bottom --- */}
+              {isOwnProfile && (
+                <div className="p-4 border-t border-gray-900 bg-black mt-auto">
+                  <button 
+                    onClick={() => handleDeletePost(selectedPost._id)}
+                    className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-red-900/10"
+                  >
+                    <IoMdTrash size={20} /> Delete This Post
+                  </button>
+                </div>
+              )}
 
             </div>
           </div>

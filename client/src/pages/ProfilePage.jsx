@@ -10,6 +10,19 @@ const getApiUrl = (endpoint) => {
     : base + endpoint;
 };
 
+// --- NEW FIX: This forces local 'uploads/...' images to use your Render backend URL ---
+const resolveMediaUrl = (source) => {
+  if (!source || typeof source !== 'string') return null;
+  // If it's already a full web link (Cloudinary) or Base64, leave it alone
+  if (source.startsWith('http') || source.startsWith('data:')) return source;
+  
+  // If it's a local database path, attach the backend server domain to it!
+  const base = import.meta.env.VITE_API_URL || '';
+  const cleanBase = base.endsWith('/api') ? base.replace('/api', '') : base;
+  const separator = source.startsWith('/') ? '' : '/';
+  return `${cleanBase}${separator}${source}`;
+};
+
 const getAuthConfig = () => {
   const token = localStorage.getItem('reelestate_token');
   return { headers: { Authorization: `Bearer ${token}` }, withCredentials: true };
@@ -36,9 +49,6 @@ const ProfilePage = () => {
         
         const userData = res.data.data.user || res.data.data;
         const postsData = res.data.data.posts || [];
-
-        // Debugging: This will print your exact post data to the browser console
-        console.log("Here is what a post looks like from the database:", postsData[0]);
 
         setUser(userData);
         setUserPosts(postsData);
@@ -96,7 +106,7 @@ const ProfilePage = () => {
           <div className="relative">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500 bg-gray-800 flex items-center justify-center text-4xl font-bold relative">
               {avatarPreview ? (
-                <img src={avatarPreview} className="absolute inset-0 w-full h-full object-cover" alt="Profile" />
+                <img src={resolveMediaUrl(avatarPreview)} className="absolute inset-0 w-full h-full object-cover" alt="Profile" />
               ) : (
                 <span className="text-gray-500">{user?.username?.charAt(0).toUpperCase()}</span>
               )}
@@ -136,7 +146,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* --- SMART GRID SECTION --- */}
+        {/* --- GRID SECTION --- */}
         <div className="border-t border-gray-900 pt-8">
           <h3 className="mb-6 font-bold text-gray-500 uppercase tracking-widest text-sm flex items-center gap-2">
             <IoMdGrid /> MY LISTINGS ({userPosts.length})
@@ -144,26 +154,25 @@ const ProfilePage = () => {
           <div className="grid grid-cols-3 gap-2">
             {userPosts.length > 0 ? userPosts.map((post) => {
               
-              // THE FIX: Aggressively hunt for the media in arrays AND strings
-              let mediaSource = null;
+              // 1. Find the raw data from the database
+              let rawMediaSource = post.mediaUrl || post.image || post.media || post.videoUrl || post.video || post.file;
+              if (!rawMediaSource && post.images && post.images.length > 0) rawMediaSource = post.images[0];
+              if (!rawMediaSource && post.photos && post.photos.length > 0) rawMediaSource = post.photos[0];
               
-              if (post.images && post.images.length > 0) mediaSource = post.images[0];
-              else if (post.mediaUrls && post.mediaUrls.length > 0) mediaSource = post.mediaUrls[0];
-              else if (post.photos && post.photos.length > 0) mediaSource = post.photos[0];
-              else mediaSource = post.mediaUrl || post.media || post.image || post.videoUrl || post.video || post.file;
+              // 2. Pass it through our new URL fixer!
+              const finalMediaSource = resolveMediaUrl(rawMediaSource);
               
-              // Check if it's a video file to prevent broken image tags
               const isVideo = post.mediaType === 'reel' || post.mediaType === 'video' || 
-                             (typeof mediaSource === 'string' && (mediaSource.startsWith('data:video') || mediaSource.match(/\.(mp4|webm|ogg)$/i)));
+                             (finalMediaSource && typeof finalMediaSource === 'string' && (finalMediaSource.match(/\.(mp4|webm|ogg)$/i) || finalMediaSource.startsWith('data:video')));
 
               return (
                 <div key={post._id} className="aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800 group relative flex items-center justify-center">
-                  {!mediaSource ? (
-                    <span className="text-gray-600 text-xs font-bold px-2 text-center">No Media Found</span>
+                  {!finalMediaSource ? (
+                    <span className="text-gray-600 text-xs font-bold px-2 text-center">{post.title || "No Media"}</span>
                   ) : isVideo ? (
-                    <video src={mediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" muted loop autoPlay playsInline />
+                    <video src={finalMediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" muted loop autoPlay playsInline />
                   ) : (
-                    <img src={mediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={post.title || "Listing"} />
+                    <img src={finalMediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={post.title || "Listing"} />
                   )}
                   
                   <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">

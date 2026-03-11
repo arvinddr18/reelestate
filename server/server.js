@@ -1,16 +1,11 @@
-/**
- * server.js — Main entry point
- * Sets up Express, MongoDB connection, Socket.io, and all routes.
- */
-
-require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
 
-// Route imports
+// --- Import Routes ---
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
@@ -18,91 +13,51 @@ const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
-
-// MOVE THESE HERE (Right after app is created)
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(cors()); // Make sure CORS is also here
-
 const server = http.createServer(app);
 
-// ─── Socket.io Setup ───────────────────────────────────────────────────────────
+// --- 1. GLOBAL MIDDLEWARE (ORDER IS CRITICAL HERE) ---
+// We allow 50MB BEFORE any routes are processed
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Configure CORS for Vercel and Localhost
+app.use(cors({
+  origin: ["https://reelestate-beta.vercel.app", "http://localhost:5173"],
+  credentials: true
+}));
+
+// --- 2. SOCKET.IO SETUP ---
 const io = new Server(server, {
   cors: {
     origin: ["https://reelestate-beta.vercel.app", "http://localhost:5173"],
-    methods: ['GET', 'POST'],
-  },
+    methods: ["GET", "POST"]
+  }
 });
-
-// Store online users: userId → socketId
-const onlineUsers = new Map();
 
 io.on('connection', (socket) => {
-  console.log('🔌 Socket connected:', socket.id);
-
-  // User registers their socket when they log in
-  socket.on('user:online', (userId) => {
-    onlineUsers.set(userId, socket.id);
-    io.emit('users:online', Array.from(onlineUsers.keys())); // broadcast online list
-  });
-
-  // Handle sending a private message
-  socket.on('message:send', (data) => {
-    const receiverSocketId = onlineUsers.get(data.receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('message:receive', data);
-    }
-  });
-
-  socket.on('disconnect', () => {
-    // Remove user from online map on disconnect
-    for (const [userId, socketId] of onlineUsers.entries()) {
-      if (socketId === socket.id) {
-        onlineUsers.delete(userId);
-        break;
-      }
-    }
-    io.emit('users:online', Array.from(onlineUsers.keys()));
-    console.log('🔌 Socket disconnected:', socket.id);
-  });
+  console.log('User connected:', socket.id);
+  socket.on('disconnect', () => console.log('User disconnected'));
 });
 
-// Make io accessible in routes/controllers
-app.set('io', io);
-
-// ─── Middleware ────────────────────────────────────────────────────────────────
-app.use(cors({ origin: ["https://reelestate-beta.vercel.app", "http://localhost:5173"], credentials: true }));
-app.use(express.json({ limit: '50mb' })); // Parse JSON request bodies up to 50MB
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-// ─── Routes ───────────────────────────────────────────────────────────────────
+// --- 3. ROUTES ---
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
+// Health Check
+app.get('/api/health', (req, res) => res.json({ status: 'OK', time: new Date() }));
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.message);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-  });
-});
-
-// ─── Database + Server Start ──────────────────────────────────────────────────
+// --- 4. DATABASE & SERVER START ---
 const PORT = process.env.PORT || 5000;
 
-mongoose
-  .connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('✅ MongoDB connected');
+    console.log("✅ Connected to MongoDB");
     server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
-  .catch((err) => {
-    console.error('❌ MongoDB connection failed:', err.message);
-    process.exit(1);
+  .catch(err => {
+    console.error("❌ MongoDB Connection Error:", err.message);
+    process.exit(1); // Stop if DB fails
   });

@@ -73,7 +73,10 @@ const messageSchema = new mongoose.Schema(
   {
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    text: { type: String, required: true, maxlength: 1000 },
+    text: { type: String, maxlength: 1000 }, 
+    image: { type: String, default: null },
+    file: { type: String, default: null },
+    fileName: { type: String, default: null },
     isRead: { type: Boolean, default: false },
     relatedPost: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', default: null },
     

@@ -39,20 +39,25 @@ const getConversation = async (req, res) => {
 // --- 2. SEND MESSAGE ---
 const sendMessage = async (req, res) => {
   try {
-    const { receiverId, text, relatedPostId, replyTo } = req.body;
+    // 1. Pull the new file fields from the request body
+    const { receiverId, text, relatedPostId, replyTo, image, file, fileName } = req.body;
 
-    if (!receiverId || !text) {
-      return res.status(400).json({ success: false, message: 'Receiver and text are required.' });
+    // 2. We changed this! Now it only crashes if there is NO text AND NO image AND NO file.
+    if (!receiverId || (!text && !image && !file)) {
+      return res.status(400).json({ success: false, message: 'Receiver and message content are required.' });
     }
 
+    // 3. Save everything to the database
     const message = await Message.create({
       sender: req.user._id,
       receiver: receiverId,
-      text,
+      text: text || "",
+      image: image || null,
+      file: file || null,
+      fileName: fileName || null,
       relatedPost: relatedPostId || null,
       replyTo: replyTo || null,
     });
-
     const populated = await Message.findById(message._id)
       .populate('sender', 'username profilePhoto')
       .populate('replyTo')

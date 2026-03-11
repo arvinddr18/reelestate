@@ -72,7 +72,9 @@ const MessagesPage = () => {
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [langSearch, setLangSearch] = useState("");
   const langMenuRef = useRef(null);
-  const isOnline = true; 
+  
+  // NEW: State to track which documents have been clicked/downloaded
+  const [downloadedDocs, setDownloadedDocs] = useState({});
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -183,6 +185,10 @@ const MessagesPage = () => {
     }
   };
 
+  const markDocAsDownloaded = (msgId) => {
+    setDownloadedDocs(prev => ({ ...prev, [msgId]: true }));
+  };
+
   const getProfilePhoto = (user) => user ? (user.profilePhoto || user.profilePic || user.avatar || null) : null;
   const getInitial = (user) => user ? (user.fullName?.charAt(0) || user.username?.charAt(0) || 'U').toUpperCase() : 'U';
   const filteredLanguages = indianLanguages.filter(lang => lang.name.toLowerCase().includes(langSearch.toLowerCase()) || lang.native.toLowerCase().includes(langSearch.toLowerCase()));
@@ -261,6 +267,16 @@ const MessagesPage = () => {
             </div>
 
             <div className="flex-1 relative bg-gray-50 flex flex-col overflow-hidden">
+              
+              {/* --- RESTORED: Background Watermark --- */}
+              <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+                {getProfilePhoto(chatUser) ? (
+                  <div className="w-full h-full opacity-[0.10]" style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(30%)' }} />
+                ) : (
+                  <div className="text-[20rem] md:text-[30rem] font-black text-gray-300 opacity-30">{getInitial(chatUser)}</div>
+                )}
+              </div>
+
               <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
                 {messages.length === 0 ? (
                   <div className="flex justify-center h-full text-gray-500"><p className="bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p></div>
@@ -277,20 +293,37 @@ const MessagesPage = () => {
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg}`}>
                           
+                          {/* --- UPGRADED: Image logic with Open & Save --- */}
                           {msg.image && (
-                            <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover mb-2 border-2 border-white/20 shadow-md" />
+                            <div className="flex flex-col mb-2">
+                              <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover border-2 border-white/20 shadow-md mb-2" />
+                              <div className="flex gap-2">
+                                <a href={msg.image} target="_blank" rel="noreferrer" className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-indigo-200 hover:bg-indigo-300 text-indigo-800'}`}>Open</a>
+                                <a href={msg.image} download={`image-${msg._id}`} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>Save</a>
+                              </div>
+                            </div>
                           )}
                           
+                          {/* --- UPGRADED: Document logic with Download state --- */}
                           {msg.file && (
                             <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-white border-indigo-200 text-indigo-800'}`}>
                                <div className="flex items-center gap-3 mb-2">
                                   <span className="text-3xl">📄</span>
                                   <span className="font-bold text-sm truncate">{msg.fileName || "Document"}</span>
                                </div>
-                               <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" 
-                                  className={`flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
-                                  <IoMdDownload className="text-lg" /> Download File
-                               </a>
+                               
+                               {downloadedDocs[msg._id] ? (
+                                 <div className="flex gap-2 mt-1 animate-fade-in-up">
+                                   <a href={msg.file} target="_blank" rel="noreferrer" className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white/30 hover:bg-white/40 text-white' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800'}`}>Open</a>
+                                   <a href={msg.file} download={msg.fileName || "document"} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>Save</a>
+                                 </div>
+                               ) : (
+                                 <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" 
+                                    onClick={() => markDocAsDownloaded(msg._id)}
+                                    className={`flex items-center justify-center gap-2 py-1.5 mt-1 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                                    <IoMdDownload className="text-lg" /> Download File
+                                 </a>
+                               )}
                             </div>
                           )}
 

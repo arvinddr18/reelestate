@@ -18,9 +18,13 @@ const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
+
+// MOVE THESE HERE (Right after app is created)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-const server = http.createServer(app); // Wrap Express for Socket.io
+app.use(cors()); // Make sure CORS is also here
+
+const server = http.createServer(app);
 
 // ─── Socket.io Setup ───────────────────────────────────────────────────────────
 const io = new Server(server, {

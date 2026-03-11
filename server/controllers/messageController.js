@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-// NEW ICONS ADDED: ArrowRoundUp for the green send button, Trash for removing files
-import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose, IoMdAttach, IoMdDownload, IoMdArrowRoundUp, IoMdTrash } from 'react-icons/io';
+// FIX: Swapped to a perfectly safe icon: IoMdArrowUp
+import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose, IoMdAttach, IoMdDownload, IoMdArrowUp, IoMdTrash } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
 const getApiUrl = (endpoint) => {
@@ -299,30 +299,26 @@ const MessagesPage = () => {
                     const isMe = String(msg.sender._id || msg.sender) === String(userId) ? false : true;
                     const hasMedia = msg.image || msg.file;
                     
-                    // --- BOLD NEW FEATURE: Distinct Colors! ---
-                    // If it has a file/image, it gets a rich PURPLE bubble. If text, it stays BLUE.
                     const bubbleBg = isMe 
-                      ? (hasMedia ? 'bg-purple-600 text-white shadow-md border border-purple-700' : 'bg-blue-600 text-white shadow-sm')
-                      : (hasMedia ? 'bg-purple-50 border-2 border-purple-200 text-purple-900 shadow-md' : 'bg-white text-gray-800 border shadow-sm');
+                      ? (hasMedia ? 'bg-indigo-600 text-white shadow-md border border-indigo-700' : 'bg-blue-600 text-white shadow-sm')
+                      : (hasMedia ? 'bg-indigo-50 border-2 border-indigo-200 text-indigo-900 shadow-md' : 'bg-white text-gray-800 border shadow-sm');
 
                     return (
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg}`}>
                           
-                          {/* Image Display */}
                           {msg.image && (
                             <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover mb-2 border-2 border-white/20 shadow-md" />
                           )}
                           
-                          {/* --- BOLD NEW FEATURE: Downloadable File Card --- */}
                           {msg.file && (
-                            <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-white border-purple-200 text-purple-800'}`}>
+                            <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-white border-indigo-200 text-indigo-800'}`}>
                                <div className="flex items-center gap-3 mb-2">
                                   <span className="text-3xl">📄</span>
                                   <span className="font-bold text-sm truncate">{msg.fileName || "Document"}</span>
                                </div>
                                <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" 
-                                  className={`flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-purple-700 hover:bg-gray-100' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+                                  className={`flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                                   <IoMdDownload className="text-lg" /> Download File
                                </a>
                             </div>
@@ -350,7 +346,6 @@ const MessagesPage = () => {
             </div>
 
             <div className="p-4 bg-white border-t z-20 relative">
-              {/* --- BOLD NEW FEATURE: Selected File Preview with Trash Icon --- */}
               {selectedFile && (
                 <div className="absolute -top-16 left-4 bg-white border-2 border-green-500 shadow-xl px-4 py-2 rounded-xl flex items-center gap-4 z-50 animate-fade-in-up">
                   <span className="text-2xl">📁</span>
@@ -358,7 +353,7 @@ const MessagesPage = () => {
                     <span className="text-xs font-bold text-gray-800 truncate">{selectedFile.name}</span>
                     <span className="text-[10px] text-green-600 font-bold">Ready to send</span>
                   </div>
-                  <button type="button" onClick={() => setSelectedFile(null)} className="ml-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-2 transition-colors title='Remove file'">
+                  <button type="button" onClick={() => setSelectedFile(null)} title="Remove file" className="ml-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-2 transition-colors">
                      <IoMdTrash />
                   </button>
                 </div>
@@ -373,26 +368,20 @@ const MessagesPage = () => {
                 )}
                 
                 <div className="flex flex-1 items-center bg-gray-100 rounded-full pl-2 pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  
                   <label htmlFor="file-upload" className="p-2 text-gray-500 hover:text-blue-600 cursor-pointer transition-colors border-r border-gray-300 mr-2 pr-3" title="Attach a file">
                     <IoMdAttach className="text-2xl" />
                   </label>
                   <input type="file" id="file-upload" className="hidden" onChange={handleFileChange} accept="image/*,video/*,.pdf,.doc,.docx" />
 
                   <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" />
-
-                  <button type="button" onClick={startListening} className={`p-2 rounded-full text-xl transition-colors ${isListening ? 'text-red-500 animate-pulse bg-red-100' : 'text-gray-400 hover:text-blue-500 hover:bg-white'}`}>
-                    <IoMdMic />
-                  </button>
                 </div>
 
-                {/* --- BOLD NEW FEATURE: Green Send Arrow when a file is ready! --- */}
                 <button type="submit" disabled={isSending || (!newMessage.trim() && !selectedFile)} className="flex items-center justify-center transition-all">
                   {isSending ? (
                     <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                   ) : selectedFile ? (
                     <div className="bg-green-500 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] hover:bg-green-600 hover:scale-110 transition-transform">
-                       <IoMdArrowRoundUp className="text-2xl font-bold" />
+                       <IoMdArrowUp className="text-2xl font-bold" />
                     </div>
                   ) : (
                     <IoMdSend className={`text-3xl transition-colors ${newMessage.trim() ? 'text-blue-600 hover:text-blue-700' : 'text-gray-400'}`} />

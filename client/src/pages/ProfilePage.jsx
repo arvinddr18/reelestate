@@ -27,6 +27,17 @@ const getAuthConfig = () => {
   return { headers: { Authorization: `Bearer ${token}` }, withCredentials: true };
 };
 
+// 🛡️ THE ULTIMATE CRASH SHIELD 🛡️
+// This prevents React from crashing if an old test post has weird database data
+const safeText = (value) => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) return value.join(', ');
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
+
 const ProfilePage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -98,11 +109,7 @@ const ProfilePage = () => {
 
     try {
       await axios.delete(getApiUrl(`/api/posts/${postId}`), getAuthConfig());
-      
-      // Remove the deleted post from the grid instantly without refreshing
       setUserPosts(userPosts.filter(post => post._id !== postId));
-      
-      // Close the popup window
       setSelectedPost(null); 
     } catch (err) {
       const realError = err.response?.data?.message || err.message;
@@ -113,7 +120,12 @@ const ProfilePage = () => {
   const getPostMediaInfo = (post) => {
     if (!post) return { url: null, isVideo: false };
     let rawMediaSource = post.mediaUrl || post.image || post.media || post.videoUrl || post.video || post.file;
-    if (!rawMediaSource && post.images && post.images.length > 0) rawMediaSource = post.images[0];
+    
+    // Safely check images array
+    if (!rawMediaSource && post.images) {
+      if (Array.isArray(post.images) && post.images.length > 0) rawMediaSource = post.images[0];
+      else if (typeof post.images === 'string') rawMediaSource = post.images;
+    }
     
     const finalMediaSource = resolveMediaUrl(rawMediaSource);
     const isVideo = post.mediaType === 'reel' || post.mediaType === 'video' || 
@@ -123,6 +135,8 @@ const ProfilePage = () => {
   };
 
   if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
+
+  const isOwnProfile = !userId || userId === JSON.parse(localStorage.getItem('user'))?._id;
 
   return (
     <div className="min-h-screen bg-black text-white font-sans relative">
@@ -138,18 +152,20 @@ const ProfilePage = () => {
               {avatarPreview ? (
                 <img src={resolveMediaUrl(avatarPreview)} className="absolute inset-0 w-full h-full object-cover" alt="Profile" />
               ) : (
-                <span className="text-gray-500">{user?.username?.charAt(0).toUpperCase()}</span>
+                <span className="text-gray-500">{user?.username ? user.username.charAt(0).toUpperCase() : 'U'}</span>
               )}
             </div>
-            <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
-              <IoMdCamera size={20} />
-            </button>
+            {isOwnProfile && (
+              <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
+                <IoMdCamera size={20} />
+              </button>
+            )}
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
           </div>
 
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
-              <h2 className="text-2xl font-bold">@{user?.username}</h2>
+              <h2 className="text-2xl font-bold">@{user?.username || 'user'}</h2>
               <span className="bg-orange-900/20 text-orange-500 border border-orange-900/50 px-3 py-1 rounded-md text-xs font-bold uppercase">Seller</span>
             </div>
             <div className="flex gap-6 text-sm text-gray-400 justify-center md:justify-start">
@@ -157,9 +173,11 @@ const ProfilePage = () => {
               <span><b>{user?.followersCount || 0}</b> Followers</span>
               <span><b>{user?.followingCount || 0}</b> Following</span>
             </div>
-            <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </button>
+            {isOwnProfile && (
+              <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
+                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -191,11 +209,11 @@ const ProfilePage = () => {
                   className="aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800 group relative flex items-center justify-center cursor-pointer hover:border-orange-500 transition-colors"
                 >
                   {!url ? (
-                    <span className="text-gray-600 text-xs font-bold px-2 text-center">{post.title || "No Media"}</span>
+                    <span className="text-gray-600 text-xs font-bold px-2 text-center">{safeText(post.title) || "No Media"}</span>
                   ) : isVideo ? (
                     <video src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" muted loop autoPlay playsInline />
                   ) : (
-                    <img src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={post.title} />
+                    <img src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={safeText(post.title)} />
                   )}
                   
                   {url && (
@@ -213,7 +231,7 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 MODAL WITH GUARANTEED DELETE BUTTON 🚀 */}
+      {/* 🚀 100% CRASH-PROOF MODAL WITH DELETE 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
@@ -246,51 +264,52 @@ const ProfilePage = () => {
                     <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="User" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center font-bold text-gray-500">
-                      {user?.username?.charAt(0).toUpperCase()}
+                      {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-sm leading-tight">@{user?.username}</h4>
+                  <h4 className="font-bold text-sm leading-tight">@{user?.username || 'user'}</h4>
                   <p className="text-[10px] text-gray-500 truncate">
-                    {selectedPost.location || selectedPost.district || 'Location not specified'}
+                    {safeText(selectedPost.location || selectedPost.district) || 'Location not specified'}
                   </p>
                 </div>
               </div>
 
-              {/* Property Details */}
+              {/* Property Details (Scrollable) */}
               <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
                 
                 <div className="mb-6">
+                  {/* SAFE PRICE */}
                   <h2 className="text-2xl font-black text-white mb-1">
-                    {selectedPost?.price ? `₹${selectedPost.price}` : 'Price on Request'}
+                    {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
                   </h2>
-                  <h3 className="text-lg font-medium text-gray-300">{selectedPost?.title || 'Untitled Property'}</h3>
+                  <h3 className="text-lg font-medium text-gray-300">{safeText(selectedPost?.title) || 'Untitled Property'}</h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {selectedPost?.propertyType && (
                     <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Type</p>
-                      <p className="text-sm font-semibold truncate">{selectedPost.propertyType}</p>
+                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.propertyType)}</p>
                     </div>
                   )}
                   {selectedPost?.area && (
                     <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Area</p>
-                      <p className="text-sm font-semibold truncate">{selectedPost.area}</p>
+                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.area)}</p>
                     </div>
                   )}
                   {selectedPost?.bedrooms && (
                     <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Bedrooms</p>
-                      <p className="text-sm font-semibold truncate">{selectedPost.bedrooms} Beds</p>
+                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.bedrooms)} Beds</p>
                     </div>
                   )}
                   {selectedPost?.bathrooms && (
                     <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Bathrooms</p>
-                      <p className="text-sm font-semibold truncate">{selectedPost.bathrooms} Baths</p>
+                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.bathrooms)} Baths</p>
                     </div>
                   )}
                 </div>
@@ -298,7 +317,7 @@ const ProfilePage = () => {
                 <div>
                   <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h4>
                   <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {selectedPost?.description || 'No description provided.'}
+                    {safeText(selectedPost?.description) || 'No description provided.'}
                   </p>
                 </div>
 
@@ -313,15 +332,17 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* UNCONDITIONAL DELETE BUTTON - Guaranteed to show! */}
-              <div className="p-4 border-t border-gray-900 bg-black mt-auto">
-                <button 
-                  onClick={() => handleDeletePost(selectedPost._id)}
-                  className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
-                >
-                  <IoMdTrash size={20} /> Delete Post
-                </button>
-              </div>
+              {/* UNCONDITIONAL DELETE BUTTON AT THE BOTTOM */}
+              {isOwnProfile && (
+                <div className="p-4 border-t border-gray-900 bg-black mt-auto">
+                  <button 
+                    onClick={() => handleDeletePost(selectedPost._id)}
+                    className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
+                  >
+                    <IoMdTrash size={20} /> Delete Post
+                  </button>
+                </div>
+              )}
 
             </div>
           </div>

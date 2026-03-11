@@ -68,24 +68,14 @@ const ProfilePage = () => {
   const handleUpdate = async () => {
     try {
       const payload = { ...formData, profilePhoto: avatarPreview };
-      
-      // We are logging the payload to the browser console for debugging
-      console.log("Sending data to backend...");
-      
       const res = await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
       if(res.data.success) {
         setIsEditing(false);
-        alert("Profile Successfully Updated!");
         window.location.reload(); 
       }
     } catch (err) {
-      // THIS IS THE FIX: We stop guessing and grab the REAL error from the server
-      console.error("FULL ERROR DETAILS:", err);
-      
       const realError = err.response?.data?.message || err.message;
-      const statusCode = err.response?.status || "Unknown";
-      
-      alert(`REAL BACKEND ERROR (Code ${statusCode}): \n\n${realError}`);
+      alert(`Backend Error: \n\n${realError}`);
     }
   };
 
@@ -143,16 +133,38 @@ const ProfilePage = () => {
           </div>
         </div>
 
+        {/* --- SMART GRID SECTION --- */}
         <div className="border-t border-gray-900 pt-8">
           <h3 className="mb-6 font-bold text-gray-500 uppercase tracking-widest text-sm flex items-center gap-2">
             <IoMdGrid /> MY LISTINGS ({userPosts.length})
           </h3>
           <div className="grid grid-cols-3 gap-2">
-            {userPosts.length > 0 ? userPosts.map((post) => (
-              <div key={post._id} className="aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800 group relative">
-                <img src={post.mediaUrl || post.image} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="Listing" />
-              </div>
-            )) : (
+            {userPosts.length > 0 ? userPosts.map((post) => {
+              
+              // 1. Check every possible database field name your backend might be using
+              const mediaSource = post.mediaUrl || post.media || post.image || post.video || post.file;
+              
+              // 2. Check if the file is a Reel/Video so we don't crash the image tag
+              const isVideo = post.mediaType === 'reel' || post.mediaType === 'video' || 
+                             (mediaSource && typeof mediaSource === 'string' && (mediaSource.startsWith('data:video') || mediaSource.match(/\.(mp4|webm|ogg)$/i)));
+
+              return (
+                <div key={post._id} className="aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800 group relative flex items-center justify-center">
+                  {!mediaSource ? (
+                    <span className="text-gray-600 text-xs font-bold">No Media Found</span>
+                  ) : isVideo ? (
+                    <video src={mediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" muted loop autoPlay playsInline />
+                  ) : (
+                    <img src={mediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={post.title || "Listing"} />
+                  )}
+                  
+                  {/* Optional: Add a little camera/video icon in the corner */}
+                  <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px]">{isVideo ? '🎥' : '📸'}</span>
+                  </div>
+                </div>
+              );
+            }) : (
               <div className="col-span-3 text-center py-10 text-gray-600">No properties found.</div>
             )}
           </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdSettings, IoMdPerson, IoMdMail, IoMdPhonePortrait, IoMdCamera } from 'react-icons/io';
+import { IoMdSettings, IoMdPerson, IoMdMail, IoMdPhonePortrait, IoMdCamera, IoMdGrid } from 'react-icons/io';
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -22,6 +22,7 @@ const ProfilePage = () => {
 
   // --- States ---
   const [user, setUser] = useState(null);
+  const [userPosts, setUserPosts] = useState([]); // This holds your actual posts/reels
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ fullName: '', bio: '', location: '', phone: '', website: '' });
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -30,10 +31,19 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const id = userId || JSON.parse(localStorage.getItem('user'))._id;
+        // Use userId from URL or logged in user's ID
+        const loggedInUser = JSON.parse(localStorage.getItem('user'));
+        const id = userId || loggedInUser?._id;
+        
         const res = await axios.get(getApiUrl(`/api/users/${id}`), getAuthConfig());
+        
+        // Match the backend structure we fixed (user and posts)
         const userData = res.data.data.user || res.data.data;
+        const postsData = res.data.data.posts || [];
+
         setUser(userData);
+        setUserPosts(postsData);
+        
         setFormData({
           fullName: userData.fullName || '',
           bio: userData.bio || '',
@@ -43,7 +53,7 @@ const ProfilePage = () => {
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
       } catch (err) {
-        console.error("Load error:", err);
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -51,14 +61,13 @@ const ProfilePage = () => {
     fetchProfile();
   }, [userId]);
 
-  // --- THE FIX: Photo Upload Logic ---
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        setAvatarPreview(reader.result); // Updates the UI instantly
+        setAvatarPreview(reader.result);
       };
     }
   };
@@ -68,17 +77,17 @@ const ProfilePage = () => {
       const payload = { ...formData, profilePhoto: avatarPreview };
       await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
       setIsEditing(false);
-      window.location.reload(); // Refresh to show new data
+      window.location.reload(); 
     } catch (err) {
-      alert("Update failed. Try again.");
+      alert("Update failed.");
     }
   };
 
-  if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white text-xl">Loading...</div>;
+  if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">Loading Profile...</div>;
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      {/* Header Area */}
+      {/* Header */}
       <div className="p-6 flex items-center justify-between border-b border-gray-900">
         <h1 className="text-2xl font-bold text-orange-500">ReelEstate</h1>
         <IoMdSettings className="text-2xl cursor-pointer text-gray-400 hover:text-white" />
@@ -86,54 +95,43 @@ const ProfilePage = () => {
 
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex flex-col md:flex-row items-center gap-8 mb-10">
-          {/* --- FIXED: Profile Image with Clickable Camera --- */}
+          
+          {/* Profile Image with FIXED circular cover */}
           <div className="relative group">
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500 bg-gray-800 flex items-center justify-center text-4xl font-bold">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500 bg-gray-800 flex items-center justify-center text-4xl font-bold relative">
               {avatarPreview ? (
-                <img src={avatarPreview} className="w-full h-full object-cover" alt="Profile" />
+                <img src={avatarPreview} className="absolute inset-0 w-full h-full object-cover" alt="Profile" />
               ) : (
-                user?.username?.charAt(0).toUpperCase()
+                <span className="text-gray-500">{user?.username?.charAt(0).toUpperCase()}</span>
               )}
             </div>
-            
-            {/* The + Camera Button */}
             <button 
               onClick={() => fileInputRef.current.click()}
-              className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 transition-colors cursor-pointer"
+              className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 transition-colors cursor-pointer z-10"
             >
               <IoMdCamera size={20} />
             </button>
-            
-            {/* Hidden Input */}
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={handleImageChange} 
-            />
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
           </div>
 
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
               <h2 className="text-2xl font-bold">@{user?.username}</h2>
-              <span className="bg-gray-800 px-3 py-1 rounded-md text-xs text-gray-400">Seller</span>
+              <span className="bg-orange-900/20 text-orange-500 border border-orange-900/50 px-3 py-1 rounded-md text-xs font-bold uppercase">Seller</span>
             </div>
-            <div className="flex gap-6 text-sm text-gray-300 justify-center md:justify-start">
-              <span><b>10</b> Posts</span>
-              <span><b>1</b> Followers</span>
-              <span><b>1</b> Following</span>
+            <div className="flex gap-6 text-sm text-gray-400 justify-center md:justify-start">
+              <span><b>{userPosts.length}</b> Posts</span>
+              <span><b>0</b> Followers</span>
+              <span><b>0</b> Following</span>
             </div>
-            {!isEditing ? (
-              <button onClick={() => setIsEditing(true)} className="mt-4 bg-gray-800 px-6 py-2 rounded-lg font-bold hover:bg-gray-700 transition-all">Edit Profile</button>
-            ) : (
-              <button onClick={() => setIsEditing(false)} className="mt-4 bg-red-900/30 text-red-500 px-6 py-2 rounded-lg font-bold border border-red-900/50 hover:bg-red-900/50 transition-all">Cancel</button>
-            )}
+            <button onClick={() => setIsEditing(!isEditing)} className={`mt-4 px-6 py-2 rounded-lg font-bold transition-all ${isEditing ? 'bg-red-900/20 text-red-500 border border-red-900/50' : 'bg-gray-800 hover:bg-gray-700'}`}>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
           </div>
         </div>
 
-        {/* --- Form Area (Your Original Design) --- */}
-        <div className="bg-[#0a0a0a] border border-gray-900 rounded-2xl p-6 shadow-xl">
+        {/* Input Fields */}
+        <div className="bg-[#0a0a0a] border border-gray-900 rounded-2xl p-6 shadow-xl mb-12">
           <div className="space-y-4">
             <input 
               type="text" 
@@ -141,14 +139,14 @@ const ProfilePage = () => {
               value={formData.fullName} 
               onChange={(e) => setFormData({...formData, fullName: e.target.value})}
               disabled={!isEditing}
-              className="w-full bg-[#111] border border-gray-800 p-4 rounded-xl outline-none focus:border-orange-500 disabled:opacity-50" 
+              className="w-full bg-[#111] border border-gray-800 p-4 rounded-xl outline-none focus:border-orange-500 disabled:opacity-40 transition-all" 
             />
             <textarea 
               placeholder="Bio" 
               value={formData.bio} 
               onChange={(e) => setFormData({...formData, bio: e.target.value})}
               disabled={!isEditing}
-              className="w-full bg-[#111] border border-gray-800 p-4 rounded-xl outline-none focus:border-orange-500 disabled:opacity-50 h-24 resize-none" 
+              className="w-full bg-[#111] border border-gray-800 p-4 rounded-xl outline-none focus:border-orange-500 disabled:opacity-40 h-24 resize-none transition-all" 
             />
             <input 
               type="text" 
@@ -156,24 +154,44 @@ const ProfilePage = () => {
               value={formData.location} 
               onChange={(e) => setFormData({...formData, location: e.target.value})}
               disabled={!isEditing}
-              className="w-full bg-[#111] border border-gray-800 p-4 rounded-xl outline-none focus:border-orange-500 disabled:opacity-50" 
+              className="w-full bg-[#111] border border-gray-800 p-4 rounded-xl outline-none focus:border-orange-500 disabled:opacity-40 transition-all" 
             />
             {isEditing && (
-              <button 
-                onClick={handleUpdate}
-                className="w-full bg-orange-500 text-white font-bold py-4 rounded-xl hover:bg-orange-600 transition-all shadow-lg shadow-orange-900/20"
-              >
+              <button onClick={handleUpdate} className="w-full bg-orange-500 text-white font-bold py-4 rounded-xl hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-900/20">
                 Save Changes
               </button>
             )}
           </div>
         </div>
 
-        <h3 className="mt-10 mb-4 font-bold text-gray-400 uppercase tracking-widest text-sm">My Listings</h3>
-        <div className="grid grid-cols-3 gap-2">
-           <div className="aspect-square bg-gray-900 rounded-lg animate-pulse"></div>
-           <div className="aspect-square bg-gray-900 rounded-lg animate-pulse"></div>
-           <div className="aspect-square bg-gray-900 rounded-lg animate-pulse"></div>
+        {/* --- FIXED: MY LISTINGS GRID --- */}
+        <div className="border-t border-gray-900 pt-8">
+          <h3 className="mb-6 font-bold text-gray-500 uppercase tracking-widest text-sm flex items-center gap-2">
+            <IoMdGrid /> My Listings ({userPosts.length})
+          </h3>
+          
+          {userPosts.length === 0 ? (
+            <div className="text-center py-20 border-2 border-dashed border-gray-900 rounded-3xl">
+              <p className="text-gray-600">No posts or reels yet.</p>
+              <button onClick={() => navigate('/create-post')} className="mt-4 text-orange-500 font-bold hover:underline">Upload your first property</button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {userPosts.map((post) => (
+                <div key={post._id} className="aspect-square bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition-all group relative cursor-pointer">
+                  {post.mediaType === 'reel' ? (
+                    <video src={post.mediaUrl} className="w-full h-full object-cover" muted />
+                  ) : (
+                    <img src={post.mediaUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Listing" />
+                  )}
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <p className="text-white text-xs font-bold px-2 text-center">{post.title || 'View Property'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

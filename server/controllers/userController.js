@@ -35,23 +35,21 @@ const getUserProfile = async (req, res) => {
 };
 
 // ─── Update Profile ───────────────────────────────────────────────────────────
+// --- Update Profile ---
 const updateProfile = async (req, res) => {
   try {
-    const { fullName, bio, location, phone, website } = req.body;
-
+    // 1. Grab everything from req.body (including our Base64 profilePhoto string)
+    const { fullName, bio, location, phone, website, profilePhoto } = req.body;
+    
     const updates = { fullName, bio, location, phone, website };
 
-    // Handle profile photo upload
-    if (req.file) {
-      // Delete old photo from Cloudinary if it exists
-      if (req.user.profilePhoto) {
-        const parts = req.user.profilePhoto.split('/');
-        const publicId = `reelestate/profiles/${parts[parts.length - 1].split('.')[0]}`;
-        await deleteFromCloudinary(publicId).catch(() => {}); // Non-blocking
-      }
-      updates.profilePhoto = req.file.path;
+    // 2. If a new photo was sent from the frontend, add it to the updates
+    if (profilePhoto) {
+      updates.profilePhoto = profilePhoto;
+      updates.avatar = profilePhoto; // Just in case your DB uses 'avatar' instead
     }
 
+    // 3. Update the user in the database
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { $set: updates },
@@ -59,11 +57,12 @@ const updateProfile = async (req, res) => {
     ).select('-password');
 
     res.json({ success: true, data: user });
+
   } catch (error) {
+    console.error("Profile Update Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 // ─── Toggle Follow ────────────────────────────────────────────────────────────
 const toggleFollow = async (req, res) => {
   try {

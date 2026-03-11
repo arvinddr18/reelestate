@@ -28,7 +28,6 @@ const getAuthConfig = () => {
 };
 
 // 🛡️ THE ULTIMATE CRASH SHIELD 🛡️
-// This prevents React from crashing if an old test post has weird database data
 const safeText = (value) => {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object') {
@@ -121,7 +120,6 @@ const ProfilePage = () => {
     if (!post) return { url: null, isVideo: false };
     let rawMediaSource = post.mediaUrl || post.image || post.media || post.videoUrl || post.video || post.file;
     
-    // Safely check images array
     if (!rawMediaSource && post.images) {
       if (Array.isArray(post.images) && post.images.length > 0) rawMediaSource = post.images[0];
       else if (typeof post.images === 'string') rawMediaSource = post.images;
@@ -135,8 +133,6 @@ const ProfilePage = () => {
   };
 
   if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
-
-  const isOwnProfile = !userId || userId === JSON.parse(localStorage.getItem('user'))?._id;
 
   return (
     <div className="min-h-screen bg-black text-white font-sans relative">
@@ -155,11 +151,10 @@ const ProfilePage = () => {
                 <span className="text-gray-500">{user?.username ? user.username.charAt(0).toUpperCase() : 'U'}</span>
               )}
             </div>
-            {isOwnProfile && (
-              <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
-                <IoMdCamera size={20} />
-              </button>
-            )}
+            {/* CAMERA BUTTON GUARANTEED TO SHOW */}
+            <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
+              <IoMdCamera size={20} />
+            </button>
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
           </div>
 
@@ -173,11 +168,10 @@ const ProfilePage = () => {
               <span><b>{user?.followersCount || 0}</b> Followers</span>
               <span><b>{user?.followingCount || 0}</b> Following</span>
             </div>
-            {isOwnProfile && (
-              <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </button>
-            )}
+            {/* EDIT PROFILE BUTTON GUARANTEED TO SHOW */}
+            <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
           </div>
         </div>
 
@@ -231,7 +225,7 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 100% CRASH-PROOF MODAL WITH DELETE 🚀 */}
+      {/* 🚀 CRASH-PROOF MODAL WITH DELETE BUTTON 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
@@ -276,11 +270,10 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* Property Details (Scrollable) */}
+              {/* Property Details */}
               <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
                 
                 <div className="mb-6">
-                  {/* SAFE PRICE */}
                   <h2 className="text-2xl font-black text-white mb-1">
                     {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
                   </h2>
@@ -332,17 +325,15 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* UNCONDITIONAL DELETE BUTTON AT THE BOTTOM */}
-              {isOwnProfile && (
-                <div className="p-4 border-t border-gray-900 bg-black mt-auto">
-                  <button 
-                    onClick={() => handleDeletePost(selectedPost._id)}
-                    className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
-                  >
-                    <IoMdTrash size={20} /> Delete Post
-                  </button>
-                </div>
-              )}
+              {/* DELETE BUTTON GUARANTEED TO SHOW */}
+              <div className="p-4 border-t border-gray-900 bg-black mt-auto">
+                <button 
+                  onClick={() => handleDeletePost(selectedPost._id)}
+                  className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
+                >
+                  <IoMdTrash size={20} /> Delete Post
+                </button>
+              </div>
 
             </div>
           </div>

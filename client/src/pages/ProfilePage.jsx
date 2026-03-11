@@ -10,9 +10,18 @@ const getApiUrl = (endpoint) => {
     : base + endpoint;
 };
 
+// THE FIX: Upgraded URL resolver to handle Objects (e.g. { url: "..." })
 const resolveMediaUrl = (source) => {
-  if (!source || typeof source !== 'string') return null;
+  if (!source) return null;
+  
+  // If the database saved it as an object with a URL property (common with Cloudinary)
+  if (typeof source === 'object' && source.url) {
+    source = source.url;
+  }
+  
+  if (typeof source !== 'string') return null;
   if (source.startsWith('http') || source.startsWith('data:')) return source;
+  
   const base = import.meta.env.VITE_API_URL || '';
   const cleanBase = base.endsWith('/api') ? base.replace('/api', '') : base;
   const separator = source.startsWith('/') ? '' : '/';
@@ -150,9 +159,11 @@ const ProfilePage = () => {
             {userPosts.length > 0 ? userPosts.map((post) => {
               
               let rawMediaSource = post.mediaUrl || post.image || post.media || post.videoUrl || post.video || post.file;
-              if (!rawMediaSource && post.images && post.images.length > 0) rawMediaSource = post.images[0];
-              if (!rawMediaSource && post.photos && post.photos.length > 0) rawMediaSource = post.photos[0];
-              if (!rawMediaSource && post.mediaUrls && post.mediaUrls.length > 0) rawMediaSource = post.mediaUrls[0];
+              
+              // We now know the field is exactly "images"
+              if (!rawMediaSource && post.images && post.images.length > 0) {
+                rawMediaSource = post.images[0];
+              }
               
               const finalMediaSource = resolveMediaUrl(rawMediaSource);
               
@@ -164,13 +175,13 @@ const ProfilePage = () => {
                   
                   {!finalMediaSource ? (
                     
-                    /* --- THE X-RAY DETECTIVE BOX --- */
+                    /* --- UPGRADED X-RAY: Shows the exact contents of the images array --- */
                     <div className="w-full h-full p-3 bg-red-950/40 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
                       <span className="text-[10px] text-red-400 font-bold border-b border-red-900/50 pb-1 mb-1">IMAGE NOT FOUND</span>
                       <span className="text-[11px] text-gray-300 font-bold">{post.title || 'Untitled'}</span>
-                      <span className="text-[9px] text-gray-500 mt-2 uppercase tracking-wider">Database Fields Found:</span>
-                      <span className="text-[10px] text-yellow-400 font-mono break-words">
-                        {Object.keys(post).join(', ')}
+                      <span className="text-[9px] text-gray-500 mt-2 uppercase tracking-wider">Contents of 'images':</span>
+                      <span className="text-[10px] text-cyan-400 font-mono break-words">
+                        {JSON.stringify(post.images) || "undefined"}
                       </span>
                     </div>
 

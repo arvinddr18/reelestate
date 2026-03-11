@@ -73,7 +73,6 @@ const MessagesPage = () => {
   const [langSearch, setLangSearch] = useState("");
   const langMenuRef = useRef(null);
   
-  // NEW: State to track which documents have been clicked/downloaded
   const [downloadedDocs, setDownloadedDocs] = useState({});
 
   useEffect(() => {
@@ -189,6 +188,28 @@ const MessagesPage = () => {
     setDownloadedDocs(prev => ({ ...prev, [msgId]: true }));
   };
 
+  // NEW FIX: Custom function to bypass Chrome's about:blank block on Base64 files!
+  const openMediaInNewTab = (e, base64Data) => {
+    e.preventDefault();
+    if (!base64Data) return;
+    const newTab = window.open();
+    if (newTab) {
+      newTab.document.body.style.margin = "0";
+      newTab.document.body.style.display = "flex";
+      newTab.document.body.style.justifyContent = "center";
+      newTab.document.body.style.alignItems = "center";
+      newTab.document.body.style.backgroundColor = "#000";
+      
+      if (base64Data.startsWith('data:image')) {
+        newTab.document.write(`<img src="${base64Data}" style="max-width:100%; max-height:100vh; object-fit:contain;" />`);
+      } else {
+        newTab.document.write(`<iframe src="${base64Data}" frameborder="0" style="width:100vw; height:100vh;"></iframe>`);
+      }
+    } else {
+      alert("Please allow pop-ups to open this file.");
+    }
+  };
+
   const getProfilePhoto = (user) => user ? (user.profilePhoto || user.profilePic || user.avatar || null) : null;
   const getInitial = (user) => user ? (user.fullName?.charAt(0) || user.username?.charAt(0) || 'U').toUpperCase() : 'U';
   const filteredLanguages = indianLanguages.filter(lang => lang.name.toLowerCase().includes(langSearch.toLowerCase()) || lang.native.toLowerCase().includes(langSearch.toLowerCase()));
@@ -267,8 +288,6 @@ const MessagesPage = () => {
             </div>
 
             <div className="flex-1 relative bg-gray-50 flex flex-col overflow-hidden">
-              
-              {/* --- RESTORED: Background Watermark --- */}
               <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
                 {getProfilePhoto(chatUser) ? (
                   <div className="w-full h-full opacity-[0.10]" style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(30%)' }} />
@@ -293,18 +312,23 @@ const MessagesPage = () => {
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg}`}>
                           
-                          {/* --- UPGRADED: Image logic with Open & Save --- */}
+                          {/* --- RESTORED: Reply Preview Banner --- */}
+                          {msg.replyTo && (
+                            <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-indigo-300 text-white' : 'bg-black/5 border-indigo-400 text-indigo-800'}`}>
+                              Replying to: {msg.replyTo.text?.substring(0, 30) || "Attachment"}...
+                            </div>
+                          )}
+                          
                           {msg.image && (
                             <div className="flex flex-col mb-2">
                               <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover border-2 border-white/20 shadow-md mb-2" />
                               <div className="flex gap-2">
-                                <a href={msg.image} target="_blank" rel="noreferrer" className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-indigo-200 hover:bg-indigo-300 text-indigo-800'}`}>Open</a>
+                                <button onClick={(e) => openMediaInNewTab(e, msg.image)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer ${isMe ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-indigo-200 hover:bg-indigo-300 text-indigo-800'}`}>Open</button>
                                 <a href={msg.image} download={`image-${msg._id}`} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>Save</a>
                               </div>
                             </div>
                           )}
                           
-                          {/* --- UPGRADED: Document logic with Download state --- */}
                           {msg.file && (
                             <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-white border-indigo-200 text-indigo-800'}`}>
                                <div className="flex items-center gap-3 mb-2">
@@ -314,13 +338,11 @@ const MessagesPage = () => {
                                
                                {downloadedDocs[msg._id] ? (
                                  <div className="flex gap-2 mt-1 animate-fade-in-up">
-                                   <a href={msg.file} target="_blank" rel="noreferrer" className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white/30 hover:bg-white/40 text-white' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800'}`}>Open</a>
+                                   <button onClick={(e) => openMediaInNewTab(e, msg.file)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer ${isMe ? 'bg-white/30 hover:bg-white/40 text-white' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800'}`}>Open</button>
                                    <a href={msg.file} download={msg.fileName || "document"} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>Save</a>
                                  </div>
                                ) : (
-                                 <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" 
-                                    onClick={() => markDocAsDownloaded(msg._id)}
-                                    className={`flex items-center justify-center gap-2 py-1.5 mt-1 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                                 <a href={msg.file} download={msg.fileName || "attachment"} onClick={() => markDocAsDownloaded(msg._id)} className={`flex items-center justify-center gap-2 py-1.5 mt-1 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                                     <IoMdDownload className="text-lg" /> Download File
                                  </a>
                                )}
@@ -329,8 +351,13 @@ const MessagesPage = () => {
 
                           {msg.text && <p className="text-sm md:text-base">{msg.text}</p>}
                           
-                          <div className={`flex items-center justify-end mt-2 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                             <div className="flex items-center gap-1.5 ml-4">
+                          <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
+                             {/* --- RESTORED: Reply Button --- */}
+                             <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-indigo-600'}`}>
+                               <BsReplyFill /> Reply
+                             </button>
+
+                             <div className="flex items-center gap-1.5 ml-auto">
                                <span className="text-[10px] font-medium">{formatTime(msg.createdAt || msg.timestamp)}</span>
                                {isMe && (
                                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider border shadow-sm ${msg.isRead ? 'bg-white text-green-600 border-green-400' : 'bg-white text-gray-500 border-gray-300'}`}>
@@ -349,6 +376,17 @@ const MessagesPage = () => {
             </div>
 
             <div className="p-4 bg-white border-t z-20 relative">
+              
+              {/* --- RESTORED: Active Reply Preview Bar --- */}
+              {replyTo && (
+                <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-indigo-500 shadow-sm animate-fade-in-up">
+                  <span className="text-sm text-gray-600 truncate">
+                    Replying to: <b>{replyTo.text?.substring(0, 40) || (replyTo.fileName ? replyTo.fileName : "Attachment")}</b>
+                  </span>
+                  <button onClick={() => setReplyTo(null)} className="text-gray-400 hover:text-red-500 bg-white rounded-full p-1 shadow-sm transition-colors"><IoMdClose /></button>
+                </div>
+              )}
+
               {selectedFile && (
                 <div className="absolute -top-16 left-4 bg-white border-2 border-green-500 shadow-xl px-4 py-2 rounded-xl flex items-center gap-4 z-50 animate-fade-in-up">
                   <span className="text-2xl">📁</span>

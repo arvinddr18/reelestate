@@ -3,10 +3,26 @@
  * Handles all post operations: create, feed, like, comment, save, search, filter.
  */
 
-const Post = require('../models/Post');
-const { Comment, Like, SavedProperty } = require('../models/index');
-const User = require('../models/User');
-const { deleteFromCloudinary } = require('../middleware/upload');
+const express = require('express');
+const router = express.Router();
+const { protect } = require('../middleware/auth');
+const { 
+  createPost, 
+  getFeed, 
+  getPost, 
+  deletePost, 
+  updatePost, 
+  toggleLike, 
+  toggleSave, 
+  getComments, 
+  addComment, 
+  searchPosts, 
+  getSavedPosts 
+} = require('../controllers/postController');
+
+// --- Routes ---
+
+// --- Routes ---
 
 // ─── Create Post ──────────────────────────────────────────────────────────────
 /**
@@ -287,9 +303,39 @@ const getSavedPosts = async (req, res) => {
   }
 };
 
+// --- Update Post Logic ---
+const updatePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, message: "Post not found" });
+
+    // Check if the user owns this post
+    if (post.author.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ success: false, message: "Not authorized" });
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+
+    res.json({ success: true, data: updatedPost });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
-  createPost, getFeed, getPost, deletePost,
-  toggleLike, toggleSave,
-  getComments, addComment,
-  searchPosts, getSavedPosts,
+  createPost,
+  getFeed,
+  getPost,
+  deletePost,
+  updatePost,
+  toggleLike,
+  toggleSave,
+  getComments,
+  addComment,
+  searchPosts,
+  getSavedPosts,
 };

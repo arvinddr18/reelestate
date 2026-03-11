@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import EmojiPicker from 'emoji-picker-react';
-// NEW: Added IoMdDownload for the file download button!
-import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose, IoMdAttach, IoMdDownload } from 'react-icons/io';
+// NEW ICONS ADDED: ArrowRoundUp for the green send button, Trash for removing files
+import { IoMdHappy, IoMdSend, IoMdSearch, IoMdCheckmark, IoMdDoneAll, IoMdMic, IoMdArrowDropdown, IoMdClose, IoMdAttach, IoMdDownload, IoMdArrowRoundUp, IoMdTrash } from 'react-icons/io';
 import { BsReplyFill } from 'react-icons/bs';
 
 const getApiUrl = (endpoint) => {
@@ -38,12 +38,8 @@ const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
     fileReader.readAsDataURL(file);
-    fileReader.onload = () => {
-      resolve(fileReader.result);
-    };
-    fileReader.onerror = (error) => {
-      reject(error);
-    };
+    fileReader.onload = () => resolve(fileReader.result);
+    fileReader.onerror = (error) => reject(error);
   });
 };
 
@@ -51,18 +47,12 @@ const indianLanguages = [
   { code: 'none', name: 'Off (No Translation)', native: 'Off' },
   { code: 'en', name: 'English', native: 'English' },
   { code: 'hi', name: 'Hindi', native: 'हिंदी' },
-  { code: 'bn', name: 'Bengali', native: 'বাংলা' },
-  { code: 'te', name: 'Telugu', native: 'తెలుగు' },
-  { code: 'mr', name: 'Marathi', native: 'मराठी' },
-  { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
-  { code: 'ur', name: 'Urdu', native: 'اردو' },
-  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
   { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
-  { code: 'ml', name: 'Malayalam', native: 'മലയാളം' },
-  { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ' },
-  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
-  { code: 'as', name: 'Assamese', native: 'অসমীয়া' },
-  { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' }
+  { code: 'te', name: 'Telugu', native: 'తెలుగు' },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
+  { code: 'mr', name: 'Marathi', native: 'मराठी' },
+  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
+  { code: 'bn', name: 'Bengali', native: 'বাংলা' }
 ];
 
 const MessagesPage = () => {
@@ -108,9 +98,7 @@ const MessagesPage = () => {
       try {
         const res = await axios.get(getApiUrl('/api/users'), getAuthConfig());
         setAllUsers(res.data.data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-      }
+      } catch (err) {}
     };
     fetchAllContacts();
   }, []);
@@ -146,7 +134,6 @@ const MessagesPage = () => {
           });
         }
       } catch (err) {
-        console.error("Error fetching chat:", err);
         setMessages([]); 
       }
     };
@@ -159,32 +146,18 @@ const MessagesPage = () => {
 
   const startListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Sorry, your browser doesn't support Voice Typing! Try using Google Chrome.");
-      return;
-    }
+    if (!SpeechRecognition) return alert("Browser doesn't support Voice Typing!");
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
     recognition.onstart = () => setIsListening(true);
-    
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setNewMessage(prev => prev + (prev ? " " : "") + transcript);
-    };
-    
+    recognition.onresult = (event) => setNewMessage(prev => prev + (prev ? " " : "") + event.results[0][0].transcript);
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
-
     recognition.start();
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-    }
+    if (file) setSelectedFile(file);
   };
 
   const handleSendMessage = async (e) => {
@@ -199,12 +172,8 @@ const MessagesPage = () => {
       try {
         const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(newMessage)}&langpair=en|${targetLang.code}`;
         const res = await axios.get(translateUrl);
-        if (res.data && res.data.responseData && res.data.responseData.translatedText) {
-          finalMessage = res.data.responseData.translatedText;
-        }
-      } catch (err) {
-        console.error("Translation failed, sending original text.", err);
-      }
+        if (res.data?.responseData?.translatedText) finalMessage = res.data.responseData.translatedText;
+      } catch (err) {}
     }
 
     try {
@@ -229,24 +198,14 @@ const MessagesPage = () => {
       setReplyTo(null);
       setSelectedFile(null); 
     } catch (err) {
-      console.error(err);
-      alert("Failed to send file. It might be too large for the current server settings.");
+      alert("Error sending message.");
     } finally {
       setIsSending(false);
     }
   };
 
-  const getProfilePhoto = (user) => {
-    if (!user) return null;
-    return user.profilePhoto || user.profilePic || user.avatar || null;
-  };
-
-  const getInitial = (user) => {
-    if (!user) return 'U';
-    if (user.fullName) return user.fullName.charAt(0).toUpperCase();
-    if (user.username) return user.username.charAt(0).toUpperCase();
-    return 'U';
-  };
+  const getProfilePhoto = (user) => user ? (user.profilePhoto || user.profilePic || user.avatar || null) : null;
+  const getInitial = (user) => user ? (user.fullName?.charAt(0) || user.username?.charAt(0) || 'U').toUpperCase() : 'U';
 
   const filteredLanguages = indianLanguages.filter(lang => 
     lang.name.toLowerCase().includes(langSearch.toLowerCase()) || 
@@ -261,141 +220,70 @@ const MessagesPage = () => {
           <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
           <div className="relative">
             <IoMdSearch className="absolute left-3 top-3 text-gray-400 text-xl" />
-            <input 
-              type="text" 
-              placeholder="Search accounts..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            />
+            <input type="text" placeholder="Search accounts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm outline-none" />
           </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">
           {searchQuery.trim() !== "" ? (
-            searchResults.length === 0 ? (
-              <div className="p-6 text-center text-sm text-gray-400">No matching users found.</div>
-            ) : (
-              searchResults.map((user) => (
-                <Link key={user._id} to={`/messages/${user._id}`} onClick={() => setSearchQuery('')} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">{user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
-                  <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-xs text-blue-500">Tap to chat</p></div>
-                </Link>
-              ))
-            )
+            searchResults.map((user) => (
+              <Link key={user._id} to={`/messages/${user._id}`} onClick={() => setSearchQuery('')} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
+                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">{getInitial(user)}</div>
+                <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-xs text-blue-500">Tap to chat</p></div>
+              </Link>
+            ))
           ) : recentChats.length > 0 ? (
-            <>
-              <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Recent Conversations</div>
-              {recentChats.map((user) => (
-                <Link key={user._id} to={`/messages/${user._id}`} className={`flex items-center gap-3 p-4 border-b ${userId === user._id ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-100 border-l-4 border-transparent'}`}>
-                  <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold">{user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
-                  <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-sm text-gray-500 truncate">Open chat</p></div>
-                </Link>
-              ))}
-            </>
+            recentChats.map((user) => (
+              <Link key={user._id} to={`/messages/${user._id}`} className={`flex items-center gap-3 p-4 border-b ${userId === user._id ? 'bg-blue-50' : 'hover:bg-gray-100'}`}>
+                <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold">{getInitial(user)}</div>
+                <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-sm text-gray-500 truncate">Open chat</p></div>
+              </Link>
+            ))
           ) : (
-            <>
-              <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Suggested Contacts</div>
-              {allUsers.length === 0 ? (
-                <div className="p-6 text-center text-sm text-gray-400">Loading your contacts...</div>
-              ) : (
-                allUsers.map((user) => (
-                   <Link key={user._id} to={`/messages/${user._id}`} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
-                    <div className="w-12 h-12 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">{user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
-                    <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-xs text-gray-400">Start a new chat</p></div>
-                  </Link>
-                ))
-              )}
-            </>
+             <div className="p-6 text-center text-sm text-gray-400">Search for users to chat</div>
           )}
         </div>
       </div>
 
       <div className="flex-1 flex flex-col bg-white">
         {!userId ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50">
-            <div className="text-6xl mb-4">💬</div>
-            <h2 className="text-2xl font-semibold text-gray-600">Your Messages</h2>
-            <p className="mt-2 text-sm">Select a user from the sidebar or search to start chatting.</p>
-          </div>
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50"><div className="text-6xl mb-4">💬</div><h2 className="text-2xl font-semibold">Your Messages</h2></div>
         ) : !messages ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <div className="animate-pulse flex flex-col items-center">
-               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p>Loading conversation...</p>
-            </div>
-          </div>
+          <div className="flex items-center justify-center h-full text-gray-500">Loading...</div>
         ) : (
           <>
             <div className="p-4 bg-white/90 backdrop-blur-md border-b flex flex-wrap items-center justify-between shadow-sm z-30 gap-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full overflow-hidden flex items-center justify-center text-white font-bold shadow-sm border border-gray-200">
-                  {getProfilePhoto(chatUser) ? (
-                    <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    getInitial(chatUser)
-                  )}
+                <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full overflow-hidden flex items-center justify-center text-white font-bold shadow-sm">
+                  {getProfilePhoto(chatUser) ? <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" /> : getInitial(chatUser)}
                 </div>
-
                 <div className="flex flex-col justify-center">
-                  <h2 className="font-bold text-lg text-gray-800 leading-tight flex items-center gap-2">
+                  <h2 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                     {chatUser?.fullName || chatUser?.username || "Loading..."}
-                    <span 
-                      className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500 shadow-[0_0_6px_#22c55e]' : 'bg-red-500 shadow-[0_0_6px_#ef4444]'}`} 
-                      title={isOnline ? "Online" : "Offline"}
-                    ></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_6px_#22c55e]"></span>
                   </h2>
                 </div>
               </div>
               
               <div className="relative" ref={langMenuRef}>
-                <button 
-                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                  className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-2 shadow-sm hover:bg-blue-100 transition-colors"
-                >
-                  <span className="text-xs font-bold whitespace-nowrap">🌐 Translate to:</span>
+                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border flex items-center gap-2">
+                  <span className="text-xs font-bold">🌐 Translate to:</span>
                   <span className="text-sm font-bold truncate max-w-[100px]">{targetLang.name}</span>
-                  <IoMdArrowDropdown className="text-lg" />
+                  <IoMdArrowDropdown />
                 </button>
 
                 {isLangMenuOpen && (
-                  <div className="absolute top-12 right-0 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-fade-in-down z-50">
+                  <div className="absolute top-12 right-0 w-64 bg-white rounded-xl shadow-2xl border flex flex-col z-50">
                     <div className="p-2 border-b bg-gray-50 relative">
-                      <IoMdSearch className="absolute left-4 top-4 text-gray-400 text-lg" />
-                      <input 
-                        type="text" 
-                        placeholder="Search language..." 
-                        value={langSearch}
-                        onChange={(e) => setLangSearch(e.target.value)}
-                        className="w-full pl-8 pr-2 py-1.5 bg-white border border-gray-200 rounded-md text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
-                      />
-                      {langSearch && (
-                        <IoMdClose 
-                          className="absolute right-4 top-4 text-gray-400 cursor-pointer hover:text-gray-600" 
-                          onClick={() => setLangSearch("")}
-                        />
-                      )}
+                      <IoMdSearch className="absolute left-4 top-4 text-gray-400" />
+                      <input type="text" placeholder="Search..." value={langSearch} onChange={(e) => setLangSearch(e.target.value)} className="w-full pl-8 pr-2 py-1.5 bg-white border rounded-md text-sm outline-none" />
                     </div>
-
                     <ul className="max-h-60 overflow-y-auto">
-                      {filteredLanguages.length === 0 ? (
-                        <li className="p-4 text-center text-sm text-gray-500">No languages found.</li>
-                      ) : (
-                        filteredLanguages.map((lang) => (
-                          <li 
-                            key={lang.code}
-                            onClick={() => {
-                              setTargetLang(lang);
-                              setIsLangMenuOpen(false);
-                              setLangSearch("");
-                            }}
-                            className={`px-4 py-2.5 flex justify-between items-center cursor-pointer text-sm hover:bg-blue-50 border-b border-gray-50 ${targetLang.code === lang.code ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-700'}`}
-                          >
-                            <span>{lang.name}</span>
-                            <span className="text-gray-400 text-xs font-medium">{lang.native}</span>
-                          </li>
-                        ))
-                      )}
+                      {filteredLanguages.map((lang) => (
+                        <li key={lang.code} onClick={() => { setTargetLang(lang); setIsLangMenuOpen(false); setLangSearch(""); }} className="px-4 py-2.5 flex justify-between items-center cursor-pointer text-sm border-b hover:bg-blue-50">
+                          <span>{lang.name}</span><span className="text-gray-400 text-xs">{lang.native}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
@@ -403,85 +291,52 @@ const MessagesPage = () => {
             </div>
 
             <div className="flex-1 relative bg-gray-50 flex flex-col overflow-hidden">
-              <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
-                {getProfilePhoto(chatUser) ? (
-                  <div 
-                    className="w-full h-full opacity-[0.15]" 
-                    style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                  />
-                ) : (
-                  <div className="text-[20rem] md:text-[30rem] font-black text-gray-300 opacity-40">
-                    {getInitial(chatUser)}
-                  </div>
-                )}
-              </div>
-
               <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
                 {messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                    <p className="text-lg font-medium bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p>
-                  </div>
+                  <div className="flex justify-center h-full text-gray-500"><p className="bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p></div>
                 ) : (
                   messages.map((msg) => {
-                    const senderStr = String(msg.sender._id || msg.sender);
-                    const isMe = senderStr !== String(userId);
-                    const timeString = formatTime(msg.createdAt || msg.timestamp);
-                    const isSeen = msg.isRead || msg.read || false; 
-                    
-                    // --- NEW: Detect if message has media to change bubble color! ---
+                    const isMe = String(msg.sender._id || msg.sender) === String(userId) ? false : true;
                     const hasMedia = msg.image || msg.file;
+                    
+                    // --- BOLD NEW FEATURE: Distinct Colors! ---
+                    // If it has a file/image, it gets a rich PURPLE bubble. If text, it stays BLUE.
                     const bubbleBg = isMe 
-                      ? (hasMedia ? 'bg-indigo-600 text-white shadow-md' : 'bg-blue-600 text-white shadow-sm')
-                      : (hasMedia ? 'bg-indigo-50 text-indigo-900 border border-indigo-200 shadow-md' : 'bg-white text-gray-800 border shadow-sm');
+                      ? (hasMedia ? 'bg-purple-600 text-white shadow-md border border-purple-700' : 'bg-blue-600 text-white shadow-sm')
+                      : (hasMedia ? 'bg-purple-50 border-2 border-purple-200 text-purple-900 shadow-md' : 'bg-white text-gray-800 border shadow-sm');
 
                     return (
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg}`}>
                           
-                          {msg.replyTo && (
-                            <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-blue-300' : 'bg-white/50 border-indigo-400'}`}>
-                              Replying to: {msg.replyTo.text?.substring(0, 30)}...
-                            </div>
-                          )}
-                          
+                          {/* Image Display */}
                           {msg.image && (
-                            <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover mb-2 border-2 border-white/20 shadow-sm" />
+                            <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover mb-2 border-2 border-white/20 shadow-md" />
                           )}
                           
-                          {/* --- NEW: Upgraded File Download Card with Icon --- */}
+                          {/* --- BOLD NEW FEATURE: Downloadable File Card --- */}
                           {msg.file && (
-                            <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" 
-                               className={`flex items-center justify-between gap-4 p-3 rounded-xl text-sm font-bold shadow-sm mb-2 transition-all hover:shadow-md decoration-transparent ${isMe ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-100'}`}>
-                              <div className="flex items-center gap-2 overflow-hidden">
-                                <span className="text-2xl">📄</span>
-                                <span className="truncate">{msg.fileName || "Download Document"}</span>
-                              </div>
-                              <div className={`p-2 rounded-full flex-shrink-0 ${isMe ? 'bg-white/30' : 'bg-indigo-200'}`}>
-                                <IoMdDownload className="text-lg" />
-                              </div>
-                            </a>
+                            <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-white border-purple-200 text-purple-800'}`}>
+                               <div className="flex items-center gap-3 mb-2">
+                                  <span className="text-3xl">📄</span>
+                                  <span className="font-bold text-sm truncate">{msg.fileName || "Document"}</span>
+                               </div>
+                               <a href={msg.file} download={msg.fileName || "attachment"} target="_blank" rel="noreferrer" 
+                                  className={`flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-purple-700 hover:bg-gray-100' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+                                  <IoMdDownload className="text-lg" /> Download File
+                               </a>
+                            </div>
                           )}
 
                           {msg.text && <p className="text-sm md:text-base">{msg.text}</p>}
                           
-                          <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-blue-100' : 'text-gray-400'}`}>
-                             <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-blue-500'}`}>
-                               <BsReplyFill /> Reply
-                             </button>
+                          <div className={`flex items-center justify-end mt-2 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
                              <div className="flex items-center gap-1.5 ml-4">
-                               <span className="text-[10px] font-medium">{timeString}</span>
+                               <span className="text-[10px] font-medium">{formatTime(msg.createdAt || msg.timestamp)}</span>
                                {isMe && (
-                                 <div className="flex items-center">
-                                   {isSeen ? (
-                                     <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-green-600 shadow-[0_0_10px_rgba(34,197,94,0.6)] border border-green-400 transition-all duration-300">
-                                       <IoMdDoneAll className="text-[12px]" /> READ
-                                     </span>
-                                   ) : (
-                                     <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider text-red-600 shadow-[0_0_10px_rgba(239,68,68,0.6)] border border-red-400 transition-all duration-300">
-                                       <IoMdCheckmark className="text-[12px]" /> SENT
-                                     </span>
-                                   )}
-                                 </div>
+                                 <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider border shadow-sm ${msg.isRead ? 'bg-white text-green-600 border-green-400' : 'bg-white text-gray-500 border-gray-300'}`}>
+                                   {msg.isRead ? <IoMdDoneAll /> : <IoMdCheckmark />} {msg.isRead ? 'READ' : 'SENT'}
+                                 </span>
                                )}
                              </div>
                           </div>
@@ -495,23 +350,16 @@ const MessagesPage = () => {
             </div>
 
             <div className="p-4 bg-white border-t z-20 relative">
-              {replyTo && (
-                <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-blue-500">
-                  <span className="text-sm text-gray-600 truncate">Replying to: <b>{replyTo.text}</b></span>
-                  <button onClick={() => setReplyTo(null)} className="text-red-500 text-xs font-bold px-2">X</button>
-                </div>
-              )}
-
+              {/* --- BOLD NEW FEATURE: Selected File Preview with Trash Icon --- */}
               {selectedFile && (
-                <div className="absolute -top-14 left-4 bg-white border border-gray-200 shadow-xl px-4 py-2 rounded-xl flex items-center gap-3 z-50 animate-fade-in-up">
-                  <span className="text-2xl">📄</span>
+                <div className="absolute -top-16 left-4 bg-white border-2 border-green-500 shadow-xl px-4 py-2 rounded-xl flex items-center gap-4 z-50 animate-fade-in-up">
+                  <span className="text-2xl">📁</span>
                   <div className="flex flex-col max-w-[150px]">
                     <span className="text-xs font-bold text-gray-800 truncate">{selectedFile.name}</span>
-                    <span className="text-[10px] text-gray-500">{(selectedFile.size / 1024).toFixed(1)} KB</span>
+                    <span className="text-[10px] text-green-600 font-bold">Ready to send</span>
                   </div>
-                  {/* Replaced red X with a cleaner close button */}
-                  <button type="button" onClick={() => setSelectedFile(null)} className="ml-2 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full p-1 transition-colors">
-                     <IoMdClose />
+                  <button type="button" onClick={() => setSelectedFile(null)} className="ml-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-2 transition-colors title='Remove file'">
+                     <IoMdTrash />
                   </button>
                 </div>
               )}
@@ -529,39 +377,22 @@ const MessagesPage = () => {
                   <label htmlFor="file-upload" className="p-2 text-gray-500 hover:text-blue-600 cursor-pointer transition-colors border-r border-gray-300 mr-2 pr-3" title="Attach a file">
                     <IoMdAttach className="text-2xl" />
                   </label>
-                  <input 
-                    type="file" 
-                    id="file-upload" 
-                    className="hidden" 
-                    onChange={handleFileChange} 
-                    accept="image/*,video/*,.pdf,.doc,.docx" 
-                  />
+                  <input type="file" id="file-upload" className="hidden" onChange={handleFileChange} accept="image/*,video/*,.pdf,.doc,.docx" />
 
-                  <input 
-                    type="text" 
-                    value={newMessage} 
-                    onChange={(e) => setNewMessage(e.target.value)} 
-                    placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} 
-                    className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" 
-                  />
+                  <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" />
 
-                  <button 
-                    type="button" 
-                    onClick={startListening} 
-                    className={`p-2 rounded-full text-xl transition-colors ${isListening ? 'text-red-500 animate-pulse bg-red-100' : 'text-gray-400 hover:text-blue-500 hover:bg-white'}`}
-                    title="Voice Typing"
-                  >
+                  <button type="button" onClick={startListening} className={`p-2 rounded-full text-xl transition-colors ${isListening ? 'text-red-500 animate-pulse bg-red-100' : 'text-gray-400 hover:text-blue-500 hover:bg-white'}`}>
                     <IoMdMic />
                   </button>
                 </div>
 
-                {/* --- NEW: Green Ready-to-Send Button when file is attached --- */}
+                {/* --- BOLD NEW FEATURE: Green Send Arrow when a file is ready! --- */}
                 <button type="submit" disabled={isSending || (!newMessage.trim() && !selectedFile)} className="flex items-center justify-center transition-all">
                   {isSending ? (
-                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                   ) : selectedFile ? (
-                    <div className="bg-green-500 text-white p-2.5 rounded-full shadow-lg hover:bg-green-600 hover:scale-110 transition-transform">
-                       <IoMdSend className="text-xl pl-0.5" />
+                    <div className="bg-green-500 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] hover:bg-green-600 hover:scale-110 transition-transform">
+                       <IoMdArrowRoundUp className="text-2xl font-bold" />
                     </div>
                   ) : (
                     <IoMdSend className={`text-3xl transition-colors ${newMessage.trim() ? 'text-blue-600 hover:text-blue-700' : 'text-gray-400'}`} />

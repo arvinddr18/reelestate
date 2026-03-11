@@ -37,6 +37,9 @@ const ProfilePage = () => {
         const userData = res.data.data.user || res.data.data;
         const postsData = res.data.data.posts || [];
 
+        // Debugging: This will print your exact post data to the browser console
+        console.log("Here is what a post looks like from the database:", postsData[0]);
+
         setUser(userData);
         setUserPosts(postsData);
         setFormData({
@@ -141,24 +144,28 @@ const ProfilePage = () => {
           <div className="grid grid-cols-3 gap-2">
             {userPosts.length > 0 ? userPosts.map((post) => {
               
-              // 1. Check every possible database field name your backend might be using
-              const mediaSource = post.mediaUrl || post.media || post.image || post.video || post.file;
+              // THE FIX: Aggressively hunt for the media in arrays AND strings
+              let mediaSource = null;
               
-              // 2. Check if the file is a Reel/Video so we don't crash the image tag
+              if (post.images && post.images.length > 0) mediaSource = post.images[0];
+              else if (post.mediaUrls && post.mediaUrls.length > 0) mediaSource = post.mediaUrls[0];
+              else if (post.photos && post.photos.length > 0) mediaSource = post.photos[0];
+              else mediaSource = post.mediaUrl || post.media || post.image || post.videoUrl || post.video || post.file;
+              
+              // Check if it's a video file to prevent broken image tags
               const isVideo = post.mediaType === 'reel' || post.mediaType === 'video' || 
-                             (mediaSource && typeof mediaSource === 'string' && (mediaSource.startsWith('data:video') || mediaSource.match(/\.(mp4|webm|ogg)$/i)));
+                             (typeof mediaSource === 'string' && (mediaSource.startsWith('data:video') || mediaSource.match(/\.(mp4|webm|ogg)$/i)));
 
               return (
                 <div key={post._id} className="aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800 group relative flex items-center justify-center">
                   {!mediaSource ? (
-                    <span className="text-gray-600 text-xs font-bold">No Media Found</span>
+                    <span className="text-gray-600 text-xs font-bold px-2 text-center">No Media Found</span>
                   ) : isVideo ? (
                     <video src={mediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" muted loop autoPlay playsInline />
                   ) : (
                     <img src={mediaSource} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={post.title || "Listing"} />
                   )}
                   
-                  {/* Optional: Add a little camera/video icon in the corner */}
                   <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="text-[10px]">{isVideo ? '🎥' : '📸'}</span>
                   </div>

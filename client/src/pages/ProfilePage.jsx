@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdHeart, IoMdText, IoMdTrash } from 'react-icons/io';
+import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdHeart, IoMdText, IoMdTrash, IoMdCreate } from 'react-icons/io';
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -49,6 +49,10 @@ const ProfilePage = () => {
   const [formData, setFormData] = useState({ fullName: '', bio: '', location: '', phone: '', website: '' });
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // --- NEW: Edit Post States ---
+  const [isEditingPost, setIsEditingPost] = useState(false);
+  const [editPostData, setEditPostData] = useState({});
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -110,9 +114,42 @@ const ProfilePage = () => {
       await axios.delete(getApiUrl(`/api/posts/${postId}`), getAuthConfig());
       setUserPosts(userPosts.filter(post => post._id !== postId));
       setSelectedPost(null); 
+      setIsEditingPost(false); // Reset edit state just in case
     } catch (err) {
       const realError = err.response?.data?.message || err.message;
       alert(`Failed to delete post: \n\n${realError}`);
+    }
+  };
+
+  // --- NEW: Open the Edit Post Form ---
+  const handleOpenEditPost = () => {
+    setEditPostData({
+      title: safeText(selectedPost.title),
+      price: safeText(selectedPost.price),
+      propertyType: safeText(selectedPost.propertyType),
+      area: safeText(selectedPost.area),
+      bedrooms: safeText(selectedPost.bedrooms),
+      bathrooms: safeText(selectedPost.bathrooms),
+      description: safeText(selectedPost.description),
+      hashtags: safeText(selectedPost.hashtags)
+    });
+    setIsEditingPost(true);
+  };
+
+  // --- NEW: Save the Edited Post ---
+  const handleSavePostEdit = async () => {
+    try {
+      const res = await axios.put(getApiUrl(`/api/posts/${selectedPost._id}`), editPostData, getAuthConfig());
+      
+      // Update local state instantly without refreshing
+      const updatedPost = { ...selectedPost, ...editPostData };
+      setUserPosts(userPosts.map(post => post._id === selectedPost._id ? updatedPost : post));
+      setSelectedPost(updatedPost);
+      setIsEditingPost(false); // Close form
+      
+    } catch (err) {
+      const realError = err.response?.data?.message || err.message;
+      alert(`Failed to update post: \n\n${realError}`);
     }
   };
 
@@ -151,7 +188,6 @@ const ProfilePage = () => {
                 <span className="text-gray-500">{user?.username ? user.username.charAt(0).toUpperCase() : 'U'}</span>
               )}
             </div>
-            {/* CAMERA BUTTON GUARANTEED TO SHOW */}
             <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
               <IoMdCamera size={20} />
             </button>
@@ -168,7 +204,6 @@ const ProfilePage = () => {
               <span><b>{user?.followersCount || 0}</b> Followers</span>
               <span><b>{user?.followingCount || 0}</b> Following</span>
             </div>
-            {/* EDIT PROFILE BUTTON GUARANTEED TO SHOW */}
             <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </button>
@@ -225,7 +260,7 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 CRASH-PROOF MODAL WITH DELETE BUTTON 🚀 */}
+      {/* 🚀 MODAL WITH EDIT & DELETE BUTTONS 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
@@ -233,7 +268,10 @@ const ProfilePage = () => {
           <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden relative shadow-2xl animate-fade-in-up">
             
             <button 
-              onClick={() => setSelectedPost(null)}
+              onClick={() => {
+                setSelectedPost(null);
+                setIsEditingPost(false); // Make sure it closes edit mode too
+              }}
               className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-orange-500 text-white p-2 rounded-full transition-all"
             >
               <IoMdClose size={24} />
@@ -249,7 +287,7 @@ const ProfilePage = () => {
               })()}
             </div>
 
-            {/* Right Side: Details */}
+            {/* Right Side: Details / Edit Form */}
             <div className="md:w-[45%] flex flex-col h-[50vh] md:h-auto bg-[#0a0a0a]">
               
               <div className="p-4 border-b border-gray-900 flex items-center gap-3">
@@ -270,70 +308,108 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* Property Details */}
-              <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
+              {/* 🔄 CONDITIONAL RENDER: Edit Form vs View Mode 🔄 */}
+              {isEditingPost ? (
                 
-                <div className="mb-6">
-                  <h2 className="text-2xl font-black text-white mb-1">
-                    {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
-                  </h2>
-                  <h3 className="text-lg font-medium text-gray-300">{safeText(selectedPost?.title) || 'Untitled Property'}</h3>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {selectedPost?.propertyType && (
-                    <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold">Type</p>
-                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.propertyType)}</p>
-                    </div>
-                  )}
-                  {selectedPost?.area && (
-                    <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold">Area</p>
-                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.area)}</p>
-                    </div>
-                  )}
-                  {selectedPost?.bedrooms && (
-                    <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold">Bedrooms</p>
-                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.bedrooms)} Beds</p>
-                    </div>
-                  )}
-                  {selectedPost?.bathrooms && (
-                    <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold">Bathrooms</p>
-                      <p className="text-sm font-semibold truncate">{safeText(selectedPost.bathrooms)} Baths</p>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h4>
-                  <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {safeText(selectedPost?.description) || 'No description provided.'}
-                  </p>
-                </div>
-
-                {selectedPost?.hashtags && typeof selectedPost.hashtags === 'string' && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {selectedPost.hashtags.split(',').map((tag, i) => (
-                      <span key={i} className="text-xs text-orange-400 bg-orange-900/20 px-2 py-1 rounded-md">
-                        #{tag.trim().replace('#', '')}
-                      </span>
-                    ))}
+                // --- EDIT FORM MODE ---
+                <div className="p-5 flex-1 overflow-y-auto custom-scrollbar space-y-4">
+                  <h3 className="font-bold text-orange-500 mb-2 border-b border-gray-800 pb-2">Edit Listing</h3>
+                  
+                  <input type="text" placeholder="Title" value={editPostData.title} onChange={(e) => setEditPostData({...editPostData, title: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                  
+                  <input type="number" placeholder="Price (₹)" value={editPostData.price} onChange={(e) => setEditPostData({...editPostData, price: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <input type="text" placeholder="Property Type" value={editPostData.propertyType} onChange={(e) => setEditPostData({...editPostData, propertyType: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    <input type="text" placeholder="Area (sqft)" value={editPostData.area} onChange={(e) => setEditPostData({...editPostData, area: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    <input type="text" placeholder="Bedrooms" value={editPostData.bedrooms} onChange={(e) => setEditPostData({...editPostData, bedrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    <input type="text" placeholder="Bathrooms" value={editPostData.bathrooms} onChange={(e) => setEditPostData({...editPostData, bathrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
                   </div>
-                )}
-              </div>
 
-              {/* DELETE BUTTON GUARANTEED TO SHOW */}
-              <div className="p-4 border-t border-gray-900 bg-black mt-auto">
-                <button 
-                  onClick={() => handleDeletePost(selectedPost._id)}
-                  className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
-                >
-                  <IoMdTrash size={20} /> Delete Post
-                </button>
-              </div>
+                  <textarea placeholder="Description" value={editPostData.description} onChange={(e) => setEditPostData({...editPostData, description: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500 h-24 resize-none" />
+                  
+                  <input type="text" placeholder="Hashtags (comma separated)" value={editPostData.hashtags} onChange={(e) => setEditPostData({...editPostData, hashtags: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                  
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={handleSavePostEdit} className="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition-all active:scale-95">Save</button>
+                    <button onClick={() => setIsEditingPost(false)} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-xl hover:bg-gray-600 transition-all active:scale-95">Cancel</button>
+                  </div>
+                </div>
+
+              ) : (
+
+                // --- VIEW MODE ---
+                <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-black text-white mb-1">
+                      {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
+                    </h2>
+                    <h3 className="text-lg font-medium text-gray-300">{safeText(selectedPost?.title) || 'Untitled Property'}</h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    {selectedPost?.propertyType && (
+                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">Type</p>
+                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.propertyType)}</p>
+                      </div>
+                    )}
+                    {selectedPost?.area && (
+                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">Area</p>
+                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.area)}</p>
+                      </div>
+                    )}
+                    {selectedPost?.bedrooms && (
+                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">Bedrooms</p>
+                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.bedrooms)} Beds</p>
+                      </div>
+                    )}
+                    {selectedPost?.bathrooms && (
+                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">Bathrooms</p>
+                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.bathrooms)} Baths</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h4>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                      {safeText(selectedPost?.description) || 'No description provided.'}
+                    </p>
+                  </div>
+
+                  {selectedPost?.hashtags && typeof selectedPost.hashtags === 'string' && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {selectedPost.hashtags.split(',').map((tag, i) => (
+                        <span key={i} className="text-xs text-orange-400 bg-orange-900/20 px-2 py-1 rounded-md">
+                          #{tag.trim().replace('#', '')}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SPLIT EDIT AND DELETE BUTTONS AT THE BOTTOM */}
+              {!isEditingPost && (
+                <div className="p-4 border-t border-gray-900 bg-black mt-auto flex gap-3">
+                  <button 
+                    onClick={handleOpenEditPost}
+                    className="flex-1 flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
+                  >
+                    <IoMdCreate size={20} /> Edit Post
+                  </button>
+                  <button 
+                    onClick={() => handleDeletePost(selectedPost._id)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"
+                  >
+                    <IoMdTrash size={20} /> Delete Post
+                  </button>
+                </div>
+              )}
 
             </div>
           </div>

@@ -188,23 +188,46 @@ const MessagesPage = () => {
     setDownloadedDocs(prev => ({ ...prev, [msgId]: true }));
   };
 
-  // NEW FIX: Custom function to bypass Chrome's about:blank block on Base64 files!
+  // --- FIXED: Image now opens perfectly centered with a dark background ---
   const openMediaInNewTab = (e, base64Data) => {
     e.preventDefault();
     if (!base64Data) return;
     const newTab = window.open();
     if (newTab) {
-      newTab.document.body.style.margin = "0";
-      newTab.document.body.style.display = "flex";
-      newTab.document.body.style.justifyContent = "center";
-      newTab.document.body.style.alignItems = "center";
-      newTab.document.body.style.backgroundColor = "#000";
-      
-      if (base64Data.startsWith('data:image')) {
-        newTab.document.write(`<img src="${base64Data}" style="max-width:100%; max-height:100vh; object-fit:contain;" />`);
-      } else {
-        newTab.document.write(`<iframe src="${base64Data}" frameborder="0" style="width:100vw; height:100vh;"></iframe>`);
-      }
+      newTab.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Media Viewer</title>
+            <style>
+              body { 
+                margin: 0; 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                min-height: 100vh; 
+                background-color: #0f172a; 
+              }
+              img { 
+                max-width: 95vw; 
+                max-height: 95vh; 
+                object-fit: contain; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                border-radius: 8px;
+              }
+              iframe { 
+                width: 100vw; 
+                height: 100vh; 
+                border: none; 
+              }
+            </style>
+          </head>
+          <body>
+            ${base64Data.startsWith('data:image') ? `<img src="${base64Data}" />` : `<iframe src="${base64Data}"></iframe>`}
+          </body>
+        </html>
+      `);
+      newTab.document.close();
     } else {
       alert("Please allow pop-ups to open this file.");
     }
@@ -312,7 +335,6 @@ const MessagesPage = () => {
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg}`}>
                           
-                          {/* --- RESTORED: Reply Preview Banner --- */}
                           {msg.replyTo && (
                             <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-indigo-300 text-white' : 'bg-black/5 border-indigo-400 text-indigo-800'}`}>
                               Replying to: {msg.replyTo.text?.substring(0, 30) || "Attachment"}...
@@ -352,15 +374,15 @@ const MessagesPage = () => {
                           {msg.text && <p className="text-sm md:text-base">{msg.text}</p>}
                           
                           <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                             {/* --- RESTORED: Reply Button --- */}
                              <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-indigo-600'}`}>
                                <BsReplyFill /> Reply
                              </button>
 
                              <div className="flex items-center gap-1.5 ml-auto">
                                <span className="text-[10px] font-medium">{formatTime(msg.createdAt || msg.timestamp)}</span>
+                               {/* --- FIXED: "SENT" is now red! --- */}
                                {isMe && (
-                                 <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider border shadow-sm ${msg.isRead ? 'bg-white text-green-600 border-green-400' : 'bg-white text-gray-500 border-gray-300'}`}>
+                                 <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider border shadow-sm ${msg.isRead ? 'bg-white text-green-600 border-green-400' : 'bg-white text-red-500 border-red-300'}`}>
                                    {msg.isRead ? <IoMdDoneAll /> : <IoMdCheckmark />} {msg.isRead ? 'READ' : 'SENT'}
                                  </span>
                                )}
@@ -377,7 +399,6 @@ const MessagesPage = () => {
 
             <div className="p-4 bg-white border-t z-20 relative">
               
-              {/* --- RESTORED: Active Reply Preview Bar --- */}
               {replyTo && (
                 <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-indigo-500 shadow-sm animate-fade-in-up">
                   <span className="text-sm text-gray-600 truncate">

@@ -24,6 +24,7 @@ export default function CreatePostPage() {
     taluk: '', district: '', state: '', country: 'India',
     hashtags: '', // comma-separated string
     lat: '', lng: '', address: '',
+    phone: '', // 📞 NEW: Added phone to state
   });
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -169,6 +170,16 @@ export default function CreatePostPage() {
             rows={3}
             className="input-field resize-none"
           />
+
+          {/* 📞 NEW: Property Contact Number Input */}
+          <input 
+            name="phone" 
+            value={form.phone} 
+            onChange={handleChange} 
+            placeholder="Contact Number for this Property (Optional)" 
+            className="input-field" 
+          />
+
         </div>
 
         {/* ── Location ── */}

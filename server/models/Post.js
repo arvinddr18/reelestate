@@ -1,8 +1,3 @@
-/**
- * models/Post.js
- * Property listing post with media, details, and social metrics.
- */
-
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema(
@@ -19,8 +14,8 @@ const postSchema = new mongoose.Schema(
       enum: ['video', 'images'],
       required: true,
     },
-    videoUrl: { type: String },          // Cloudinary video URL
-    videoPublicId: { type: String },     // For deletion from Cloudinary
+    videoUrl: { type: String },           // Cloudinary video URL
+    videoPublicId: { type: String },      // For deletion from Cloudinary
     images: [{ url: String, publicId: String }],
 
     // Property details
@@ -33,7 +28,7 @@ const postSchema = new mongoose.Schema(
       enum: ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'],
       required: true,
     },
-    area: { type: String },          // e.g. "1200 sqft"
+    area: { type: String },               // e.g. "1200 sqft"
     bedrooms: { type: Number },
     bathrooms: { type: Number },
 
@@ -42,11 +37,21 @@ const postSchema = new mongoose.Schema(
     district: { type: String, trim: true },
     state: { type: String, trim: true },
     country: { type: String, trim: true, default: 'India' },
-    // Google Maps coordinates
+
+    // Google Maps coordinates & Privacy System
     location: {
       lat: { type: Number },
       lng: { type: Number },
-      address: { type: String, trim: true },
+      address: { type: String, trim: true }, // The Exact Address (Hidden initially)
+    },
+
+    // --- NEW: NEIGHBORHOOD INTELLIGENCE SECTION ---
+    neighborhood: {
+      score: { type: Number, default: 0 },   // e.g. 8.7
+      schools: { type: String },            // e.g. "1.2 km"
+      hospitals: { type: String },          // e.g. "700 m"
+      transport: { type: String },          // e.g. "1.8 km to Metro"
+      shopping: { type: String },           // e.g. "1.3 km to Mall"
     },
 
     hashtags: [{ type: String, lowercase: true }], // e.g. ['luxury', '2bhk']

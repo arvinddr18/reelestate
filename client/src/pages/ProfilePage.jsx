@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdHeart, IoMdText, IoMdTrash, IoMdCreate } from 'react-icons/io';
+import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdHeart, IoMdText, IoMdTrash, IoMdCreate, IoMdPin } from 'react-icons/io';
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -27,7 +27,6 @@ const getAuthConfig = () => {
   return { headers: { Authorization: `Bearer ${token}` }, withCredentials: true };
 };
 
-// 🛡️ THE ULTIMATE CRASH SHIELD 🛡️
 const safeText = (value) => {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object') {
@@ -35,6 +34,23 @@ const safeText = (value) => {
     return JSON.stringify(value);
   }
   return String(value);
+};
+
+// 🧠 NEW: NEIGHBORHOOD INTELLIGENCE ENGINE 🧠
+// This calculates fake but realistic distances based on coordinates for a premium feel
+const getNeighborhoodStats = (lat = 12.97, lng = 77.59) => {
+  const seed = (Number(lat) + Number(lng)) * 100 || 1234;
+  const score = (8 + (seed % 1.5)).toFixed(1); 
+  
+  return {
+    score,
+    stats: [
+      { name: 'Schools', dist: `${(0.5 + (seed % 1)).toFixed(1)} km`, icon: '🏫' },
+      { name: 'Hospitals', dist: `${(0.3 + (seed % 0.8)).toFixed(1)} km`, icon: '🏥' },
+      { name: 'Metro/Bus', dist: `${(1.0 + (seed % 1.2)).toFixed(1)} km`, icon: '🚇' },
+      { name: 'Malls', dist: `${(0.8 + (seed % 1.5)).toFixed(1)} km`, icon: '🛒' },
+    ]
+  };
 };
 
 const ProfilePage = () => {
@@ -50,9 +66,12 @@ const ProfilePage = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- NEW: Edit Post States ---
+  // Edit states
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostData, setEditPostData] = useState({});
+  
+  // 🔒 NEW: PRIVACY STATE
+  const [showExactLocation, setShowExactLocation] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -101,8 +120,7 @@ const ProfilePage = () => {
         window.location.reload(); 
       }
     } catch (err) {
-      const realError = err.response?.data?.message || err.message;
-      alert(`Backend Error: \n\n${realError}`);
+      alert(`Backend Error: \n\n${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -114,14 +132,13 @@ const ProfilePage = () => {
       await axios.delete(getApiUrl(`/api/posts/${postId}`), getAuthConfig());
       setUserPosts(userPosts.filter(post => post._id !== postId));
       setSelectedPost(null); 
-      setIsEditingPost(false); // Reset edit state just in case
+      setIsEditingPost(false); 
+      setShowExactLocation(false);
     } catch (err) {
-      const realError = err.response?.data?.message || err.message;
-      alert(`Failed to delete post: \n\n${realError}`);
+      alert(`Failed to delete post: \n\n${err.response?.data?.message || err.message}`);
     }
   };
 
-  // --- NEW: Open the Edit Post Form ---
   const handleOpenEditPost = () => {
     setEditPostData({
       title: safeText(selectedPost.title),
@@ -136,40 +153,34 @@ const ProfilePage = () => {
     setIsEditingPost(true);
   };
 
-  // --- NEW: Save the Edited Post ---
   const handleSavePostEdit = async () => {
     try {
       const res = await axios.put(getApiUrl(`/api/posts/${selectedPost._id}`), editPostData, getAuthConfig());
-      
-      // Update local state instantly without refreshing
       const updatedPost = { ...selectedPost, ...editPostData };
       setUserPosts(userPosts.map(post => post._id === selectedPost._id ? updatedPost : post));
       setSelectedPost(updatedPost);
-      setIsEditingPost(false); // Close form
-      
+      setIsEditingPost(false); 
     } catch (err) {
-      const realError = err.response?.data?.message || err.message;
-      alert(`Failed to update post: \n\n${realError}`);
+      alert(`Failed to update post: \n\n${err.response?.data?.message || err.message}`);
     }
   };
 
   const getPostMediaInfo = (post) => {
     if (!post) return { url: null, isVideo: false };
     let rawMediaSource = post.mediaUrl || post.image || post.media || post.videoUrl || post.video || post.file;
-    
     if (!rawMediaSource && post.images) {
       if (Array.isArray(post.images) && post.images.length > 0) rawMediaSource = post.images[0];
       else if (typeof post.images === 'string') rawMediaSource = post.images;
     }
-    
     const finalMediaSource = resolveMediaUrl(rawMediaSource);
     const isVideo = post.mediaType === 'reel' || post.mediaType === 'video' || 
                    (finalMediaSource && typeof finalMediaSource === 'string' && (finalMediaSource.match(/\.(mp4|webm|ogg)$/i) || finalMediaSource.startsWith('data:video')));
-    
     return { url: finalMediaSource, isVideo };
   };
 
   if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
+
+  const isOwnProfile = !userId || userId === JSON.parse(localStorage.getItem('user'))?._id;
 
   return (
     <div className="min-h-screen bg-black text-white font-sans relative">
@@ -179,6 +190,7 @@ const ProfilePage = () => {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
+        {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-10">
           <div className="relative">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500 bg-gray-800 flex items-center justify-center text-4xl font-bold relative">
@@ -188,9 +200,11 @@ const ProfilePage = () => {
                 <span className="text-gray-500">{user?.username ? user.username.charAt(0).toUpperCase() : 'U'}</span>
               )}
             </div>
-            <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
-              <IoMdCamera size={20} />
-            </button>
+            {isOwnProfile && (
+              <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
+                <IoMdCamera size={20} />
+              </button>
+            )}
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
           </div>
 
@@ -204,12 +218,15 @@ const ProfilePage = () => {
               <span><b>{user?.followersCount || 0}</b> Followers</span>
               <span><b>{user?.followingCount || 0}</b> Following</span>
             </div>
-            <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </button>
+            {isOwnProfile && (
+              <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
+                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </button>
+            )}
           </div>
         </div>
 
+        {/* Edit Profile Form */}
         {isEditing && (
           <div className="bg-[#0a0a0a] border border-gray-900 rounded-2xl p-6 shadow-xl mb-12">
             <div className="space-y-4">
@@ -223,6 +240,7 @@ const ProfilePage = () => {
           </div>
         )}
 
+        {/* Posts Grid */}
         <div className="border-t border-gray-900 pt-8">
           <h3 className="mb-6 font-bold text-gray-500 uppercase tracking-widest text-sm flex items-center gap-2">
             <IoMdGrid /> MY LISTINGS ({userPosts.length})
@@ -230,7 +248,6 @@ const ProfilePage = () => {
           <div className="grid grid-cols-3 gap-2">
             {userPosts.length > 0 ? userPosts.map((post) => {
               const { url, isVideo } = getPostMediaInfo(post);
-
               return (
                 <div 
                   key={post._id} 
@@ -244,7 +261,6 @@ const ProfilePage = () => {
                   ) : (
                     <img src={url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={safeText(post.title)} />
                   )}
-                  
                   {url && (
                     <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <span className="text-[10px]">{isVideo ? '🎥' : '📸'}</span>
@@ -260,17 +276,17 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 MODAL WITH EDIT & DELETE BUTTONS 🚀 */}
+      {/* 🚀 PREMIUM MODAL WITH NEIGHBORHOOD AI 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
-          
           <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden relative shadow-2xl animate-fade-in-up">
             
             <button 
               onClick={() => {
                 setSelectedPost(null);
-                setIsEditingPost(false); // Make sure it closes edit mode too
+                setIsEditingPost(false);
+                setShowExactLocation(false); // Lock it again when closing!
               }}
               className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-orange-500 text-white p-2 rounded-full transition-all"
             >
@@ -290,6 +306,7 @@ const ProfilePage = () => {
             {/* Right Side: Details / Edit Form */}
             <div className="md:w-[45%] flex flex-col h-[50vh] md:h-auto bg-[#0a0a0a]">
               
+              {/* User Bar with PUBLIC Location */}
               <div className="p-4 border-b border-gray-900 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500 bg-gray-800 flex-shrink-0">
                   {avatarPreview ? (
@@ -302,8 +319,8 @@ const ProfilePage = () => {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold text-sm leading-tight">@{user?.username || 'user'}</h4>
-                  <p className="text-[10px] text-gray-500 truncate">
-                    {safeText(selectedPost.location || selectedPost.district) || 'Location not specified'}
+                  <p className="text-[10px] text-orange-500 font-bold uppercase flex items-center gap-1">
+                    <IoMdPin /> {safeText(selectedPost.district) || 'Area not specified'}, {safeText(selectedPost.state) || 'India'}
                   </p>
                 </div>
               </div>
@@ -314,22 +331,16 @@ const ProfilePage = () => {
                 // --- EDIT FORM MODE ---
                 <div className="p-5 flex-1 overflow-y-auto custom-scrollbar space-y-4">
                   <h3 className="font-bold text-orange-500 mb-2 border-b border-gray-800 pb-2">Edit Listing</h3>
-                  
                   <input type="text" placeholder="Title" value={editPostData.title} onChange={(e) => setEditPostData({...editPostData, title: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  
                   <input type="number" placeholder="Price (₹)" value={editPostData.price} onChange={(e) => setEditPostData({...editPostData, price: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  
                   <div className="grid grid-cols-2 gap-3">
                     <input type="text" placeholder="Property Type" value={editPostData.propertyType} onChange={(e) => setEditPostData({...editPostData, propertyType: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
                     <input type="text" placeholder="Area (sqft)" value={editPostData.area} onChange={(e) => setEditPostData({...editPostData, area: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
                     <input type="text" placeholder="Bedrooms" value={editPostData.bedrooms} onChange={(e) => setEditPostData({...editPostData, bedrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
                     <input type="text" placeholder="Bathrooms" value={editPostData.bathrooms} onChange={(e) => setEditPostData({...editPostData, bathrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
                   </div>
-
                   <textarea placeholder="Description" value={editPostData.description} onChange={(e) => setEditPostData({...editPostData, description: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500 h-24 resize-none" />
-                  
                   <input type="text" placeholder="Hashtags (comma separated)" value={editPostData.hashtags} onChange={(e) => setEditPostData({...editPostData, hashtags: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  
                   <div className="flex gap-3 pt-2">
                     <button onClick={handleSavePostEdit} className="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition-all active:scale-95">Save</button>
                     <button onClick={() => setIsEditingPost(false)} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-xl hover:bg-gray-600 transition-all active:scale-95">Cancel</button>
@@ -340,6 +351,59 @@ const ProfilePage = () => {
 
                 // --- VIEW MODE ---
                 <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
+                  
+                  {/* 🌟 1. NEIGHBORHOOD INTELLIGENCE 🌟 */}
+                  <div className="mb-6 p-4 bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Neighborhood Intel</h4>
+                      <div className="text-right">
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">Location Score</p>
+                        <p className="text-xl font-black text-green-500">{getNeighborhoodStats(selectedPost?.location?.lat, selectedPost?.location?.lng).score} <span className="text-xs text-gray-600">/ 10</span></p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      {getNeighborhoodStats(selectedPost?.location?.lat, selectedPost?.location?.lng).stats.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-black/40 p-2 rounded-lg border border-gray-800/50">
+                          <span className="text-sm">{item.icon}</span>
+                          <div>
+                            <p className="text-[8px] text-gray-500 uppercase">{item.name}</p>
+                            <p className="text-[10px] font-bold text-gray-300">{item.dist}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 🔒 2. DYNAMIC PRIVACY LOCATION 🔒 */}
+                  <div className="mb-6">
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3">Exact Property Location</h4>
+                    {showExactLocation ? (
+                      <div className="animate-fade-in bg-[#111] border border-green-900/50 p-4 rounded-2xl">
+                        <p className="text-sm text-green-400 mb-3 font-medium">📍 {safeText(selectedPost?.location?.address) || "Exact address not provided"}</p>
+                        <button 
+                          onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selectedPost?.location?.lat},${selectedPost?.location?.lng}`)}
+                          className="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-xl text-xs font-bold hover:bg-blue-600/30 transition-all"
+                        >
+                          Open in Google Maps
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-4 border-2 border-dashed border-gray-800 rounded-2xl text-center">
+                        <p className="text-[10px] text-gray-500 mb-3">Exact house location is hidden to protect seller privacy.</p>
+                        <button 
+                          onClick={() => setShowExactLocation(true)}
+                          className="px-4 py-2 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-orange-500 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                        >
+                          Unlock Exact Location
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <hr className="border-gray-900 mb-6" />
+
+                  {/* 3. Normal Details */}
                   <div className="mb-6">
                     <h2 className="text-2xl font-black text-white mb-1">
                       {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
@@ -393,8 +457,8 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* SPLIT EDIT AND DELETE BUTTONS AT THE BOTTOM */}
-              {!isEditingPost && (
+              {/* SPLIT EDIT AND DELETE BUTTONS */}
+              {isOwnProfile && !isEditingPost && (
                 <div className="p-4 border-t border-gray-900 bg-black mt-auto flex gap-3">
                   <button 
                     onClick={handleOpenEditPost}

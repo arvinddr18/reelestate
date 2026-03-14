@@ -1,9 +1,7 @@
 /**
  * components/feed/PostCard.jsx
  * The main property card shown in the feed.
- * Handles video auto-play on viewport entry, like, comment, save, share, and contact.
  */
-
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
@@ -13,27 +11,10 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import CommentSheet from './CommentSheet';
 
-// Format price with Indian locale support
 const formatPrice = (price) => {
   if (price >= 10000000) return `₹${(price / 10000000).toFixed(1)}Cr`;
   if (price >= 100000) return `₹${(price / 100000).toFixed(1)}L`;
   return `₹${price.toLocaleString('en-IN')}`;
-};
-
-// 🧠 NEIGHBORHOOD INTELLIGENCE ENGINE
-const getNeighborhoodStats = (lat = 12.97, lng = 77.59) => {
-  const seed = (Number(lat) + Number(lng)) * 100 || 1234;
-  const score = (8 + (seed % 1.5)).toFixed(1); 
-  
-  return {
-    score,
-    stats: [
-      { name: 'Schools', dist: `${(0.5 + (seed % 1)).toFixed(1)} km`, icon: '🏫' },
-      { name: 'Hospitals', dist: `${(0.3 + (seed % 0.8)).toFixed(1)} km`, icon: '🏥' },
-      { name: 'Metro/Bus', dist: `${(1.0 + (seed % 1.2)).toFixed(1)} km`, icon: '🚇' },
-      { name: 'Malls', dist: `${(0.8 + (seed % 1.5)).toFixed(1)} km`, icon: '🛒' },
-    ]
-  };
 };
 
 export default function PostCard({ post: initialPost }) {
@@ -45,11 +26,9 @@ export default function PostCard({ post: initialPost }) {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
 
-  // 🗺️ NEAR ME SEARCH STATES
   const [showNearbySearch, setShowNearbySearch] = useState(false);
   const [nearbyQuery, setNearbyQuery] = useState('');
 
-  // Auto-play video when it enters viewport
   const { ref: inViewRef, inView } = useInView({ threshold: 0.7 });
 
   useEffect(() => {
@@ -61,7 +40,7 @@ export default function PostCard({ post: initialPost }) {
     }
   }, [inView]);
 
-  const requireAuth = (action) => {
+  const requireAuth = () => {
     if (!user) { toast.error('Please login to continue.'); navigate('/login'); return false; }
     return true;
   };
@@ -91,11 +70,8 @@ export default function PostCard({ post: initialPost }) {
     }
   };
 
-  // ── 📤 Native Share ────────────────────────────────────────────────────────
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${post._id}`;
-    
-    // Checks if the device supports native sharing (mobile phones do this best)
     if (navigator.share) {
       try {
         await navigator.share({
@@ -107,27 +83,25 @@ export default function PostCard({ post: initialPost }) {
         console.log('Share cancelled', err);
       }
     } else {
-      // Fallback for desktop browsers
       navigator.clipboard.writeText(postUrl);
       toast.success('Link copied to clipboard!');
     }
   };
 
-  // ── 📞 Phone Call ──────────────────────────────────────────────────────────
   const handleCall = () => {
     if (!requireAuth()) return;
-    if (post.author.phone) {
-      window.location.href = `tel:${post.author.phone}`;
+    const phoneNumber = post.phone || post.author.phone;
+    if (phoneNumber) {
+      window.location.href = `tel:${phoneNumber}`;
     } else {
-      toast.error("Seller hasn't provided a phone number yet.");
+      toast.error("No phone number provided for this property.");
     }
   };
 
-  // ── 🔒 STRICT Google Maps Search ──────────────────────────────────────────
   const executeNearbySearch = () => {
     if (nearbyQuery.trim()) {
       const strictQuery = `${nearbyQuery} near ${post.location.lat},${post.location.lng}`;
-      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(strictQuery)}`;
+      const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(strictQuery)}`;
       window.open(mapUrl, '_blank');
     } else {
       toast.error("Please enter a place to search (e.g., Hospital)");
@@ -138,7 +112,6 @@ export default function PostCard({ post: initialPost }) {
 
   return (
     <article className="card max-w-[470px] mx-auto mb-4 border border-zinc-800 bg-black">
-      {/* ── Header ── */}
       <div className="flex items-center justify-between p-3">
         <Link to={`/profile/${post.author._id}`} className="flex items-center gap-2 group">
           {post.author.profilePhoto ? (
@@ -163,7 +136,6 @@ export default function PostCard({ post: initialPost }) {
         )}
       </div>
 
-      {/* ── Media ── */}
       <div ref={inViewRef} className={`relative bg-zinc-950 ${mediaHeight} overflow-hidden`}>
         {post.mediaType === 'video' ? (
           <>
@@ -202,11 +174,9 @@ export default function PostCard({ post: initialPost }) {
         </div>
       </div>
 
-      {/* ── Action Buttons ── */}
       <div className="p-4 pb-2">
         <div className="flex items-center justify-between mb-3">
           
-          {/* LEFT SIDE: Social Interactions */}
           <div className="flex items-center gap-5">
             <button onClick={handleLike} className={`flex items-center gap-1.5 text-sm transition-transform active:scale-95 ${post.isLiked ? 'text-red-500' : 'text-zinc-400 hover:text-white'}`}>
               <span className="text-2xl">{post.isLiked ? '❤️' : '🤍'}</span>
@@ -218,35 +188,27 @@ export default function PostCard({ post: initialPost }) {
               <span className="font-bold">{post.commentsCount}</span>
             </button>
 
-            {/* NEW: Share Button */}
             <button onClick={handleShare} className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-blue-400 transition-transform active:scale-95" title="Share Post">
               <span className="text-2xl">📤</span>
             </button>
           </div>
 
-          {/* RIGHT SIDE: Communication & Save */}
           <div className="flex items-center gap-4">
-            {post.author._id !== user?._id && (
-              <>
-                {/* NEW: Call Button */}
-                <button onClick={handleCall} className="text-2xl text-zinc-400 hover:text-green-500 transition-transform active:scale-95" title="Call Seller">
-                  📞
-                </button>
-                {/* UPDATED: Message Button (Icon Only) */}
-                <Link to={`/messages/${post.author._id}`} className="text-2xl text-zinc-400 hover:text-blue-500 transition-transform active:scale-95" title="Message Seller">
-                  ✉️
-                </Link>
-              </>
-            )}
+            {/* THESE WILL NOW ALWAYS SHOW */}
+            <button onClick={handleCall} className="text-2xl text-zinc-400 hover:text-green-500 transition-transform active:scale-95" title="Call Seller">
+              📞
+            </button>
+            
+            <Link to={`/messages/${post.author._id}`} className="text-2xl text-zinc-400 hover:text-blue-500 transition-transform active:scale-95" title="Message Seller">
+              ✉️
+            </Link>
             
             <button onClick={handleSave} className={`text-2xl transition-transform active:scale-95 ${post.isSaved ? 'text-yellow-400' : 'text-zinc-400 hover:text-white'}`} title="Save Property">
               {post.isSaved ? '🔖' : '🏷️'}
             </button>
           </div>
-
         </div>
 
-        {/* ── Property Info ── */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-sm truncate max-w-[70%]">{post.title}</h3>
@@ -261,6 +223,17 @@ export default function PostCard({ post: initialPost }) {
             <p className="text-xs text-zinc-300 line-clamp-2 mt-2 leading-relaxed">{post.description}</p>
           )}
 
+          {/* 📱 VISUAL PHONE NUMBER BADGE */}
+          {post.phone && (
+            <div className="mt-3 inline-flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-2 rounded-lg shadow-sm">
+              <span className="text-sm">📞</span>
+              <div>
+                <p className="text-[9px] text-zinc-500 uppercase font-bold leading-none mb-1">Contact Property</p>
+                <p className="text-xs font-black text-green-400 leading-none">{post.phone}</p>
+              </div>
+            </div>
+          )}
+
           {post.hashtags?.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {post.hashtags.slice(0, 4).map(tag => (
@@ -271,10 +244,8 @@ export default function PostCard({ post: initialPost }) {
             </div>
           )}
 
-          {/* 🗺️ LOCATION AND NEAR ME SEARCH 🗺️ */}
           {(post.location?.lat && post.location?.lng) && (
             <div className="mt-4 pt-3 border-t border-zinc-900">
-              
               <div className="flex gap-2">
                 <a 
                   href={`https://www.google.com/maps/search/?api=1&query=${post.location.lat},${post.location.lng}`}

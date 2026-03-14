@@ -94,16 +94,17 @@ export default function PostCard({ post: initialPost }) {
   // ── 🔒 STRICT Google Maps Search ──────────────────────────────────────────
   const executeNearbySearch = () => {
     if (nearbyQuery.trim()) {
-      // We remove the "in Taluk" text and force Google to use the EXACT coordinates.
-      // 15z is a very tight zoom level that locks the camera to a small radius
-      const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(nearbyQuery)}/@${post.location.lat},${post.location.lng},15z`;
+      // 1. Force Google Maps to use the "near" command with exact coordinates
+      const strictQuery = `${nearbyQuery} near ${post.location.lat},${post.location.lng}`;
+      
+      // 2. Use the Official Maps API format to lock the search parameters
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(strictQuery)}`;
       
       window.open(mapUrl, '_blank');
     } else {
       toast.error("Please enter a place to search (e.g., Hospital)");
     }
   };
-
   const mediaHeight = 'h-[500px] md:h-[560px]';
 
   return (

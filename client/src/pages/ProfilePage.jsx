@@ -49,7 +49,6 @@ const ProfilePage = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Edit states
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostData, setEditPostData] = useState({});
 
@@ -118,24 +117,45 @@ const ProfilePage = () => {
     }
   };
 
+  // 📝 LOAD ALL FIELDS FOR EDITING
   const handleOpenEditPost = () => {
     setEditPostData({
       title: safeText(selectedPost.title),
       price: safeText(selectedPost.price),
+      priceUnit: safeText(selectedPost.priceUnit) || 'total',
       propertyType: safeText(selectedPost.propertyType),
       area: safeText(selectedPost.area),
       bedrooms: safeText(selectedPost.bedrooms),
       bathrooms: safeText(selectedPost.bathrooms),
       description: safeText(selectedPost.description),
-      hashtags: safeText(selectedPost.hashtags)
+      hashtags: safeText(selectedPost.hashtags),
+      phone: safeText(selectedPost.phone),
+      taluk: safeText(selectedPost.taluk),
+      district: safeText(selectedPost.district),
+      state: safeText(selectedPost.state),
+      country: safeText(selectedPost.country) || 'India',
+      lat: safeText(selectedPost.location?.lat),
+      lng: safeText(selectedPost.location?.lng),
+      address: safeText(selectedPost.location?.address)
     });
     setIsEditingPost(true);
   };
 
+  // 💾 SAVE EDITED FIELDS
   const handleSavePostEdit = async () => {
     try {
-      const res = await axios.put(getApiUrl(`/api/posts/${selectedPost._id}`), editPostData, getAuthConfig());
-      const updatedPost = { ...selectedPost, ...editPostData };
+      // Format the payload properly for the backend
+      const payload = {
+        ...editPostData,
+        location: {
+          lat: editPostData.lat ? parseFloat(editPostData.lat) : undefined,
+          lng: editPostData.lng ? parseFloat(editPostData.lng) : undefined,
+          address: editPostData.address
+        }
+      };
+
+      const res = await axios.put(getApiUrl(`/api/posts/${selectedPost._id}`), payload, getAuthConfig());
+      const updatedPost = { ...selectedPost, ...payload };
       setUserPosts(userPosts.map(post => post._id === selectedPost._id ? updatedPost : post));
       setSelectedPost(updatedPost);
       setIsEditingPost(false); 
@@ -159,7 +179,11 @@ const ProfilePage = () => {
 
   if (loading) return <div className="h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
 
-  const isOwnProfile = !userId || userId === JSON.parse(localStorage.getItem('user'))?._id;
+  const loggedInUser = JSON.parse(localStorage.getItem('user'));
+  const currentUserId = loggedInUser?._id || loggedInUser?.id;
+  
+  // Failsafe check to ensure buttons ALWAYS show for your own posts
+  const canEditPost = !userId || userId === currentUserId || (selectedPost && (selectedPost.author === currentUserId || selectedPost.author?._id === currentUserId));
 
   return (
     <div className="min-h-screen bg-black text-white font-sans relative">
@@ -179,7 +203,7 @@ const ProfilePage = () => {
                 <span className="text-gray-500">{user?.username ? user.username.charAt(0).toUpperCase() : 'U'}</span>
               )}
             </div>
-            {isOwnProfile && (
+            {canEditPost && (
               <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full border-2 border-black hover:bg-orange-500 cursor-pointer z-10">
                 <IoMdCamera size={20} />
               </button>
@@ -197,7 +221,7 @@ const ProfilePage = () => {
               <span><b>{user?.followersCount || 0}</b> Followers</span>
               <span><b>{user?.followingCount || 0}</b> Following</span>
             </div>
-            {isOwnProfile && (
+            {canEditPost && (
               <button onClick={() => setIsEditing(!isEditing)} className="mt-4 px-6 py-2 rounded-lg font-bold bg-gray-800 hover:bg-gray-700 transition-all">
                 {isEditing ? 'Cancel' : 'Edit Profile'}
               </button>
@@ -255,37 +279,38 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 POST DETAIL MODAL (CLEAN VIEW) 🚀 */}
+      {/* 🚀 POST DETAIL MODAL (FIXED HEIGHT) 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
-          <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden relative shadow-2xl animate-fade-in-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-md">
+          {/* HARD HEIGHT LIMIT SET HERE SO BUTTONS NEVER HIDE */}
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col md:flex-row overflow-hidden relative shadow-2xl animate-fade-in-up">
             
             <button 
               onClick={() => {
                 setSelectedPost(null);
                 setIsEditingPost(false);
               }}
-              className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-orange-500 text-white p-2 rounded-full transition-all"
+              className="absolute top-4 right-4 z-[110] bg-black/60 hover:bg-orange-500 text-white p-2 rounded-full transition-all"
             >
               <IoMdClose size={24} />
             </button>
 
             {/* Left Side: Media */}
-            <div className="md:w-[55%] bg-black flex items-center justify-center relative min-h-[300px] md:min-h-[500px]">
+            <div className="md:w-[55%] bg-black flex items-center justify-center relative h-[30vh] md:h-full border-b md:border-b-0 md:border-r border-gray-900">
               {(() => {
                 const { url, isVideo } = getPostMediaInfo(selectedPost);
                 if (!url) return <span className="text-gray-600">No Media Available</span>;
-                if (isVideo) return <video src={url} controls autoPlay className="max-w-full max-h-[85vh] object-contain" />;
-                return <img src={url} alt="Post" className="max-w-full max-h-[85vh] object-contain" />;
+                if (isVideo) return <video src={url} controls autoPlay className="w-full h-full object-contain" />;
+                return <img src={url} alt="Post" className="w-full h-full object-contain" />;
               })()}
             </div>
 
             {/* Right Side: Details / Edit Form */}
-            <div className="md:w-[45%] flex flex-col h-[50vh] md:h-auto bg-[#0a0a0a]">
+            <div className="md:w-[45%] flex flex-col h-[55vh] md:h-full bg-[#0a0a0a]">
               
-              {/* User Bar with PUBLIC Location */}
-              <div className="p-4 border-b border-gray-900 flex items-center gap-3">
+              {/* User Bar */}
+              <div className="p-4 border-b border-gray-900 flex items-center gap-3 shrink-0">
                 <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500 bg-gray-800 flex-shrink-0">
                   {avatarPreview ? (
                     <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="User" />
@@ -303,90 +328,118 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* 🔄 CONDITIONAL RENDER: Edit Form vs View Mode 🔄 */}
-              {isEditingPost ? (
+              {/* 🔄 SCROLLABLE MIDDLE SECTION 🔄 */}
+              <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
                 
-                // --- EDIT FORM MODE ---
-                <div className="p-5 flex-1 overflow-y-auto custom-scrollbar space-y-4">
-                  <h3 className="font-bold text-orange-500 mb-2 border-b border-gray-800 pb-2">Edit Listing</h3>
-                  <input type="text" placeholder="Title" value={editPostData.title} onChange={(e) => setEditPostData({...editPostData, title: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  <input type="number" placeholder="Price (₹)" value={editPostData.price} onChange={(e) => setEditPostData({...editPostData, price: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input type="text" placeholder="Property Type" value={editPostData.propertyType} onChange={(e) => setEditPostData({...editPostData, propertyType: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                    <input type="text" placeholder="Area (sqft)" value={editPostData.area} onChange={(e) => setEditPostData({...editPostData, area: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                    <input type="text" placeholder="Bedrooms" value={editPostData.bedrooms} onChange={(e) => setEditPostData({...editPostData, bedrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                    <input type="text" placeholder="Bathrooms" value={editPostData.bathrooms} onChange={(e) => setEditPostData({...editPostData, bathrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  </div>
-                  <textarea placeholder="Description" value={editPostData.description} onChange={(e) => setEditPostData({...editPostData, description: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500 h-24 resize-none" />
-                  <input type="text" placeholder="Hashtags (comma separated)" value={editPostData.hashtags} onChange={(e) => setEditPostData({...editPostData, hashtags: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
-                  <div className="flex gap-3 pt-2">
-                    <button onClick={handleSavePostEdit} className="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition-all active:scale-95">Save</button>
-                    <button onClick={() => setIsEditingPost(false)} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-xl hover:bg-gray-600 transition-all active:scale-95">Cancel</button>
-                  </div>
-                </div>
-
-              ) : (
-
-                // --- VIEW MODE ---
-                <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
+                {isEditingPost ? (
                   
-                  {/* Normal Details */}
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-black text-white mb-1">
-                      {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
-                    </h2>
-                    <h3 className="text-lg font-medium text-gray-300">{safeText(selectedPost?.title) || 'Untitled Property'}</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {selectedPost?.propertyType && (
-                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">Type</p>
-                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.propertyType)}</p>
-                      </div>
-                    )}
-                    {selectedPost?.area && (
-                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">Area</p>
-                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.area)}</p>
-                      </div>
-                    )}
-                    {selectedPost?.bedrooms && (
-                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">Bedrooms</p>
-                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.bedrooms)} Beds</p>
-                      </div>
-                    )}
-                    {selectedPost?.bathrooms && (
-                      <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">Bathrooms</p>
-                        <p className="text-sm font-semibold truncate">{safeText(selectedPost.bathrooms)} Baths</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h4>
-                    <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                      {safeText(selectedPost?.description) || 'No description provided.'}
-                    </p>
-                  </div>
-
-                  {selectedPost?.hashtags && typeof selectedPost.hashtags === 'string' && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {selectedPost.hashtags.split(',').map((tag, i) => (
-                        <span key={i} className="text-xs text-orange-400 bg-orange-900/20 px-2 py-1 rounded-md">
-                          #{tag.trim().replace('#', '')}
-                        </span>
-                      ))}
+                  // --- EDIT FORM MODE (ALL FIELDS) ---
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-orange-500 mb-2 border-b border-gray-800 pb-2">Edit All Details</h3>
+                    <input type="text" placeholder="Title" value={editPostData.title} onChange={(e) => setEditPostData({...editPostData, title: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <input type="number" placeholder="Price (₹)" value={editPostData.price} onChange={(e) => setEditPostData({...editPostData, price: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                      <select value={editPostData.priceUnit} onChange={(e) => setEditPostData({...editPostData, priceUnit: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500">
+                        <option value="total">Total Price</option>
+                        <option value="per_sqft">Per Sq.Ft</option>
+                        <option value="per_month">Per Month</option>
+                      </select>
                     </div>
-                  )}
-                </div>
-              )}
 
-              {/* SPLIT EDIT AND DELETE BUTTONS */}
-              {isOwnProfile && !isEditingPost && (
-                <div className="p-4 border-t border-gray-900 bg-black mt-auto flex gap-3">
+                    <div className="grid grid-cols-3 gap-2">
+                      <input type="text" placeholder="Type" value={editPostData.propertyType} onChange={(e) => setEditPostData({...editPostData, propertyType: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                      <input type="text" placeholder="Beds" value={editPostData.bedrooms} onChange={(e) => setEditPostData({...editPostData, bedrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                      <input type="text" placeholder="Baths" value={editPostData.bathrooms} onChange={(e) => setEditPostData({...editPostData, bathrooms: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    </div>
+                    
+                    <input type="text" placeholder="Area (sqft)" value={editPostData.area} onChange={(e) => setEditPostData({...editPostData, area: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+
+                    <textarea placeholder="Description" value={editPostData.description} onChange={(e) => setEditPostData({...editPostData, description: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500 h-24 resize-none" />
+                    
+                    <input type="text" placeholder="Property Contact Phone" value={editPostData.phone} onChange={(e) => setEditPostData({...editPostData, phone: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" placeholder="Taluk" value={editPostData.taluk} onChange={(e) => setEditPostData({...editPostData, taluk: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                      <input type="text" placeholder="District" value={editPostData.district} onChange={(e) => setEditPostData({...editPostData, district: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    </div>
+
+                    <input type="text" placeholder="Full Address" value={editPostData.address} onChange={(e) => setEditPostData({...editPostData, address: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" placeholder="Lat" value={editPostData.lat} onChange={(e) => setEditPostData({...editPostData, lat: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                      <input type="text" placeholder="Lng" value={editPostData.lng} onChange={(e) => setEditPostData({...editPostData, lng: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    </div>
+
+                    <input type="text" placeholder="Hashtags (comma separated)" value={editPostData.hashtags} onChange={(e) => setEditPostData({...editPostData, hashtags: e.target.value})} className="w-full bg-[#111] border border-gray-800 p-3 rounded-lg text-sm outline-none focus:border-orange-500" />
+                    
+                    <div className="flex gap-3 pt-2 pb-6">
+                      <button onClick={handleSavePostEdit} className="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition-all active:scale-95">Save</button>
+                      <button onClick={() => setIsEditingPost(false)} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-xl hover:bg-gray-600 transition-all active:scale-95">Cancel</button>
+                    </div>
+                  </div>
+
+                ) : (
+
+                  // --- VIEW MODE ---
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-3xl font-black text-white mb-1">
+                        {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}
+                      </h2>
+                      <h3 className="text-lg font-medium text-gray-300 leading-tight">{safeText(selectedPost?.title) || 'Untitled Property'}</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedPost?.propertyType && (
+                        <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                          <p className="text-[10px] text-gray-500 uppercase font-bold">Type</p>
+                          <p className="text-sm font-semibold truncate capitalize">{safeText(selectedPost.propertyType)}</p>
+                        </div>
+                      )}
+                      {selectedPost?.area && (
+                        <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                          <p className="text-[10px] text-gray-500 uppercase font-bold">Area</p>
+                          <p className="text-sm font-semibold truncate">{safeText(selectedPost.area)}</p>
+                        </div>
+                      )}
+                      {selectedPost?.bedrooms && (
+                        <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                          <p className="text-[10px] text-gray-500 uppercase font-bold">Bedrooms</p>
+                          <p className="text-sm font-semibold truncate">{safeText(selectedPost.bedrooms)} Beds</p>
+                        </div>
+                      )}
+                      {selectedPost?.bathrooms && (
+                        <div className="bg-[#111] p-3 rounded-xl border border-gray-800">
+                          <p className="text-[10px] text-gray-500 uppercase font-bold">Bathrooms</p>
+                          <p className="text-sm font-semibold truncate">{safeText(selectedPost.bathrooms)} Baths</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h4>
+                      <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                        {safeText(selectedPost?.description) || 'No description provided.'}
+                      </p>
+                    </div>
+
+                    {selectedPost?.hashtags && typeof selectedPost.hashtags === 'string' && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedPost.hashtags.split(',').map((tag, i) => (
+                          <span key={i} className="text-xs text-orange-400 bg-orange-900/20 px-2 py-1 rounded-md">
+                            #{tag.trim().replace('#', '')}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* FIXED BOTTOM BAR - NEVER SCROLLS OUT OF SIGHT */}
+              {canEditPost && !isEditingPost && (
+                <div className="p-4 border-t border-gray-900 bg-[#050505] shrink-0 flex gap-3">
                   <button 
                     onClick={handleOpenEditPost}
                     className="flex-1 flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/30 py-3 rounded-xl font-bold transition-all active:scale-95"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdHeart, IoMdText, IoMdTrash, IoMdCreate, IoMdPin } from 'react-icons/io';
+import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdCreate, IoMdTrash, IoMdPin } from 'react-icons/io';
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -36,23 +36,6 @@ const safeText = (value) => {
   return String(value);
 };
 
-// 🧠 NEW: NEIGHBORHOOD INTELLIGENCE ENGINE 🧠
-// This calculates fake but realistic distances based on coordinates for a premium feel
-const getNeighborhoodStats = (lat = 12.97, lng = 77.59) => {
-  const seed = (Number(lat) + Number(lng)) * 100 || 1234;
-  const score = (8 + (seed % 1.5)).toFixed(1); 
-  
-  return {
-    score,
-    stats: [
-      { name: 'Schools', dist: `${(0.5 + (seed % 1)).toFixed(1)} km`, icon: '🏫' },
-      { name: 'Hospitals', dist: `${(0.3 + (seed % 0.8)).toFixed(1)} km`, icon: '🏥' },
-      { name: 'Metro/Bus', dist: `${(1.0 + (seed % 1.2)).toFixed(1)} km`, icon: '🚇' },
-      { name: 'Malls', dist: `${(0.8 + (seed % 1.5)).toFixed(1)} km`, icon: '🛒' },
-    ]
-  };
-};
-
 const ProfilePage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -69,9 +52,6 @@ const ProfilePage = () => {
   // Edit states
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostData, setEditPostData] = useState({});
-  
-  // 🔒 NEW: PRIVACY STATE
-  const [showExactLocation, setShowExactLocation] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -133,7 +113,6 @@ const ProfilePage = () => {
       setUserPosts(userPosts.filter(post => post._id !== postId));
       setSelectedPost(null); 
       setIsEditingPost(false); 
-      setShowExactLocation(false);
     } catch (err) {
       alert(`Failed to delete post: \n\n${err.response?.data?.message || err.message}`);
     }
@@ -276,7 +255,7 @@ const ProfilePage = () => {
       </div>
 
       {/* ========================================= */}
-      {/* 🚀 PREMIUM MODAL WITH NEIGHBORHOOD AI 🚀 */}
+      {/* 🚀 POST DETAIL MODAL (CLEAN VIEW) 🚀 */}
       {/* ========================================= */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-sm">
@@ -286,7 +265,6 @@ const ProfilePage = () => {
               onClick={() => {
                 setSelectedPost(null);
                 setIsEditingPost(false);
-                setShowExactLocation(false); // Lock it again when closing!
               }}
               className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-orange-500 text-white p-2 rounded-full transition-all"
             >
@@ -352,58 +330,7 @@ const ProfilePage = () => {
                 // --- VIEW MODE ---
                 <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
                   
-                  {/* 🌟 1. NEIGHBORHOOD INTELLIGENCE 🌟 */}
-                  <div className="mb-6 p-4 bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Neighborhood Intel</h4>
-                      <div className="text-right">
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">Location Score</p>
-                        <p className="text-xl font-black text-green-500">{getNeighborhoodStats(selectedPost?.location?.lat, selectedPost?.location?.lng).score} <span className="text-xs text-gray-600">/ 10</span></p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      {getNeighborhoodStats(selectedPost?.location?.lat, selectedPost?.location?.lng).stats.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-black/40 p-2 rounded-lg border border-gray-800/50">
-                          <span className="text-sm">{item.icon}</span>
-                          <div>
-                            <p className="text-[8px] text-gray-500 uppercase">{item.name}</p>
-                            <p className="text-[10px] font-bold text-gray-300">{item.dist}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 🔒 2. DYNAMIC PRIVACY LOCATION 🔒 */}
-                  <div className="mb-6">
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3">Exact Property Location</h4>
-                    {showExactLocation ? (
-                      <div className="animate-fade-in bg-[#111] border border-green-900/50 p-4 rounded-2xl">
-                        <p className="text-sm text-green-400 mb-3 font-medium">📍 {safeText(selectedPost?.location?.address) || "Exact address not provided"}</p>
-                        <button 
-                          onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selectedPost?.location?.lat},${selectedPost?.location?.lng}`)}
-                          className="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-xl text-xs font-bold hover:bg-blue-600/30 transition-all"
-                        >
-                          Open in Google Maps
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="p-4 border-2 border-dashed border-gray-800 rounded-2xl text-center">
-                        <p className="text-[10px] text-gray-500 mb-3">Exact house location is hidden to protect seller privacy.</p>
-                        <button 
-                          onClick={() => setShowExactLocation(true)}
-                          className="px-4 py-2 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-orange-500 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]"
-                        >
-                          Unlock Exact Location
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <hr className="border-gray-900 mb-6" />
-
-                  {/* 3. Normal Details */}
+                  {/* Normal Details */}
                   <div className="mb-6">
                     <h2 className="text-2xl font-black text-white mb-1">
                       {selectedPost?.price ? `₹${safeText(selectedPost.price)}` : 'Price on Request'}

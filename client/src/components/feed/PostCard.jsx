@@ -94,16 +94,9 @@ export default function PostCard({ post: initialPost }) {
   // ── 🔒 STRICT Google Maps Search ──────────────────────────────────────────
   const executeNearbySearch = () => {
     if (nearbyQuery.trim()) {
-      // 1. Prioritize Taluk, then District, to force a local boundary search
-      const locationName = post.taluk || post.district || '';
-      
-      // 2. Format query to explicitly say "in [Area]"
-      const strictQuery = locationName 
-        ? `${nearbyQuery} in ${locationName}` 
-        : `${nearbyQuery} near ${post.location.lat},${post.location.lng}`;
-
-      // 3. Official Maps URL using 14z (Zoom Level 14 restricts the viewport to a city/town size)
-      const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(strictQuery)}/@${post.location.lat},${post.location.lng},14z`;
+      // We remove the "in Taluk" text and force Google to use the EXACT coordinates.
+      // 15z is a very tight zoom level that locks the camera to a small radius
+      const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(nearbyQuery)}/@${post.location.lat},${post.location.lng},15z`;
       
       window.open(mapUrl, '_blank');
     } else {

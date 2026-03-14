@@ -1,7 +1,7 @@
 /**
  * components/feed/PostCard.jsx
  * The main property card shown in the feed.
- * Handles video auto-play on viewport entry, like, comment, save, and STRICT location searches.
+ * Handles video auto-play on viewport entry, like, comment, save, share, and contact.
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -91,20 +91,49 @@ export default function PostCard({ post: initialPost }) {
     }
   };
 
+  // ── 📤 Native Share ────────────────────────────────────────────────────────
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${post._id}`;
+    
+    // Checks if the device supports native sharing (mobile phones do this best)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: `Check out this ${post.propertyType} on ReelEstate!`,
+          url: postUrl,
+        });
+      } catch (err) {
+        console.log('Share cancelled', err);
+      }
+    } else {
+      // Fallback for desktop browsers
+      navigator.clipboard.writeText(postUrl);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
+  // ── 📞 Phone Call ──────────────────────────────────────────────────────────
+  const handleCall = () => {
+    if (!requireAuth()) return;
+    if (post.author.phone) {
+      window.location.href = `tel:${post.author.phone}`;
+    } else {
+      toast.error("Seller hasn't provided a phone number yet.");
+    }
+  };
+
   // ── 🔒 STRICT Google Maps Search ──────────────────────────────────────────
   const executeNearbySearch = () => {
     if (nearbyQuery.trim()) {
-      // 1. Force Google Maps to use the "near" command with exact coordinates
       const strictQuery = `${nearbyQuery} near ${post.location.lat},${post.location.lng}`;
-      
-      // 2. Use the Official Maps API format to lock the search parameters
       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(strictQuery)}`;
-      
       window.open(mapUrl, '_blank');
     } else {
       toast.error("Please enter a place to search (e.g., Hospital)");
     }
   };
+
   const mediaHeight = 'h-[500px] md:h-[560px]';
 
   return (
@@ -174,8 +203,10 @@ export default function PostCard({ post: initialPost }) {
       </div>
 
       {/* ── Action Buttons ── */}
-      <div className="p-4">
+      <div className="p-4 pb-2">
         <div className="flex items-center justify-between mb-3">
+          
+          {/* LEFT SIDE: Social Interactions */}
           <div className="flex items-center gap-5">
             <button onClick={handleLike} className={`flex items-center gap-1.5 text-sm transition-transform active:scale-95 ${post.isLiked ? 'text-red-500' : 'text-zinc-400 hover:text-white'}`}>
               <span className="text-2xl">{post.isLiked ? '❤️' : '🤍'}</span>
@@ -187,17 +218,32 @@ export default function PostCard({ post: initialPost }) {
               <span className="font-bold">{post.commentsCount}</span>
             </button>
 
-            {post.author._id !== user?._id && (
-              <Link to={`/messages/${post.author._id}`} className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-blue-400 transition-colors">
-                <span className="text-2xl">✉️</span>
-                <span className="hidden sm:inline text-xs font-bold">Contact</span>
-              </Link>
-            )}
+            {/* NEW: Share Button */}
+            <button onClick={handleShare} className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-blue-400 transition-transform active:scale-95" title="Share Post">
+              <span className="text-2xl">📤</span>
+            </button>
           </div>
 
-          <button onClick={handleSave} className={`text-2xl transition-transform active:scale-95 ${post.isSaved ? 'text-yellow-400' : 'text-zinc-400 hover:text-white'}`}>
-            {post.isSaved ? '🔖' : '🏷️'}
-          </button>
+          {/* RIGHT SIDE: Communication & Save */}
+          <div className="flex items-center gap-4">
+            {post.author._id !== user?._id && (
+              <>
+                {/* NEW: Call Button */}
+                <button onClick={handleCall} className="text-2xl text-zinc-400 hover:text-green-500 transition-transform active:scale-95" title="Call Seller">
+                  📞
+                </button>
+                {/* UPDATED: Message Button (Icon Only) */}
+                <Link to={`/messages/${post.author._id}`} className="text-2xl text-zinc-400 hover:text-blue-500 transition-transform active:scale-95" title="Message Seller">
+                  ✉️
+                </Link>
+              </>
+            )}
+            
+            <button onClick={handleSave} className={`text-2xl transition-transform active:scale-95 ${post.isSaved ? 'text-yellow-400' : 'text-zinc-400 hover:text-white'}`} title="Save Property">
+              {post.isSaved ? '🔖' : '🏷️'}
+            </button>
+          </div>
+
         </div>
 
         {/* ── Property Info ── */}
@@ -230,7 +276,6 @@ export default function PostCard({ post: initialPost }) {
             <div className="mt-4 pt-3 border-t border-zinc-900">
               
               <div className="flex gap-2">
-                {/* 1. Official View on Map Button */}
                 <a 
                   href={`https://www.google.com/maps/search/?api=1&query=${post.location.lat},${post.location.lng}`}
                   target="_blank" 
@@ -241,7 +286,6 @@ export default function PostCard({ post: initialPost }) {
                   🗺️ View on Map
                 </a>
 
-                {/* 2. Strict Near Me Button */}
                 <button
                   onClick={() => setShowNearbySearch(!showNearbySearch)}
                   className={`flex-1 text-center inline-flex items-center justify-center gap-1 text-[11px] font-bold border px-3 py-2 rounded-lg transition-colors ${showNearbySearch ? 'bg-orange-500 text-white border-orange-500' : 'bg-zinc-800 hover:bg-zinc-700 text-orange-400 border-zinc-700'}`}
@@ -250,7 +294,6 @@ export default function PostCard({ post: initialPost }) {
                 </button>
               </div>
 
-              {/* Search Bar Dropdown */}
               {showNearbySearch && (
                 <div className="animate-fade-in flex gap-2 mt-2 bg-zinc-900 p-2 rounded-lg border border-zinc-800 shadow-inner">
                   <input

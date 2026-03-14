@@ -33,7 +33,7 @@ const createPost = async (req, res) => {
   try {
     const {
       title, description, price, priceUnit, propertyType,
-      area, bedrooms, bathrooms,
+      area, bedrooms, bathrooms, phone,
       taluk, district, state, country,
       hashtags, mediaType,
       lat, lng, address,
@@ -49,7 +49,7 @@ const createPost = async (req, res) => {
       priceUnit, propertyType, area,
       bedrooms: bedrooms ? Number(bedrooms) : undefined,
       bathrooms: bathrooms ? Number(bathrooms) : undefined,
-      taluk, district, state, country,
+      taluk, district, state, country, phone,
       mediaType,
       hashtags: hashtags ? JSON.parse(hashtags).map(h => h.toLowerCase().replace('#', '')) : [],
       location: (lat && lng) ? { lat: parseFloat(lat), lng: parseFloat(lng), address } : undefined,

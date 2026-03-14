@@ -104,7 +104,7 @@ const getFeed = async (req, res) => {
 
     const [posts, total] = await Promise.all([
       Post.find(filter)
-        .populate('author', 'username profilePhoto isVerified role')
+        .populate('author', 'username profilePhoto isVerified role phone')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -142,7 +142,7 @@ const getFeed = async (req, res) => {
 const getPost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'username profilePhoto isVerified role bio location followersCount');
+      .populate('author', 'username profilePhoto isVerified role bio location followersCount phone');
 
     if (!post || !post.isActive) {
       return res.status(404).json({ success: false, message: 'Post not found.' });
@@ -278,7 +278,7 @@ const searchPosts = async (req, res) => {
     }
 
     const posts = await Post.find(filter)
-      .populate('author', 'username profilePhoto isVerified')
+      .populate('author', 'username profilePhoto isVerified phone')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -293,7 +293,7 @@ const searchPosts = async (req, res) => {
 const getSavedPosts = async (req, res) => {
   try {
     const saved = await SavedProperty.find({ user: req.user._id })
-      .populate({ path: 'post', populate: { path: 'author', select: 'username profilePhoto' } })
+      .populate({ path: 'post', populate: { path: 'author', select: 'username profilePhoto phone' } })
       .sort({ createdAt: -1 });
 
     const posts = saved.map(s => s.post).filter(Boolean);

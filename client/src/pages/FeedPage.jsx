@@ -72,14 +72,45 @@ export default function FeedPage() {
     if (categoryName === 'All') {
       setFilters({}); 
     } else {
+      // We clear subCategory when a new main category is picked
       setFilters({ propertyType: categoryName });
     }
+  };
+
+  const handleSubSelect = (subName) => {
+    setFilters(prev => ({
+      ...prev,
+      // If user clicks the same sub-cat again, it removes the filter (toggle)
+      subCategory: prev.subCategory === subName ? undefined : subName
+    }));
+  };
+
+  const handleRefresh = async () => {
+    await fetchPosts(1, filters, true);
+    setPage(1);
+    toast.success('Feed updated! ✨');
   };
 
   return (
     <div className="min-h-screen bg-black">
       {/* Filter bar */}
-     <CategoryBar activeCategory={filters.propertyType || 'All'} onFilterChange={handleCategorySelect} />
+    <CategoryBar 
+        activeCategory={filters.propertyType || 'All'} 
+        onFilterChange={handleCategorySelect}
+        activeSub={filters.subCategory}
+        onSubSelect={handleSubSelect}
+      />
+
+      {/* Floating Refresh Button (Instagram Style) */}
+      <div className="flex justify-center sticky top-24 z-40 h-0">
+        <button 
+          onClick={handleRefresh}
+          className="bg-orange-500/90 backdrop-blur-sm text-white px-4 py-1.5 rounded-full shadow-lg text-[12px] font-bold animate-bounce flex items-center gap-2 border border-orange-400"
+        >
+          ✨ New Posts
+        </button>
+      </div>
+      
      {/* --- Skeleton Loading for Circles (Shows while loading first page) --- */}
       {loading && posts.length === 0 && (
         <div className="flex gap-5 px-4 py-4 overflow-hidden bg-black no-scrollbar">

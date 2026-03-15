@@ -2,12 +2,24 @@
  * controllers/postController.js
  * Handles all post operations: create, feed, like, comment, save, search, filter.
  */
+const mongoose = require('mongoose');
 const Post = require('../models/Post');
 const User = require('../models/User');
-const Like = require('../models/Like');
-const SavedProperty = require('../models/SavedProperty');
-const Comment = require('../models/Comment');
 
+// Bulletproof fallback so the app doesn't crash if these files don't exist yet
+const Like = mongoose.models.Like || mongoose.model('Like', new mongoose.Schema({ 
+  post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, 
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } 
+}));
+const SavedProperty = mongoose.models.SavedProperty || mongoose.model('SavedProperty', new mongoose.Schema({ 
+  post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, 
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } 
+}));
+const Comment = mongoose.models.Comment || mongoose.model('Comment', new mongoose.Schema({ 
+  post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, 
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
+  text: String 
+}));
 // ─── Create Post ──────────────────────────────────────────────────────────────
 /**
  * POST /api/posts

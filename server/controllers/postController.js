@@ -2,7 +2,11 @@
  * controllers/postController.js
  * Handles all post operations: create, feed, like, comment, save, search, filter.
  */
-
+const Post = require('../models/Post');
+const User = require('../models/User');
+const Like = require('../models/Like');
+const SavedProperty = require('../models/SavedProperty');
+const Comment = require('../models/Comment');
 
 // ─── Create Post ──────────────────────────────────────────────────────────────
 /**

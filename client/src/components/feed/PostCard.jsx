@@ -33,8 +33,16 @@ export default function PostCard({ post: initialPost }) {
 
   useEffect(() => {
     if (!videoRef.current) return;
+
     if (inView) {
-      videoRef.current.play().catch(() => {});
+      // play() returns a promise in modern browsers
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If auto-play is blocked, we make sure it's muted and try again
+          setIsMuted(true);
+        });
+      }
     } else {
       videoRef.current.pause();
     }
@@ -136,10 +144,10 @@ export default function PostCard({ post: initialPost }) {
         )}
       </div>
 
-      <div ref={inViewRef} className={`relative bg-zinc-950 ${mediaHeight} overflow-hidden`}>
+      <div ref={inViewRef} onDoubleClick={handleLike} className={`relative bg-zinc-950 ${mediaHeight} overflow-hidden cursor-pointer`}>
         {post.mediaType === 'video' ? (
           <>
-            <video ref={videoRef} src={post.videoUrl} className="w-full h-full object-cover" loop muted={isMuted} playsInline />
+          <video ref={videoRef} src={post.videoUrl} className="w-full h-full object-cover" loop muted={isMuted} playsInline preload="auto" />
             <button onClick={() => setIsMuted(m => !m)} className="absolute bottom-3 right-3 bg-black/50 rounded-full p-2 text-white text-xs">
               {isMuted ? '🔇' : '🔊'}
             </button>

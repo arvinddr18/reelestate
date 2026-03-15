@@ -59,15 +59,19 @@ app.use('/api/admin', adminRoutes);
 app.get('/api/health', (req, res) => res.json({ status: 'OK', time: new Date() }));
 
 // --- 5. Database Connection & Server Start ---
-const PORT = process.env.PORT || 5000;
+// Use Render's port or default to 10000
+const PORT = process.env.PORT || 10000;
 
+// 1. Open the port IMMEDIATELY with '0.0.0.0' so Render doesn't time out
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT} with Live Chat!`);
+});
+
+// 2. Connect to Database independently
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ Connected to MongoDB");
-    // IMPORTANT: We use server.listen now, not app.listen!
-    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT} with Live Chat!`));
   })
   .catch(err => {
     console.error("❌ MongoDB Connection Error:", err.message);
-    process.exit(1);
   });

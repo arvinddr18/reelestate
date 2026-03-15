@@ -24,8 +24,10 @@ export default function ShareSheet({ post, onClose }) {
     fetchConnections();
   }, []);
 
-  const filtered = connections.filter(user => 
-    user.username.toLowerCase().includes(search.toLowerCase())
+  // Improved search to check both username and full name
+  const filtered = (connections || []).filter(user => 
+    user.username?.toLowerCase().includes(search.toLowerCase()) ||
+    user.fullName?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleExternalShare = (platform) => {

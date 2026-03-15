@@ -28,7 +28,8 @@ export default function PostCard({ post: initialPost }) {
   const videoRef = useRef(null);
 const [showNearbySearch, setShowNearbySearch] = useState(false);
   const [nearbyQuery, setNearbyQuery] = useState('');
-  const [showShare, setShowShare] = useState(false); 
+  const [showShare, setShowShare] = useState(false);  
+  const [showHeart, setShowHeart] = useState(false); // Add this line
 
   const { ref: inViewRef, inView } = useInView({ threshold: 0.7 });
   
@@ -56,6 +57,11 @@ const [showNearbySearch, setShowNearbySearch] = useState(false);
 
   const handleLike = async () => {
     if (!requireAuth()) return;
+
+    // Trigger Heart Animation
+    setShowHeart(true);
+    setTimeout(() => setShowHeart(false), 800);
+
     const wasLiked = post.isLiked;
     setPost(p => ({ ...p, isLiked: !wasLiked, likesCount: wasLiked ? p.likesCount - 1 : p.likesCount + 1 }));
     try {
@@ -168,6 +174,12 @@ const [showNearbySearch, setShowNearbySearch] = useState(false);
         <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full border border-zinc-700/50">
           👁 {post.viewsCount?.toLocaleString()}
         </div>
+        {/* Big Animated Heart Overlay */}
+        {showHeart && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <span className="text-8xl animate-heart-pop drop-shadow-2xl">❤️</span>
+          </div>
+        )}
       </div>
 
       <div className="p-4 pb-2">

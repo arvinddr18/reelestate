@@ -3,26 +3,6 @@
  * Handles all post operations: create, feed, like, comment, save, search, filter.
  */
 
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/auth');
-const { 
-  createPost, 
-  getFeed, 
-  getPost, 
-  deletePost, 
-  updatePost, 
-  toggleLike, 
-  toggleSave, 
-  getComments, 
-  addComment, 
-  searchPosts, 
-  getSavedPosts 
-} = require('../controllers/postController');
-
-// --- Routes ---
-
-// --- Routes ---
 
 // ─── Create Post ──────────────────────────────────────────────────────────────
 /**

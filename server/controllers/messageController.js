@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Post = require('../models/Post'); // <-- ADD THIS LINE RIGHT HERE!
+
 // Grab the Message database model
 const Message = mongoose.models.Message || mongoose.model('Message');
 

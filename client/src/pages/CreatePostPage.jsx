@@ -3,6 +3,7 @@
  * Form to upload a property post (video reel or images + details).
  */
 
+import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -19,12 +20,25 @@ export default function CreatePostPage() {
   const [progress, setProgress] = useState(0);
 
   const [form, setForm] = useState({
-    title: '', description: '', price: '', priceUnit: 'total',
-    propertyType: 'apartment', area: '', bedrooms: '', bathrooms: '',
-    taluk: '', district: '', state: '', country: 'India',
-    hashtags: '', // comma-separated string
-    lat: '', lng: '', address: '',
-    phone: '', // 📞 NEW: Added phone to state
+    title: '', 
+    description: '', 
+    price: '', 
+    priceUnit: 'total',
+    mainCategory: 'All',      // NEW: For the circle icons
+    subCategory: 'None',      // NEW: For Villa/House etc
+    propertyType: 'apartment', 
+    area: '', 
+    bedrooms: '', 
+    bathrooms: '',
+    taluk: '', 
+    district: '', 
+    state: '', 
+    country: 'India',
+    hashtags: '', 
+    lat: '', 
+    lng: '', 
+    address: '',
+    phone: '', 
   });
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -136,6 +150,39 @@ export default function CreatePostPage() {
         )}
 
         {/* ── Property Details ── */}
+{/* --- NEW: Main Category for the Instagram Circles --- */}
+<div className="space-y-2">
+  <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Display Category</label>
+  <select 
+    name="mainCategory" 
+    value={form.mainCategory} 
+    onChange={handleChange} 
+    className="input-field"
+  >
+    {MAIN_CATEGORIES.map(cat => (
+      <option key={cat.name} value={cat.name}>{cat.icon} {cat.name}</option>
+    ))}
+  </select>
+</div>
+
+{/* --- NEW: Sub Category (Only shows for Sale Hub) --- */}
+{form.mainCategory === 'Sale Hub' && (
+  <div className="space-y-2 animate-in fade-in">
+    <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Sale Type</label>
+    <select 
+      name="subCategory" 
+      value={form.subCategory} 
+      onChange={handleChange} 
+      className="input-field"
+    >
+      <option value="None">-- Select --</option>
+      {SALE_HUB_SUBS.map(sub => (
+        <option key={sub} value={sub}>{sub}</option>
+      ))}
+    </select>
+  </div>
+)}
+
         <div className="space-y-4">
           <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Property Details</h2>
 

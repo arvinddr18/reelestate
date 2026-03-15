@@ -54,3 +54,12 @@ video.cover {
   width: 100%;
   height: 100%;
 }
+
+/* This hides the scrollbar but keeps the scrolling working */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

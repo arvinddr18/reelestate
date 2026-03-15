@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import PostCard from '../components/feed/PostCard';
 import FilterBar from '../components/feed/FilterBar';
+import CategoryBar from '../components/CategoryBar';
 
 export default function FeedPage() {
   const [posts, setPosts] = useState([]);
@@ -67,14 +68,18 @@ export default function FeedPage() {
     return () => observerRef.current?.disconnect();
   }, [loading, hasMore, filters]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+  const handleCategorySelect = (categoryName) => {
+    if (categoryName === 'All') {
+      setFilters({}); 
+    } else {
+      setFilters({ propertyType: categoryName });
+    }
   };
 
   return (
     <div className="min-h-screen bg-black">
       {/* Filter bar */}
-      <FilterBar filters={filters} onFilterChange={handleFilterChange} />
+     <CategoryBar activeCategory={filters.propertyType || 'All'} onFilterChange={handleCategorySelect} />
 
       {/* Feed */}
       <div className="py-4 px-2">

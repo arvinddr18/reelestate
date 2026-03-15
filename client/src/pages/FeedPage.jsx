@@ -80,6 +80,17 @@ export default function FeedPage() {
     <div className="min-h-screen bg-black">
       {/* Filter bar */}
      <CategoryBar activeCategory={filters.propertyType || 'All'} onFilterChange={handleCategorySelect} />
+     {/* --- Skeleton Loading for Circles (Shows while loading first page) --- */}
+      {loading && posts.length === 0 && (
+        <div className="flex gap-5 px-4 py-4 overflow-hidden bg-black no-scrollbar">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex flex-col items-center min-w-[70px]">
+              <div className="w-14 h-14 rounded-full animate-shimmer" />
+              <div className="w-10 h-2 mt-2 rounded animate-shimmer" />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Feed */}
       <div className="py-4 px-2">

@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import CommentSheet from './CommentSheet';
+import ShareSheet from './ShareSheet'; // Add this line
 
 const formatPrice = (price) => {
   if (price >= 10000000) return `₹${(price / 10000000).toFixed(1)}Cr`;
@@ -25,12 +26,12 @@ export default function PostCard({ post: initialPost }) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
-
-  const [showNearbySearch, setShowNearbySearch] = useState(false);
+const [showNearbySearch, setShowNearbySearch] = useState(false);
   const [nearbyQuery, setNearbyQuery] = useState('');
+  const [showShare, setShowShare] = useState(false); 
 
   const { ref: inViewRef, inView } = useInView({ threshold: 0.7 });
-
+  
   useEffect(() => {
     if (!videoRef.current) return;
 
@@ -78,22 +79,9 @@ export default function PostCard({ post: initialPost }) {
     }
   };
 
-  const handleShare = async () => {
-    const postUrl = `${window.location.origin}/post/${post._id}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: `Check out this ${post.propertyType} on ReelEstate!`,
-          url: postUrl,
-        });
-      } catch (err) {
-        console.log('Share cancelled', err);
-      }
-    } else {
-      navigator.clipboard.writeText(postUrl);
-      toast.success('Link copied to clipboard!');
-    }
+  const handleShare = () => {
+    // This opens your custom Instagram-style Share Sheet
+    setShowShare(true);
   };
 
   const handleCall = () => {
@@ -307,6 +295,13 @@ export default function PostCard({ post: initialPost }) {
           postId={post._id}
           onClose={() => setShowComments(false)}
           onCommentAdded={() => setPost(p => ({ ...p, commentsCount: p.commentsCount + 1 }))}
+        />
+      )}
+
+      {showShare && (
+        <ShareSheet 
+          post={post} 
+          onClose={() => setShowShare(false)} 
         />
       )}
     </article>

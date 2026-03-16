@@ -8,12 +8,15 @@ export default function ShareSheet({ post, onClose }) {
   const [loading, setLoading] = useState(false);
 
   // 1. Fetch Followers & Following from your backend
-  useEffect(() => {
+ useEffect(() => {
     const fetchConnections = async () => {
       setLoading(true);
       try {
-        // You'll need an endpoint that returns both followers and following
         const { data } = await api.get('/users/connections'); 
+        
+        // --- ADD THIS LINE HERE ---
+        console.log("DEBUG: My Friends Data from Backend ->", data);
+        
         setConnections(data); 
       } catch (err) {
         console.error("Couldn't load friends");
@@ -25,10 +28,14 @@ export default function ShareSheet({ post, onClose }) {
   }, []);
 
   // Improved search to check both username and full name
-  const filtered = (connections || []).filter(user => 
-    user.username?.toLowerCase().includes(search.toLowerCase()) ||
-    user.fullName?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Safety check: if connections is null/undefined, use an empty array
+  const filtered = (connections || []).filter(user => {
+    const searchTerm = search.toLowerCase();
+    return (
+      user.username?.toLowerCase().includes(searchTerm) ||
+      user.fullName?.toLowerCase().includes(searchTerm)
+    );
+  });
 
   const handleExternalShare = (platform) => {
     const url = `${window.location.origin}/post/${post._id}`;

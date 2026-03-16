@@ -10,34 +10,55 @@
   }
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background-color: #000;
-    color: #fff;
+    /* UPDATE: Changed from #000 to Deep Midnight Navy */
+    background-color: #020617; 
+    color: #f8fafc;
     -webkit-font-smoothing: antialiased;
   }
-  /* Custom scrollbar */
+  /* Custom scrollbar matching the theme */
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #111; }
-  ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  ::-webkit-scrollbar-track { background: #020617; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
 }
 
 @layer components {
-  /* Reusable button styles */
+  /* UPDATE: Added Glowing Orange for primary buttons */
   .btn-primary {
-    @apply bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-[#f97316] hover:bg-[#ea580c] text-white font-bold px-4 py-2 rounded-xl transition-all duration-200 shadow-[0_4px_15px_rgba(249,115,22,0.3)] active:scale-95 disabled:opacity-50;
   }
-  .btn-outline {
-    @apply border border-zinc-600 hover:border-zinc-400 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200;
+  
+  /* UPDATE: Glassmorphism effect for Call/Chat buttons */
+  .btn-glass {
+    @apply bg-slate-800/40 backdrop-blur-md border border-white/10 text-white font-bold px-4 py-3 rounded-xl transition-all duration-200 hover:bg-slate-800/60 active:scale-95;
   }
+
   .input-field {
-    @apply w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition-colors;
+    @apply w-full bg-[#0f172a] border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#f97316] transition-colors;
   }
-  /* Card shadow for feed posts */
+
+  /* UPDATE: Deep Blue Card background */
   .card {
-    @apply bg-zinc-900 rounded-xl overflow-hidden;
+    @apply bg-[#0f172a] rounded-2xl overflow-hidden border border-slate-800/50;
   }
 }
 
-/* Snap scroll for reel feed */
+/* --- THE NEW MIDNIGHT UI CLASSES --- */
+
+/* Price Tag Gradient from your screenshot */
+.price-badge {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+}
+
+/* Floating Bottom Navigation (the blue glow) */
+.nav-glass {
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* --- KEEPING YOUR EXISTING ANIMATIONS --- */
+
 .snap-scroll {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
@@ -48,34 +69,26 @@
   height: 100vh;
 }
 
-/* Video fill container */
 video.cover {
   object-fit: cover;
   width: 100%;
   height: 100%;
 }
 
-/* This hides the scrollbar but keeps the scrolling working */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* The Shimmer (Skeleton) Animation */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+  background: linear-gradient(90deg, #0f172a 25%, #1e293b 50%, #0f172a 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;
 }
-/* Instagram Style Heart Pop Animation */
+
 @keyframes heart-pop {
   0% { transform: scale(0); opacity: 0; }
   50% { transform: scale(1.4); opacity: 1; }

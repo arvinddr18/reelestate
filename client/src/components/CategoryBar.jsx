@@ -1,13 +1,32 @@
 import React from 'react';
 import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 
-export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect }) {
+// ADD 'onReelClick' to your props here
+export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
-    /* Changed bg-black to bg-brand-950 and removed absolute positioning to work with the FeedPage flexbox */
     <div className="w-full bg-brand-950 border-b border-white/5">
       
-      {/* Main Categories Row - Forced Horizontal Scroll */}
+      {/* Main Categories Row */}
       <div className="flex items-center overflow-x-auto gap-6 px-6 py-5 no-scrollbar whitespace-nowrap">
+        
+        {/* ── 🚀 START: REELS STORY CIRCLE ── */}
+        <div 
+          onClick={onReelClick} 
+          className="flex flex-col items-center min-w-[72px] cursor-pointer group"
+        >
+          {/* Instagram-style Gradient Ring */}
+          <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-lg animate-in zoom-in duration-500">
+            <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-2 border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
+              🎬
+            </div>
+          </div>
+          <span className="text-[10px] mt-3 font-black uppercase tracking-tighter text-brand-500 animate-pulse">
+            REELS
+          </span>
+        </div>
+        {/* ── END: REELS STORY CIRCLE ── */}
+
+        {/* Existing Categories mapping starts here */}
         {MAIN_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat.name;
           return (
@@ -16,7 +35,6 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               onClick={() => onFilterChange(cat.name)}
               className="flex flex-col items-center min-w-[72px] cursor-pointer group"
             >
-              {/* Icon Circle: Glass effect for inactive, Orange Glow for active */}
               <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
                 isActive 
                 ? 'bg-brand-500 border-2 border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.4)] text-white' 
@@ -25,7 +43,6 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
                 {cat.icon}
               </div>
 
-              {/* Category Name */}
               <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter transition-colors ${
                 isActive ? 'text-brand-500' : 'text-brand-100/60'
               }`}>
@@ -36,7 +53,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
         })}
       </div>
 
-      {/* Sub Categories Row (Shows for Sale Hub) - Pill style matching screenshot */}
+      {/* Sub Categories Row */}
       {activeCategory === 'Sale Hub' && (
         <div className="flex overflow-x-auto gap-3 px-6 pb-5 no-scrollbar animate-in slide-in-from-top duration-300 whitespace-nowrap">
           {SALE_HUB_SUBS.map((sub) => (

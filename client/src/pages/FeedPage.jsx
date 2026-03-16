@@ -92,64 +92,77 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Filter bar */}
-    <CategoryBar 
-        activeCategory={filters.propertyType || 'All'} 
-        onFilterChange={handleCategorySelect}
-        activeSub={filters.subCategory}
-        onSubSelect={handleSubSelect}
-      />
+    /* Main container: Force height to 100% of the viewport and hide outside scroll */
+    <div className="h-screen flex flex-col bg-brand-950 overflow-hidden">
+      
+      {/* 1. Category Bar: Sticky at the top, forced horizontal scroll */}
+      <div className="flex-none z-50 bg-brand-950/80 backdrop-blur-md border-b border-white/5">
+        <CategoryBar 
+          activeCategory={filters.propertyType || 'All'} 
+          onFilterChange={handleCategorySelect}
+          activeSub={filters.subCategory}
+          onSubSelect={handleSubSelect}
+        />
+      </div>
 
-      {/* Floating Refresh Button (Instagram Style) */}
-      <div className="flex justify-center sticky top-24 z-40 h-0">
+      {/* 2. Floating Refresh Button (Improved Positioning) */}
+      <div className="absolute top-24 left-1/2 -translate-x-1/2 z-40">
         <button 
           onClick={handleRefresh}
-          className="bg-orange-500/90 backdrop-blur-sm text-white px-4 py-1.5 rounded-full shadow-lg text-[12px] font-bold animate-bounce flex items-center gap-2 border border-orange-400"
+          className="price-badge-glow text-white px-5 py-2 rounded-full text-[11px] font-black animate-bounce flex items-center gap-2 border border-white/10"
         >
-          ✨ New Posts
+          ✨ NEW POSTS
         </button>
       </div>
-      
-     {/* --- Skeleton Loading for Circles (Shows while loading first page) --- */}
-      {loading && posts.length === 0 && (
-        <div className="flex gap-5 px-4 py-4 overflow-hidden bg-black no-scrollbar">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex flex-col items-center min-w-[70px]">
-              <div className="w-14 h-14 rounded-full animate-shimmer" />
-              <div className="w-10 h-2 mt-2 rounded animate-shimmer" />
+
+      {/* 3. The Feed: Scrollable area that fits the remaining screen */}
+      <div className="flex-1 overflow-y-auto no-scrollbar snap-y snap-mandatory">
+        
+        {/* Skeleton Loading (Midnight Theme) */}
+        {loading && posts.length === 0 && (
+          <div className="flex gap-5 px-6 py-6 overflow-hidden">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex flex-col items-center min-w-[75px]">
+                <div className="w-16 h-16 rounded-full animate-shimmer" />
+                <div className="w-12 h-2 mt-3 rounded animate-shimmer" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Post List */}
+        <div className="max-w-[500px] mx-auto pb-24">
+          {posts.length === 0 && !loading ? (
+            <div className="text-center py-32 text-brand-100">
+              <p className="text-5xl mb-6">🏘️</p>
+              <p className="text-xl font-bold text-white">No properties found</p>
+              <p className="text-sm mt-2 opacity-60">Try adjusting your filters</p>
             </div>
-          ))}
+          ) : (
+            posts.map(post => (
+              /* Each card is a snap item to make it feel like a Reel */
+              <div key={post._id} className="snap-start snap-always min-h-[80vh] flex flex-col justify-center">
+                <PostCard post={post} />
+              </div>
+            ))
+          )}
+
+          {/* Loading spinner */}
+          {loading && (
+            <div className="flex justify-center py-10">
+              <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} className="h-10" />
+
+          {!hasMore && posts.length > 0 && (
+            <p className="text-center text-brand-100/40 text-[10px] font-bold uppercase tracking-widest py-12">
+              You've seen everything 🎉
+            </p>
+          )}
         </div>
-      )}
-
-      {/* Feed */}
-      <div className="py-4 px-2">
-        {posts.length === 0 && !loading ? (
-          <div className="text-center py-24 text-zinc-500">
-            <p className="text-4xl mb-4">🏠</p>
-            <p className="text-lg font-medium">No properties found</p>
-            <p className="text-sm mt-2">Try adjusting your filters</p>
-          </div>
-        ) : (
-          posts.map(post => (
-            <PostCard key={post._id} post={post} />
-          ))
-        )}
-
-        {/* Loading spinner */}
-        {loading && (
-          <div className="flex justify-center py-8">
-            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-
-        {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="h-4" />
-
-        {!hasMore && posts.length > 0 && (
-          <p className="text-center text-zinc-600 text-sm py-8">You've seen all properties 🎉</p>
-        )}
       </div>
     </div>
   );

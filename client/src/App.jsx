@@ -25,7 +25,8 @@ import Layout from './components/common/Layout';
 // Protected route wrapper — redirects to login if not authenticated
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>;
+  // Change from bg-black to bg-brand-950
+if (loading) return <div className="min-h-screen bg-brand-950 flex items-center justify-center"><div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" /></div>;
   return user ? children : <Navigate to="/login" replace />;
 };
 

@@ -11,6 +11,7 @@ import FilterBar from '../components/feed/FilterBar';
 import CategoryBar from '../components/CategoryBar';
 
 export default function FeedPage() {
+  const [showReels, setShowReels] = useState(false);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -102,6 +103,7 @@ export default function FeedPage() {
           onFilterChange={handleCategorySelect}
           activeSub={filters.subCategory}
           onSubSelect={handleSubSelect}
+          onReelClick={() => toast.success("Opening Reels Mode... 🎬")} 
         />
       </div>
 

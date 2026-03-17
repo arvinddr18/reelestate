@@ -4,13 +4,14 @@ import appLogo from '../assets/logo.nodexa.png';
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
-    <div className="w-full bg-brand-950 border-b border-white/5 flex flex-col">
+    // Removed border-b so the whole header melts seamlessly into the background
+    <div className="w-full bg-brand-950 flex flex-col">
       
       {/* ── ROW 1: TOP BRANDING BAR ── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 relative bg-brand-950/40 backdrop-blur-3xl z-[70]">
+      <div className="flex items-center justify-between px-6 py-4 relative z-[70]">
         
         {/* Left: BIGGER Sticker Logo */}
-        <div className="relative w-14 h-14 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
+        <div className="relative w-16 h-16 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
           <img 
             src={appLogo} 
             alt="App Logo" 
@@ -26,17 +27,18 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
           </h1>
         </div>
 
-        {/* Right: Empty spacer to balance the layout perfectly (Matches logo size) */}
-        <div className="w-14 h-14" />
+        {/* Right: Empty spacer to balance the layout perfectly */}
+        <div className="w-16 h-16" />
       </div>
 
       {/* ── ROW 2: NAVIGATION BAR ── */}
       <div className="flex items-center relative w-full">
 
-        {/* LEFT: FIXED STORY CIRCLE */}
+        {/* LEFT: FIXED STORY CIRCLE (Removed all box backgrounds, borders, and vertical lines) */}
+        {/* Added a soft gradient fade so when category circles scroll behind it, it looks clean */}
         <div 
           onClick={onReelClick} 
-          className="sticky left-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
+          className="sticky left-0 z-50 flex flex-col items-center min-w-[100px] px-2 py-4 cursor-pointer group bg-gradient-to-r from-brand-950 via-brand-950 to-transparent"
         >
           <div className="relative animate-in slide-in-from-left duration-700">
             <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
@@ -46,14 +48,13 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
             </div>
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 border-4 border-brand-950 rounded-full shadow-lg animate-bounce" />
           </div>
-          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-brand-500 text-center">
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-brand-500 text-center drop-shadow-md">
             Stories
           </span>
-          <div className="absolute right-0 top-1/4 bottom-1/4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
         </div>
 
         {/* CENTER: SCROLLABLE CATEGORIES */}
-        <div className="flex-1 flex items-center gap-6 px-6 py-5 overflow-x-auto no-scrollbar whitespace-nowrap">
+        <div className="flex-1 flex items-center gap-6 px-4 py-4 overflow-x-auto no-scrollbar whitespace-nowrap">
           {MAIN_CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.name;
             return (
@@ -65,11 +66,11 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
                   isActive 
                   ? 'bg-brand-500 border-2 border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.4)] text-white' 
-                  : 'bg-brand-200/40 backdrop-blur-md border border-white/10 text-brand-100'
+                  : 'bg-brand-200/20 backdrop-blur-md border border-white/5 text-brand-100 shadow-sm'
                 }`}>
                   {cat.icon}
                 </div>
-                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter ${isActive ? 'text-brand-500' : 'text-brand-100/60'}`}>
+                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter drop-shadow-md ${isActive ? 'text-brand-500' : 'text-brand-100/60'}`}>
                   {cat.name}
                 </span>
               </div>
@@ -77,22 +78,21 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
           })}
         </div>
 
-        {/* RIGHT: FIXED PROFILE HUB */}
+        {/* RIGHT: FIXED PROFILE HUB (Removed all box backgrounds, borders, and vertical lines) */}
         <div 
-          className="sticky right-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-l border-white/5 cursor-pointer group"
+          className="sticky right-0 z-50 flex flex-col items-center min-w-[100px] px-2 py-4 cursor-pointer group bg-gradient-to-l from-brand-950 via-brand-950 to-transparent"
         >
           <div className="relative animate-in slide-in-from-right duration-700">
-            <div className="w-16 h-16 rounded-full p-[2px] bg-white/10 group-hover:bg-brand-500 transition-all duration-500">
+            <div className="w-16 h-16 rounded-full p-[2px] bg-white/10 group-hover:bg-brand-500 transition-all duration-500 shadow-lg">
               <div className="w-full h-full rounded-full bg-brand-900 border-2 border-brand-950 flex items-center justify-center overflow-hidden">
                 <span className="text-white font-black text-xl">A</span>
               </div>
             </div>
             <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-brand-950 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse" />
           </div>
-          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-brand-500 transition-colors">
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-brand-500 transition-colors drop-shadow-md">
             Profile
           </span>
-          <div className="absolute left-0 top-1/4 bottom-1/4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
         </div>
 
       </div> {/* Ends Row 2 */}
@@ -107,7 +107,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               className={`px-5 py-2 rounded-full text-[11px] font-black transition-all active:scale-95 ${
                 activeSub === sub 
                 ? 'bg-brand-500 text-white shadow-lg' 
-                : 'bg-brand-200/60 text-brand-100 border border-white/5'
+                : 'bg-brand-200/40 text-brand-100 border border-white/5'
               }`}
             >
               {sub}

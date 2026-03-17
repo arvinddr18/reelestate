@@ -9,21 +9,32 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
       {/* ── ROW 1: TOP BRANDING BAR ── */}
       <div className="flex items-center justify-between px-6 py-4 relative z-[70]">
         
-        {/* Left: Sticker Logo */}
-        <div className="relative w-16 h-16 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
-          <img 
-            src={appLogo} 
-            alt="App Logo" 
-            className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.6)]" 
-          />
-        </div>
-
-        {/* Center: App Name ONLY */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer">
-          <h1 className="text-3xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
-            <span className="text-white">NODE</span>
-            <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
-          </h1>
+        {/* Left: Sticker Logo (Made it significantly bigger) */}
+        <div className="sticky left-0 z-[70] bg-brand-950/40 backdrop-blur-3xl px-6 py-5 flex items-center gap-4 group cursor-pointer border-r border-white/5">
+          
+          {/* ✨ BIGGER STICKER LOGO (Trapped in a clear dark square) ✨ */}
+          <div className="relative w-20 h-20 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3">
+            {/* The base square */}
+            <div className="absolute inset-0 bg-brand-950 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(249,115,22,0.3)]" />
+            
+            {/* The image itself, contained perfectly inside the square */}
+            <div className="absolute inset-2 flex items-center justify-center overflow-hidden">
+              <img 
+                src={appLogo} 
+                alt="App Logo" 
+                className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.4)]" 
+              />
+            </div>
+          </div>
+          
+          {/* NODEXA name */}
+          <div className="flex flex-col justify-center">
+            {/* NODEXA Text */}
+            <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+              <span className="text-white">NODE</span>
+              <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
+            </h1>
+          </div>
         </div>
 
         {/* Right: Empty spacer to balance the layout perfectly */}

@@ -4,42 +4,44 @@ import appLogo from '../assets/logo.nodexa.png';
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
-    <div className="w-full bg-brand-950 border-b border-white/5">
+    <div className="w-full bg-brand-950 border-b border-white/5 flex flex-col">
       
-      {/* ── MAIN HORIZONTAL ROW ── */}
-      <div className="flex items-center relative">
+      {/* ── ROW 1: TOP BRANDING BAR ── */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 relative bg-brand-950/40 backdrop-blur-3xl z-[70]">
+        
+        {/* Left: Sticker Logo */}
+        <div className="relative w-11 h-11 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
+          <img 
+            src={appLogo} 
+            alt="App Logo" 
+            className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.4)]" 
+          />
+        </div>
 
-        {/* ── 💎 UNIQUE BRAND ANCHOR (NEW STICKER LOGO) ── */}
-        <div className="sticky left-0 z-[70] bg-brand-950/40 backdrop-blur-3xl px-6 py-5 flex items-center gap-3 border-r border-white/5 group cursor-pointer">
-          
-          {/* ✨ STICKER LOGO (No Background Box) ✨ */}
-          <div className="relative w-11 h-11 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
-            <img 
-              src={appLogo} 
-              alt="App Logo" 
-              className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.4)]" 
-            />
+        {/* Center: App Name & Network Live */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center cursor-pointer">
+          <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+            <span className="text-white">NODE</span>
+            <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
+          </h1>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e]" />
+            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Network Live</span>
           </div>
+        </div>
 
-          <div className="flex flex-col justify-center">
-            {/* ✨ CUSTOM CODED TEXT LOGO ✨ */}
-            <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
-              <span className="text-white">NODE</span>
-              <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
-            </h1>
+        {/* Right: Empty spacer to balance the layout perfectly */}
+        <div className="w-11 h-11" />
+      </div>
 
-            {/* Network Live Indicator */}
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e]" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Network Live</span>
-            </div>
-          </div>
-        </div> 
 
-        {/* LEFT: FIXED STORY CIRCLE */}
+      {/* ── ROW 2: NAVIGATION BAR ── */}
+      <div className="flex items-center relative w-full">
+
+        {/* LEFT: FIXED STORY CIRCLE (Now moved back to the far left edge!) */}
         <div 
           onClick={onReelClick} 
-          className="sticky left-[240px] z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
+          className="sticky left-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
         >
           <div className="relative animate-in slide-in-from-left duration-700">
             <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
@@ -98,9 +100,9 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
           <div className="absolute left-0 top-1/4 bottom-1/4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
         </div>
 
-      </div> {/* Ends Main Row */}
+      </div> {/* Ends Row 2 */}
 
-      {/* ── SUB CATEGORIES ROW ── */}
+      {/* ── ROW 3: SUB CATEGORIES (Only visible in Sale Hub) ── */}
       {activeCategory === 'Sale Hub' && (
         <div className="flex overflow-x-auto gap-3 px-6 pb-5 no-scrollbar animate-in slide-in-from-top duration-300 whitespace-nowrap">
           {SALE_HUB_SUBS.map((sub) => (

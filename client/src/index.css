@@ -128,3 +128,14 @@ video.cover {
 .categories-container {
   mask-image: linear-gradient(to right, black 85%, transparent 100%);
 }
+
+@keyframes heart-burst {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  100% { transform: translateY(-150px) translateX(var(--x-move)) scale(1.5); opacity: 0; }
+}
+
+.animate-heart-burst {
+  position: absolute;
+  pointer-events: none;
+  animation: heart-burst 1s ease-out forwards;
+}

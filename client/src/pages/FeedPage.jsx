@@ -11,6 +11,7 @@ import FilterBar from '../components/feed/FilterBar';
 import CategoryBar from '../components/CategoryBar';
 
 export default function FeedPage() {
+  const [storyHearts, setStoryHearts] = useState([]);
   const [isPaused, setIsPaused] = useState(false);
   const [showStories, setShowStories] = useState(false);
   const [showReels, setShowReels] = useState(false);
@@ -122,6 +123,22 @@ export default function FeedPage() {
     await fetchPosts(1, filters, true);
     setPage(1);
     toast.success('Feed updated! ✨');
+  };
+
+  const triggerHeartPop = () => {
+    const id = Date.now();
+    // Create 5 hearts with random horizontal drift
+    const newHearts = Array.from({ length: 5 }).map((_, i) => ({
+      id: id + i,
+      x: Math.random() * 100 - 50 // Random drift between -50px and 50px
+    }));
+
+    setStoryHearts(prev => [...prev, ...newHearts]);
+
+    // Clean up hearts after animation ends
+    setTimeout(() => {
+      setStoryHearts(prev => prev.filter(h => h.id < id));
+    }, 1000);
   };
 
   return (
@@ -251,15 +268,32 @@ export default function FeedPage() {
              </p>
           </div>
 
-          {/* Bottom Interaction Area */}
+          {/* Bottom Interaction Area - Heart Pop */}
           <div className="p-6 bg-gradient-to-t from-black/80 to-transparent">
-            <div className="flex items-center gap-4 max-w-md mx-auto">
+            <div className="flex items-center gap-4 max-w-md mx-auto relative">
+              
+              {/* Floating Hearts Container */}
+              {storyHearts.map(heart => (
+                <span 
+                  key={heart.id}
+                  className="animate-heart-burst text-red-500 text-2xl absolute pointer-events-none"
+                  style={{ '--x-move': `${heart.x}px`, left: '85%', bottom: '40px' }}
+                >
+                  ❤️
+                </span>
+              ))}
+
               <input 
                 type="text" 
                 placeholder="Send a message..." 
                 className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 text-sm text-white outline-none focus:border-brand-500 transition-colors"
               />
-              <button className="text-2xl active:scale-90 transition-transform">❤️</button>
+              <button 
+                onClick={triggerHeartPop}
+                className="text-2xl active:scale-125 transition-transform hover:brightness-125"
+              >
+                ❤️
+              </button>
             </div>
           </div>
         </div>

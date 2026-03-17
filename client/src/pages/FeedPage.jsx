@@ -105,6 +105,19 @@ export default function FeedPage() {
     }));
   };
 
+  const handleStoryTap = (e) => {
+    const screenWidth = window.innerWidth;
+    const tapX = e.clientX || (e.touches && e.touches[0].clientX);
+
+    if (tapX > screenWidth / 2) {
+      // Tap Right: Skip to end
+      setStoryProgress(100);
+    } else {
+      // Tap Left: Restart current story
+      setStoryProgress(0);
+    }
+  };
+
   const handleRefresh = async () => {
     await fetchPosts(1, filters, true);
     setPage(1);
@@ -225,9 +238,12 @@ export default function FeedPage() {
             </div>
           </div>
 
-          {/* Vertical Story Content Area */}
-          <div className="flex-1 flex flex-col items-center justify-center relative">
-             <div className="w-24 h-24 rounded-full border-2 border-brand-500/30 flex items-center justify-center animate-pulse">
+          {/* Vertical Story Content Area - Tap to Skip/Restart */}
+          <div 
+            onClick={handleStoryTap}
+            className="flex-1 flex flex-col items-center justify-center relative active:opacity-90 transition-opacity cursor-pointer"
+          >
+             <div className="w-24 h-24 rounded-full border-2 border-brand-500/30 flex items-center justify-center animate-pulse shadow-[0_0_30px_rgba(249,115,22,0.2)]">
                 <span className="text-4xl">⚡</span>
              </div>
              <p className="mt-6 text-brand-100/60 font-black tracking-[0.3em] uppercase text-[10px]">

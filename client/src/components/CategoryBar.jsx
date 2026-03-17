@@ -8,7 +8,6 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
     <div className="w-full bg-brand-950 border-b border-white/5">
       
       {/* ── MAIN HORIZONTAL ROW ── */}
-      {/* ── MAIN HORIZONTAL ROW ── */}
       <div className="flex items-center relative">
 
         {/* ── 💎 UNIQUE BRAND ANCHOR (NEW LOGO BLOCK) ── */}
@@ -36,6 +35,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Network Live</span>
             </div>
           </div>
+        </div> {/* 👈 THIS WAS THE MISSING CLOSING TAG */}
 
         {/* LEFT: FIXED STORY CIRCLE */}
         <div 

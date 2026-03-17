@@ -9,36 +9,31 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
       {/* ── ROW 1: TOP BRANDING BAR ── */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 relative bg-brand-950/40 backdrop-blur-3xl z-[70]">
         
-        {/* Left: Sticker Logo */}
-        <div className="relative w-11 h-11 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
+        {/* Left: BIGGER Sticker Logo */}
+        <div className="relative w-14 h-14 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
           <img 
             src={appLogo} 
             alt="App Logo" 
-            className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.4)]" 
+            className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.6)]" 
           />
         </div>
 
-        {/* Center: App Name & Network Live */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center cursor-pointer">
-          <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+        {/* Center: App Name ONLY */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer">
+          <h1 className="text-3xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
             <span className="text-white">NODE</span>
             <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
           </h1>
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e]" />
-            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Network Live</span>
-          </div>
         </div>
 
-        {/* Right: Empty spacer to balance the layout perfectly */}
-        <div className="w-11 h-11" />
+        {/* Right: Empty spacer to balance the layout perfectly (Matches logo size) */}
+        <div className="w-14 h-14" />
       </div>
-
 
       {/* ── ROW 2: NAVIGATION BAR ── */}
       <div className="flex items-center relative w-full">
 
-        {/* LEFT: FIXED STORY CIRCLE (Now moved back to the far left edge!) */}
+        {/* LEFT: FIXED STORY CIRCLE */}
         <div 
           onClick={onReelClick} 
           className="sticky left-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"

@@ -11,27 +11,26 @@ import FilterBar from '../components/feed/FilterBar';
 import CategoryBar from '../components/CategoryBar';
 
 export default function FeedPage() {
+  const [isPaused, setIsPaused] = useState(false);
   const [showStories, setShowStories] = useState(false);
   const [showReels, setShowReels] = useState(false);
   const [storyProgress, setStoryProgress] = useState(0);
 
   useEffect(() => {
     let interval;
-    if (showStories) {
-      setStoryProgress(0);
-      // Fills the bar in 5 seconds
+    if (showStories && !isPaused) { // Only run if NOT paused
       interval = setInterval(() => {
         setStoryProgress((prev) => {
           if (prev >= 100) {
-            setShowStories(false); // Auto-close when finished
+            setShowStories(false);
             return 100;
           }
           return prev + 1;
         });
-      }, 50); 
+      }, 50);
     }
     return () => clearInterval(interval);
-  }, [showStories]);
+  }, [showStories, isPaused]); // Added isPaused here
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -189,7 +188,13 @@ export default function FeedPage() {
 
       {/* ── 📽️ FULL SCREEN STORY OVERLAY ── */}
       {showStories && (
-        <div className="fixed inset-0 z-[200] bg-black flex flex-col animate-in fade-in zoom-in duration-300">
+        <div 
+        onMouseDown={() => setIsPaused(true)}
+        onMouseUp={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        className="fixed inset-0 z-[200] bg-black flex flex-col animate-in fade-in zoom-in duration-300 cursor-pointer"
+      >
           
           {/* Top Progress Bars & Close Button */}
           <div className="p-4 flex flex-col gap-4 bg-gradient-to-b from-black/80 to-transparent">

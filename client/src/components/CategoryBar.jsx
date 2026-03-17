@@ -1,7 +1,6 @@
 import React from 'react';
 import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 import appLogo from '../assets/logo.nodexa.png';
-// Notice: I removed the appNameImg import since we are using coded text now!
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
@@ -10,20 +9,19 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
       {/* ── MAIN HORIZONTAL ROW ── */}
       <div className="flex items-center relative">
 
-        {/* ── 💎 UNIQUE BRAND ANCHOR (NEW LOGO BLOCK) ── */}
-        <div className="sticky left-0 z-[70] bg-brand-950/40 backdrop-blur-3xl px-6 py-5 flex items-center gap-4 border-r border-white/5 group cursor-pointer">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 bg-gradient-to-tr from-brand-500 via-orange-400 to-yellow-300 rounded-xl rotate-12 group-hover:rotate-45 transition-transform duration-500 shadow-[0_0_20px_rgba(249,115,22,0.5)]" />
-            <div className="absolute inset-0 bg-brand-950 rounded-xl flex items-center justify-center border border-white/10 overflow-hidden p-1">
-              <img 
-                src={appLogo} 
-                alt="App Logo" 
-                className="w-full h-full object-contain drop-shadow-md" 
-              />
-            </div>
+        {/* ── 💎 UNIQUE BRAND ANCHOR (NEW STICKER LOGO) ── */}
+        <div className="sticky left-0 z-[70] bg-brand-950/40 backdrop-blur-3xl px-6 py-5 flex items-center gap-3 border-r border-white/5 group cursor-pointer">
+          
+          {/* ✨ STICKER LOGO (No Background Box) ✨ */}
+          <div className="relative w-11 h-11 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+            <img 
+              src={appLogo} 
+              alt="App Logo" 
+              className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(249,115,22,0.4)]" 
+            />
           </div>
+
           <div className="flex flex-col justify-center">
-            
             {/* ✨ CUSTOM CODED TEXT LOGO ✨ */}
             <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
               <span className="text-white">NODE</span>

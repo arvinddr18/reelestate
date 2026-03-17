@@ -4,13 +4,12 @@ import appLogo from '../assets/logo.nodexa.png';
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
-    // Removed border-b so the whole header melts seamlessly into the background
     <div className="w-full bg-brand-950 flex flex-col">
       
       {/* ── ROW 1: TOP BRANDING BAR ── */}
       <div className="flex items-center justify-between px-6 py-4 relative z-[70]">
         
-        {/* Left: BIGGER Sticker Logo */}
+        {/* Left: Sticker Logo */}
         <div className="relative w-16 h-16 flex-shrink-0 transition-transform duration-300 hover:scale-110 hover:-rotate-3 cursor-pointer">
           <img 
             src={appLogo} 
@@ -34,8 +33,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
       {/* ── ROW 2: NAVIGATION BAR ── */}
       <div className="flex items-center relative w-full">
 
-        {/* LEFT: FIXED STORY CIRCLE (Removed all box backgrounds, borders, and vertical lines) */}
-        {/* Added a soft gradient fade so when category circles scroll behind it, it looks clean */}
+        {/* LEFT: FIXED STORY CIRCLE */}
         <div 
           onClick={onReelClick} 
           className="sticky left-0 z-50 flex flex-col items-center min-w-[100px] px-2 py-4 cursor-pointer group bg-gradient-to-r from-brand-950 via-brand-950 to-transparent"
@@ -65,12 +63,14 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               >
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
                   isActive 
-                  ? 'bg-brand-500 border-2 border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.4)] text-white' 
+                  ? 'bg-white border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] text-brand-950' 
                   : 'bg-brand-200/20 backdrop-blur-md border border-white/5 text-brand-100 shadow-sm'
                 }`}>
                   {cat.icon}
                 </div>
-                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter drop-shadow-md ${isActive ? 'text-brand-500' : 'text-brand-100/60'}`}>
+                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter drop-shadow-md transition-colors ${
+                  isActive ? 'text-white' : 'text-brand-100/60'
+                }`}>
                   {cat.name}
                 </span>
               </div>
@@ -78,7 +78,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
           })}
         </div>
 
-        {/* RIGHT: FIXED PROFILE HUB (Removed all box backgrounds, borders, and vertical lines) */}
+        {/* RIGHT: FIXED PROFILE HUB */}
         <div 
           className="sticky right-0 z-50 flex flex-col items-center min-w-[100px] px-2 py-4 cursor-pointer group bg-gradient-to-l from-brand-950 via-brand-950 to-transparent"
         >
@@ -90,7 +90,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
             </div>
             <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-brand-950 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse" />
           </div>
-          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-brand-500 transition-colors drop-shadow-md">
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors drop-shadow-md">
             Profile
           </span>
         </div>
@@ -106,7 +106,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               onClick={() => onSubSelect(sub)}
               className={`px-5 py-2 rounded-full text-[11px] font-black transition-all active:scale-95 ${
                 activeSub === sub 
-                ? 'bg-brand-500 text-white shadow-lg' 
+                ? 'bg-white text-brand-950 shadow-[0_0_15px_rgba(255,255,255,0.4)]' 
                 : 'bg-brand-200/40 text-brand-100 border border-white/5'
               }`}
             >

@@ -13,6 +13,25 @@ import CategoryBar from '../components/CategoryBar';
 export default function FeedPage() {
   const [showStories, setShowStories] = useState(false);
   const [showReels, setShowReels] = useState(false);
+  const [storyProgress, setStoryProgress] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (showStories) {
+      setStoryProgress(0);
+      // Fills the bar in 5 seconds
+      interval = setInterval(() => {
+        setStoryProgress((prev) => {
+          if (prev >= 100) {
+            setShowStories(false); // Auto-close when finished
+            return 100;
+          }
+          return prev + 1;
+        });
+      }, 50); 
+    }
+    return () => clearInterval(interval);
+  }, [showStories]);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -174,10 +193,17 @@ export default function FeedPage() {
           
           {/* Top Progress Bars & Close Button */}
           <div className="p-4 flex flex-col gap-4 bg-gradient-to-b from-black/80 to-transparent">
+            
+            {/* ── DYNAMIC PROGRESS BAR ── */}
             <div className="flex gap-1.5 h-1 w-full px-2">
-              <div className="flex-1 bg-white rounded-full h-full shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-              <div className="flex-1 bg-white/30 rounded-full h-full" />
-              <div className="flex-1 bg-white/30 rounded-full h-full" />
+              <div className="flex-1 bg-white/20 rounded-full h-full overflow-hidden">
+                <div 
+                  className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)] transition-all duration-75 ease-linear" 
+                  style={{ width: `${storyProgress}%` }} 
+                />
+              </div>
+              <div className="flex-1 bg-white/20 rounded-full h-full" />
+              <div className="flex-1 bg-white/20 rounded-full h-full" />
             </div>
             
             <div className="flex items-center justify-between px-2">

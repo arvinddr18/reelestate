@@ -33,20 +33,22 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
       {/* ── ROW 2: NAVIGATION BAR ── */}
       <div className="flex items-center relative w-full">
 
-        {/* LEFT: FIXED STORY CIRCLE */}
+        {/* LEFT: FIXED STORY CIRCLE (Now Professional Cool Blue/Cyan) */}
         <div 
           onClick={onReelClick} 
           className="sticky left-0 z-50 flex flex-col items-center min-w-[100px] px-2 py-4 cursor-pointer group bg-gradient-to-r from-brand-950 via-brand-950 to-transparent"
         >
           <div className="relative animate-in slide-in-from-left duration-700">
-            <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
-              <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-2 border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
+            {/* Professional Blue/Cyan Ring */}
+            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-cyan-300 shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+              <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-[3px] border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
                 ⚡
               </div>
             </div>
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 border-4 border-brand-950 rounded-full shadow-lg animate-bounce" />
+            {/* Matching Cyan Notification Dot */}
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-400 border-[3px] border-brand-950 rounded-full shadow-lg animate-bounce" />
           </div>
-          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-brand-500 text-center drop-shadow-md">
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-cyan-400 text-center drop-shadow-md">
             Stories
           </span>
         </div>

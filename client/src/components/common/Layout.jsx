@@ -74,12 +74,14 @@ export default function Layout() {
       <aside className={`fixed md:relative left-0 top-0 h-full w-[280px] border-r border-white/5 flex flex-col py-8 px-4 z-50 bg-brand-950/80 backdrop-blur-3xl transition-transform duration-300 ease-in-out
         ${isMenuOpen ? 'translate-x-0 shadow-[20px_0_60px_rgba(0,0,0,0.8)]' : '-translate-x-full md:translate-x-0'}`}>
         
-        {/* Mobile Header (Hidden on Desktop since logo is in CategoryBar now) */}
+       {/* Mobile Header (Hidden on Desktop since logo is in CategoryBar now) */}
         <div className="mb-10 px-4 flex items-center justify-between md:hidden">
-          <span className="text-2xl font-black italic tracking-tighter text-white">
-            <span className="text-brand-500">REEL</span>ESTATE
-          </span>
-          <button onClick={() => setIsMenuOpen(false)} className="text-white p-2">✕</button>
+          {/* ✨ CUSTOM CODED TEXT LOGO ✨ */}
+          <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+            <span className="text-white">NODE</span>
+            <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
+          </h1>
+          <button onClick={() => setIsMenuOpen(false)} className="text-white p-2 hover:text-brand-500 transition-colors">✕</button>
         </div>
 
         {/* Navigation Links */}

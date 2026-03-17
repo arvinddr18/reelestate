@@ -1,7 +1,7 @@
 import React from 'react';
 import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 import appLogo from '../assets/logo.nodexa.png';
-import appNameImg from '../assets/name-style.png';
+// Notice: I removed the appNameImg import since we are using coded text now!
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
@@ -23,19 +23,20 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
             </div>
           </div>
           <div className="flex flex-col justify-center">
-            {/* 📸 CUSTOM NAME IMAGE */}
-            <img 
-              src={appNameImg} 
-              alt="App Name" 
-              className="h-6 object-contain drop-shadow-[0_0_12px_rgba(249,115,22,0.6)]"
-            />
+            
+            {/* ✨ CUSTOM CODED TEXT LOGO ✨ */}
+            <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+              <span className="text-white">NODE</span>
+              <span className="bg-gradient-to-r from-brand-500 to-yellow-400 bg-clip-text text-transparent">XA</span>
+            </h1>
+
             {/* Network Live Indicator */}
             <div className="flex items-center gap-1.5 mt-1.5">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e]" />
               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Network Live</span>
             </div>
           </div>
-        </div> {/* 👈 THIS WAS THE MISSING CLOSING TAG */}
+        </div> 
 
         {/* LEFT: FIXED STORY CIRCLE */}
         <div 

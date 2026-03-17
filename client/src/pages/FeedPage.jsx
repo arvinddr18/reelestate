@@ -11,6 +11,7 @@ import FilterBar from '../components/feed/FilterBar';
 import CategoryBar from '../components/CategoryBar';
 
 export default function FeedPage() {
+  const [showStories, setShowStories] = useState(false);
   const [showReels, setShowReels] = useState(false);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -103,7 +104,7 @@ export default function FeedPage() {
           onFilterChange={handleCategorySelect}
           activeSub={filters.subCategory}
           onSubSelect={handleSubSelect}
-          onReelClick={() => toast.success("Opening Reels Mode... 🎬")} 
+          onReelClick={() => setShowStories(true)} // Change 'onReelClick' to match your prop
         />
       </div>
 
@@ -163,9 +164,59 @@ export default function FeedPage() {
             <p className="text-center text-brand-100/40 text-[10px] font-bold uppercase tracking-widest py-12">
               You've seen everything 🎉
             </p>
-          )}
+         )}
         </div>
       </div>
+
+      {/* ── 📽️ FULL SCREEN STORY OVERLAY ── */}
+      {showStories && (
+        <div className="fixed inset-0 z-[200] bg-black flex flex-col animate-in fade-in zoom-in duration-300">
+          
+          {/* Top Progress Bars & Close Button */}
+          <div className="p-4 flex flex-col gap-4 bg-gradient-to-b from-black/80 to-transparent">
+            <div className="flex gap-1.5 h-1 w-full px-2">
+              <div className="flex-1 bg-white rounded-full h-full shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+              <div className="flex-1 bg-white/30 rounded-full h-full" />
+              <div className="flex-1 bg-white/30 rounded-full h-full" />
+            </div>
+            
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full border-2 border-brand-500 bg-brand-900 shadow-lg" />
+                <span className="font-bold text-white text-sm tracking-tight">Daily Activities</span>
+              </div>
+              <button 
+                onClick={() => setShowStories(false)} 
+                className="text-white text-3xl p-2 hover:scale-110 active:scale-90 transition-transform"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Vertical Story Content Area */}
+          <div className="flex-1 flex flex-col items-center justify-center relative">
+             <div className="w-24 h-24 rounded-full border-2 border-brand-500/30 flex items-center justify-center animate-pulse">
+                <span className="text-4xl">⚡</span>
+             </div>
+             <p className="mt-6 text-brand-100/60 font-black tracking-[0.3em] uppercase text-[10px]">
+               Viewing Activity...
+             </p>
+          </div>
+
+          {/* Bottom Interaction Area */}
+          <div className="p-6 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="flex items-center gap-4 max-w-md mx-auto">
+              <input 
+                type="text" 
+                placeholder="Send a message..." 
+                className="flex-1 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 text-sm text-white outline-none focus:border-brand-500 transition-colors"
+              />
+              <button className="text-2xl active:scale-90 transition-transform">❤️</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

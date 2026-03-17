@@ -7,50 +7,52 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
     <div className="w-full bg-brand-950 border-b border-white/5">
       
       {/* Main Categories Row */}
-      <div className="flex items-center overflow-x-auto gap-6 px-6 py-5 no-scrollbar whitespace-nowrap">
+      {/* Main Categories Row */}
+      <div className="flex items-center overflow-x-auto no-scrollbar relative">
         
-        {/* ── 🚀 START: REELS STORY CIRCLE ── */}
+        {/* ── 🚀 FIXED STORY CIRCLE (NEVER SCROLLS) ── */}
         <div 
           onClick={onReelClick} 
-          className="flex flex-col items-center min-w-[72px] cursor-pointer group"
+          className="sticky left-0 z-50 bg-brand-950/90 backdrop-blur-md flex flex-col items-center min-w-[100px] px-4 py-5 border-r border-white/5 cursor-pointer group"
         >
           {/* Instagram-style Gradient Ring */}
-          <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-lg animate-in zoom-in duration-500">
+          <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-lg">
             <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-2 border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
-              🎬
+              ⚡
             </div>
           </div>
-          <span className="text-[10px] mt-3 font-black uppercase tracking-tighter text-brand-500 animate-pulse">
-            REELS
+          <span className="text-[10px] mt-3 font-black uppercase tracking-tighter text-brand-500">
+            STORIES
           </span>
         </div>
-        {/* ── END: REELS STORY CIRCLE ── */}
 
-        {/* Existing Categories mapping starts here */}
-        {MAIN_CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat.name;
-          return (
-            <div 
-              key={cat.name}
-              onClick={() => onFilterChange(cat.name)}
-              className="flex flex-col items-center min-w-[72px] cursor-pointer group"
-            >
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
-                isActive 
-                ? 'bg-brand-500 border-2 border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.4)] text-white' 
-                : 'bg-brand-200/40 backdrop-blur-md border border-white/10 text-brand-100 group-hover:border-white/20'
-              }`}>
-                {cat.icon}
+        {/* ── SCROLLABLE CATEGORIES (Keep your original mapping here) ── */}
+        <div className="flex items-center gap-6 px-6 py-5 whitespace-nowrap">
+          {MAIN_CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.name;
+            return (
+              <div 
+                key={cat.name}
+                onClick={() => onFilterChange(cat.name)}
+                className="flex flex-col items-center min-w-[72px] cursor-pointer group"
+              >
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
+                  isActive 
+                  ? 'bg-brand-500 border-2 border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.4)] text-white' 
+                  : 'bg-brand-200/40 backdrop-blur-md border border-white/10 text-brand-100 group-hover:border-white/20'
+                }`}>
+                  {cat.icon}
+                </div>
+
+                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter transition-colors ${
+                  isActive ? 'text-brand-500' : 'text-brand-100/60'
+                }`}>
+                  {cat.name}
+                </span>
               </div>
-
-              <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter transition-colors ${
-                isActive ? 'text-brand-500' : 'text-brand-100/60'
-              }`}>
-                {cat.name}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Sub Categories Row */}

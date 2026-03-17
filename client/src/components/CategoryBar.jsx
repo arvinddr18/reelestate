@@ -63,7 +63,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               >
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
                   isActive 
-                  ? 'bg-white border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] text-brand-950' 
+                  ? 'bg-transparent border border-white text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]' 
                   : 'bg-brand-200/20 backdrop-blur-md border border-white/5 text-brand-100 shadow-sm'
                 }`}>
                   {cat.icon}
@@ -106,7 +106,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
               onClick={() => onSubSelect(sub)}
               className={`px-5 py-2 rounded-full text-[11px] font-black transition-all active:scale-95 ${
                 activeSub === sub 
-                ? 'bg-white text-brand-950 shadow-[0_0_15px_rgba(255,255,255,0.4)]' 
+                ? 'bg-transparent border border-white text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]' 
                 : 'bg-brand-200/40 text-brand-100 border border-white/5'
               }`}
             >

@@ -11,19 +11,29 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
       <div className="flex items-center overflow-x-auto no-scrollbar relative">
         
         {/* ── 🚀 FIXED STORY CIRCLE (NEVER SCROLLS) ── */}
+        {/* ── 🚀 HANGING NOTIFICATION STORY CIRCLE ── */}
         <div 
           onClick={onReelClick} 
-          className="sticky left-0 z-50 bg-brand-950/90 backdrop-blur-md flex flex-col items-center min-w-[100px] px-4 py-5 border-r border-white/5 cursor-pointer group"
+          className="sticky left-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
         >
-          {/* Instagram-style Gradient Ring */}
-          <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-lg">
-            <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-2 border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
-              ⚡
+          <div className="relative animate-in slide-in-from-left duration-700">
+            {/* The Floating Glow Ring */}
+            <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all duration-500">
+              <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-2 border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
+                ⚡
+              </div>
             </div>
+            
+            {/* Hanging "New" Alert Dot */}
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 border-4 border-brand-950 rounded-full shadow-lg animate-bounce" />
           </div>
-          <span className="text-[10px] mt-3 font-black uppercase tracking-tighter text-brand-500">
-            STORIES
+
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-brand-500 text-center drop-shadow-[0_2px_10px_rgba(249,115,22,0.5)]">
+            Stories
           </span>
+          
+          {/* Visual "Hanger" Line */}
+          <div className="absolute right-0 top-1/4 bottom-1/4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
         </div>
 
         {/* ── SCROLLABLE CATEGORIES (Keep your original mapping here) ── */}

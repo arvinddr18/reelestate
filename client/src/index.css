@@ -99,3 +99,32 @@ video.cover {
   display: inline-block;
   animation: heart-pop 0.8s ease-out forwards;
 }
+
+/* --- 🚀 HANGING & FLOATING ANIMATIONS --- */
+
+@keyframes float-haptic {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-hanging-float {
+  animation: float-haptic 3s ease-in-out infinite;
+}
+
+/* Glassmorphism Story Ring Glow */
+.story-ring-glow {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.3), 
+              inset 0 0 10px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Text Glow for the "STORIES" title */
+.text-glow-orange {
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
+}
+
+/* Hide scrollbar for the categories while keeping story fixed */
+.categories-container {
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}

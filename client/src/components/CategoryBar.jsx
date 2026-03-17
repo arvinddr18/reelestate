@@ -1,43 +1,34 @@
 import React from 'react';
 import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 
-// ADD 'onReelClick' to your props here
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
     <div className="w-full bg-brand-950 border-b border-white/5">
       
-      {/* Main Categories Row */}
-      {/* Main Categories Row */}
-      <div className="flex items-center overflow-x-auto no-scrollbar relative">
+      {/* ── MAIN HORIZONTAL ROW ── */}
+      <div className="flex items-center relative">
         
-        {/* ── 🚀 FIXED STORY CIRCLE (NEVER SCROLLS) ── */}
-        {/* ── 🚀 HANGING NOTIFICATION STORY CIRCLE ── */}
+        {/* LEFT: FIXED STORY CIRCLE */}
         <div 
           onClick={onReelClick} 
           className="sticky left-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
         >
           <div className="relative animate-in slide-in-from-left duration-700">
-            {/* The Floating Glow Ring */}
-            <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all duration-500">
+            <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
               <div className="w-full h-full rounded-full bg-brand-950 flex items-center justify-center border-2 border-brand-950 text-white text-2xl group-active:scale-90 transition-transform">
                 ⚡
               </div>
             </div>
-            
-            {/* Hanging "New" Alert Dot */}
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 border-4 border-brand-950 rounded-full shadow-lg animate-bounce" />
           </div>
-
-          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-brand-500 text-center drop-shadow-[0_2px_10px_rgba(249,115,22,0.5)]">
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-brand-500 text-center">
             Stories
           </span>
-          
-          {/* Visual "Hanger" Line */}
           <div className="absolute right-0 top-1/4 bottom-1/4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
         </div>
 
-        {/* ── SCROLLABLE CATEGORIES (Keep your original mapping here) ── */}
-        <div className="flex items-center gap-6 px-6 py-5 whitespace-nowrap">
+        {/* CENTER: SCROLLABLE CATEGORIES */}
+        <div className="flex-1 flex items-center gap-6 px-6 py-5 overflow-x-auto no-scrollbar whitespace-nowrap">
           {MAIN_CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.name;
             return (
@@ -49,23 +40,39 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-all duration-300 transform active:scale-90 ${
                   isActive 
                   ? 'bg-brand-500 border-2 border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.4)] text-white' 
-                  : 'bg-brand-200/40 backdrop-blur-md border border-white/10 text-brand-100 group-hover:border-white/20'
+                  : 'bg-brand-200/40 backdrop-blur-md border border-white/10 text-brand-100'
                 }`}>
                   {cat.icon}
                 </div>
-
-                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter transition-colors ${
-                  isActive ? 'text-brand-500' : 'text-brand-100/60'
-                }`}>
+                <span className={`text-[10px] mt-3 font-black uppercase tracking-tighter ${isActive ? 'text-brand-500' : 'text-brand-100/60'}`}>
                   {cat.name}
                 </span>
               </div>
             );
           })}
         </div>
-      </div>
 
-      {/* Sub Categories Row */}
+        {/* RIGHT: FIXED PROFILE HUB */}
+        <div 
+          className="sticky right-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-l border-white/5 cursor-pointer group"
+        >
+          <div className="relative animate-in slide-in-from-right duration-700">
+            <div className="w-16 h-16 rounded-full p-[2px] bg-white/10 group-hover:bg-brand-500 transition-all duration-500">
+              <div className="w-full h-full rounded-full bg-brand-900 border-2 border-brand-950 flex items-center justify-center overflow-hidden">
+                <span className="text-white font-black text-xl">A</span>
+              </div>
+            </div>
+            <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-brand-950 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse" />
+          </div>
+          <span className="text-[10px] mt-3 font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-brand-500 transition-colors">
+            Profile
+          </span>
+          <div className="absolute left-0 top-1/4 bottom-1/4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+        </div>
+
+      </div> {/* Ends Main Row */}
+
+      {/* ── SUB CATEGORIES ROW ── */}
       {activeCategory === 'Sale Hub' && (
         <div className="flex overflow-x-auto gap-3 px-6 pb-5 no-scrollbar animate-in slide-in-from-top duration-300 whitespace-nowrap">
           {SALE_HUB_SUBS.map((sub) => (

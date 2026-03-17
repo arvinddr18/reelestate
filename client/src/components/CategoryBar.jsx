@@ -1,17 +1,42 @@
 import React from 'react';
 import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
+import appLogo from '../assets/logo.png'; // 👈 ADD THIS LINE
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   return (
     <div className="w-full bg-brand-950 border-b border-white/5">
       
       {/* ── MAIN HORIZONTAL ROW ── */}
+      {/* ── MAIN HORIZONTAL ROW ── */}
       <div className="flex items-center relative">
-        
+
+        {/* ── 💎 UNIQUE BRAND ANCHOR (NEW LOGO BLOCK) ── */}
+        <div className="sticky left-0 z-[70] bg-brand-950/40 backdrop-blur-3xl px-6 py-5 flex items-center gap-4 border-r border-white/5 group cursor-pointer">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 bg-gradient-to-tr from-brand-500 via-orange-400 to-yellow-300 rounded-xl rotate-12 group-hover:rotate-45 transition-transform duration-500 shadow-[0_0_20px_rgba(249,115,22,0.5)]" />
+            <div className="absolute inset-0 bg-brand-950 rounded-xl flex items-center justify-center border border-white/10 overflow-hidden p-1">
+              <img 
+                src={appLogo} 
+                alt="App Logo" 
+                className="w-full h-full object-contain drop-shadow-md" 
+              />
+            </div>
+          </div>
+          <div className="flex flex-col justify-center">
+            <h1 className="text-xl font-black tracking-tighter text-white leading-none">
+              REEL<span className="text-brand-500 animate-pulse">ESTATE</span>
+            </h1>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_#22c55e]" />
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">Network Live</span>
+            </div>
+          </div>
+        </div>
+
         {/* LEFT: FIXED STORY CIRCLE */}
         <div 
           onClick={onReelClick} 
-          className="sticky left-0 z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
+          className="sticky left-[240px] z-50 bg-brand-950/60 backdrop-blur-2xl flex flex-col items-center min-w-[110px] px-2 py-5 border-r border-white/5 cursor-pointer group"
         >
           <div className="relative animate-in slide-in-from-left duration-700">
             <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-orange-500 to-fuchsia-600 shadow-[0_0_20px_rgba(249,115,22,0.4)]">

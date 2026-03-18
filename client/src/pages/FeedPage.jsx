@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import CategoryBar from '../components/CategoryBar';
-import PostCard from '../components/PostCard';
-import ReelSwiper from '../components/reels/ReelSwiper'; // 1. IMPORT THE SWIPER
+import CategoryBar from '../components/CategoryBar'; // Make sure this matches your file location
+import PostCard from '../components/PostCard';     // Make sure this matches your file location
+import ReelSwiper from '../components/reels/ReelSwiper'; 
 import api from '../services/api';
 
 export default function FeedPage() {

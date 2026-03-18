@@ -64,7 +64,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
         </div>
       </div>
 
-      {/* ── ROW 3: STORIES BAR (Avatar Circles) ── */}
+      {/* ── ROW 3: STORIES BAR (Avatar Circles ONLY) ── */}
       <div className="flex items-center relative w-full pt-2 pb-6 border-t border-white/5">
 
         {/* LEFT: FIXED STORY CIRCLE (lightning bolt) */}
@@ -122,25 +122,7 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
           })}
         </div>
 
-        {/* RIGHT: FIXED PROFILE HUB */}
-        <div 
-          className="sticky right-0 z-50 flex flex-col items-center min-w-[90px] px-2 cursor-pointer group bg-gradient-to-l from-[#0B0F19] via-[#0B0F19] to-transparent"
-        >
-          <div className="relative flex flex-col items-center">
-            {/* Standard Dark Ring */}
-            <div className="w-16 h-16 rounded-full p-[2px] bg-[#1E2532] group-hover:bg-[#00F0FF] transition-all duration-500 shadow-lg">
-              <div className="w-full h-full rounded-full bg-[#151A25] border-[3px] border-[#0B0F19] flex items-center justify-center overflow-hidden">
-                <span className="text-white font-black text-xl">A</span>
-              </div>
-            </div>
-            {/* Notification Dot */}
-            <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-[#0B0F19] rounded-full shadow-[0_0_8px_#ef4444]" />
-            {/* Pill Badge Overlay */}
-            <div className="absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] bg-[#151A25] text-gray-400 shadow-md z-10 group-hover:text-white transition-colors">
-              Profile
-            </div>
-          </div>
-        </div>
+        {/* Right side Profile Hub removed entirely! */}
 
       </div> {/* Ends Row 3 */}
 

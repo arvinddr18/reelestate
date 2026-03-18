@@ -3,11 +3,23 @@ import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 import appLogo from '../assets/logo.nodexa.png';
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
+  // ── MOCK USER STORIES FOR ROW 3 ──
+  // Normally this would come from an API or context
+  const USER_STORIES = [
+    { id: 1, name: 'Alice', avatar: 'https://randomuser.me/api/portraits/women/44.jpg', hasNewStory: true },
+    { id: 2, name: 'Bob', avatar: 'https://randomuser.me/api/portraits/men/32.jpg', hasNewStory: true },
+    { id: 3, name: 'Charlie', avatar: 'https://randomuser.me/api/portraits/men/55.jpg', hasNewStory: false },
+    { id: 4, name: 'David', avatar: 'https://randomuser.me/api/portraits/men/22.jpg', hasNewStory: false },
+    { id: 5, name: 'Eve', avatar: 'https://randomuser.me/api/portraits/women/65.jpg', hasNewStory: false },
+    { id: 6, name: 'Frank', avatar: 'https://randomuser.me/api/portraits/men/81.jpg', hasNewStory: false },
+    { id: 7, name: 'Grace', avatar: 'https://randomuser.me/api/portraits/women/11.jpg', hasNewStory: false },
+  ];
+
   return (
     // Exact Deep Navy Background from the screenshot
-    <div className="w-full bg-[#0B0F19] flex flex-col">
+    <div className="w-full bg-[#0B0F19] flex flex-col border-b border-white/5">
       
-      {/* ── ROW 1: TOP BRANDING BAR ── */}
+      {/* ── ROW 1: TOP BRANDING BAR (Existing clean layout) ── */}
       <div className="flex items-center justify-between px-6 py-4 relative z-[70]">
         
         {/* Left: Sticker Logo */}
@@ -31,61 +43,111 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
         <div className="w-14 h-14" />
       </div>
 
-      {/* ── ROW 2: NAVIGATION BAR (Matching your screenshot exactly) ── */}
-      <div className="flex items-center gap-5 px-6 overflow-x-auto no-scrollbar whitespace-nowrap pb-6 pt-3">
 
-        {/* ✨ LEFT: THE 'ADD' BUTTON CIRCLE (from reference image) ✨ */}
-        <div 
-          onClick={onReelClick} 
-          className="flex flex-col items-center min-w-[72px] cursor-pointer group pt-1"
-        >
-          {/* Large Solid Cyan Glowing Circle with white '+' */}
-          <div className="w-18 h-18 rounded-full flex items-center justify-center bg-gradient-to-b from-[#0057FF] to-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.5)] transition-all duration-300 group-hover:scale-105 group-active:scale-95 text-white text-5xl font-light">
-            +
-          </div>
-          
-          {/* Text BELOW the circle */}
-          <span className="text-[11px] mt-4 font-black uppercase tracking-wide text-cyan-400 group-hover:text-white transition-colors">
-            Create
-          </span>
-        </div>
+      {/* ── ROW 2: CATEGORIES BAR (Glow Circles from 2nd image) ── */}
+      {/* We re-center this scroller below the branding bar */}
+      <div className="w-full pt-1 pb-4 flex items-center justify-center">
+        <div className="flex items-center gap-5 px-6 overflow-x-auto no-scrollbar whitespace-nowrap pb-2 pt-1">
+          {MAIN_CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.name;
+            return (
+              <div 
+                key={cat.name}
+                onClick={() => onFilterChange(cat.name)}
+                className="flex flex-col items-center relative min-w-[68px] cursor-pointer group pt-1"
+              >
+                {/* Ring Style (Cyan outline if active, Dark Grey if inactive) */}
+                <div className={`w-16 h-16 rounded-full p-[2px] transition-all duration-300 transform group-hover:scale-105 group-active:scale-95 ${
+                  isActive 
+                  ? 'bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' 
+                  : 'bg-[#1E2532]'
+                }`}>
+                  <div className={`w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] text-2xl transition-transform ${isActive ? 'text-white' : 'text-gray-400'}`}>
+                    {cat.icon}
+                  </div>
+                </div>
 
-        {/* CENTER: SCROLLABLE CATEGORIES (Clean text below circle) */}
-        {MAIN_CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat.name;
-          return (
-            <div 
-              key={cat.name}
-              onClick={() => onFilterChange(cat.name)}
-              className="flex flex-col items-center relative min-w-[68px] cursor-pointer group"
-            >
-              {/* Ring Style (Cyan outline if active, Dark Grey if inactive) */}
-              <div className={`w-16 h-16 rounded-full p-[2px] transition-all duration-300 transform group-hover:scale-105 group-active:scale-95 ${
-                isActive 
-                ? 'bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' 
-                : 'bg-[#1E2532]'
-              }`}>
-                <div className={`w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] text-2xl transition-transform ${isActive ? 'text-white' : 'text-gray-400'}`}>
-                  {cat.icon}
+                {/* Pill Badge Overlay (Overlapping the bottom) */}
+                <div className={`absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] shadow-md z-10 transition-all duration-300 ${
+                  isActive 
+                  ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white' 
+                  : 'bg-[#151A25] text-gray-400 border-[#1E2532]'
+                }`}>
+                  {cat.name}
                 </div>
               </div>
+            );
+          })}
+        </div>
+      </div>
 
-              {/* Text BELOW the circle (Matching your image font weight) */}
-              <span className={`text-[11px] mt-4 font-black uppercase tracking-tighter drop-shadow-md transition-colors ${
-                isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
-              }`}>
-                {cat.name}
-              </span>
-            </div>
-          );
-        })}
 
-        {/* RIGHT: FIXED PROFILE HUB (Also with text below) */}
+      {/* ── ROW 3: STORIES BAR (Separate list below categories) ── */}
+      <div className="flex items-center relative w-full pt-2 pb-6 border-t border-white/5">
+
+        {/* LEFT: FIXED STORY CIRCLE (lightning bolt, moving to index 0) */}
         <div 
-          className="flex flex-col items-center min-w-[72px] cursor-pointer group"
+          onClick={onReelClick} 
+          className="sticky left-0 z-50 flex flex-col items-center min-w-[90px] px-2 cursor-pointer group bg-gradient-to-r from-[#0B0F19] via-[#0B0F19] to-transparent"
         >
           <div className="relative flex flex-col items-center">
-            {/* Dark Profile Ring */}
+            {/* Electric Cyan Glowing Ring */}
+            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)] transition-all duration-300 group-hover:scale-105">
+              <div className="w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] text-white text-2xl overflow-hidden group-active:scale-95 transition-transform">
+                ⚡
+              </div>
+            </div>
+            
+            {/* Pill Badge Overlay (Matches categories) */}
+            <div className="absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white shadow-md z-10">
+              Stories
+            </div>
+          </div>
+        </div>
+
+        {/* CENTER: SCROLLABLE USERS STORIES (Multiple avatars like Insta) */}
+        <div className="flex-1 flex items-center gap-5 px-4 overflow-x-auto no-scrollbar whitespace-nowrap pb-1 pt-1">
+          {USER_STORIES.map((story) => {
+            const isActive = story.hasNewStory;
+            return (
+              <div 
+                key={story.id}
+                className="flex flex-col items-center relative min-w-[68px] cursor-pointer group pt-1"
+              >
+                {/* Ring Style (Cyan outline if active/unviewed) */}
+                <div className={`w-16 h-16 rounded-full p-[2px] transition-all duration-300 transform group-hover:scale-105 group-active:scale-95 shadow-sm ${
+                  isActive 
+                  ? 'bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' 
+                  : 'bg-[#1E2532]'
+                }`}>
+                  <div className={`w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] transition-transform ${isActive ? 'text-white' : 'text-gray-400'}`}>
+                    <img 
+                      src={story.avatar} 
+                      alt={story.name} 
+                      className="w-full h-full object-cover rounded-full" 
+                    />
+                  </div>
+                </div>
+
+                {/* Pill Badge Overlay */}
+                <div className={`absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] shadow-md z-10 transition-all duration-300 ${
+                  isActive 
+                  ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white' 
+                  : 'bg-[#151A25] text-gray-400 border-[#1E2532]'
+                }`}>
+                  {story.name}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* RIGHT: FIXED PROFILE HUB (Existing layout but integrated into the stories bar row) */}
+        <div 
+          className="sticky right-0 z-50 flex flex-col items-center min-w-[90px] px-2 cursor-pointer group bg-gradient-to-l from-[#0B0F19] via-[#0B0F19] to-transparent"
+        >
+          <div className="relative flex flex-col items-center">
+            {/* Standard Dark Ring */}
             <div className="w-16 h-16 rounded-full p-[2px] bg-[#1E2532] group-hover:bg-[#00F0FF] transition-all duration-500 shadow-lg">
               <div className="w-full h-full rounded-full bg-[#151A25] border-[3px] border-[#0B0F19] flex items-center justify-center overflow-hidden">
                 <span className="text-white font-black text-xl">A</span>
@@ -94,19 +156,20 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
             
             {/* Notification Dot */}
             <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-[#0B0F19] rounded-full shadow-[0_0_8px_#ef4444]" />
+
+            {/* Pill Badge Overlay */}
+            <div className="absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] bg-[#151A25] text-gray-400 shadow-md z-10 group-hover:text-white transition-colors">
+              Profile
+            </div>
           </div>
-          
-          {/* Text BELOW the circle */}
-          <span className="text-[11px] mt-4 font-black uppercase tracking-wide text-gray-400 group-hover:text-white transition-colors">
-            Profile
-          </span>
         </div>
 
-      </div> {/* Ends Row 2 */}
+      </div> {/* Ends Row 3 */}
 
-      {/* ── ROW 3: SUB CATEGORIES (Matches the Gold/Orange gradient from the image) ── */}
+
+      {/* ── ROW 4: SUB CATEGORIES (Only visible in Sale Hub) ── */}
       {activeCategory === 'Sale Hub' && (
-        <div className="flex overflow-x-auto gap-3 px-6 pb-5 pt-3 no-scrollbar animate-in slide-in-from-top duration-300 whitespace-nowrap">
+        <div className="flex overflow-x-auto gap-3 px-6 pb-5 pt-3 no-scrollbar animate-in slide-in-from-top duration-300 whitespace-nowrap border-t border-white/5">
           {SALE_HUB_SUBS.map((sub) => (
             <button
               key={sub}

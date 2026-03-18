@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import appLogo from '../../assets/logo.nodexa.png'; // Make sure this path is correct!
+import appLogo from '../../assets/logo.nodexa.png'; 
 
 // --- Premium SVG Icons ---
 const HomeIcon = ({ filled }) => (
@@ -54,7 +54,7 @@ export default function Layout() {
       {/* ── 💻 DESKTOP SIDEBAR (Hidden on Mobile) ── */}
       <aside className="hidden md:flex flex-col w-[280px] h-full border-r border-[#1E2532] bg-[#0B0F19]/90 backdrop-blur-3xl py-8 px-4 z-50">
         
-        {/* App Branding (Only visible on desktop sidebar) */}
+        {/* App Branding */}
         <div className="mb-10 px-4 flex items-center gap-3">
           <div className="w-10 h-10">
             <img src={appLogo} alt="Logo" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]" />
@@ -113,15 +113,34 @@ export default function Layout() {
             )}
           </NavLink>
 
-          {/* Desktop Create Button (Special Styling) */}
+          {/* Desktop Create Button */}
           <NavLink to="/create" className="mt-8 relative flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white font-black shadow-[0_4px_20px_rgba(0,240,255,0.4)] hover:scale-[1.02] active:scale-95 transition-all">
             <PlusIcon />
             <span className="tracking-widest text-[13px] uppercase">Post Property</span>
           </NavLink>
         </nav>
 
-        {/* Desktop Logout Bottom */}
-        <div className="mt-auto pt-6 border-t border-[#1E2532]">
+        {/* ── DESKTOP PROFILE & LOGOUT BOTTOM ── */}
+        <div className="mt-auto pt-4 border-t border-[#1E2532] flex flex-col gap-2">
+          
+          {/* ✨ Re-added Profile Plate ✨ */}
+          <NavLink to={`/profile/${user?._id}`} className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl transition-all ${isActive ? 'bg-[#151A25] border border-[#2A3441] shadow-inner' : 'hover:bg-[#151A25] border border-transparent hover:border-[#1E2532]'}`}>
+            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.2)] flex-shrink-0">
+              <div className="w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center text-white font-bold overflow-hidden border-2 border-[#0B0F19]">
+                {user?.profilePhoto || user?.avatar ? (
+                  <img src={user.profilePhoto || user.avatar} className="w-full h-full object-cover" alt="Profile" />
+                ) : (
+                  user?.username?.[0]?.toUpperCase()
+                )}
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-white font-bold text-sm truncate">@{user?.username}</p>
+              <p className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest mt-0.5">View Profile</p>
+            </div>
+          </NavLink>
+
+          {/* Logout Button */}
           <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full py-3 text-gray-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-red-500/10 transition-all">
             Logout
           </button>
@@ -129,14 +148,13 @@ export default function Layout() {
       </aside>
 
       {/* ── MAIN CONTENT AREA ── */}
-      {/* Added pb-[70px] on mobile to prevent content from hiding behind the bottom bar */}
       <main className="flex-1 relative h-full flex flex-col overflow-hidden bg-[#0B0F19] pb-[70px] md:pb-0">
         <div className="flex-1 h-full w-full overflow-y-auto no-scrollbar">
           <Outlet />
         </div>
       </main>
 
-      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (Hidden on Desktop) ── */}
+      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR ── */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full h-[70px] bg-[#0B0F19]/90 backdrop-blur-xl border-t border-[#1E2532] z-[100] flex items-center justify-around px-2 pb-safe">
         
         <NavLink to="/" end className={navLinkClassMobile}>
@@ -147,7 +165,6 @@ export default function Layout() {
           {({ isActive }) => <SearchIcon filled={isActive} />}
         </NavLink>
 
-        {/* Center Create Button (Floating style) */}
         <NavLink to="/create" className="relative -top-5 flex flex-col items-center justify-center">
           <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] p-[2px] shadow-[0_4px_20px_rgba(0,240,255,0.4)] active:scale-95 transition-transform">
             <div className="w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center text-white">
@@ -165,12 +182,15 @@ export default function Layout() {
           )}
         </NavLink>
 
-        {/* Mobile Profile Icon */}
         <NavLink to={`/profile/${user?._id}`} className={navLinkClassMobile}>
           {({ isActive }) => (
             <div className={`w-7 h-7 rounded-full p-[2px] transition-all ${isActive ? 'bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'bg-[#1E2532]'}`}>
                <div className="w-full h-full rounded-full bg-[#151A25] border border-[#0B0F19] flex items-center justify-center font-black text-white text-[10px] overflow-hidden">
-                 {user?.username?.[0]?.toUpperCase()}
+                 {user?.profilePhoto || user?.avatar ? (
+                    <img src={user.profilePhoto || user.avatar} className="w-full h-full object-cover" alt="Profile" />
+                  ) : (
+                    user?.username?.[0]?.toUpperCase()
+                  )}
                </div>
             </div>
           )}

@@ -17,15 +17,28 @@ export default function FeedPage() {
     fetchPosts();
   }, [activeCategory, activeSub]);
 
-  const fetchPosts = async () => {
+ const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/posts', { 
-        params: { category: activeCategory, sub: activeSub } 
-      });
+      
+      // ── SMART FILTER START ──
+      const params = {};
+      
+      // If the user clicks 'Sale Hub' or 'Rents', we tell the backend.
+      // If they click 'All', we send NOTHING so the backend gives us EVERY post (old and new).
+      if (activeCategory !== 'All') {
+        params.mainCategory = activeCategory;
+      }
+      
+      if (activeSub !== 'All' && activeSub !== 'None') {
+        params.subCategory = activeSub;
+      }
+      // ── SMART FILTER END ──
+
+      const res = await api.get('/posts', { params });
       setPosts(res.data.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching posts:", err);
     } finally {
       setLoading(false);
     }

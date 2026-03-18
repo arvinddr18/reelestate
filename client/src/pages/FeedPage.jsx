@@ -21,21 +21,24 @@ export default function FeedPage() {
     try {
       setLoading(true);
       
-      // ── SMART FILTER START ──
-      const params = {};
-      
-      // If the user clicks 'Sale Hub' or 'Rents', we tell the backend.
-      // If they click 'All', we send NOTHING so the backend gives us EVERY post (old and new).
-      if (activeCategory !== 'All') {
-        params.mainCategory = activeCategory;
-      }
-      
-      if (activeSub !== 'All' && activeSub !== 'None') {
-        params.subCategory = activeSub;
-      }
-      // ── SMART FILTER END ──
+      // We start with no filters
+      let queryParams = {};
 
-      const res = await api.get('/posts', { params });
+      // If the user clicks a specific category (like 'Sale Hub'), we filter.
+      // If it's 'All', we send NO category, so the backend gives us EVERY post.
+      if (activeCategory !== 'All') {
+        queryParams.mainCategory = activeCategory;
+      }
+
+      // Only filter by sub-category if a specific one is picked
+      if (activeSub !== 'All' && activeSub !== 'None') {
+        queryParams.subCategory = activeSub;
+      }
+
+      const res = await api.get('/posts', { 
+        params: queryParams 
+      });
+      
       setPosts(res.data.data || []);
     } catch (err) {
       console.error("Error fetching posts:", err);
@@ -43,7 +46,7 @@ export default function FeedPage() {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white relative">
       

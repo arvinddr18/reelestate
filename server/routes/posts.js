@@ -38,3 +38,27 @@ router.get('/:id/comments', getComments);
 router.post('/:id/comments', protect, addComment);
 
 module.exports = router;
+// ── TEMPORARY: DATABASE CLEANUP ROUTE ──
+// This assigns 'Sale Hub' to every post that has no category
+router.get('/admin/cleanup-categories', async (req, res) => {
+  try {
+    const Post = require('../models/Post'); // Ensure path to your Post model is correct
+    
+    const result = await Post.updateMany(
+      { mainCategory: { $exists: false } }, // Find posts with no category
+      { $set: { mainCategory: 'Sale Hub', subCategory: 'All' } } // Assign default
+    );
+
+    const result2 = await Post.updateMany(
+      { mainCategory: "All" }, // Find posts with the literal word "All"
+      { $set: { mainCategory: 'Sale Hub' } } 
+    );
+
+    res.json({ 
+      message: "Database Cleaned!", 
+      updatedCount: result.modifiedCount + result2.modifiedCount 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});

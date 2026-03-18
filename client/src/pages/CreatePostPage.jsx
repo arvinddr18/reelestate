@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import { IoMdCloudUpload, IoMdVideocam, IoMdImages, IoMdPin, IoMdInformationCircle } from 'react-icons/io';
 
-const PROPERTY_TYPES = ['Apartment', 'House', 'Villa', 'Plot', 'Commercial', 'Farmland', 'Other'];
+const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'];
 const KNOWLEDGE_LEVELS = ['Beginner', 'Intermediate', 'Expert', 'Pro Tips'];
 
 export default function CreatePostPage() {

@@ -31,69 +31,61 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
         <div className="w-14 h-14" />
       </div>
 
-      {/* ── ROW 2: NAVIGATION BAR (The Glowing Cyan Rings) ── */}
-      <div className="flex items-center relative w-full pt-2 pb-4">
+      {/* ── ROW 2: NAVIGATION BAR (Matching your screenshot exactly) ── */}
+      <div className="flex items-center gap-5 px-6 overflow-x-auto no-scrollbar whitespace-nowrap pb-6 pt-3">
 
-        {/* LEFT: FIXED STORY CIRCLE */}
+        {/* ✨ LEFT: THE 'ADD' BUTTON CIRCLE (from reference image) ✨ */}
         <div 
           onClick={onReelClick} 
-          className="sticky left-0 z-50 flex flex-col items-center min-w-[90px] px-2 cursor-pointer group bg-gradient-to-r from-[#0B0F19] via-[#0B0F19] to-transparent"
+          className="flex flex-col items-center min-w-[72px] cursor-pointer group pt-1"
         >
-          <div className="relative flex flex-col items-center">
-            {/* Electric Cyan Glowing Ring */}
-            <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)] transition-all duration-300 group-hover:scale-105">
-              <div className="w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] text-white text-2xl overflow-hidden group-active:scale-95 transition-transform">
-                ⚡
-              </div>
-            </div>
-            
-            {/* Pill Badge Overlay (Matches your screenshot exactly) */}
-            <div className="absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white shadow-md z-10">
-              Stories
-            </div>
+          {/* Large Solid Cyan Glowing Circle with white '+' */}
+          <div className="w-18 h-18 rounded-full flex items-center justify-center bg-gradient-to-b from-[#0057FF] to-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.5)] transition-all duration-300 group-hover:scale-105 group-active:scale-95 text-white text-5xl font-light">
+            +
           </div>
+          
+          {/* Text BELOW the circle */}
+          <span className="text-[11px] mt-4 font-black uppercase tracking-wide text-cyan-400 group-hover:text-white transition-colors">
+            Create
+          </span>
         </div>
 
-        {/* CENTER: SCROLLABLE CATEGORIES */}
-        <div className="flex-1 flex items-center gap-5 px-4 overflow-x-auto no-scrollbar whitespace-nowrap pb-2 pt-1">
-          {MAIN_CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat.name;
-            return (
-              <div 
-                key={cat.name}
-                onClick={() => onFilterChange(cat.name)}
-                className="flex flex-col items-center relative min-w-[68px] cursor-pointer group"
-              >
-                {/* Ring Style (Cyan if active, Dark Grey if inactive) */}
-                <div className={`w-16 h-16 rounded-full p-[2px] transition-all duration-300 ${
-                  isActive 
-                  ? 'bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' 
-                  : 'bg-[#1E2532] group-hover:bg-[#2A3441]'
-                }`}>
-                  <div className={`w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] text-2xl overflow-hidden transition-transform group-active:scale-95 ${isActive ? 'text-white' : 'text-gray-400'}`}>
-                    {cat.icon}
-                  </div>
-                </div>
-
-                {/* Pill Badge Overlay */}
-                <div className={`absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] shadow-md z-10 transition-all duration-300 ${
-                  isActive 
-                  ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white' 
-                  : 'bg-[#151A25] text-gray-400 border-[#1E2532]'
-                }`}>
-                  {cat.name}
+        {/* CENTER: SCROLLABLE CATEGORIES (Clean text below circle) */}
+        {MAIN_CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat.name;
+          return (
+            <div 
+              key={cat.name}
+              onClick={() => onFilterChange(cat.name)}
+              className="flex flex-col items-center relative min-w-[68px] cursor-pointer group"
+            >
+              {/* Ring Style (Cyan outline if active, Dark Grey if inactive) */}
+              <div className={`w-16 h-16 rounded-full p-[2px] transition-all duration-300 transform group-hover:scale-105 group-active:scale-95 ${
+                isActive 
+                ? 'bg-gradient-to-b from-[#00F0FF] to-[#0057FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' 
+                : 'bg-[#1E2532]'
+              }`}>
+                <div className={`w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center border-[3px] border-[#0B0F19] text-2xl transition-transform ${isActive ? 'text-white' : 'text-gray-400'}`}>
+                  {cat.icon}
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        {/* RIGHT: FIXED PROFILE HUB */}
+              {/* Text BELOW the circle (Matching your image font weight) */}
+              <span className={`text-[11px] mt-4 font-black uppercase tracking-tighter drop-shadow-md transition-colors ${
+                isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
+              }`}>
+                {cat.name}
+              </span>
+            </div>
+          );
+        })}
+
+        {/* RIGHT: FIXED PROFILE HUB (Also with text below) */}
         <div 
-          className="sticky right-0 z-50 flex flex-col items-center min-w-[90px] px-2 cursor-pointer group bg-gradient-to-l from-[#0B0F19] via-[#0B0F19] to-transparent"
+          className="flex flex-col items-center min-w-[72px] cursor-pointer group"
         >
           <div className="relative flex flex-col items-center">
-            {/* Standard Dark Ring */}
+            {/* Dark Profile Ring */}
             <div className="w-16 h-16 rounded-full p-[2px] bg-[#1E2532] group-hover:bg-[#00F0FF] transition-all duration-500 shadow-lg">
               <div className="w-full h-full rounded-full bg-[#151A25] border-[3px] border-[#0B0F19] flex items-center justify-center overflow-hidden">
                 <span className="text-white font-black text-xl">A</span>
@@ -102,12 +94,12 @@ export default function CategoryBar({ onFilterChange, activeCategory, activeSub,
             
             {/* Notification Dot */}
             <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-[#0B0F19] rounded-full shadow-[0_0_8px_#ef4444]" />
-
-            {/* Pill Badge Overlay */}
-            <div className="absolute -bottom-2 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wide border-2 border-[#0B0F19] bg-[#151A25] text-gray-400 shadow-md z-10 group-hover:text-white transition-colors">
-              Profile
-            </div>
           </div>
+          
+          {/* Text BELOW the circle */}
+          <span className="text-[11px] mt-4 font-black uppercase tracking-wide text-gray-400 group-hover:text-white transition-colors">
+            Profile
+          </span>
         </div>
 
       </div> {/* Ends Row 2 */}

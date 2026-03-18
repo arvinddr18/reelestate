@@ -1,7 +1,7 @@
 // FORCE UPDATE TO SUPER APP
 import React, { useState } from 'react';
-import { MAIN_CATEGORIES, SALE_HUB_SUBS, RENT_SUBS } from '../../constants/categories';
-import appLogo from '../../assets/logo.nodexa.png';
+import { MAIN_CATEGORIES, SALE_HUB_SUBS, RENT_SUBS } from '../constants/categories';
+import appLogo from '../assets/logo.nodexa.png';
 
 export default function CategoryBar({ onFilterChange, activeCategory, activeSub, onSubSelect, onReelClick }) {
   const [showAllCategories, setShowAllCategories] = useState(false);

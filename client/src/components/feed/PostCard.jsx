@@ -1,4 +1,4 @@
-/**
+ /**
  * components/feed/PostCard.jsx
  * The main property card shown in the feed.
  */
@@ -39,9 +39,7 @@ export default function PostCard({ post: initialPost }) {
     if (inView) {
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          setIsMuted(true);
-        });
+        playPromise.catch(() => setIsMuted(true));
       }
     } else {
       videoRef.current.pause();
@@ -55,10 +53,8 @@ export default function PostCard({ post: initialPost }) {
 
   const handleLike = async () => {
     if (!requireAuth()) return;
-
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 800);
-
     const wasLiked = post.isLiked;
     setPost(p => ({ ...p, isLiked: !wasLiked, likesCount: wasLiked ? p.likesCount - 1 : p.likesCount + 1 }));
     try {
@@ -82,18 +78,13 @@ export default function PostCard({ post: initialPost }) {
     }
   };
 
-  const handleShare = () => {
-    setShowShare(true);
-  };
+  const handleShare = () => setShowShare(true);
 
   const handleCall = () => {
     if (!requireAuth()) return;
     const phoneNumber = post.phone || post.author.phone;
-    if (phoneNumber) {
-      window.location.href = `tel:${phoneNumber}`;
-    } else {
-      toast.error("No phone number provided for this property.");
-    }
+    if (phoneNumber) window.location.href = `tel:${phoneNumber}`;
+    else toast.error("No phone number provided for this property.");
   };
 
   const executeNearbySearch = () => {
@@ -101,15 +92,12 @@ export default function PostCard({ post: initialPost }) {
       const strictQuery = `${nearbyQuery} near ${post.location.lat},${post.location.lng}`;
       const mapUrl = `https://www.google.com/maps/search/$${encodeURIComponent(strictQuery)}`;
       window.open(mapUrl, '_blank');
-    } else {
-      toast.error("Please enter a place to search (e.g., Hospital)");
-    }
+    } else toast.error("Please enter a place to search (e.g., Hospital)");
   };
 
   const mediaHeight = 'h-[400px] md:h-[500px]';
 
   return (
-    // Deep Navy Background with sleek borders
     <article className="card max-w-[470px] mx-auto mb-6 border border-[#1E2532] bg-[#0B0F19] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
       
       {/* ── HEADER (Author Info) ── */}
@@ -138,7 +126,14 @@ export default function PostCard({ post: initialPost }) {
           <>
           <video ref={videoRef} src={post.videoUrl} className="w-full h-full object-cover" loop muted={isMuted} playsInline preload="auto" />
             <button onClick={() => setIsMuted(m => !m)} className="absolute inset-0 w-full h-full flex items-center justify-center bg-black/10 opacity-0 hover:opacity-100 transition-opacity">
-              <span className="bg-black/60 backdrop-blur-md rounded-full p-3 text-white border border-white/10">{isMuted ? '🔇 Unmute' : '🔊 Mute'}</span>
+              <span className="bg-black/60 backdrop-blur-md rounded-full p-3 text-white border border-white/10 flex items-center gap-2 text-xs font-bold">
+                {isMuted ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                )}
+                {isMuted ? 'Unmute' : 'Mute'}
+              </span>
             </button>
           </>
         ) : (
@@ -156,66 +151,79 @@ export default function PostCard({ post: initialPost }) {
           </>
         )}
 
-        {/* 1. Top Left: Category (Cyan Glass) */}
+        {/* 1. Category (Cyan Glass) */}
         <div className="absolute top-4 left-4 bg-[#0B0F19]/80 backdrop-blur-md text-[#00F0FF] text-[10px] font-black tracking-wider px-3 py-1.5 rounded-full uppercase border border-[#00F0FF]/30 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
           {post.propertyType}
         </div>
 
-        {/* 2. Top Right: Views (Dark Glass) */}
+        {/* 2. Views (Dark Glass with Eye SVG) */}
         <div className="absolute top-4 right-4 bg-[#0B0F19]/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
-          <span className="opacity-80">👁</span> {post.viewsCount?.toLocaleString()}
+          <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          {post.viewsCount?.toLocaleString() || 0}
         </div>
 
-        {/* 3. Bottom Left: Location (Dark Glass with Gold Icon) */}
+        {/* 3. Location (Dark Glass with Map Pin SVG) */}
         {post.district && (
           <div className="absolute bottom-4 left-4 bg-[#0B0F19]/80 backdrop-blur-md text-gray-200 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
-            <span className="text-[#F5A623]">📍</span> {post.district}
+            <svg className="w-3.5 h-3.5 text-[#F5A623]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            {post.district}
           </div>
         )}
 
-        {/* 4. Bottom Right: Price (Golden Gradient) */}
+        {/* 4. Price (Golden Gradient) */}
         <div className="absolute bottom-4 right-4 bg-gradient-to-r from-[#F5A623] to-[#F76B1C] text-white text-[14px] font-black tracking-wide px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(245,166,35,0.4)]">
           {formatPrice(post.price)}
         </div>
 
-        {/* Big Animated Heart Overlay */}
+        {/* Heart Animation */}
         {showHeart && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <span className="text-8xl animate-heart-pop drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]">❤️</span>
+            <svg className="w-24 h-24 text-red-500 animate-heart-pop drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
           </div>
         )}
       </div>
 
-      {/* ── CONTENT & ACTIONS (Your original layout, styled for dark mode) ── */}
+      {/* ── CONTENT & ACTIONS ── */}
       <div className="p-4 pb-5">
         
-        {/* Action Buttons Row */}
+        {/* ACTION BUTTONS ROW (All Emojis replaced with SVGs) */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-5">
-            <button onClick={handleLike} className={`flex items-center gap-1.5 text-sm transition-transform active:scale-95 ${post.isLiked ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'text-gray-400 hover:text-white'}`}>
-              <span className="text-2xl">{post.isLiked ? '❤️' : '🤍'}</span>
-              <span className="font-bold">{post.likesCount}</span>
+          
+          {/* Left Side: Like, Comment, Share */}
+          <div className="flex items-center gap-3">
+            {/* Like */}
+            <button onClick={handleLike} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#151A25] border transition-all active:scale-95 ${post.isLiked ? 'text-red-500 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'text-gray-400 border-[#1E2532] hover:text-white hover:border-gray-500'}`}>
+              <svg className="w-4 h-4" fill={post.isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+              <span className="font-bold text-xs">{post.likesCount}</span>
             </button>
 
-            <button onClick={() => setShowComments(true)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors active:scale-95">
-              <span className="text-2xl drop-shadow-sm">💬</span>
-              <span className="font-bold">{post.commentsCount}</span>
+            {/* Comment */}
+            <button onClick={() => setShowComments(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#151A25] border border-[#1E2532] text-gray-400 hover:text-white hover:border-[#00F0FF]/50 transition-all active:scale-95">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+              <span className="font-bold text-xs">{post.commentsCount}</span>
             </button>
 
-            <button onClick={handleShare} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#00F0FF] transition-all active:scale-95" title="Share Post">
-              <span className="text-2xl drop-shadow-sm">📤</span>
+            {/* Share */}
+            <button onClick={handleShare} className="flex items-center justify-center w-8 h-8 rounded-full bg-[#151A25] border border-[#1E2532] text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all active:scale-95" title="Share Post">
+              <svg className="w-4 h-4 -ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
             </button>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button onClick={handleCall} className="text-2xl text-gray-400 hover:text-green-400 transition-transform active:scale-95 drop-shadow-sm" title="Call Seller">
-              📞
+          {/* Right Side: Call, Message, Save */}
+          <div className="flex items-center gap-2">
+            {/* Call */}
+            <button onClick={handleCall} className="flex items-center justify-center w-8 h-8 rounded-full bg-[#151A25] border border-[#1E2532] text-gray-400 hover:text-green-400 hover:border-green-400/50 hover:shadow-[0_0_10px_rgba(74,222,128,0.2)] transition-all active:scale-95" title="Call Seller">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
             </button>
-            <Link to={`/messages/${post.author._id}`} className="text-2xl text-gray-400 hover:text-[#0057FF] transition-transform active:scale-95 drop-shadow-sm" title="Message Seller">
-              ✉️
+            
+            {/* Message */}
+            <Link to={`/messages/${post.author._id}`} className="flex items-center justify-center w-8 h-8 rounded-full bg-[#151A25] border border-[#1E2532] text-gray-400 hover:text-[#0057FF] hover:border-[#0057FF]/50 hover:shadow-[0_0_10px_rgba(0,87,255,0.2)] transition-all active:scale-95" title="Message Seller">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
             </Link>
-            <button onClick={handleSave} className={`text-2xl transition-transform active:scale-95 drop-shadow-sm ${post.isSaved ? 'text-yellow-400' : 'text-gray-400 hover:text-white'}`} title="Save Property">
-              {post.isSaved ? '🔖' : '🏷️'}
+            
+            {/* Save */}
+            <button onClick={handleSave} className={`flex items-center justify-center w-8 h-8 rounded-full bg-[#151A25] border transition-all active:scale-95 ${post.isSaved ? 'text-yellow-400 border-yellow-400/30 shadow-[0_0_10px_rgba(250,204,21,0.2)]' : 'text-gray-400 border-[#1E2532] hover:text-white hover:border-gray-500'}`} title="Save Property">
+              <svg className="w-4 h-4" fill={post.isSaved ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
             </button>
           </div>
         </div>
@@ -234,10 +242,10 @@ export default function PostCard({ post: initialPost }) {
             <p className="text-xs text-gray-300 line-clamp-2 mt-2 leading-relaxed">{post.description}</p>
           )}
 
-          {/* 📱 VISUAL PHONE NUMBER BADGE (Glass Theme) */}
+          {/* Contact Property Button (SVG Telephone) */}
           {post.phone && (
             <div className="mt-3 inline-flex items-center gap-3 bg-[#151A25] border border-[#1E2532] px-4 py-2.5 rounded-xl shadow-sm hover:border-[#00F0FF]/40 transition-colors cursor-pointer" onClick={handleCall}>
-              <span className="text-lg drop-shadow-sm">📞</span>
+              <svg className="w-5 h-5 text-[#00F0FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
               <div>
                 <p className="text-[9px] text-gray-400 uppercase font-black tracking-wider leading-none mb-1.5">Contact Property</p>
                 <p className="text-xs font-black text-[#00F0FF] leading-none drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">{post.phone}</p>
@@ -256,7 +264,7 @@ export default function PostCard({ post: initialPost }) {
             </div>
           )}
 
-          {/* Location Buttons (Your original big button layout, themed) */}
+          {/* Large Action Buttons (Replaced Emojis with SVGs) */}
           {(post.location?.lat && post.location?.lng) && (
             <div className="mt-4 pt-4 border-t border-[#1E2532]">
               <div className="flex gap-3">
@@ -267,14 +275,16 @@ export default function PostCard({ post: initialPost }) {
                   className="flex-1 text-center inline-flex items-center justify-center gap-1.5 text-[11px] font-black tracking-wide uppercase bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white px-3 py-3 rounded-xl shadow-[0_4px_15px_rgba(0,240,255,0.3)] hover:opacity-90 transition-opacity"
                   onClick={e => e.stopPropagation()}
                 >
-                  <span className="text-sm">🗺️</span> View on Map
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                  View on Map
                 </a>
 
                 <button
                   onClick={() => setShowNearbySearch(!showNearbySearch)}
                   className={`flex-1 text-center inline-flex items-center justify-center gap-1.5 text-[11px] font-black tracking-wide uppercase border px-3 py-3 rounded-xl transition-all ${showNearbySearch ? 'bg-[#00F0FF]/10 text-[#00F0FF] border-[#00F0FF]/50 shadow-[0_0_15px_rgba(0,240,255,0.2)]' : 'bg-[#151A25] hover:bg-[#1E2532] text-gray-400 border-[#1E2532] hover:text-white'}`}
                 >
-                  <span className="text-sm">🔍</span> Near Me
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  Near Me
                 </button>
               </div>
 

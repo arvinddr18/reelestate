@@ -188,7 +188,6 @@ const MessagesPage = () => {
     setDownloadedDocs(prev => ({ ...prev, [msgId]: true }));
   };
 
-  // --- FIXED: Image now opens perfectly centered with a dark background ---
   const openMediaInNewTab = (e, base64Data) => {
     e.preventDefault();
     if (!base64Data) return;
@@ -200,26 +199,9 @@ const MessagesPage = () => {
           <head>
             <title>Media Viewer</title>
             <style>
-              body { 
-                margin: 0; 
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                min-height: 100vh; 
-                background-color: #0f172a; 
-              }
-              img { 
-                max-width: 95vw; 
-                max-height: 95vh; 
-                object-fit: contain; 
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                border-radius: 8px;
-              }
-              iframe { 
-                width: 100vw; 
-                height: 100vh; 
-                border: none; 
-              }
+              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #0f172a; }
+              img { max-width: 95vw; max-height: 95vh; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-radius: 8px; }
+              iframe { width: 100vw; height: 100vh; border: none; }
             </style>
           </head>
           <body>
@@ -238,70 +220,81 @@ const MessagesPage = () => {
   const filteredLanguages = indianLanguages.filter(lang => lang.name.toLowerCase().includes(langSearch.toLowerCase()) || lang.native.toLowerCase().includes(langSearch.toLowerCase()));
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans">
-      <div className="w-80 bg-white border-r flex flex-col hidden md:flex">
-        <div className="p-4 border-b bg-white">
-          <h2 className="font-bold text-xl text-gray-800 mb-4">Messages</h2>
+    <div className="flex h-screen bg-[#0B0F19] font-sans">
+      
+      {/* ── 📱 LEFT SIDEBAR (Contact List) ── */}
+      <div className="w-80 bg-[#0B0F19]/95 border-r border-[#1E2532] flex flex-col hidden md:flex z-40 backdrop-blur-xl">
+        <div className="p-4 border-b border-[#1E2532]">
+          <h2 className="font-black text-xl text-white tracking-wide mb-4">Messages</h2>
           <div className="relative">
-            <IoMdSearch className="absolute left-3 top-3 text-gray-400 text-xl" />
-            <input type="text" placeholder="Search accounts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm outline-none" />
+            <IoMdSearch className="absolute left-3 top-3 text-gray-500 text-xl" />
+            <input type="text" placeholder="Search accounts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-[#151A25] border border-[#1E2532] rounded-xl text-sm text-white placeholder-gray-500 outline-none focus:border-[#00F0FF]/50 transition-colors" />
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto no-scrollbar">
           {searchQuery.trim() !== "" ? (
             searchResults.map((user) => (
-              <Link key={user._id} to={`/messages/${user._id}`} onClick={() => setSearchQuery('')} className="flex items-center gap-3 p-4 border-b hover:bg-gray-50">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">{getInitial(user)}</div>
-                <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-xs text-blue-500">Tap to chat</p></div>
+              <Link key={user._id} to={`/messages/${user._id}`} onClick={() => setSearchQuery('')} className="flex items-center gap-3 p-4 border-b border-[#1E2532] hover:bg-[#1E2532] transition-colors">
+                <div className="w-12 h-12 bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] rounded-full flex items-center justify-center text-white font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]">{getInitial(user)}</div>
+                <div className="flex-1 overflow-hidden"><h3 className="font-bold text-white truncate">@{user.username}</h3><p className="text-xs text-[#00F0FF]">Tap to chat</p></div>
               </Link>
             ))
           ) : recentChats.length > 0 ? (
             recentChats.map((user) => (
-              <Link key={user._id} to={`/messages/${user._id}`} className={`flex items-center gap-3 p-4 border-b ${userId === user._id ? 'bg-blue-50' : 'hover:bg-gray-100'}`}>
-                <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold">{getInitial(user)}</div>
-                <div className="flex-1 overflow-hidden"><h3 className="font-semibold text-gray-800 truncate">{user.username}</h3><p className="text-sm text-gray-500 truncate">Open chat</p></div>
+              <Link key={user._id} to={`/messages/${user._id}`} className={`flex items-center gap-3 p-4 border-b border-[#1E2532] transition-colors ${userId === user._id ? 'bg-[#151A25] border-l-4 border-l-[#00F0FF]' : 'hover:bg-[#151A25]'}`}>
+                <div className="w-12 h-12 bg-[#1E2532] rounded-full flex items-center justify-center text-[#00F0FF] font-black border border-[#2A3441]">{getInitial(user)}</div>
+                <div className="flex-1 overflow-hidden"><h3 className="font-bold text-white truncate">@{user.username}</h3><p className="text-xs text-gray-500 truncate">Open chat</p></div>
               </Link>
             ))
-          ) : <div className="p-6 text-center text-sm text-gray-400">Search for users to chat</div>}
+          ) : <div className="p-6 text-center text-sm font-bold text-gray-600">Search for users to chat</div>}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col bg-white">
+      {/* ── 💬 RIGHT CHAT AREA ── */}
+      <div className="flex-1 flex flex-col bg-[#0B0F19] relative">
         {!userId ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50"><div className="text-6xl mb-4">💬</div><h2 className="text-2xl font-semibold">Your Messages</h2></div>
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 bg-[#0B0F19]">
+            <div className="w-24 h-24 rounded-full bg-[#151A25] flex items-center justify-center border border-[#1E2532] shadow-[0_0_30px_rgba(0,240,255,0.1)] mb-6">
+              <svg className="w-10 h-10 text-[#00F0FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            </div>
+            <h2 className="text-xl font-bold text-white">Your Messages</h2>
+            <p className="text-sm mt-2">Select a user to start chatting.</p>
+          </div>
         ) : !messages ? (
-          <div className="flex items-center justify-center h-full text-gray-500">Loading...</div>
+          <div className="flex items-center justify-center h-full text-[#00F0FF] font-bold animate-pulse">Loading Chat...</div>
         ) : (
           <>
-            <div className="p-4 bg-white/90 backdrop-blur-md border-b flex flex-wrap items-center justify-between shadow-sm z-30 gap-y-2">
+            {/* Chat Header */}
+            <div className="p-4 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] flex flex-wrap items-center justify-between shadow-sm z-30 gap-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full overflow-hidden flex items-center justify-center text-white font-bold shadow-sm">
+                <div className="w-12 h-12 bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] rounded-full overflow-hidden flex items-center justify-center text-white font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]">
                   {getProfilePhoto(chatUser) ? <img src={getProfilePhoto(chatUser)} alt="Profile" className="w-full h-full object-cover" /> : getInitial(chatUser)}
                 </div>
                 <div className="flex flex-col justify-center">
-                  <h2 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                  <h2 className="font-black text-lg text-white tracking-wide flex items-center gap-2">
                     {chatUser?.fullName || chatUser?.username || "Loading..."}
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_6px_#22c55e]"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF] animate-pulse"></span>
                   </h2>
                 </div>
               </div>
               
+              {/* Translation Dropdown (Dark Theme) */}
               <div className="relative" ref={langMenuRef}>
-                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border flex items-center gap-2">
-                  <span className="text-xs font-bold">🌐 Translate to:</span>
-                  <span className="text-sm font-bold truncate max-w-[100px]">{targetLang.name}</span>
+                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="bg-[#151A25] text-[#00F0FF] hover:bg-[#1E2532] border border-[#1E2532] hover:border-[#00F0FF]/50 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all shadow-sm">
+                  <span className="text-xs font-bold uppercase tracking-wider">🌐 Translate:</span>
+                  <span className="text-sm font-bold truncate max-w-[100px] text-white">{targetLang.name}</span>
                   <IoMdArrowDropdown />
                 </button>
                 {isLangMenuOpen && (
-                  <div className="absolute top-12 right-0 w-64 bg-white rounded-xl shadow-2xl border flex flex-col z-50">
-                    <div className="p-2 border-b bg-gray-50 relative">
-                      <IoMdSearch className="absolute left-4 top-4 text-gray-400" />
-                      <input type="text" placeholder="Search..." value={langSearch} onChange={(e) => setLangSearch(e.target.value)} className="w-full pl-8 pr-2 py-1.5 bg-white border rounded-md text-sm outline-none" />
+                  <div className="absolute top-12 right-0 w-64 bg-[#151A25] rounded-xl shadow-2xl border border-[#1E2532] flex flex-col z-50 overflow-hidden">
+                    <div className="p-2 border-b border-[#1E2532] bg-[#0B0F19] relative">
+                      <IoMdSearch className="absolute left-4 top-4 text-gray-500" />
+                      <input type="text" placeholder="Search..." value={langSearch} onChange={(e) => setLangSearch(e.target.value)} className="w-full pl-8 pr-2 py-1.5 bg-[#151A25] border border-[#1E2532] rounded-md text-sm text-white placeholder-gray-500 outline-none focus:border-[#00F0FF]/50" />
                     </div>
-                    <ul className="max-h-60 overflow-y-auto">
+                    <ul className="max-h-60 overflow-y-auto no-scrollbar">
                       {filteredLanguages.map((lang) => (
-                        <li key={lang.code} onClick={() => { setTargetLang(lang); setIsLangMenuOpen(false); setLangSearch(""); }} className="px-4 py-2.5 flex justify-between items-center cursor-pointer text-sm border-b hover:bg-blue-50">
-                          <span>{lang.name}</span><span className="text-gray-400 text-xs">{lang.native}</span>
+                        <li key={lang.code} onClick={() => { setTargetLang(lang); setIsLangMenuOpen(false); setLangSearch(""); }} className="px-4 py-2.5 flex justify-between items-center cursor-pointer text-sm border-b border-[#1E2532] hover:bg-[#1E2532] text-white transition-colors">
+                          <span className="font-medium">{lang.name}</span><span className="text-gray-500 text-xs font-bold">{lang.native}</span>
                         </li>
                       ))}
                     </ul>
@@ -310,80 +303,86 @@ const MessagesPage = () => {
               </div>
             </div>
 
-            <div className="flex-1 relative bg-gray-50 flex flex-col overflow-hidden">
+            {/* Chat Background & Messages */}
+            <div className="flex-1 relative bg-[#0B0F19] flex flex-col overflow-hidden">
               <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
                 {getProfilePhoto(chatUser) ? (
-                  <div className="w-full h-full opacity-[0.10]" style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(30%)' }} />
+                  <div className="w-full h-full opacity-[0.03]" style={{ backgroundImage: `url(${getProfilePhoto(chatUser)})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(100%)' }} />
                 ) : (
-                  <div className="text-[20rem] md:text-[30rem] font-black text-gray-300 opacity-30">{getInitial(chatUser)}</div>
+                  <div className="text-[20rem] md:text-[30rem] font-black text-white opacity-[0.02]">{getInitial(chatUser)}</div>
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10 no-scrollbar">
                 {messages.length === 0 ? (
-                  <div className="flex justify-center h-full text-gray-500"><p className="bg-white px-4 py-2 rounded-full shadow-sm">No messages yet. Say Hi! 👋</p></div>
+                  <div className="flex justify-center h-full items-center"><p className="bg-[#151A25] border border-[#1E2532] text-gray-400 px-5 py-2.5 rounded-full shadow-sm text-sm font-bold tracking-wide">No messages yet. Say Hi! 👋</p></div>
                 ) : (
                   messages.map((msg) => {
                     const isMe = String(msg.sender._id || msg.sender) === String(userId) ? false : true;
                     const hasMedia = msg.image || msg.file;
                     
+                    // Theming the bubbles
                     const bubbleBg = isMe 
-                      ? (hasMedia ? 'bg-indigo-600 text-white shadow-md border border-indigo-700' : 'bg-blue-600 text-white shadow-sm')
-                      : (hasMedia ? 'bg-indigo-50 border-2 border-indigo-200 text-indigo-900 shadow-md' : 'bg-white text-gray-800 border shadow-sm');
+                      ? (hasMedia ? 'bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] text-white shadow-[0_4px_15px_rgba(0,240,255,0.2)]' : 'bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] text-white shadow-md')
+                      : (hasMedia ? 'bg-[#151A25] border border-[#1E2532] text-white shadow-md' : 'bg-[#151A25] text-white border border-[#1E2532] shadow-sm');
 
                     return (
                       <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg}`}>
+                        <div className={`relative max-w-[75%] p-3 rounded-2xl group ${bubbleBg} ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}>
                           
+                          {/* Replied Message Preview */}
                           {msg.replyTo && (
-                            <div className={`p-2 mb-2 rounded text-xs italic border-l-4 ${isMe ? 'bg-black/10 border-indigo-300 text-white' : 'bg-black/5 border-indigo-400 text-indigo-800'}`}>
+                            <div className={`p-2 mb-2 rounded-lg text-xs italic border-l-4 ${isMe ? 'bg-black/20 border-white text-white' : 'bg-[#0B0F19] border-[#00F0FF] text-gray-300'}`}>
                               Replying to: {msg.replyTo.text?.substring(0, 30) || "Attachment"}...
                             </div>
                           )}
                           
+                          {/* Image Attachment */}
                           {msg.image && (
                             <div className="flex flex-col mb-2">
-                              <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover border-2 border-white/20 shadow-md mb-2" />
+                              <img src={msg.image} alt="Attached" className="rounded-xl max-h-64 w-auto object-cover border border-white/10 shadow-md mb-2" />
                               <div className="flex gap-2">
-                                <button onClick={(e) => openMediaInNewTab(e, msg.image)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer ${isMe ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-indigo-200 hover:bg-indigo-300 text-indigo-800'}`}>Open</button>
-                                <a href={msg.image} download={`image-${msg._id}`} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>Save</a>
+                                <button onClick={(e) => openMediaInNewTab(e, msg.image)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer ${isMe ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-[#1E2532] hover:bg-[#2A3441] text-[#00F0FF]'}`}>Open</button>
+                                <a href={msg.image} download={`image-${msg._id}`} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-[#0057FF] hover:bg-gray-100' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30'}`}>Save</a>
                               </div>
                             </div>
                           )}
                           
+                          {/* Document Attachment */}
                           {msg.file && (
-                            <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-white border-indigo-200 text-indigo-800'}`}>
+                            <div className={`flex flex-col rounded-xl p-3 mb-2 shadow-sm border ${isMe ? 'bg-white/20 border-white/20 text-white' : 'bg-[#0B0F19] border-[#1E2532] text-white'}`}>
                                <div className="flex items-center gap-3 mb-2">
-                                  <span className="text-3xl">📄</span>
-                                  <span className="font-bold text-sm truncate">{msg.fileName || "Document"}</span>
+                                  <span className="text-3xl drop-shadow-md">📄</span>
+                                  <span className="font-bold text-sm truncate tracking-wide">{msg.fileName || "Document"}</span>
                                </div>
                                
                                {downloadedDocs[msg._id] ? (
                                  <div className="flex gap-2 mt-1 animate-fade-in-up">
-                                   <button onClick={(e) => openMediaInNewTab(e, msg.file)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer ${isMe ? 'bg-white/30 hover:bg-white/40 text-white' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800'}`}>Open</button>
-                                   <a href={msg.file} download={msg.fileName || "document"} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>Save</a>
+                                   <button onClick={(e) => openMediaInNewTab(e, msg.file)} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer ${isMe ? 'bg-white/30 hover:bg-white/40 text-white' : 'bg-[#1E2532] hover:bg-[#2A3441] text-white'}`}>Open</button>
+                                   <a href={msg.file} download={msg.fileName || "document"} className={`flex-1 py-1.5 rounded-lg text-xs font-bold text-center transition-colors ${isMe ? 'bg-white text-[#0057FF] hover:bg-gray-100' : 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30'}`}>Save</a>
                                  </div>
                                ) : (
-                                 <a href={msg.file} download={msg.fileName || "attachment"} onClick={() => markDocAsDownloaded(msg._id)} className={`flex items-center justify-center gap-2 py-1.5 mt-1 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-indigo-700 hover:bg-gray-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                                 <a href={msg.file} download={msg.fileName || "attachment"} onClick={() => markDocAsDownloaded(msg._id)} className={`flex items-center justify-center gap-2 py-1.5 mt-1 rounded-lg text-xs font-bold hover:shadow-md transition-all ${isMe ? 'bg-white text-[#0057FF] hover:bg-gray-100' : 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 hover:bg-[#00F0FF]/20'}`}>
                                     <IoMdDownload className="text-lg" /> Download File
                                  </a>
                                )}
                             </div>
                           )}
 
-                          {msg.text && <p className="text-sm md:text-base">{msg.text}</p>}
+                          {/* Text Body */}
+                          {msg.text && <p className="text-[13px] md:text-sm tracking-wide leading-relaxed">{msg.text}</p>}
                           
-                          <div className={`flex items-center justify-between mt-2 ${isMe ? 'text-white/70' : 'text-gray-400'}`}>
-                             <button onClick={() => setReplyTo(msg)} className={`text-[11px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-indigo-600'}`}>
-                               <BsReplyFill /> Reply
+                          {/* Meta: Reply Button & Timestamps */}
+                          <div className={`flex items-center justify-between mt-1.5 pt-1 ${isMe ? 'text-white/80' : 'text-gray-500'}`}>
+                             <button onClick={() => setReplyTo(msg)} className={`text-[10px] uppercase tracking-widest font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${isMe ? 'hover:text-white' : 'hover:text-[#00F0FF]'}`}>
+                               <BsReplyFill className="text-sm" /> Reply
                              </button>
 
                              <div className="flex items-center gap-1.5 ml-auto">
-                               <span className="text-[10px] font-medium">{formatTime(msg.createdAt || msg.timestamp)}</span>
-                               {/* --- FIXED: "SENT" is now red! --- */}
+                               <span className="text-[9px] font-bold uppercase tracking-widest">{formatTime(msg.createdAt || msg.timestamp)}</span>
                                {isMe && (
-                                 <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider border shadow-sm ${msg.isRead ? 'bg-white text-green-600 border-green-400' : 'bg-white text-red-500 border-red-300'}`}>
-                                   {msg.isRead ? <IoMdDoneAll /> : <IoMdCheckmark />} {msg.isRead ? 'READ' : 'SENT'}
+                                 <span className={`flex items-center gap-0.5 ${msg.isRead ? 'text-white' : 'text-white/60'}`}>
+                                   {msg.isRead ? <IoMdDoneAll className="text-[14px]" /> : <IoMdCheckmark className="text-[14px]" />}
                                  </span>
                                )}
                              </div>
@@ -393,59 +392,69 @@ const MessagesPage = () => {
                     );
                   })
                 )}
-                <div ref={scrollRef} />
+                <div ref={scrollRef} className="pb-2" />
               </div>
             </div>
 
-            <div className="p-4 bg-white border-t z-20 relative">
+            {/* ── 📝 INPUT AREA (Frosted Glass) ── */}
+            <div className="p-4 bg-[#0B0F19]/90 backdrop-blur-xl border-t border-[#1E2532] z-20 relative">
               
+              {/* Replying To Overlay */}
               {replyTo && (
-                <div className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-lg border-l-4 border-indigo-500 shadow-sm animate-fade-in-up">
-                  <span className="text-sm text-gray-600 truncate">
-                    Replying to: <b>{replyTo.text?.substring(0, 40) || (replyTo.fileName ? replyTo.fileName : "Attachment")}</b>
+                <div className="flex justify-between items-center bg-[#151A25] p-3 mb-3 rounded-xl border border-[#1E2532] border-l-4 border-l-[#00F0FF] shadow-sm animate-fade-in-up">
+                  <span className="text-xs font-bold tracking-wide text-gray-400 truncate pr-4">
+                    Replying to: <span className="text-white">{replyTo.text?.substring(0, 40) || (replyTo.fileName ? replyTo.fileName : "Attachment")}</span>
                   </span>
-                  <button onClick={() => setReplyTo(null)} className="text-gray-400 hover:text-red-500 bg-white rounded-full p-1 shadow-sm transition-colors"><IoMdClose /></button>
+                  <button onClick={() => setReplyTo(null)} className="text-gray-500 hover:text-red-400 transition-colors"><IoMdClose className="text-lg" /></button>
                 </div>
               )}
 
+              {/* Upload Preview Overlay */}
               {selectedFile && (
-                <div className="absolute -top-16 left-4 bg-white border-2 border-green-500 shadow-xl px-4 py-2 rounded-xl flex items-center gap-4 z-50 animate-fade-in-up">
-                  <span className="text-2xl">📁</span>
+                <div className="absolute -top-16 left-4 bg-[#151A25] border border-[#00F0FF]/50 shadow-[0_0_20px_rgba(0,240,255,0.2)] px-4 py-2.5 rounded-xl flex items-center gap-4 z-50 animate-fade-in-up">
+                  <span className="text-2xl drop-shadow-md">📁</span>
                   <div className="flex flex-col max-w-[150px]">
-                    <span className="text-xs font-bold text-gray-800 truncate">{selectedFile.name}</span>
-                    <span className="text-[10px] text-green-600 font-bold">Ready to send</span>
+                    <span className="text-xs font-bold text-white truncate">{selectedFile.name}</span>
+                    <span className="text-[10px] text-[#00F0FF] font-black tracking-widest uppercase">Ready to send</span>
                   </div>
-                  <button type="button" onClick={() => setSelectedFile(null)} title="Remove file" className="ml-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-2 transition-colors">
+                  <button type="button" onClick={() => setSelectedFile(null)} title="Remove file" className="ml-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg p-2 transition-colors">
                      <IoMdTrash />
                   </button>
                 </div>
               )}
 
+              {/* Text Input Form */}
               <form onSubmit={handleSendMessage} className="flex items-center gap-3 relative">
-                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-2xl text-gray-500 hover:text-yellow-500"><IoMdHappy /></button>
+                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-2xl text-gray-400 hover:text-yellow-400 transition-colors"><IoMdHappy /></button>
+                
+                {/* DARK THEME EMOJI PICKER */}
                 {showEmojiPicker && (
-                  <div className="absolute bottom-14 left-0 z-50 shadow-xl rounded-lg">
-                    <EmojiPicker onEmojiClick={(emojiData) => { setNewMessage(prev => prev + emojiData.emoji); setShowEmojiPicker(false); }} />
+                  <div className="absolute bottom-16 left-0 z-[100] shadow-[0_0_30px_rgba(0,0,0,0.8)] rounded-xl border border-[#1E2532] overflow-hidden">
+                    <EmojiPicker theme="dark" onEmojiClick={(emojiData) => { setNewMessage(prev => prev + emojiData.emoji); setShowEmojiPicker(false); }} />
                   </div>
                 )}
                 
-                <div className="flex flex-1 items-center bg-gray-100 rounded-full pl-2 pr-2 shadow-inner border border-transparent focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <label htmlFor="file-upload" className="p-2 text-gray-500 hover:text-blue-600 cursor-pointer transition-colors border-r border-gray-300 mr-2 pr-3" title="Attach a file">
-                    <IoMdAttach className="text-2xl" />
+                {/* Pill Shaped Input */}
+                <div className="flex flex-1 items-center bg-[#151A25] rounded-full pl-2 pr-2 shadow-inner border border-[#1E2532] focus-within:border-[#00F0FF]/50 focus-within:shadow-[0_0_10px_rgba(0,240,255,0.1)] transition-all">
+                  <label htmlFor="file-upload" className="p-2 text-gray-500 hover:text-[#00F0FF] cursor-pointer transition-colors border-r border-[#1E2532] mr-2 pr-3" title="Attach a file">
+                    <IoMdAttach className="text-xl" />
                   </label>
                   <input type="file" id="file-upload" className="hidden" onChange={handleFileChange} accept="image/*,video/*,.pdf,.doc,.docx" />
-                  <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={isListening ? "Listening... Speak now!" : "Type your message..."} className="flex-1 p-2.5 bg-transparent text-gray-900 font-medium placeholder-gray-500 outline-none w-full" />
+                  <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={isListening ? "Listening... Speak now!" : "Message..."} className="flex-1 py-3 bg-transparent text-white font-medium placeholder-gray-500 outline-none w-full text-sm tracking-wide" />
                 </div>
 
-                <button type="submit" disabled={isSending || (!newMessage.trim() && !selectedFile)} className="flex items-center justify-center transition-all">
+                {/* Send Button */}
+                <button type="submit" disabled={isSending || (!newMessage.trim() && !selectedFile)} className="flex items-center justify-center transition-all outline-none">
                   {isSending ? (
-                    <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-11 h-11 border-[3px] border-[#00F0FF] border-t-transparent rounded-full animate-spin"></div>
                   ) : selectedFile ? (
-                    <div className="bg-green-500 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] hover:bg-green-600 hover:scale-110 transition-transform">
-                       <IoMdArrowUp className="text-2xl font-bold" />
+                    <div className="bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] text-white w-11 h-11 flex items-center justify-center rounded-full shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-110 transition-transform">
+                       <IoMdArrowUp className="text-xl font-bold" />
                     </div>
                   ) : (
-                    <IoMdSend className={`text-3xl transition-colors ${newMessage.trim() ? 'text-blue-600 hover:text-blue-700' : 'text-gray-400'}`} />
+                    <div className={`w-11 h-11 flex items-center justify-center rounded-full transition-all ${newMessage.trim() ? 'bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-105' : 'bg-[#151A25] border border-[#1E2532] text-gray-500'}`}>
+                      <IoMdSend className="text-xl -ml-1 mt-0.5" />
+                    </div>
                   )}
                 </button>
               </form>

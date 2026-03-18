@@ -1,92 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import CategoryBar from '../components/CategoryBar'; // Jumps up one folder to find CategoryBar
-import PostCard from '../components/feed/PostCard';     // Jumps up, goes into feed folder for PostCard
-import ReelSwiper from '../components/reels/ReelSwiper'; // Jumps up, goes into reels folder
+import CategoryBar from '../components/CategoryBar';
+import PostCard from '../components/feed/PostCard'; 
+import ReelSwiper from '../components/reels/ReelSwiper';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function FeedPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeSub, setActiveSub] = useState('All');
-  
-  // 2. ADD THE STATE TO SHOW/HIDE REELS
   const [showReels, setShowReels] = useState(false);
 
   useEffect(() => {
     fetchPosts();
   }, [activeCategory, activeSub]);
 
- const fetchPosts = async () => {
+  const fetchPosts = async () => {
     try {
       setLoading(true);
-      
-      // We start with no filters
-      let queryParams = {};
+      const params = {};
 
-      // If the user clicks a specific category (like 'Sale Hub'), we filter.
-      // If it's 'All', we send NO category, so the backend gives us EVERY post.
+      // ── SMART FILTER LOGIC ──
+      // If category is NOT 'All', we filter. 
+      // If it IS 'All', we send no params so the backend returns EVERYTHING.
       if (activeCategory !== 'All') {
-        queryParams.mainCategory = activeCategory;
+        params.mainCategory = activeCategory; 
       }
-
-      // Only filter by sub-category if a specific one is picked
-      if (activeSub !== 'All' && activeSub !== 'None') {
-        queryParams.subCategory = activeSub;
-      }
-
-      const res = await api.get('/posts', { 
-        params: queryParams 
-      });
       
+      if (activeSub !== 'All' && activeSub !== 'None') {
+        params.subCategory = activeSub;
+      }
+
+      const res = await api.get('/posts', { params });
       setPosts(res.data.data || []);
     } catch (err) {
-      console.error("Error fetching posts:", err);
+      console.error("Fetch Error:", err);
+      toast.error("Could not load posts.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white relative">
       
-      {/* ── THE CATEGORY BAR ── */}
       <CategoryBar 
         activeCategory={activeCategory}
         activeSub={activeSub}
         onFilterChange={(cat) => { setActiveCategory(cat); setActiveSub('All'); }}
         onSubSelect={(sub) => setActiveSub(sub)}
-        
-        // 3. TRIGGER REELS WHEN STORY CIRCLE IS CLICKED
         onReelClick={() => setShowReels(true)} 
       />
 
-      {/* ── THE POST FEED ── */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-4 border-[#00F0FF] border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          posts.map((post) => (
-            <PostCard 
-              key={post._id} 
-              post={post} 
-              // 4. OPTIONAL: OPEN REELS IF A USER CLICKS THE POST IMAGE
-              onMediaClick={() => setShowReels(true)} 
-            />
-          ))
-        )}
-
-        {!loading && posts.length === 0 && (
-          <div className="text-center py-20 opacity-40 font-bold uppercase tracking-widest text-xs">
-            No posts found in this hub yet.
-          </div>
+          posts.length > 0 ? (
+            posts.map((post) => (
+              <PostCard 
+                key={post._id} 
+                post={post} 
+                onMediaClick={() => setShowReels(true)} 
+              />
+            ))
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-2">No posts found in this hub yet.</p>
+              <button 
+                onClick={() => setActiveCategory('All')}
+                className="text-[#00F0FF] text-[10px] font-black underline"
+              >
+                Back to All Posts
+              </button>
+            </div>
+          )
         )}
       </div>
 
-      {/* ── 5. THE FULL SCREEN REEL SWIPER MODAL ── */}
-      {showReels && (
+      {showReels && posts.length > 0 && (
         <ReelSwiper 
           posts={posts} 
           onClose={() => setShowReels(false)} 

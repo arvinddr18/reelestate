@@ -1,18 +1,18 @@
 const mongoose = require('mongoose');
 
+// ... keep existing imports ...
+
 const postSchema = new mongoose.Schema(
   {
-    author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    
+    // ── NEW SUPER APP FIELDS ──
+    mainCategory: { type: String, default: 'Sale Hub' }, 
+    subCategory: { type: String, default: 'All' },
+    postType: { type: String, enum: ['Real Estate', 'Knowledge', 'Social'], default: 'Real Estate' },
 
-    mediaType: {
-      type: String,
-      enum: ['video', 'images'],
-      required: true,
-    },
+    mediaType: { type: String, enum: ['video', 'images'], required: true },
+    // ... keep the rest of your fields exactly as they are ...
     videoUrl: { type: String },           
     videoPublicId: { type: String },      
     images: [{ url: String, publicId: String }],

@@ -18,16 +18,20 @@ const createPost = async (req, res) => {
       taluk, district, state, country,
       hashtags, mediaType,
       lat, lng, address,
+      mainCategory, subCategory, postType // 👈 ADDED HERE
     } = req.body;
 
-    if (!title || !price || !propertyType || !mediaType) {
-      return res.status(400).json({ success: false, message: 'Title, price, property type, and media type are required.' });
+    if (!title || !mediaType) {
+      return res.status(400).json({ success: false, message: 'Title and media type are required.' });
     }
 
     let postData = {
       author: req.user._id,
       title, description, price: Number(price),
       priceUnit, propertyType, area,
+      mainCategory: mainCategory || 'Sale Hub', // 👈 ADDED HERE
+      subCategory: subCategory || 'All',       // 👈 ADDED HERE
+      postType: postType || 'Real Estate',     // 👈 ADDED HERE
       bedrooms: bedrooms ? Number(bedrooms) : undefined,
       bathrooms: bathrooms ? Number(bathrooms) : undefined,
       taluk, district, state, country, phone,
@@ -72,6 +76,18 @@ const getFeed = async (req, res) => {
 
     // Build filter from query params
     const filter = { isActive: true };
+  
+    // ── NEW SMART FILTERING (ADD THIS HERE) ──
+    if (req.query.mainCategory && req.query.mainCategory !== 'All') {
+      filter.mainCategory = req.query.mainCategory;
+    }
+    if (req.query.subCategory && req.query.subCategory !== 'All') {
+      filter.subCategory = req.query.subCategory;
+    }
+    // ─────────────────────────────────────────
+
+    if (req.query.propertyType) filter.propertyType = req.query.propertyType;
+    // ... the rest of your code follows ...
     if (req.query.propertyType) filter.propertyType = req.query.propertyType;
     if (req.query.state) filter.state = new RegExp(req.query.state, 'i');
     if (req.query.district) filter.district = new RegExp(req.query.district, 'i');

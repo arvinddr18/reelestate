@@ -21,40 +21,46 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
+// ── 1. MAIN FEED ROUTES ──
+// FIXES the 404: This maps GET /api/posts/ to your feed
+router.get('/', optionalAuth, getFeed); 
 router.get('/feed', optionalAuth, getFeed);
+
 router.get('/search', searchPosts);
 router.get('/saved', protect, getSavedPosts);
 router.get('/:id', optionalAuth, getPost);
 router.delete('/:id', protect, deletePost);
 
-// Create — handle video OR images based on mediaType field
+// ── 2. CREATE ROUTES ──
 router.post('/video', protect, uploadVideo.single('video'), createPost);
 router.post('/images', protect, uploadImages.array('images', 10), createPost);
 
-// Social
+// ── 3. SOCIAL ROUTES ──
 router.put('/:id/like', protect, toggleLike);
 router.put('/:id/save', protect, toggleSave);
 router.get('/:id/comments', getComments);
 router.post('/:id/comments', protect, addComment);
 
-module.exports = router;
-// ── TEMPORARY: DATABASE CLEANUP ROUTE ──
-// This assigns 'Sale Hub' to every post that has no category
+// ── 4. DATABASE CLEANUP ROUTE ──
+// MOVE THIS ABOVE module.exports so it is actually registered!
 router.get('/admin/cleanup-categories', async (req, res) => {
   try {
-    const Post = require('../models/Post'); // Ensure path to your Post model is correct
+    const Post = require('../models/Post'); 
     
+    // Fix posts with NO category
     const result = await Post.updateMany(
-      { mainCategory: { $exists: false } }, // Find posts with no category
-      { $set: { mainCategory: 'Sale Hub', subCategory: 'All' } } // Assign default
+      { mainCategory: { $exists: false } }, 
+      { $set: { mainCategory: 'Sale Hub', subCategory: 'All', postType: 'Real Estate' } }
     );
 
+    // Fix posts with the wrong word "All" as a category
     const result2 = await Post.updateMany(
-      { mainCategory: "All" }, // Find posts with the literal word "All"
+      { mainCategory: "All" }, 
       { $set: { mainCategory: 'Sale Hub' } } 
     );
 
     res.json({ 
+      success: true,
       message: "Database Cleaned!", 
       updatedCount: result.modifiedCount + result2.modifiedCount 
     });
@@ -62,3 +68,7 @@ router.get('/admin/cleanup-categories', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ── 5. THE EXIT DOOR ──
+// This MUST be the very last line
+module.exports = router;

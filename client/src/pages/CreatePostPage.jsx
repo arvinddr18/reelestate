@@ -24,14 +24,14 @@ export default function CreatePostPage() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const [form, setForm] = useState({
-    title: '', 
+ const [form, setForm] = useState({
+    title: 'Social Post', // Default title for social
     description: '', 
     price: '', 
     priceUnit: 'total',
     mainCategory: 'Sale Hub', 
     subCategory: 'All', 
-    propertyType: 'Apartment', 
+    propertyType: 'none', 
     area: '', 
     bedrooms: '', 
     bathrooms: '',
@@ -39,7 +39,12 @@ export default function CreatePostPage() {
     phone: '',
     hashtags: '',
     knowledgeSubject: '',
-    knowledgeLevel: 'Beginner'
+    knowledgeLevel: 'Beginner',
+    // ── NEW SOCIAL FIELDS ──
+    music: '',
+    locationTag: '',
+    hasPoll: false,
+    audience: 'Followers'
   });
 
  const handleChange = (e) => {
@@ -74,17 +79,19 @@ export default function CreatePostPage() {
     if (files.length === 0) { toast.error('Please select media files.'); return; }
 
     const formData = new FormData();
+    
+    // Add all form fields to formData
     Object.entries(form).forEach(([key, val]) => {
       if (key === 'hashtags') {
         const tags = val.split(',').map(t => t.trim()).filter(Boolean);
         formData.append('hashtags', JSON.stringify(tags));
-      } else if (val) {
+      } else if (val !== undefined && val !== '') {
         formData.append(key, val);
       }
     });
 
     formData.append('mediaType', mediaType);
-    formData.append('postType', postType); // Send the mode to backend
+    formData.append('postType', postType);
 
     if (mediaType === 'video') {
       formData.append('video', files[0]);
@@ -129,7 +136,11 @@ export default function CreatePostPage() {
               type="button"
               onClick={() => {
                 setPostType(mode);
-                setForm(f => ({ ...f, mainCategory: mode === 'Real Estate' ? 'Sale Hub' : mode === 'Knowledge' ? 'Education' : 'All' }));
+                setForm(f => ({ 
+  ...f, 
+  mainCategory: mode === 'Real Estate' ? 'Sale Hub' : mode === 'Knowledge' ? 'Education' : 'Social' 
+}));
+               
               }}
               className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
                 postType === mode ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white shadow-lg' : 'text-gray-500 hover:text-white'
@@ -181,79 +192,78 @@ export default function CreatePostPage() {
 
         {/* ── STEP 3: DYNAMIC FORM DETAILS ── */}
         <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-5 shadow-xl">
+          
           <h2 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.3em] flex items-center gap-2">
-            <IoMdInformationCircle size={16}/> Essential Details
+            <IoMdInformationCircle size={16}/> {postType === 'Social' ? 'INSTA-STUDIO' : 'ESSENTIAL DETAILS'}
           </h2>
 
-          <input name="title" value={form.title} onChange={handleChange} placeholder="GIVE IT A CATCHY TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold focus:border-[#00F0FF]/50 outline-none transition-all" required />
-          {/* ─── SMART BLOCK: HIDE IF 'SOCIAL' ─── */}
-          {form.mainCategory !== 'Social' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              
-              {/* Price & Type */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase text-gray-500 ml-2">Price / Salary</label>
-                  <input 
-                    name="price" 
-                    type="number" 
-                    placeholder="0.00"
-                    value={form.price} 
-                    onChange={handleChange} 
-                    className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-xs font-bold outline-none focus:border-[#00F0FF] transition-all" 
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase text-gray-500 ml-2">Type</label>
-                  <select 
-                    name="propertyType" 
-                    value={form.propertyType} 
-                    onChange={handleChange}
-                    className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-[#00F0FF] outline-none"
-                  >
-                    {PROPERTY_TYPES.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
+          {/* 1. SHOW THIS ONLY FOR SOCIAL MODE (Instagram Style) */}
+          {postType === 'Social' && (
+            <div className="space-y-6 animate-in slide-in-from-right duration-500">
+              {/* Image + Caption Row */}
+              <div className="flex gap-4 bg-[#0B0F19] p-4 rounded-3xl border border-[#1E2532]">
+                 <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden shrink-0 border border-[#1E2532]">
+                    {previews[0] ? <img src={previews[0].url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-800" />}
+                 </div>
+                 <textarea 
+                   name="description" 
+                   placeholder="Write a caption..." 
+                   value={form.description}
+                   onChange={handleChange}
+                   className="w-full bg-transparent text-sm outline-none resize-none pt-2"
+                   rows={3}
+                 />
               </div>
 
-              {/* Location Details (Now inside the smart block) */}
-              <div className="pt-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 block ml-2">Location Tags</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <input name="taluk" placeholder="TALUK / TOWN" value={form.taluk} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none focus:border-[#00F0FF]/50" />
-                  <input name="district" placeholder="DISTRICT" value={form.district} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none focus:border-[#00F0FF]/50" />
-                </div>
+              {/* Instagram-style List Tools */}
+              <div className="overflow-hidden rounded-3xl border border-[#1E2532] bg-[#0B0F19]">
+                 {['Add Audio', 'Add Location', 'Tag People'].map((item, idx) => (
+                   <button key={item} type="button" className={`w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors ${idx !== 2 ? 'border-b border-[#1E2532]/50' : ''}`}>
+                      <div className="flex items-center gap-4">
+                         <span className="text-xl">{item.includes('Audio') ? '🎵' : item.includes('Location') ? '📍' : '👤'}</span>
+                         <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">{item}</span>
+                      </div>
+                      <span className="text-gray-600">❯</span>
+                   </button>
+                 ))}
               </div>
+            </div>
+          )}
 
-              {/* Area & BHK - Only for Real Estate Mode */}
-              {postType === 'Real Estate' && (
-                <div className="grid grid-cols-2 gap-4">
-                   <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (SQFT)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none" />
-                   <input name="bedrooms" type="number" value={form.bedrooms} onChange={handleChange} placeholder="BHK" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none" />
+          {/* 2. SHOW THIS ONLY FOR REAL ESTATE / KNOWLEDGE MODE */}
+          {postType !== 'Social' && (
+            <div className="space-y-5">
+              <input 
+                name="title" 
+                value={form.title} 
+                onChange={handleChange} 
+                placeholder="GIVE IT A CATCHY TITLE *" 
+                className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold outline-none" 
+                required 
+              />
+
+              {/* Price/Location Block */}
+              {form.mainCategory !== 'Social' && (
+                <div className="space-y-5 animate-in fade-in duration-500">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold outline-none" required />
+                    <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
                 </div>
               )}
+
+              <textarea 
+                name="description" 
+                value={form.description} 
+                onChange={handleChange} 
+                placeholder="DESCRIBE YOUR POST..." 
+                rows={4} 
+                className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm outline-none" 
+              />
             </div>
           )}
-
-          
-
-          {/* KNOWLEDGE SPECIFIC FIELDS */}
-          {postType === 'Knowledge' && (
-            <div className="space-y-5 animate-in fade-in duration-500">
-              <input name="knowledgeSubject" value={form.knowledgeSubject} onChange={handleChange} placeholder="SUBJECT (e.g. Real Estate Law, Coding, Finance)" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold focus:border-[#00F0FF]/50 outline-none" />
-              <select name="knowledgeLevel" value={form.knowledgeLevel} onChange={handleChange} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-[#00F0FF] outline-none">
-                {KNOWLEDGE_LEVELS.map(lv => <option key={lv} value={lv}>{lv} Level</option>)}
-              </select>
-            </div>
-          )}
-
-          <textarea name="description" value={form.description} onChange={handleChange} placeholder="DESCRIBE YOUR POST..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm focus:border-[#00F0FF]/50 outline-none transition-all resize-none" />
-          
-          
-        
         </div>
 
         {/* ── STEP 4: CATEGORY TAGGING ── */}

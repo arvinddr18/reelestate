@@ -42,7 +42,26 @@ export default function CreatePostPage() {
     knowledgeLevel: 'Beginner'
   });
 
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+ const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // If user switches to Social, reset the real estate specific fields
+    if (name === 'mainCategory' && value === 'Social') {
+      setForm(prev => ({
+        ...prev,
+        [name]: value,
+        price: '',
+        propertyType: 'none',
+        taluk: '',
+        district: '',
+        area: '',
+        bedrooms: '',
+        bathrooms: ''
+      }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
@@ -167,27 +186,59 @@ export default function CreatePostPage() {
           </h2>
 
           <input name="title" value={form.title} onChange={handleChange} placeholder="GIVE IT A CATCHY TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold focus:border-[#00F0FF]/50 outline-none transition-all" required />
+          {/* ─── SMART BLOCK: HIDE IF 'SOCIAL' ─── */}
+          {form.mainCategory !== 'Social' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              
+              {/* Price & Type */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-black uppercase text-gray-500 ml-2">Price / Salary</label>
+                  <input 
+                    name="price" 
+                    type="number" 
+                    placeholder="0.00"
+                    value={form.price} 
+                    onChange={handleChange} 
+                    className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-xs font-bold outline-none focus:border-[#00F0FF] transition-all" 
+                  />
+                </div>
 
-          {/* REAL ESTATE SPECIFIC FIELDS */}
-          {postType === 'Real Estate' && (
-            <div className="space-y-5 animate-in fade-in duration-500">
-              <div className="grid grid-cols-2 gap-3">
-                <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold focus:border-[#00F0FF]/50 outline-none" required />
-                <select name="priceUnit" value={form.priceUnit} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-[#00F0FF] outline-none">
-                  <option value="total">Total Price</option>
-                  <option value="per_sqft">Per Sq.Ft</option>
-                  <option value="per_month">Rent / Month</option>
-                </select>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-black uppercase text-gray-500 ml-2">Type</label>
+                  <select 
+                    name="propertyType" 
+                    value={form.propertyType} 
+                    onChange={handleChange}
+                    className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-[#00F0FF] outline-none"
+                  >
+                    {PROPERTY_TYPES.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                  {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-                <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (e.g. 1500 SQFT)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold focus:border-[#00F0FF]/50 outline-none" />
+              {/* Location Details (Now inside the smart block) */}
+              <div className="pt-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 block ml-2">Location Tags</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <input name="taluk" placeholder="TALUK / TOWN" value={form.taluk} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none focus:border-[#00F0FF]/50" />
+                  <input name="district" placeholder="DISTRICT" value={form.district} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none focus:border-[#00F0FF]/50" />
+                </div>
               </div>
+
+              {/* Area & BHK - Only for Real Estate Mode */}
+              {postType === 'Real Estate' && (
+                <div className="grid grid-cols-2 gap-4">
+                   <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (SQFT)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none" />
+                   <input name="bedrooms" type="number" value={form.bedrooms} onChange={handleChange} placeholder="BHK" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none" />
+                </div>
+              )}
             </div>
           )}
+
+          
 
           {/* KNOWLEDGE SPECIFIC FIELDS */}
           {postType === 'Knowledge' && (
@@ -201,13 +252,8 @@ export default function CreatePostPage() {
 
           <textarea name="description" value={form.description} onChange={handleChange} placeholder="DESCRIBE YOUR POST..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm focus:border-[#00F0FF]/50 outline-none transition-all resize-none" />
           
-          <div className="pt-4 border-t border-[#1E2532]">
-            <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2"><IoMdPin/> Tag Location & Contact</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <input name="location" value={form.location} onChange={handleChange} placeholder="CITY / DISTRICT" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none" />
-              <input name="phone" value={form.phone} onChange={handleChange} placeholder="WHATSAPP / CALL" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-bold outline-none" />
-            </div>
-          </div>
+          
+        
         </div>
 
         {/* ── STEP 4: CATEGORY TAGGING ── */}

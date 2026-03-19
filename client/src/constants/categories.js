@@ -6,6 +6,7 @@
 
 export const MAIN_CATEGORIES = [
   // ── CORE: REAL ESTATE & LIVING ──
+  { id: 'social', name: 'Social', icon: '📸' }, // This is your "Insta" mode!
   { id: 'sale-hub', name: 'Sale Hub', icon: '🏠' },
   { id: 'rents', name: 'Rents', icon: '🔑' },
   { id: 'pgs', name: 'PGs & Co-Living', icon: '🛏️' },
@@ -37,3 +38,11 @@ export const SALE_HUB_SUBS = ['All', 'Villas', 'Apartments', 'Plots', 'Commercia
 
 // Sub-categories specifically for when "Rents" is active
 export const RENT_SUBS = ['All', '1 BHK', '2 BHK', '3+ BHK', 'Offices', 'Shops'];
+
+// --- DATA FOR DROPDOWNS ---
+export const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'];
+
+export const KNOWLEDGE_LEVELS = ['Beginner', 'Intermediate', 'Expert', 'Pro Tips'];
+
+// This helps your CreatePostPage dropdown stay in sync with the icons
+export const CATEGORY_NAMES = ['Social', 'Sale Hub', 'Rents', 'Jobs & Gigs', 'Education', 'Marketplace'];

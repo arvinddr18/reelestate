@@ -2,7 +2,6 @@
  * pages/CreatePostPage.jsx
  * The Smart Create Engine for the Super App Ecosystem.
  */
-
 import { MAIN_CATEGORIES, SALE_HUB_SUBS } from '../constants/categories';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -13,10 +12,60 @@ import { IoMdCloudUpload, IoMdVideocam, IoMdImages, IoMdPin, IoMdInformationCirc
 const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'];
 const KNOWLEDGE_LEVELS = ['Beginner', 'Intermediate', 'Expert', 'Pro Tips'];
 
+// ─── MUSIC PICKER COMPONENT (Helper) ───
+const MusicPicker = ({ onSelect, onClose }) => {
+  const [query, setQuery] = useState('');
+  
+  // MOCK DATA
+  const SONGS = [
+    { id: '1', title: 'Midnight City', artist: 'M83', icon: '🎧' },
+    { id: '2', title: 'Levitating', artist: 'Dua Lipa', icon: '✨' },
+    { id: '3', title: 'Lo-fi Study', artist: 'Lofi Girl', icon: '☕' },
+    { id: '4', title: 'Real Estate Vibes', artist: 'Nodexa Beats', icon: '🏠' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-[#0B0F19]/95 backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex flex-col p-6">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-xl font-black italic tracking-tighter">SELECT AUDIO</h2>
+        <button type="button" onClick={onClose} className="text-[10px] font-black uppercase text-gray-500 hover:text-white transition-colors">Close</button>
+      </div>
+
+      <input 
+        placeholder="Search for music or artists..." 
+        className="w-full bg-[#151A25] border border-[#1E2532] p-5 rounded-2xl mb-8 outline-none text-sm font-bold focus:border-[#00F0FF]/50"
+        onChange={(e) => setQuery(e.target.value.toLowerCase())}
+      />
+
+      <div className="space-y-3 overflow-y-auto no-scrollbar">
+        {SONGS.filter(s => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)).map(song => (
+          <button 
+            key={song.id} 
+            type="button"
+            onClick={() => { onSelect(song); onClose(); }}
+            className="w-full flex items-center justify-between p-4 bg-[#151A25] rounded-2xl border border-[#1E2532] hover:border-[#00F0FF] transition-all group"
+          >
+            <div className="flex items-center gap-4 text-left">
+              <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">{song.icon}</span>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest">{song.title}</p>
+                <p className="text-[10px] text-gray-500 font-bold">{song.artist}</p>
+              </div>
+            </div>
+            <span className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">Select</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── MAIN PAGE COMPONENT ───
 export default function CreatePostPage() {
   const navigate = useNavigate();
   
-  // ── CORE STATE ──
+  // CORE STATE
+  const [showMusicModal, setShowMusicModal] = useState(false);
   const [postType, setPostType] = useState('Real Estate'); // 'Real Estate' | 'Knowledge' | 'Social'
   const [mediaType, setMediaType] = useState('images'); // 'images' | 'video'
   const [files, setFiles] = useState([]);
@@ -24,8 +73,8 @@ export default function CreatePostPage() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
- const [form, setForm] = useState({
-    title: 'Social Post', // Default title for social
+  const [form, setForm] = useState({
+    title: 'Social Post', 
     description: '', 
     price: '', 
     priceUnit: 'total',
@@ -40,28 +89,17 @@ export default function CreatePostPage() {
     hashtags: '',
     knowledgeSubject: '',
     knowledgeLevel: 'Beginner',
-    // ── NEW SOCIAL FIELDS ──
     music: '',
     locationTag: '',
     hasPoll: false,
     audience: 'Followers'
   });
 
- const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // If user switches to Social, reset the real estate specific fields
     if (name === 'mainCategory' && value === 'Social') {
       setForm(prev => ({
-        ...prev,
-        [name]: value,
-        price: '',
-        propertyType: 'none',
-        taluk: '',
-        district: '',
-        area: '',
-        bedrooms: '',
-        bathrooms: ''
+        ...prev, [name]: value, price: '', propertyType: 'none', taluk: '', district: '', area: '', bedrooms: '', bathrooms: ''
       }));
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
@@ -79,8 +117,6 @@ export default function CreatePostPage() {
     if (files.length === 0) { toast.error('Please select media files.'); return; }
 
     const formData = new FormData();
-    
-    // Add all form fields to formData
     Object.entries(form).forEach(([key, val]) => {
       if (key === 'hashtags') {
         const tags = val.split(',').map(t => t.trim()).filter(Boolean);
@@ -106,7 +142,6 @@ export default function CreatePostPage() {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e) => setProgress(Math.round((e.loaded / e.total) * 100)),
       });
-
       toast.success('Successfully published to Nodexa! 🚀');
       navigate('/');
     } catch (err) {
@@ -120,7 +155,7 @@ export default function CreatePostPage() {
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white font-sans pb-24 overflow-y-auto no-scrollbar">
       
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <div className="bg-gradient-to-b from-[#0057FF]/10 to-transparent pt-12 pb-6 px-6 text-center">
         <h1 className="text-3xl font-black tracking-tighter italic">CREATE CONTENT</h1>
         <p className="text-[#00F0FF] text-[10px] font-black uppercase tracking-[0.3em] mt-1">Share with the Nodexa Community</p>
@@ -128,7 +163,7 @@ export default function CreatePostPage() {
 
       <form onSubmit={handleSubmit} className="max-w-xl mx-auto px-6 space-y-8">
         
-        {/* ── STEP 1: PICK YOUR VIBE (MODE SWITCHER) ── */}
+        {/* VIBE SWITCHER */}
         <div className="bg-[#151A25] p-1.5 rounded-2xl border border-[#1E2532] flex gap-1">
           {['Real Estate', 'Knowledge', 'Social'].map(mode => (
             <button
@@ -136,11 +171,7 @@ export default function CreatePostPage() {
               type="button"
               onClick={() => {
                 setPostType(mode);
-                setForm(f => ({ 
-  ...f, 
-  mainCategory: mode === 'Real Estate' ? 'Sale Hub' : mode === 'Knowledge' ? 'Education' : 'Social' 
-}));
-               
+                setForm(f => ({ ...f, mainCategory: mode === 'Real Estate' ? 'Sale Hub' : mode === 'Knowledge' ? 'Education' : 'Social' }));
               }}
               className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
                 postType === mode ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white shadow-lg' : 'text-gray-500 hover:text-white'
@@ -151,7 +182,7 @@ export default function CreatePostPage() {
           ))}
         </div>
 
-        {/* ── STEP 2: MEDIA UPLOAD ── */}
+        {/* MEDIA UPLOAD */}
         <div className="space-y-4">
           <div className="flex gap-2">
             {['images', 'video'].map(type => (
@@ -190,59 +221,51 @@ export default function CreatePostPage() {
           )}
         </div>
 
-        {/* ── STEP 3: DYNAMIC FORM DETAILS ── */}
+        {/* DYNAMIC FORM DETAILS */}
         <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-5 shadow-xl">
-          
           <h2 className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.3em] flex items-center gap-2">
             <IoMdInformationCircle size={16}/> {postType === 'Social' ? 'INSTA-STUDIO' : 'ESSENTIAL DETAILS'}
           </h2>
 
-          {/* 1. SHOW THIS ONLY FOR SOCIAL MODE (Instagram Style) */}
+          {/* SOCIAL MODE */}
           {postType === 'Social' && (
             <div className="space-y-6 animate-in slide-in-from-right duration-500">
-              {/* Image + Caption Row */}
               <div className="flex gap-4 bg-[#0B0F19] p-4 rounded-3xl border border-[#1E2532]">
                  <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden shrink-0 border border-[#1E2532]">
-                    {previews[0] ? <img src={previews[0].url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-800" />}
+                    {previews[0] ? <img src={previews[0].url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900" />}
                  </div>
-                 <textarea 
-                   name="description" 
-                   placeholder="Write a caption..." 
-                   value={form.description}
-                   onChange={handleChange}
-                   className="w-full bg-transparent text-sm outline-none resize-none pt-2"
-                   rows={3}
-                 />
+                 <textarea name="description" placeholder="Write a caption..." value={form.description} onChange={handleChange} className="w-full bg-transparent text-sm outline-none resize-none pt-2" rows={3} />
               </div>
 
-              {/* Instagram-style List Tools */}
+              {/* LIST OPTIONS WITH MUSIC BUTTON */}
               <div className="overflow-hidden rounded-3xl border border-[#1E2532] bg-[#0B0F19]">
-                 {['Add Audio', 'Add Location', 'Tag People'].map((item, idx) => (
-                   <button key={item} type="button" className={`w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors ${idx !== 2 ? 'border-b border-[#1E2532]/50' : ''}`}>
-                      <div className="flex items-center gap-4">
-                         <span className="text-xl">{item.includes('Audio') ? '🎵' : item.includes('Location') ? '📍' : '👤'}</span>
-                         <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">{item}</span>
-                      </div>
-                      <span className="text-gray-600">❯</span>
-                   </button>
-                 ))}
+                <button type="button" onClick={() => setShowMusicModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xl">🎵</span>
+                    <div className="text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">
+                        {form.music ? 'Music Selected' : 'Add Audio'}
+                      </span>
+                      {form.music && <p className="text-[9px] text-[#00F0FF] font-black uppercase mt-0.5">{form.music}</p>}
+                    </div>
+                  </div>
+                  <span className="text-gray-600 text-lg">❯</span>
+                </button>
+                <button type="button" className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xl">📍</span><span className="text-[11px] font-black uppercase tracking-widest text-gray-300">Add Location</span>
+                  </div>
+                  <span className="text-gray-600 text-lg">❯</span>
+                </button>
               </div>
             </div>
           )}
 
-          {/* 2. SHOW THIS ONLY FOR REAL ESTATE / KNOWLEDGE MODE */}
+          {/* REAL ESTATE / KNOWLEDGE MODE */}
           {postType !== 'Social' && (
             <div className="space-y-5">
-              <input 
-                name="title" 
-                value={form.title} 
-                onChange={handleChange} 
-                placeholder="GIVE IT A CATCHY TITLE *" 
-                className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold outline-none" 
-                required 
-              />
-
-              {/* Price/Location Block */}
+              <input name="title" value={form.title} onChange={handleChange} placeholder="GIVE IT A CATCHY TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold outline-none" required />
+              
               {form.mainCategory !== 'Social' && (
                 <div className="space-y-5 animate-in fade-in duration-500">
                   <div className="grid grid-cols-2 gap-3">
@@ -253,43 +276,39 @@ export default function CreatePostPage() {
                   </div>
                 </div>
               )}
-
-              <textarea 
-                name="description" 
-                value={form.description} 
-                onChange={handleChange} 
-                placeholder="DESCRIBE YOUR POST..." 
-                rows={4} 
-                className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm outline-none" 
-              />
+              <textarea name="description" value={form.description} onChange={handleChange} placeholder="DESCRIBE YOUR POST..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm outline-none" />
             </div>
           )}
         </div>
 
-        {/* ── STEP 4: CATEGORY TAGGING ── */}
+        {/* CATEGORY TAGGING */}
         <div className="space-y-3">
           <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2">Display Hub</label>
           <select name="mainCategory" value={form.mainCategory} onChange={handleChange} className="w-full bg-[#151A25] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-[#00F0FF] outline-none shadow-lg">
-            {MAIN_CATEGORIES.map(cat => (
-              <option key={cat.name} value={cat.name}>{cat.icon} {cat.name}</option>
-            ))}
+            {MAIN_CATEGORIES.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
           </select>
         </div>
 
-        {/* ── PROGRESS & SUBMIT ── */}
+        {/* SUBMIT BUTTON */}
         <div className="space-y-4 pt-4">
           {loading && progress > 0 && (
             <div className="w-full bg-[#1E2532] h-1.5 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] transition-all" style={{ width: `${progress}%` }} />
             </div>
           )}
-          
           <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white py-5 rounded-[24px] font-black tracking-[0.2em] uppercase shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
-            {loading ? 'UPLOADING TO NODEXA...' : `🚀 PUBLISH ${postType}`}
+            {loading ? 'UPLOADING...' : `🚀 PUBLISH ${postType}`}
           </button>
         </div>
-
       </form>
+
+      {/* MUSIC PICKER MODAL */}
+      {showMusicModal && (
+        <MusicPicker 
+          onClose={() => setShowMusicModal(false)}
+          onSelect={(song) => setForm(f => ({ ...f, music: `${song.title} - ${song.artist}` }))}
+        />
+      )}
     </div>
   );
 }

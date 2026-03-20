@@ -155,11 +155,19 @@ export default function CreatePostPage() {
     if (files.length === 0) { toast.error('Please select media files.'); return; }
 
     const formData = new FormData();
+    
+    // ─── THE FIX: Smart Data Filtering ───
     Object.entries(form).forEach(([key, val]) => {
+      // 1. Skip dummy values ('none'), completely empty strings, or invalid numbers
+      if (val === 'none' || val === '' || val === null || val === undefined) return;
+      if (key === 'price' && isNaN(val)) return;
+
+      // 2. Format hashtags properly
       if (key === 'hashtags') {
         const tags = val.split(',').map(t => t.trim()).filter(Boolean);
         formData.append('hashtags', JSON.stringify(tags));
-      } else if (val !== undefined && val !== '') {
+      } else {
+        // 3. Append everything else safely
         formData.append(key, val);
       }
     });

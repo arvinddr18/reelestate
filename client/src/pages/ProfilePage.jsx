@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdCreate, IoMdTrash, IoMdPin, IoMdCall, IoMdMail } from 'react-icons/io';
+import PostCard from '../components/feed/PostCard'; // 👈 ADDED POSTCARD IMPORT
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -34,6 +35,7 @@ const ProfilePage = () => {
 
   const [user, setUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]); 
+  const [activeTab, setActiveTab] = useState('grid'); // 👈 ADDED TAB STATE
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [formData, setFormData] = useState({ fullName: '', bio: '', location: '', phone: '', website: '' });
@@ -196,7 +198,7 @@ const ProfilePage = () => {
               <div className="flex gap-4 md:gap-8 mt-6 justify-center md:justify-start pt-6 border-t border-[#1E2532]">
                 <div className="text-center md:text-left">
                   <p className="text-xl font-black text-white">{userPosts.length}</p>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mt-1">Properties</p>
+                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mt-1">Posts</p>
                 </div>
                 <div className="text-center md:text-left">
                   <p className="text-xl font-black text-white">{user?.followersCount || 0}</p>
@@ -247,56 +249,79 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* ── PORTFOLIO GRID (Listings) ── */}
+        {/* ── 👈 NEW: INSTAGRAM-STYLE TABS START HERE ── */}
         <div className="mt-12">
-          <div className="flex items-center justify-between mb-6 border-b border-[#1E2532] pb-4">
-            <h3 className="text-sm font-black text-gray-300 uppercase tracking-[0.2em] flex items-center gap-3">
-              <IoMdGrid size={20} className="text-[#00F0FF]"/> Property Portfolio
-            </h3>
-            <span className="bg-[#151A25] border border-[#1E2532] px-3 py-1 rounded-full text-xs font-bold text-[#00F0FF]">
-              {userPosts.length} Active
-            </span>
-          </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
-            {userPosts.map((post) => (
-              <div 
-                key={post._id} 
-                onClick={() => setSelectedPost(post)}
-                className="aspect-square bg-[#151A25] rounded-2xl overflow-hidden border border-[#1E2532] group relative cursor-pointer shadow-sm hover:shadow-xl transition-all"
-              >
-                {/* Media Logic */}
-                {post.mediaType === 'video' ? (
-                  <video src={post.videoUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                ) : (
-                  <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Property" />
-                )}
+          {/* Tabs Navigation */}
+          <div className="flex border-t border-[#1E2532]">
+            <button 
+              onClick={() => setActiveTab('grid')}
+              className={`flex-1 py-4 text-[11px] font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all ${
+                activeTab === 'grid' ? 'text-[#00F0FF] border-t-2 border-[#00F0FF] -mt-[1px]' : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              <IoMdGrid size={18} />
+              GRID
+            </button>
+            <button 
+              onClick={() => setActiveTab('list')}
+              className={`flex-1 py-4 text-[11px] font-black tracking-widest uppercase flex items-center justify-center gap-2 transition-all ${
+                activeTab === 'list' ? 'text-[#00F0FF] border-t-2 border-[#00F0FF] -mt-[1px]' : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              FEED
+            </button>
+          </div>
 
-                {/* Floating Price Tag */}
-                <div className="absolute top-2 right-2 bg-[#0B0F19]/80 backdrop-blur-md text-[#F5A623] text-[10px] font-black tracking-wider px-2 py-1 rounded-md border border-white/10 shadow-md">
-                  {post.price ? `₹${(post.price/100000).toFixed(1)}L` : 'FOR SALE'}
-                </div>
+          {/* Tab Content */}
+          <div className="mt-1 pb-10">
+            
+            {/* 📸 TAB 1: SOCIAL GRID */}
+            {activeTab === 'grid' && (
+              <div className="grid grid-cols-3 gap-1">
+                {userPosts.map(post => (
+                  <div key={post._id} onClick={() => setSelectedPost(post)} className="relative aspect-square bg-[#151A25] overflow-hidden group cursor-pointer">
+                    {post.mediaType === 'video' ? (
+                      <video src={post.videoUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} className="w-full h-full object-cover" alt="Post" />
+                    )}
+                    
+                    {post.mediaType === 'video' && (
+                      <div className="absolute top-2 right-2 text-white drop-shadow-md">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z" /><path d="M3 6a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6z" /></svg>
+                      </div>
+                    )}
 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19]/90 via-[#0B0F19]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                  <p className="text-white font-bold text-sm truncate">{post.title || "Property Listing"}</p>
-                  <div className="flex items-center gap-3 mt-1 text-[10px] font-bold text-gray-300 uppercase tracking-wider">
-                    <span className="flex items-center gap-1"><span className="text-red-500">❤</span> {post.likesCount || 0}</span>
-                    <span className="flex items-center gap-1"><span className="text-[#00F0FF]">👁</span> {post.viewsCount || 0}</span>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-xs font-bold">
+                      <span className="flex items-center gap-1"><span className="text-red-500">❤</span> {post.likesCount || 0}</span>
+                    </div>
                   </div>
+                ))}
+              </div>
+            )}
+
+            {/* 🏠 TAB 2: LISTINGS FEED */}
+            {activeTab === 'list' && (
+              <div className="max-w-[470px] mx-auto mt-6 space-y-6">
+                {userPosts.map(post => (
+                  <PostCard key={post._id} post={post} />
+                ))}
+              </div>
+            )}
+
+            {/* EMPTY STATE */}
+            {userPosts.length === 0 && (
+              <div className="text-center py-20 bg-[#151A25]/50 border border-dashed border-[#1E2532] rounded-[32px] mt-6 shadow-inner mx-4">
+                <div className="w-16 h-16 bg-[#0B0F19] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#1E2532]">
+                  <IoMdGrid size={24} className="text-gray-600"/>
                 </div>
+                <h3 className="text-sm font-black text-gray-300 uppercase tracking-widest mb-1">NO POSTS YET</h3>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">When you share content, it will appear here.</p>
               </div>
-            ))}
+            )}
           </div>
-          
-          {userPosts.length === 0 && (
-            <div className="text-center py-20 bg-[#151A25] border border-dashed border-[#1E2532] rounded-[32px] shadow-inner">
-              <div className="w-16 h-16 bg-[#0B0F19] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#1E2532]">
-                <IoMdGrid size={24} className="text-gray-600"/>
-              </div>
-              <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">No Properties Listed Yet</p>
-            </div>
-          )}
         </div>
 
       </div>

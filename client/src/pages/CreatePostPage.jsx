@@ -156,18 +156,28 @@ export default function CreatePostPage() {
 
     const formData = new FormData();
     
-    // ─── THE FIX: Smart Data Filtering ───
-    Object.entries(form).forEach(([key, val]) => {
-      // 1. Skip dummy values ('none'), completely empty strings, or invalid numbers
-      if (val === 'none' || val === '' || val === null || val === undefined) return;
-      if (key === 'price' && isNaN(val)) return;
+    // ─── THE STRICT BACKEND FIX ───
+    // Mongoose demands a number for price and a valid enum for propertyType.
+    // We supply safe defaults for Social posts to keep the database happy!
+    let safeForm = { ...form };
+    
+    if (postType === 'Social') {
+      safeForm.price = 0; 
+      safeForm.propertyType = 'other';
+      // Fallback title since Social mode doesn't have a title input
+      safeForm.title = safeForm.description ? `${safeForm.description.substring(0, 20)}...` : 'Social Update';
+    } else {
+      // Fix for Real Estate if user left things blank accidentally
+      if (!safeForm.price || isNaN(safeForm.price)) safeForm.price = 0;
+      if (safeForm.propertyType === 'none' || !safeForm.propertyType) safeForm.propertyType = 'other';
+    }
 
-      // 2. Format hashtags properly
+    // Append data safely to formData
+    Object.entries(safeForm).forEach(([key, val]) => {
       if (key === 'hashtags') {
         const tags = val.split(',').map(t => t.trim()).filter(Boolean);
         formData.append('hashtags', JSON.stringify(tags));
       } else {
-        // 3. Append everything else safely
         formData.append(key, val);
       }
     });

@@ -3,6 +3,7 @@
  * The main property card shown in the feed.
  */
 import { useState, useRef, useEffect } from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { formatDistanceToNow } from 'date-fns';
@@ -11,6 +12,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import CommentSheet from './CommentSheet';
 import ShareSheet from './ShareSheet';
+import { IoMdPin, IoMdMusicalNote } from 'react-icons/io';
 
 const formatPrice = (price) => {
   if (price >= 10000000) return `₹${(price / 10000000).toFixed(1)}Cr`;
@@ -170,15 +172,25 @@ export default function PostCard({ post: initialPost }) {
           </div>
         )}
 
-        {/* 4. Price (Golden Gradient) */}
-        <div className="absolute bottom-4 right-4 bg-gradient-to-r from-[#F5A623] to-[#F76B1C] text-white text-[14px] font-black tracking-wide px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(245,166,35,0.4)]">
-          {formatPrice(post.price)}
-        </div>
-
+        {/* 4. Price (Hide for Social Posts) */}
+        {post.mainCategory !== 'Social' && post.price && (
+          <div className="absolute bottom-4 right-4 bg-gradient-to-r from-[#F5A623] to-[#F76B1C] text-white text-[14px] font-black tracking-wide px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(245,166,35,0.4)]">
+            {formatPrice(post.price)}
+          </div>
+        )}
         {/* Heart Animation */}
         {showHeart && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
             <svg className="w-24 h-24 text-red-500 animate-heart-pop drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+          </div>
+        )}
+        {/* ── MUSIC TAG (Floating over media) ── */}
+        {post.music && (
+          <div className="absolute bottom-3 left-3 z-10 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 max-w-[80%]">
+            <IoMdMusicalNote className="text-white animate-pulse" size={12} />
+            <span className="text-[9px] font-black uppercase tracking-widest text-white truncate">
+              {post.music}
+            </span>
           </div>
         )}
       </div>
@@ -231,6 +243,21 @@ export default function PostCard({ post: initialPost }) {
         {/* Post Details */}
         <div className="space-y-1.5">
           <h3 className="font-black text-white text-[15px] tracking-wide truncate">{post.title}</h3>
+
+          {/* ── LOCATION TAG (Social Mode) ── */}
+          {post.locationTag && (
+            <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <IoMdPin className="text-[#00F0FF]" size={12} />
+              {post.locationTag}
+            </div>
+          )}
+
+          {/* ── REAL ESTATE SPECS (Hide if Social) ── */}
+          {(post.area && post.mainCategory !== 'Social') && (
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">
+              {post.area} <span className="text-[#00F0FF] px-1">•</span> {post.bedrooms ? `${post.bedrooms} BHK` : post.propertyType}
+            </p>
+          )}
 
           {post.area && (
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">

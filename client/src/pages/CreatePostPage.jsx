@@ -12,11 +12,9 @@ import { IoMdCloudUpload, IoMdVideocam, IoMdImages, IoMdPin, IoMdInformationCirc
 const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'];
 const KNOWLEDGE_LEVELS = ['Beginner', 'Intermediate', 'Expert', 'Pro Tips'];
 
-// ─── MUSIC PICKER COMPONENT (Helper) ───
+// ─── 1. MUSIC PICKER COMPONENT (Helper) ───
 const MusicPicker = ({ onSelect, onClose }) => {
   const [query, setQuery] = useState('');
-  
-  // MOCK DATA
   const SONGS = [
     { id: '1', title: 'Midnight City', artist: 'M83', icon: '🎧' },
     { id: '2', title: 'Levitating', artist: 'Dua Lipa', icon: '✨' },
@@ -30,19 +28,15 @@ const MusicPicker = ({ onSelect, onClose }) => {
         <h2 className="text-xl font-black italic tracking-tighter">SELECT AUDIO</h2>
         <button type="button" onClick={onClose} className="text-[10px] font-black uppercase text-gray-500 hover:text-white transition-colors">Close</button>
       </div>
-
       <input 
         placeholder="Search for music or artists..." 
         className="w-full bg-[#151A25] border border-[#1E2532] p-5 rounded-2xl mb-8 outline-none text-sm font-bold focus:border-[#00F0FF]/50"
         onChange={(e) => setQuery(e.target.value.toLowerCase())}
       />
-
       <div className="space-y-3 overflow-y-auto no-scrollbar">
         {SONGS.filter(s => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)).map(song => (
           <button 
-            key={song.id} 
-            type="button"
-            onClick={() => { onSelect(song); onClose(); }}
+            key={song.id} type="button" onClick={() => { onSelect(song); onClose(); }}
             className="w-full flex items-center justify-between p-4 bg-[#151A25] rounded-2xl border border-[#1E2532] hover:border-[#00F0FF] transition-all group"
           >
             <div className="flex items-center gap-4 text-left">
@@ -60,14 +54,58 @@ const MusicPicker = ({ onSelect, onClose }) => {
   );
 };
 
-// ─── MAIN PAGE COMPONENT ───
+// ─── 2. LOCATION PICKER COMPONENT (Helper) ───
+const LocationPicker = ({ onSelect, onClose }) => {
+  const [query, setQuery] = useState('');
+  const LOCATIONS = [
+    { id: '1', name: 'Bengaluru, Karnataka', type: 'City' },
+    { id: '2', name: 'Kerehosahalli', type: 'Neighborhood' },
+    { id: '3', name: 'Tarikere', type: 'Town' },
+    { id: '4', name: 'Chikmagalur', type: 'District' },
+    { id: '5', name: 'Nodexa HQ', type: 'Custom Location' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-[#0B0F19]/95 backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex flex-col p-6">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-xl font-black italic tracking-tighter">TAG LOCATION</h2>
+        <button type="button" onClick={onClose} className="text-[10px] font-black uppercase text-gray-500 hover:text-white transition-colors">Close</button>
+      </div>
+      <input 
+        placeholder="Search places, cities, or neighborhoods..." 
+        className="w-full bg-[#151A25] border border-[#1E2532] p-5 rounded-2xl mb-8 outline-none text-sm font-bold focus:border-[#00F0FF]/50"
+        onChange={(e) => setQuery(e.target.value.toLowerCase())}
+      />
+      <div className="space-y-3 overflow-y-auto no-scrollbar">
+        {LOCATIONS.filter(l => l.name.toLowerCase().includes(query)).map(loc => (
+          <button 
+            key={loc.id} type="button" onClick={() => { onSelect(loc); onClose(); }}
+            className="w-full flex items-center justify-between p-4 bg-[#151A25] rounded-2xl border border-[#1E2532] hover:border-[#00F0FF] transition-all group"
+          >
+            <div className="flex items-center gap-4 text-left">
+              <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-lg grayscale group-hover:grayscale-0 transition-all">📍</div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-white">{loc.name}</p>
+                <p className="text-[10px] text-gray-500 font-bold uppercase">{loc.type}</p>
+              </div>
+            </div>
+            <span className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">Select</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── 3. MAIN PAGE COMPONENT ───
 export default function CreatePostPage() {
   const navigate = useNavigate();
   
   // CORE STATE
   const [showMusicModal, setShowMusicModal] = useState(false);
-  const [postType, setPostType] = useState('Real Estate'); // 'Real Estate' | 'Knowledge' | 'Social'
-  const [mediaType, setMediaType] = useState('images'); // 'images' | 'video'
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [postType, setPostType] = useState('Real Estate'); 
+  const [mediaType, setMediaType] = useState('images'); 
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -167,8 +205,7 @@ export default function CreatePostPage() {
         <div className="bg-[#151A25] p-1.5 rounded-2xl border border-[#1E2532] flex gap-1">
           {['Real Estate', 'Knowledge', 'Social'].map(mode => (
             <button
-              key={mode}
-              type="button"
+              key={mode} type="button"
               onClick={() => {
                 setPostType(mode);
                 setForm(f => ({ ...f, mainCategory: mode === 'Real Estate' ? 'Sale Hub' : mode === 'Knowledge' ? 'Education' : 'Social' }));
@@ -187,8 +224,7 @@ export default function CreatePostPage() {
           <div className="flex gap-2">
             {['images', 'video'].map(type => (
               <button
-                key={type}
-                type="button"
+                key={type} type="button"
                 onClick={() => { setMediaType(type); setFiles([]); setPreviews([]); }}
                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all flex items-center justify-center gap-2 ${
                   mediaType === type ? 'bg-[#00F0FF]/10 border-[#00F0FF] text-[#00F0FF]' : 'bg-[#151A25] border-[#1E2532] text-gray-500'
@@ -237,7 +273,7 @@ export default function CreatePostPage() {
                  <textarea name="description" placeholder="Write a caption..." value={form.description} onChange={handleChange} className="w-full bg-transparent text-sm outline-none resize-none pt-2" rows={3} />
               </div>
 
-              {/* LIST OPTIONS WITH MUSIC BUTTON */}
+              {/* LIST OPTIONS WITH MUSIC & LOCATION BUTTONS */}
               <div className="overflow-hidden rounded-3xl border border-[#1E2532] bg-[#0B0F19]">
                 <button type="button" onClick={() => setShowMusicModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
                   <div className="flex items-center gap-4">
@@ -251,9 +287,16 @@ export default function CreatePostPage() {
                   </div>
                   <span className="text-gray-600 text-lg">❯</span>
                 </button>
-                <button type="button" className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
+
+                <button type="button" onClick={() => setShowLocationModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
                   <div className="flex items-center gap-4">
-                    <span className="text-xl">📍</span><span className="text-[11px] font-black uppercase tracking-widest text-gray-300">Add Location</span>
+                    <span className="text-xl">📍</span>
+                    <div className="text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">
+                        {form.locationTag ? 'Location Tagged' : 'Add Location'}
+                      </span>
+                      {form.locationTag && <p className="text-[9px] text-[#00F0FF] font-black uppercase mt-0.5">{form.locationTag}</p>}
+                    </div>
                   </div>
                   <span className="text-gray-600 text-lg">❯</span>
                 </button>
@@ -302,13 +345,15 @@ export default function CreatePostPage() {
         </div>
       </form>
 
-      {/* MUSIC PICKER MODAL */}
+      {/* ── MODALS (Hidden until clicked) ── */}
       {showMusicModal && (
-        <MusicPicker 
-          onClose={() => setShowMusicModal(false)}
-          onSelect={(song) => setForm(f => ({ ...f, music: `${song.title} - ${song.artist}` }))}
-        />
+        <MusicPicker onClose={() => setShowMusicModal(false)} onSelect={(song) => setForm(f => ({ ...f, music: `${song.title} - ${song.artist}` }))} />
       )}
+      
+      {showLocationModal && (
+        <LocationPicker onClose={() => setShowLocationModal(false)} onSelect={(loc) => setForm(f => ({ ...f, locationTag: loc.name }))} />
+      )}
+
     </div>
   );
 }

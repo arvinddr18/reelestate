@@ -153,10 +153,12 @@ export default function PostCard({ post: initialPost }) {
           </>
         )}
 
-        {/* 1. Category (Cyan Glass) */}
-        <div className="absolute top-4 left-4 bg-[#0B0F19]/80 backdrop-blur-md text-[#00F0FF] text-[10px] font-black tracking-wider px-3 py-1.5 rounded-full uppercase border border-[#00F0FF]/30 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
-          {post.propertyType}
-        </div>
+        {/* 1. Category (Cyan Glass) - HIDE FOR SOCIAL */}
+        {post.postType !== 'Social' && post.mainCategory !== 'Social' && (
+          <div className="absolute top-4 left-4 bg-[#0B0F19]/80 backdrop-blur-md text-[#00F0FF] text-[10px] font-black tracking-wider px-3 py-1.5 rounded-full uppercase border border-[#00F0FF]/30 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+            {post.propertyType === 'other' ? 'Listing' : post.propertyType}
+          </div>
+        )}
 
         {/* 2. Views (Dark Glass with Eye SVG) */}
         <div className="absolute top-4 right-4 bg-[#0B0F19]/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
@@ -172,12 +174,13 @@ export default function PostCard({ post: initialPost }) {
           </div>
         )}
 
-        {/* 4. Price (Hide for Social Posts) */}
-        {post.mainCategory !== 'Social' && post.price && (
+        {/* 4. Price (Golden Gradient) - HIDE FOR SOCIAL OR ZERO PRICE */}
+        {post.postType !== 'Social' && post.mainCategory !== 'Social' && post.price > 0 && (
           <div className="absolute bottom-4 right-4 bg-gradient-to-r from-[#F5A623] to-[#F76B1C] text-white text-[14px] font-black tracking-wide px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(245,166,35,0.4)]">
             {formatPrice(post.price)}
           </div>
         )}
+        
         {/* Heart Animation */}
         {showHeart && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">

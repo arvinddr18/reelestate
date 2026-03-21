@@ -6,7 +6,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { IoMdCloudUpload, IoMdVideocam, IoMdImages, IoMdPin, IoMdInformationCircle, IoMdArrowBack } from 'react-icons/io';
+import { IoMdCloudUpload, IoMdVideocam, IoMdImages, IoMdPin, IoMdInformationCircle, IoMdArrowBack, IoMdCall } from 'react-icons/io';
 import { MAIN_CATEGORIES } from '../constants/categories'; // Your 19 categories
 
 const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'];

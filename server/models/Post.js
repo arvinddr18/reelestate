@@ -39,6 +39,15 @@ const postSchema = new mongoose.Schema(
     jobType: { type: String },    // e.g., 'Full-Time', 'Remote', 'Freelance'
     experience: { type: String }, // e.g., '2-4 Years'
 
+    // ── 🎟️ EVENTS & TRAVEL SPECIFIC ──
+    eventDate: { type: String },  // e.g., '2026-04-15'
+    eventTime: { type: String },  // e.g., '18:30'
+    ticketPrice: { type: String },// e.g., '₹499', 'Free'
+
+    // ── 🍔 FOOD & CAFES SPECIFIC ──
+    cuisine: { type: String },    // e.g., 'Italian', 'South Indian'
+    dietary: { type: String },    // e.g., 'Pure Veg', 'Non-Veg', 'Both'
+
     // ── 📸 SOCIAL SPECIFIC ──
     music: { type: String },       // e.g., 'Levitating - Dua Lipa'
     locationTag: { type: String }, // e.g., 'Bengaluru, Karnataka'

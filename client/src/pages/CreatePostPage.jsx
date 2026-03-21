@@ -74,7 +74,8 @@ export default function CreatePostPage() {
   const [form, setForm] = useState({
     title: '', description: '', price: '', propertyType: '', area: '', bedrooms: '', locationTag: '', music: '',
     // ── NEW SUPER APP FIELDS ──
-    salary: '', jobType: '', experience: '', condition: '', brand: '', mileage: ''
+    salary: '', jobType: '', experience: '', condition: '', brand: '', mileage: '',
+    eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: ''
   });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -276,7 +277,6 @@ export default function CreatePostPage() {
                 
                 {/* Universal Title */}
                 <input name="title" value={form.title} onChange={handleChange} placeholder="LISTING TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                
                 {/* 💼 SMART UI: JOBS & SERVICES */}
                 {['Jobs & Gigs', 'Home Services', 'Education', 'Beauty & Care', 'Gym & Fitness'].includes(selectedHub) ? (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
@@ -304,18 +304,49 @@ export default function CreatePostPage() {
                       <option value="Used - Fair">Used - Fair</option>
                     </select>
                     <input name="brand" value={form.brand} onChange={handleChange} placeholder="BRAND / MAKE (e.g. Apple, Honda)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
-                    <input name="mileage" value={form.mileage} onChange={handleChange} placeholder="MILEAGE / AGE (e.g. 15k km, 2 Yrs)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
+                    <input name="mileage" value={form.mileage} onChange={handleChange} placeholder="AGE / MILEAGE (e.g. 1 Yr, 15k km)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
                   </div>
                 ) : 
 
-                /* 🏠 SMART UI: DEFAULT REAL ESTATE */
+                /* 🎟️ SMART UI: EVENTS, CINEMA & TRAVEL */
+                ['Local Events', 'Cinema', 'Travel & Trips'].includes(selectedHub) ? (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
+                      <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Date</label>
+                      <input name="eventDate" type="date" value={form.eventDate} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
+                    </div>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
+                      <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Time</label>
+                      <input name="eventTime" type="time" value={form.eventTime} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
+                    </div>
+                    <input name="ticketPrice" value={form.ticketPrice} onChange={handleChange} placeholder="TICKET / ENTRY FEE (e.g. ₹499 or Free) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                  </div>
+                ) :
+
+                /* 🍔 SMART UI: FOOD & CAFES */
+                ['Food & Cafes'].includes(selectedHub) ? (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="cuisine" value={form.cuisine} onChange={handleChange} placeholder="CUISINE (e.g. Italian, Cafe) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    <select name="dietary" value={form.dietary} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">DIETARY TYPE</option>
+                      <option value="Pure Veg">Pure Veg</option>
+                      <option value="Non-Veg">Non-Veg</option>
+                      <option value="Both">Both (Veg & Non-Veg)</option>
+                    </select>
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="AVG COST FOR TWO (₹) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                  </div>
+                ) :
+
+                /* 🏠 SMART UI: DEFAULT REAL ESTATE (Sale, Rents, PGs) */
                 (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE / RENT (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
                     <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                      <option value="">TYPE</option>
+                      <option value="">PROPERTY TYPE</option>
                       {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
+                    <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (e.g. 1200 Sqft)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
+                    <input name="bedrooms" type="number" value={form.bedrooms} onChange={handleChange} placeholder="BHK (e.g. 2, 3)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
                   </div>
                 )}
                 

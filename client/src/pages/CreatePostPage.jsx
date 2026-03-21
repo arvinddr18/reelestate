@@ -292,7 +292,23 @@ export default function CreatePostPage() {
                   </div>
                 ) : 
                 
-                /* 🏠 SMART UI: DEFAULT REAL ESTATE (We will add Marketplace here next!) */
+                /* 🛍️ SMART UI: MARKETPLACE & AUTO */
+                ['Marketplace', 'Auto & Motors', 'Tech & Gadgets', 'Fashion', 'Pets'].includes(selectedHub) ? (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    <select name="condition" value={form.condition} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">CONDITION</option>
+                      <option value="Brand New">Brand New</option>
+                      <option value="Like New">Like New</option>
+                      <option value="Used - Good">Used - Good</option>
+                      <option value="Used - Fair">Used - Fair</option>
+                    </select>
+                    <input name="brand" value={form.brand} onChange={handleChange} placeholder="BRAND / MAKE (e.g. Apple, Honda)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
+                    <input name="mileage" value={form.mileage} onChange={handleChange} placeholder="MILEAGE / AGE (e.g. 15k km, 2 Yrs)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
+                  </div>
+                ) : 
+
+                /* 🏠 SMART UI: DEFAULT REAL ESTATE */
                 (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
@@ -302,7 +318,7 @@ export default function CreatePostPage() {
                     </select>
                   </div>
                 )}
-
+                
                 {/* Universal Description */}
                 <textarea name="description" value={form.description} onChange={handleChange} placeholder="DETAILED DESCRIPTION..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
               </div>

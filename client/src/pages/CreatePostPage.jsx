@@ -387,13 +387,47 @@ export default function CreatePostPage() {
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <input name="price" type="number" value={form.price} onChange={handleChange} placeholder={selectedHub === 'Sale Hub' ? "PRICE (₹) *" : "MONTHLY RENT (₹) *"} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
                     
-                    {/* Filter Property Types with Organized Categories */}
+                   {/* Filter Property Types based on Sale vs Rent vs PG */}
                     <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
                       <option value="">PROPERTY TYPE</option>
+                      
                       {selectedHub === 'PGs & Co-Living' ? (
-                        ['PG for Boys', 'PG for Girls', 'Co-Living', 'Hostel'].map(t => <option key={t} value={t}>{t}</option>)
+                        ['PG for Boys', 'PG for Girls', 'Co-Living', 'Hostel'].map(t => <option key={t} value={t} className="text-white">{t}</option>)
+                      
+                      ) : selectedHub === 'Rents' ? (
+                        <>
+                          <optgroup label="── ROOMS ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="Single Room" className="text-white">Single Room</option>
+                            <option value="Shared Room" className="text-white">Shared Room</option>
+                            <option value="Independent Room" className="text-white">Independent Room</option>
+                            <option value="Room with attached bathroom" className="text-white">Room with attached bathroom</option>
+                            <option value="Room with kitchen" className="text-white">Room with kitchen</option>
+                          </optgroup>
+                          
+                          <optgroup label="── FLATS / APARTMENTS ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="1BHK" className="text-white">1BHK</option>
+                            <option value="2BHK" className="text-white">2BHK</option>
+                            <option value="3BHK" className="text-white">3BHK</option>
+                            <option value="Studio Apartment" className="text-white">Studio Apartment</option>
+                          </optgroup>
+                          
+                          <optgroup label="── INDEPENDENT HOUSES ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="Full house for rent" className="text-white">Full house for rent</option>
+                            <option value="Floor-wise rent" className="text-white">Floor-wise rent</option>
+                            <option value="Villa rent" className="text-white">Villa rent</option>
+                          </optgroup>
+                          
+                          <optgroup label="── COMMERCIAL RENT ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="Shop" className="text-white">Shop</option>
+                            <option value="Office" className="text-white">Office</option>
+                            <option value="Warehouse" className="text-white">Warehouse</option>
+                            <option value="Showroom" className="text-white">Showroom</option>
+                          </optgroup>
+                        </>
+
                       ) : (
                         <>
+                          {/* Default to Sale Hub Options */}
                           <optgroup label="── RESIDENTIAL ──" className="text-[#00F0FF] bg-[#151A25]">
                             <option value="Independent House" className="text-white">Independent House</option>
                             <option value="Apartment / Flat" className="text-white">Apartment / Flat</option>
@@ -420,7 +454,6 @@ export default function CreatePostPage() {
                         </>
                       )}
                     </select>
-
                     <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (Sqft)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
                     
                     {selectedHub === 'PGs & Co-Living' ? (

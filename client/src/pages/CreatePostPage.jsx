@@ -387,13 +387,38 @@ export default function CreatePostPage() {
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE / RENT (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
                     
-                    {/* Filter Property Types based on PG or House */}
+                    {/* Filter Property Types with Organized Categories */}
                     <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
                       <option value="">PROPERTY TYPE</option>
-                      {selectedHub === 'PGs & Co-Living' 
-                        ? ['PG for Boys', 'PG for Girls', 'Co-Living', 'Hostel'].map(t => <option key={t} value={t}>{t}</option>)
-                        : ['apartment', 'house', 'villa', 'plot'].map(t => <option key={t} value={t}>{t}</option>)
-                      }
+                      {selectedHub === 'PGs & Co-Living' ? (
+                        ['PG for Boys', 'PG for Girls', 'Co-Living', 'Hostel'].map(t => <option key={t} value={t}>{t}</option>)
+                      ) : (
+                        <>
+                          <optgroup label="── RESIDENTIAL ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="Independent House" className="text-white">Independent House</option>
+                            <option value="Apartment / Flat" className="text-white">Apartment / Flat</option>
+                            <option value="Villa" className="text-white">Villa</option>
+                            <option value="Old House" className="text-white">Old House</option>
+                            <option value="Under Construction Home" className="text-white">Under Construction Home</option>
+                          </optgroup>
+                          
+                          <optgroup label="── LAND / PLOTS ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="Residential Plots" className="text-white">Residential Plots</option>
+                            <option value="Layout Sites" className="text-white">Layout Sites</option>
+                            <option value="Agriculture Land" className="text-white">Agriculture Land</option>
+                            <option value="Farm Land" className="text-white">Farm Land</option>
+                            <option value="Farm House Land" className="text-white">Farm House Land</option>
+                          </optgroup>
+                          
+                          <optgroup label="── COMMERCIAL ──" className="text-[#00F0FF] bg-[#151A25]">
+                            <option value="Shops" className="text-white">Shops</option>
+                            <option value="Office Space" className="text-white">Office Space</option>
+                            <option value="Warehouse" className="text-white">Warehouse</option>
+                            <option value="Showroom" className="text-white">Showroom</option>
+                            <option value="Hotels" className="text-white">Hotels</option>
+                          </optgroup>
+                        </>
+                      )}
                     </select>
 
                     <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (Sqft)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />

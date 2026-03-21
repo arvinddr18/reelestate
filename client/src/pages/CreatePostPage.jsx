@@ -75,7 +75,9 @@ export default function CreatePostPage() {
     title: '', description: '', price: '', propertyType: '', area: '', bedrooms: '', locationTag: '', music: '',
     // ── NEW SUPER APP FIELDS ──
     salary: '', jobType: '', experience: '', condition: '', brand: '', mileage: '',
-    eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: ''
+    eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: '',
+    institute: '', collegeWebsite: '', serviceAvailable: '', timings: '', genderFocus: '', 
+    entryFees: '', serviceType: '', warranty: '', age: '', breed: '', ageGroup: '', rooms: ''
   });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -275,41 +277,58 @@ export default function CreatePostPage() {
                   <span className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest">Posting in: {selectedHub}</span>
                 </div>
                 
-                {/* Universal Title */}
+                {/* 1. UNIVERSAL TITLE */}
                 <input name="title" value={form.title} onChange={handleChange} placeholder="LISTING TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                {/* 💼 SMART UI: JOBS & SERVICES */}
-                {['Jobs & Gigs', 'Home Services', 'Education', 'Beauty & Care', 'Gym & Fitness'].includes(selectedHub) ? (
-                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="salary" value={form.salary} onChange={handleChange} placeholder="SALARY / RATE (e.g. ₹50k/mo) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                    <select name="jobType" value={form.jobType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                      <option value="">JOB TYPE</option>
-                      <option value="Full-Time">Full-Time</option>
-                      <option value="Part-Time">Part-Time</option>
-                      <option value="Freelance">Freelance</option>
-                      <option value="Contract">Contract</option>
-                    </select>
-                    <input name="experience" value={form.experience} onChange={handleChange} placeholder="EXPERIENCE (e.g. 2-4 Yrs)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
-                  </div>
-                ) : 
                 
-                /* 🛍️ SMART UI: MARKETPLACE & AUTO */
-                ['Marketplace', 'Auto & Motors', 'Tech & Gadgets', 'Fashion', 'Pets'].includes(selectedHub) ? (
-                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                    <select name="condition" value={form.condition} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                      <option value="">CONDITION</option>
-                      <option value="Brand New">Brand New</option>
-                      <option value="Like New">Like New</option>
-                      <option value="Used - Good">Used - Good</option>
-                      <option value="Used - Fair">Used - Fair</option>
-                    </select>
-                    <input name="brand" value={form.brand} onChange={handleChange} placeholder="BRAND / MAKE (e.g. Apple, Honda)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
-                    <input name="mileage" value={form.mileage} onChange={handleChange} placeholder="AGE / MILEAGE (e.g. 1 Yr, 15k km)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
-                  </div>
-                ) : 
+                {/* 2. DYNAMIC FIELDS (Changes based on category) */}
 
-                /* 🎟️ SMART UI: EVENTS, CINEMA & TRAVEL */
-                ['Local Events', 'Cinema', 'Travel & Trips'].includes(selectedHub) ? (
+                {/* 💼 JOBS & GIGS */}
+                {selectedHub === 'Jobs & Gigs' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="salary" value={form.salary} onChange={handleChange} placeholder="SALARY (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <select name="jobType" value={form.jobType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">JOB TYPE</option><option value="Full-Time">Full-Time</option><option value="Part-Time">Part-Time</option><option value="Freelance">Freelance</option>
+                    </select>
+                    <input name="experience" value={form.experience} onChange={handleChange} placeholder="EXPERIENCE (e.g. 2-4 Yrs)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+
+                {/* 🛠️ HOME SERVICES & BEAUTY */}
+                {['Home Services', 'Beauty & Care'].includes(selectedHub) && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="STARTING PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <input name="serviceAvailable" value={form.serviceAvailable} onChange={handleChange} placeholder={selectedHub === 'Beauty & Care' ? "SERVICE (e.g. Haircut, Bridal)" : "SERVICE (e.g. Plumbing, Cleaning)"} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+
+                {/* 🎓 EDUCATION */}
+                {selectedHub === 'Education' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="institute" value={form.institute} onChange={handleChange} placeholder="INSTITUTE NAME *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <input name="collegeWebsite" value={form.collegeWebsite} onChange={handleChange} placeholder="WEBSITE LINK" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+
+                {/* 🏋️ GYM & FITNESS */}
+                {selectedHub === 'Gym & Fitness' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="MONTHLY FEES (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <select name="genderFocus" value={form.genderFocus} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">GENDER</option><option value="Unisex">Unisex</option><option value="Boys Only">Boys Only</option><option value="Girls Only">Girls Only</option>
+                    </select>
+                    <input name="timings" value={form.timings} onChange={handleChange} placeholder="TIMINGS (e.g. 6AM - 10PM)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+
+                {/* ⚽ SPORTS */}
+                {selectedHub === 'Sports' && (
+                  <div className="grid grid-cols-1 gap-3 animate-in fade-in duration-300">
+                    <input name="entryFees" value={form.entryFees} onChange={handleChange} placeholder="ENTRY FEES (₹) or 'Free' *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                  </div>
+                )}
+
+                {/* 🎟️ EVENTS, CINEMA & TRIPS */}
+                {['Local Events', 'Cinema', 'Travel & Trips'].includes(selectedHub) && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
                       <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Date</label>
@@ -319,41 +338,92 @@ export default function CreatePostPage() {
                       <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Time</label>
                       <input name="eventTime" type="time" value={form.eventTime} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
                     </div>
-                    <input name="ticketPrice" value={form.ticketPrice} onChange={handleChange} placeholder="TICKET / ENTRY FEE (e.g. ₹499 or Free) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                  </div>
-                ) :
-
-                /* 🍔 SMART UI: FOOD & CAFES */
-                ['Food & Cafes'].includes(selectedHub) ? (
-                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="cuisine" value={form.cuisine} onChange={handleChange} placeholder="CUISINE (e.g. Italian, Cafe) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                    <select name="dietary" value={form.dietary} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                      <option value="">DIETARY TYPE</option>
-                      <option value="Pure Veg">Pure Veg</option>
-                      <option value="Non-Veg">Non-Veg</option>
-                      <option value="Both">Both (Veg & Non-Veg)</option>
-                    </select>
-                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="AVG COST FOR TWO (₹) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                  </div>
-                ) :
-
-                /* 🏠 SMART UI: DEFAULT REAL ESTATE (Sale, Rents, PGs) */
-                (
-                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE / RENT (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
-                    <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                      <option value="">PROPERTY TYPE</option>
-                      {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (e.g. 1200 Sqft)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
-                    <input name="bedrooms" type="number" value={form.bedrooms} onChange={handleChange} placeholder="BHK (e.g. 2, 3)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
                   </div>
                 )}
-                
-                {/* Universal Description */}
+
+                {/* 🐾 PETS */}
+                {selectedHub === 'Pets' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <input name="age" value={form.age} onChange={handleChange} placeholder="AGE (e.g. 2 Months)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    <input name="breed" value={form.breed} onChange={handleChange} placeholder="BREED (e.g. Golden Retriever)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+
+                {/* 🧸 KIDS */}
+                {selectedHub === 'Kids' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <input name="ageGroup" value={form.ageGroup} onChange={handleChange} placeholder="AGE GROUP (e.g. 0-2 Yrs)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+
+                {/* 🛍️ MARKETPLACE, AUTO, FASHION, TECH */}
+                {['Marketplace', 'Auto & Motors', 'Tech & Gadgets', 'Fashion'].includes(selectedHub) && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <select name="condition" value={form.condition} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">CONDITION</option><option value="Brand New">Brand New</option><option value="Used - Good">Used - Good</option>
+                    </select>
+                    <input name="brand" value={form.brand} onChange={handleChange} placeholder="BRAND / MAKE" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    {selectedHub === 'Auto & Motors' && <input name="mileage" value={form.mileage} onChange={handleChange} placeholder="KM DRIVEN" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />}
+                    {selectedHub === 'Tech & Gadgets' && <input name="warranty" value={form.warranty} onChange={handleChange} placeholder="WARRANTY LEFT" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />}
+                  </div>
+                )}
+
+                {/* 🍔 FOOD & CAFES */}
+                {selectedHub === 'Food & Cafes' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="cuisine" value={form.cuisine} onChange={handleChange} placeholder="CUISINE *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <select name="dietary" value={form.dietary} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">DIETARY</option><option value="Pure Veg">Pure Veg</option><option value="Non-Veg">Non-Veg</option><option value="Both">Both</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* 🏠 REAL ESTATE (Sale, Rents, PGs) */}
+                {['Sale Hub', 'Rents', 'PGs & Co-Living'].includes(selectedHub) && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE / RENT (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
+                    {/* Filter Property Types based on PG or House */}
+                    <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">PROPERTY TYPE</option>
+                      {selectedHub === 'PGs & Co-Living' 
+                        ? ['PG for Boys', 'PG for Girls', 'Co-Living', 'Hostel'].map(t => <option key={t} value={t}>{t}</option>)
+                        : ['apartment', 'house', 'villa', 'plot'].map(t => <option key={t} value={t}>{t}</option>)
+                      }
+                    </select>
+
+                    <input name="area" value={form.area} onChange={handleChange} placeholder="AREA (Sqft)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    {selectedHub === 'PGs & Co-Living' ? (
+                       <input name="rooms" type="number" value={form.rooms} onChange={handleChange} placeholder="ROOMS AVAILABLE" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    ) : (
+                       <input name="bedrooms" type="number" value={form.bedrooms} onChange={handleChange} placeholder="BHK (e.g. 2, 3)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    )}
+                  </div>
+                )}
+
+                {/* 3. UNIVERSAL DESCRIPTION */}
                 <textarea name="description" value={form.description} onChange={handleChange} placeholder="DETAILED DESCRIPTION..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
+
+                {/* 4. UNIVERSAL LOCATION & CONTACT (Applies to ALL Hubs) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-[#1E2532]">
+                   <div className="relative">
+                      <IoMdCall className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input name="phone" value={form.phone} onChange={handleChange} placeholder="CONTACT NUMBER *" className="w-full bg-[#0B0F19] border border-[#1E2532] pl-10 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                   </div>
+                   <div className="relative">
+                      <IoMdPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input name="locationTag" value={form.locationTag} onChange={handleChange} placeholder="LOCATION (City/Area) *" className="w-full bg-[#0B0F19] border border-[#1E2532] pl-10 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                   </div>
+                </div>
+
               </div>
             )}
+               
 
             <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white py-5 rounded-[24px] font-black tracking-[0.2em] uppercase shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
               {loading ? 'PUBLISHING...' : `🚀 PUBLISH POST`}

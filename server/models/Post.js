@@ -48,6 +48,24 @@ const postSchema = new mongoose.Schema(
     cuisine: { type: String },    // e.g., 'Italian', 'South Indian'
     dietary: { type: String },    // e.g., 'Pure Veg', 'Non-Veg', 'Both'
 
+    // ── 🎓 EDUCATION & 💼 SERVICES SPECIFIC ──
+    institute: { type: String },
+    collegeWebsite: { type: String },
+    serviceAvailable: { type: String },
+
+    // ── 🏋️ GYM, SPORTS & BEAUTY SPECIFIC ──
+    timings: { type: String }, // 'AM', 'PM', '24/7'
+    genderFocus: { type: String }, // 'Boys', 'Girls', 'Unisex'
+    entryFees: { type: String },
+    serviceType: { type: String }, // For Beauty (e.g., Haircut, Makeup)
+
+    // ── 💻 TECH, 🐾 PETS & 🧸 KIDS SPECIFIC ──
+    warranty: { type: String },
+    age: { type: String },
+    breed: { type: String },
+    ageGroup: { type: String }, // For Kids
+    rooms: { type: Number }, // For PGs
+
     // ── 📸 SOCIAL SPECIFIC ──
     music: { type: String },       // e.g., 'Levitating - Dua Lipa'
     locationTag: { type: String }, // e.g., 'Bengaluru, Karnataka'

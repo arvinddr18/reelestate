@@ -30,7 +30,8 @@ export const MAIN_CATEGORIES = [
   { id: 'fashion', name: 'Fashion', icon: '👗' },
   { id: 'beauty', name: 'Beauty & Care', icon: '✨' },
   { id: 'tech', name: 'Tech & Gadgets', icon: '💻' },
-  { id: 'pets', name: 'Pets', icon: '🐾' }
+  { id: 'pets', name: 'Pets', icon: '🐾' },
+  { id: 'kids', name: 'Kids', icon: '🧸' },
 ];
 
 // Sub-categories specifically for when "Sale Hub" is active

@@ -1,38 +1,49 @@
 const mongoose = require('mongoose');
 
-// ... keep existing imports ...
-
 const postSchema = new mongoose.Schema(
   {
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     
-    // ── NEW SUPER APP FIELDS ──
-    mainCategory: { type: String, default: 'Sale Hub' }, 
+    // ── CATEGORY & ROUTING (The Super App Core) ──
+    mainCategory: { type: String, default: 'Social' }, 
     subCategory: { type: String, default: 'All' },
-    postType: { type: String, enum: ['Real Estate', 'Knowledge', 'Social'], default: 'Real Estate' },
+    postType: { type: String, default: 'Social' }, // Removed strict enum so it accepts Jobs, Cars, etc.
 
+    // ── MEDIA (Universal) ──
     mediaType: { type: String, enum: ['video', 'images'], required: true },
-    // ... keep the rest of your fields exactly as they are ...
     videoUrl: { type: String },           
     videoPublicId: { type: String },      
     images: [{ url: String, publicId: String }],
 
+    // ── UNIVERSAL DETAILS ──
     title: { type: String, required: true, trim: true },
     description: { type: String, maxlength: 2000 },
-    price: { type: Number, required: true },
-    priceUnit: { type: String, enum: ['total', 'per_sqft', 'per_month'], default: 'total' },
-    propertyType: {
-      type: String,
-      enum: ['apartment', 'house', 'villa', 'plot', 'commercial', 'farmland', 'other'],
-      required: true,
-    },
+    phone: { type: String, trim: true },
+    hashtags: [{ type: String, lowercase: true }], 
+
+    // ── 🏠 REAL ESTATE SPECIFIC ──
+    price: { type: Number, default: 0 }, // Removed 'required: true'
+    priceUnit: { type: String, default: 'total' },
+    propertyType: { type: String, default: 'other' }, // Removed strict enum
     area: { type: String },               
     bedrooms: { type: Number },
     bathrooms: { type: Number },
 
-    // 📞 NEW: Specific contact number for this property
-    phone: { type: String, trim: true },
+    // ── 🛍️ MARKETPLACE & 🚗 AUTO SPECIFIC ──
+    condition: { type: String }, // e.g., 'Brand New', 'Like New', 'Used'
+    brand: { type: String },     // e.g., 'Apple', 'Honda'
+    mileage: { type: String },   // e.g., '15,000 km'
 
+    // ── 💼 JOBS & 🛠️ SERVICES SPECIFIC ──
+    salary: { type: String },     // e.g., '₹50,000 - ₹80,000/month'
+    jobType: { type: String },    // e.g., 'Full-Time', 'Remote', 'Freelance'
+    experience: { type: String }, // e.g., '2-4 Years'
+
+    // ── 📸 SOCIAL SPECIFIC ──
+    music: { type: String },       // e.g., 'Levitating - Dua Lipa'
+    locationTag: { type: String }, // e.g., 'Bengaluru, Karnataka'
+
+    // ── MAPS & LOCATION ──
     taluk: { type: String, trim: true },
     district: { type: String, trim: true },
     state: { type: String, trim: true },
@@ -52,8 +63,7 @@ const postSchema = new mongoose.Schema(
       shopping: { type: String },           
     },
 
-    hashtags: [{ type: String, lowercase: true }], 
-
+    // ── ENGAGEMENT STATS ──
     likesCount: { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 },
     viewsCount: { type: Number, default: 0 },

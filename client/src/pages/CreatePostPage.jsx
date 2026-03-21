@@ -72,7 +72,9 @@ export default function CreatePostPage() {
   const [progress, setProgress] = useState(0);
 
   const [form, setForm] = useState({
-    title: '', description: '', price: '', propertyType: '', area: '', bedrooms: '', locationTag: '', music: ''
+    title: '', description: '', price: '', propertyType: '', area: '', bedrooms: '', locationTag: '', music: '',
+    // ── NEW SUPER APP FIELDS ──
+    salary: '', jobType: '', experience: '', condition: '', brand: '', mileage: ''
   });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -265,25 +267,44 @@ export default function CreatePostPage() {
               </div>
             )}
 
-            {/* --- THE PROPERTY / HUB FORM --- */}
+            {/* --- THE DYNAMIC HUB FORM --- */}
             {createMode === 'hub-form' && (
               <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-5 shadow-xl">
                 <div className="bg-[#00F0FF]/10 border border-[#00F0FF]/30 p-3 rounded-xl mb-4 flex items-center gap-2">
                   <span className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest">Posting in: {selectedHub}</span>
                 </div>
                 
-                <input name="title" value={form.title} onChange={handleChange} placeholder="LISTING TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none" required />
+                {/* Universal Title */}
+                <input name="title" value={form.title} onChange={handleChange} placeholder="LISTING TITLE *" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
                 
-                {/* Real Estate Specifics (We will expand this later based on selectedHub) */}
-                <div className="grid grid-cols-2 gap-3">
-                  <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none" required />
-                  <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                    <option value="">TYPE</option>
-                    {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
+                {/* 💼 SMART UI: JOBS & SERVICES */}
+                {['Jobs & Gigs', 'Home Services', 'Education', 'Beauty & Care', 'Gym & Fitness'].includes(selectedHub) ? (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="salary" value={form.salary} onChange={handleChange} placeholder="SALARY / RATE (e.g. ₹50k/mo) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    <select name="jobType" value={form.jobType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">JOB TYPE</option>
+                      <option value="Full-Time">Full-Time</option>
+                      <option value="Part-Time">Part-Time</option>
+                      <option value="Freelance">Freelance</option>
+                      <option value="Contract">Contract</option>
+                    </select>
+                    <input name="experience" value={form.experience} onChange={handleChange} placeholder="EXPERIENCE (e.g. 2-4 Yrs)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
+                  </div>
+                ) : 
+                
+                /* 🏠 SMART UI: DEFAULT REAL ESTATE (We will add Marketplace here next!) */
+                (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">TYPE</option>
+                      {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                )}
 
-                <textarea name="description" value={form.description} onChange={handleChange} placeholder="DETAILED DESCRIPTION..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm text-white outline-none" />
+                {/* Universal Description */}
+                <textarea name="description" value={form.description} onChange={handleChange} placeholder="DETAILED DESCRIPTION..." rows={4} className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
               </div>
             )}
 

@@ -385,7 +385,7 @@ export default function CreatePostPage() {
                 {/* 🏠 REAL ESTATE (Sale, Rents, PGs) */}
                 {['Sale Hub', 'Rents', 'PGs & Co-Living'].includes(selectedHub) && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE / RENT (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder={selectedHub === 'Sale Hub' ? "PRICE (₹) *" : "MONTHLY RENT (₹) *"} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
                     
                     {/* Filter Property Types with Organized Categories */}
                     <select name="propertyType" value={form.propertyType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">

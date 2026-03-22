@@ -103,7 +103,7 @@ export default function CreatePostPage() {
   const [form, setForm] = useState({
     title: '', description: '', price: '', propertyType: '', area: '', bedrooms: '', locationTag: '', music: '',
     // ── NEW SUPER APP FIELDS ──
-    salary: '', jobType: '', experience: '', jobRole: '', condition: '', brand: '', mileage: '', 
+   salary: '', jobType: '', experience: '', jobRole: '', workMode: '', condition: '', brand: '', mileage: '', 
     eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: '',
     institute: '', collegeWebsite: '', serviceAvailable: '', timings: '', genderFocus: '', 
     entryFees: '', serviceType: '', warranty: '', age: '', breed: '', ageGroup: '', rooms: '',
@@ -382,15 +382,28 @@ export default function CreatePostPage() {
                 
                 {/* 2. DYNAMIC FIELDS (Changes based on category) */}
 
-               {/* 💼 JOBS & GIGS */}
+              {/* 💼 JOBS & GIGS */}
                 {selectedHub === 'Jobs & Gigs' && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <input name="jobRole" value={form.jobRole} onChange={handleChange} placeholder="JOB ROLE (e.g. Graphic Designer) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    
                     <input name="salary" value={form.salary} onChange={handleChange} placeholder="SALARY (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
                     <select name="jobType" value={form.jobType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
-                      <option value="">JOB TYPE</option><option value="Full-Time">Full-Time</option><option value="Part-Time">Part-Time</option><option value="Freelance">Freelance</option>
+                      <option value="">JOB TYPE</option>
+                      <option value="Full-Time">Full-Time</option>
+                      <option value="Part-Time">Part-Time</option>
+                      <option value="Freelance">Freelance</option>
                     </select>
-                    <input name="experience" value={form.experience} onChange={handleChange} placeholder="EXPERIENCE (e.g. 2-4 Yrs)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    <input name="experience" value={form.experience} onChange={handleChange} placeholder="EXPERIENCE (e.g. 2-4 Yrs)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    <select name="workMode" value={form.workMode} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">WORK MODE</option>
+                      <option value="Onsite">Onsite</option>
+                      <option value="Remote">Remote</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
                   </div>
                 )}
 

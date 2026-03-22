@@ -36,6 +36,7 @@ const postSchema = new mongoose.Schema(
 
     // ── 💼 JOBS & 🛠️ SERVICES SPECIFIC ──
     jobRole: { type: String },
+    workMode: { type: String },
     salary: { type: String },     // e.g., '₹50,000 - ₹80,000/month'
     jobType: { type: String },    // e.g., 'Full-Time', 'Remote', 'Freelance'
     experience: { type: String }, // e.g., '2-4 Years'

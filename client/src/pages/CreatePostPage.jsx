@@ -106,7 +106,7 @@ export default function CreatePostPage() {
    salary: '', jobType: '', experience: '', jobRole: '', workMode: '', condition: '', brand: '', mileage: '', 
     eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: '',
     institute: '', collegeWebsite: '', serviceAvailable: '', timings: '', genderFocus: '', 
-    entryFees: '', serviceType: '', warranty: '', age: '', breed: '', ageGroup: '', rooms: '',
+    entryFees: '', serviceType: '', warranty: '', age: '', breed: '', vaccinated: '', ageGroup: '', rooms: '', 
     taggedUsers: [], mediaFilter: ''
   });
 
@@ -455,12 +455,21 @@ export default function CreatePostPage() {
                   </div>
                 )}
 
-                {/* 🐾 PETS */}
+               {/* 🐾 PETS */}
                 {selectedHub === 'Pets' && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
                     <input name="age" value={form.age} onChange={handleChange} placeholder="AGE (e.g. 2 Months)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
-                    <input name="breed" value={form.breed} onChange={handleChange} placeholder="BREED (e.g. Golden Retriever)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    <input name="breed" value={form.breed} onChange={handleChange} placeholder="BREED (e.g. Golden Retriever)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    <select name="vaccinated" value={form.vaccinated} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">VACCINATED?</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                      <option value="Partially">Partially</option>
+                    </select>
                   </div>
                 )}
 

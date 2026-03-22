@@ -65,6 +65,7 @@ const postSchema = new mongoose.Schema(
     warranty: { type: String },
     age: { type: String },
     breed: { type: String },
+    vaccinated: { type: String },
     ageGroup: { type: String }, // For Kids
     rooms: { type: Number }, // For PGs
 

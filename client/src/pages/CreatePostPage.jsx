@@ -503,7 +503,7 @@ export default function CreatePostPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-[#1E2532]">
                    <div className="relative">
                       <IoMdCall className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                      <input name="phone" value={form.phone} onChange={handleChange} placeholder="CONTACT NUMBER *" className="w-full bg-[#0B0F19] border border-[#1E2532] pl-10 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                      <input name="phone" value={form.phone} onChange={handleChange} placeholder="CONTACT NUMBER (Optional)" className="w-full bg-[#0B0F19] border border-[#1E2532] pl-10 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" />
                    </div>
                    <div className="relative">
                       <IoMdPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />

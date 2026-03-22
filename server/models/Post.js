@@ -30,6 +30,8 @@ const postSchema = new mongoose.Schema(
     bathrooms: { type: Number },
 
     // ── 🛍️ MARKETPLACE & 🚗 AUTO SPECIFIC ──
+    marketplaceCategory: { type: String }, // 👈 NEW: 'Sofa', 'Seeds', etc.
+    priceType: { type: String },
     condition: { type: String }, // e.g., 'Brand New', 'Like New', 'Used'
     brand: { type: String },     // e.g., 'Apple', 'Honda'
     mileage: { type: String },   // e.g., '15,000 km'

@@ -108,6 +108,7 @@ export default function CreatePostPage() {
     institute: '', collegeWebsite: '', serviceAvailable: '', timings: '', genderFocus: '', 
     entryFees: '', serviceType: '', warranty: '', age: '', breed: '', vaccinated: '', ageGroup: '', rooms: '', 
     destination: '', packageType: '', duration: '', included: '',
+    marketplaceCategory: '', priceType: '',
     taggedUsers: [], mediaFilter: ''
   });
 
@@ -494,8 +495,104 @@ export default function CreatePostPage() {
                   </div>
                 )}
 
+{/* 🛍️ MARKETPLACE (Ultimate Categorized View) */}
+                {selectedHub === 'Marketplace' && (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    
+                    {/* Price Type */}
+                    <select name="priceType" value={form.priceType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">PRICE TYPE</option>
+                      <option value="Fixed price">Fixed price</option>
+                      <option value="Negotiable">Negotiable</option>
+                      <option value="Free">Free</option>
+                    </select>
+
+                    {/* Dynamic Price Input (Disables if Free) */}
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" disabled={form.priceType === 'Free'} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors disabled:opacity-50" required={form.priceType !== 'Free'} />
+
+                    {/* Massive Category Dropdown */}
+                    <select name="marketplaceCategory" value={form.marketplaceCategory} onChange={handleChange} className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none" required>
+                      <option value="">SELECT MARKET CATEGORY *</option>
+                      
+                      <optgroup label="── 🪑 HOME & FURNITURE ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Sofa" className="text-white">Sofa</option>
+                        <option value="Bed" className="text-white">Bed</option>
+                        <option value="Table" className="text-white">Table</option>
+                        <option value="Chairs" className="text-white">Chairs</option>
+                        <option value="Cupboard" className="text-white">Cupboard</option>
+                        <option value="Interior items" className="text-white">Interior items</option>
+                      </optgroup>
+
+                      <optgroup label="── 🔌 ELECTRONICS ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="TV" className="text-white">TV</option>
+                        <option value="Refrigerator" className="text-white">Refrigerator</option>
+                        <option value="Washing machine" className="text-white">Washing machine</option>
+                        <option value="AC" className="text-white">AC</option>
+                        <option value="Speakers" className="text-white">Speakers</option>
+                      </optgroup>
+
+                      <optgroup label="── 📱 MOBILES & GADGETS ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Smartphones" className="text-white">Smartphones</option>
+                        <option value="Tablets" className="text-white">Tablets</option>
+                        <option value="Laptops" className="text-white">Laptops</option>
+                        <option value="Accessories" className="text-white">Accessories</option>
+                      </optgroup>
+
+                      <optgroup label="── 🚗 VEHICLES ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Bikes" className="text-white">Bikes</option>
+                        <option value="Cars" className="text-white">Cars</option>
+                        <option value="Scooters" className="text-white">Scooters</option>
+                        <option value="Tractors" className="text-white">Tractors</option>
+                      </optgroup>
+
+                      <optgroup label="── 👕 FASHION & LIFESTYLE ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Clothes" className="text-white">Clothes</option>
+                        <option value="Shoes" className="text-white">Shoes</option>
+                        <option value="Watches" className="text-white">Watches</option>
+                        <option value="Bags" className="text-white">Bags</option>
+                      </optgroup>
+
+                      <optgroup label="── 🏠 HOME APPLIANCES ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Mixer" className="text-white">Mixer</option>
+                        <option value="Grinder" className="text-white">Grinder</option>
+                        <option value="Gas stove" className="text-white">Gas stove</option>
+                        <option value="Kitchen items" className="text-white">Kitchen items</option>
+                      </optgroup>
+
+                      <optgroup label="── 🌾 AGRICULTURE ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Seeds" className="text-white">Seeds</option>
+                        <option value="Fertilizers" className="text-white">Fertilizers</option>
+                        <option value="Farming tools" className="text-white">Farming tools</option>
+                        <option value="Pumps" className="text-white">Pumps</option>
+                        <option value="Agri Tractors" className="text-white">Agri Tractors</option>
+                      </optgroup>
+
+                      <optgroup label="── 🛠️ SERVICES ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Electrician" className="text-white">Electrician</option>
+                        <option value="Plumber" className="text-white">Plumber</option>
+                        <option value="Painter" className="text-white">Painter</option>
+                        <option value="Carpenter" className="text-white">Carpenter</option>
+                      </optgroup>
+
+                      <optgroup label="── 🔥 LOCAL DEALS / OFFERS ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Shop discounts" className="text-white">Shop discounts</option>
+                        <option value="Festival offers" className="text-white">Festival offers</option>
+                        <option value="Clearance sale" className="text-white">Clearance sale</option>
+                      </optgroup>
+                    </select>
+
+                    <select name="condition" value={form.condition} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">CONDITION</option>
+                      <option value="New">New</option>
+                      <option value="Used">Used</option>
+                    </select>
+
+                    <input name="brand" value={form.brand} onChange={handleChange} placeholder="BRAND / MAKE" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                  </div>
+                )}
+                
                 {/* 🛍️ MARKETPLACE, AUTO, FASHION, TECH */}
-                {['Marketplace', 'Auto & Motors', 'Tech & Gadgets', 'Fashion'].includes(selectedHub) && (
+                {['Auto & Motors', 'Tech & Gadgets', 'Fashion'].includes(selectedHub) && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                     <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
                     <select name="condition" value={form.condition} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">

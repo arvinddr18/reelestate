@@ -46,6 +46,12 @@ const postSchema = new mongoose.Schema(
     eventTime: { type: String },  // e.g., '18:30'
     ticketPrice: { type: String },// e.g., '₹499', 'Free'
 
+    // ── ✈️ TRAVEL & TRIPS SPECIFIC ──
+    destination: { type: String },
+    packageType: { type: String }, // e.g., 'Solo', 'Couple', 'Group'
+    duration: { type: String },    // e.g., '3 Days, 2 Nights'
+    included: { type: String },    // e.g., 'Stay, Food, Transport'
+    
     // ── 🍔 FOOD & CAFES SPECIFIC ──
     cuisine: { type: String },    // e.g., 'Italian', 'South Indian'
     dietary: { type: String },    // e.g., 'Pure Veg', 'Non-Veg', 'Both'

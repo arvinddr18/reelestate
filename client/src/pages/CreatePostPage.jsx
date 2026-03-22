@@ -107,6 +107,7 @@ export default function CreatePostPage() {
     eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: '',
     institute: '', collegeWebsite: '', serviceAvailable: '', timings: '', genderFocus: '', 
     entryFees: '', serviceType: '', warranty: '', age: '', breed: '', vaccinated: '', ageGroup: '', rooms: '', 
+    destination: '', packageType: '', duration: '', included: '',
     taggedUsers: [], mediaFilter: ''
   });
 
@@ -441,17 +442,29 @@ export default function CreatePostPage() {
                   </div>
                 )}
 
-                {/* 🎟️ EVENTS, CINEMA & TRIPS */}
-                {['Local Events', 'Cinema', 'Travel & Trips'].includes(selectedHub) && (
+                {/* ✈️ TRAVEL & TRIPS */}
+                {selectedHub === 'Travel & Trips' && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
+                    <input name="destination" value={form.destination} onChange={handleChange} placeholder="DESTINATION (e.g. Goa, Manali) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" required />
+                    
                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
-                      <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Date</label>
+                      <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Start Date</label>
                       <input name="eventDate" type="date" value={form.eventDate} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
                     </div>
-                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
-                      <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Time</label>
-                      <input name="eventTime" type="time" value={form.eventTime} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
-                    </div>
+
+                    <input name="duration" value={form.duration} onChange={handleChange} placeholder="DURATION (e.g. 3D/2N) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PACKAGE COST (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+
+                    <select name="packageType" value={form.packageType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">PACKAGE TYPE</option>
+                      <option value="Solo / Backpacking">Solo / Backpacking</option>
+                      <option value="Couple / Romantic">Couple / Romantic</option>
+                      <option value="Family / Friends">Family / Group</option>
+                      <option value="Luxury / Premium">Luxury / Premium</option>
+                    </select>
+
+                    <input name="included" value={form.included} onChange={handleChange} placeholder="INCLUDED (e.g. Stay, Food, Transport)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
                   </div>
                 )}
 

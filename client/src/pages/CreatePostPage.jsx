@@ -109,6 +109,7 @@ export default function CreatePostPage() {
     entryFees: '', serviceType: '', warranty: '', age: '', breed: '', vaccinated: '', ageGroup: '', rooms: '', 
     destination: '', packageType: '', duration: '', included: '',
     marketplaceCategory: '', priceType: '',
+    educationCategory: '', institutionType: '', board: '', classesOffered: '', facilities: '', courseName: '', educationMode: '', skills: '', subject: '', classLevel: '', tutorName: '', eligibility: '', admissionDeadline: '', speaker: '', materialType: '', materialFormat: '',
     taggedUsers: [], mediaFilter: ''
   });
 
@@ -416,12 +417,125 @@ export default function CreatePostPage() {
                     <input name="serviceAvailable" value={form.serviceAvailable} onChange={handleChange} placeholder={selectedHub === 'Beauty & Care' ? "SERVICE (e.g. Haircut, Bridal)" : "SERVICE (e.g. Plumbing, Cleaning)"} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
                   </div>
                 )}
-
-                {/* 🎓 EDUCATION */}
+{/* 🎓 EDUCATION (Dynamic Sub-Categories) */}
                 {selectedHub === 'Education' && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="institute" value={form.institute} onChange={handleChange} placeholder="INSTITUTE NAME *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
-                    <input name="collegeWebsite" value={form.collegeWebsite} onChange={handleChange} placeholder="WEBSITE LINK" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    {/* Main Education Category Selector */}
+                    <select name="educationCategory" value={form.educationCategory} onChange={handleChange} className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none text-[#00F0FF]" required>
+                      <option value="">SELECT EDUCATION TYPE *</option>
+                      <option value="School / College">School / College</option>
+                      <option value="Course / Training">Course / Training</option>
+                      <option value="Coaching / Tuition">Coaching / Tuition</option>
+                      <option value="Degree / Admission">Degree / Admission</option>
+                      <option value="Seminar / Workshop">Seminar / Workshop</option>
+                      <option value="Study Material">Study Material</option>
+                      <option value="Internship / Training Program">Internship / Training Program</option>
+                    </select>
+
+                    {/* 1. SCHOOL / COLLEGE */}
+                    {form.educationCategory === 'School / College' && (
+                      <>
+                        <input name="institute" value={form.institute} onChange={handleChange} placeholder="INSTITUTION NAME *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <select name="institutionType" value={form.institutionType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">TYPE</option><option value="School">School</option><option value="College">College</option><option value="University">University</option>
+                        </select>
+                        <select name="board" value={form.board} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">BOARD / AFFILIATION</option><option value="CBSE">CBSE</option><option value="ICSE">ICSE</option><option value="State Board">State Board</option><option value="Other">Other</option>
+                        </select>
+                        <input name="classesOffered" value={form.classesOffered} onChange={handleChange} placeholder="CLASSES (e.g. 1st to 12th)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="facilities" value={form.facilities} onChange={handleChange} placeholder="FACILITIES (e.g. Hostel, Transport)" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                      </>
+                    )}
+
+                    {/* 2. COURSE / TRAINING */}
+                    {form.educationCategory === 'Course / Training' && (
+                      <>
+                        <input name="courseName" value={form.courseName} onChange={handleChange} placeholder="COURSE NAME *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="institute" value={form.institute} onChange={handleChange} placeholder="INSTITUTE NAME" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <select name="educationMode" value={form.educationMode} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">MODE</option><option value="Online">Online</option><option value="Offline">Offline</option><option value="Hybrid">Hybrid</option>
+                        </select>
+                        <input name="duration" value={form.duration} onChange={handleChange} placeholder="DURATION (e.g. 3 Months)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="FEES (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="skills" value={form.skills} onChange={handleChange} placeholder="SKILLS COVERED" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                      </>
+                    )}
+
+                    {/* 3. COACHING / TUITION */}
+                    {form.educationCategory === 'Coaching / Tuition' && (
+                      <>
+                        <input name="subject" value={form.subject} onChange={handleChange} placeholder="SUBJECT (e.g. Math, Physics) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="classLevel" value={form.classLevel} onChange={handleChange} placeholder="CLASS LEVEL (e.g. 10th, 12th)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <select name="educationMode" value={form.educationMode} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">MODE</option><option value="Online">Online</option><option value="Home Tuition">Home Tuition</option><option value="Institute">At Institute</option>
+                        </select>
+                        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="FEES (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="timings" value={form.timings} onChange={handleChange} placeholder="TIMINGS (e.g. 5 PM - 7 PM)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="tutorName" value={form.tutorName} onChange={handleChange} placeholder="TUTOR NAME (Optional)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                      </>
+                    )}
+
+                    {/* 4. DEGREE / ADMISSION */}
+                    {form.educationCategory === 'Degree / Admission' && (
+                      <>
+                        <input name="courseName" value={form.courseName} onChange={handleChange} placeholder="COURSE (e.g. B.Tech, MBA) *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="institute" value={form.institute} onChange={handleChange} placeholder="COLLEGE NAME *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="eligibility" value={form.eligibility} onChange={handleChange} placeholder="ELIGIBILITY (e.g. 60% in 12th)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="FEES (₹)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
+                          <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Admission Deadline</label>
+                          <input name="admissionDeadline" type="date" value={form.admissionDeadline} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" />
+                        </div>
+                      </>
+                    )}
+
+                    {/* 5. SEMINAR / WORKSHOP */}
+                    {form.educationCategory === 'Seminar / Workshop' && (
+                      <>
+                        <input name="subject" value={form.subject} onChange={handleChange} placeholder="TOPIC / SUBJECT *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="speaker" value={form.speaker} onChange={handleChange} placeholder="SPEAKER NAME" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="FEES (₹) or '0' for Free" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
+                          <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Date</label>
+                          <input name="eventDate" type="date" value={form.eventDate} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
+                        </div>
+                        <div className="bg-[#0B0F19] border border-[#1E2532] rounded-2xl p-2 relative">
+                          <label className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest absolute top-2 left-4">Time</label>
+                          <input name="eventTime" type="time" value={form.eventTime} onChange={handleChange} className="w-full bg-transparent p-2 pt-4 text-sm font-bold text-white outline-none" required />
+                        </div>
+                      </>
+                    )}
+
+                    {/* 6. STUDY MATERIAL */}
+                    {form.educationCategory === 'Study Material' && (
+                      <>
+                         <select name="materialType" value={form.materialType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">MATERIAL TYPE</option><option value="Notes">Notes</option><option value="Books">Books</option><option value="PDFs">PDFs</option><option value="Question Papers">Question Papers</option>
+                        </select>
+                        <input name="subject" value={form.subject} onChange={handleChange} placeholder="SUBJECT / TOPIC *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        
+                        <select name="priceType" value={form.priceType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">PRICE TYPE</option><option value="Paid">Paid</option><option value="Free">Free</option>
+                        </select>
+                        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹)" disabled={form.priceType === 'Free'} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 disabled:opacity-50" required={form.priceType !== 'Free'} />
+                        
+                        <select name="materialFormat" value={form.materialFormat} onChange={handleChange} className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                          <option value="">FORMAT</option><option value="Digital (PDF/Drive Link)">Digital (PDF/Drive Link)</option><option value="Physical Copy">Physical Copy (Printed/Book)</option>
+                        </select>
+                      </>
+                    )}
+
+                    {/* 7. INTERNSHIP / TRAINING */}
+                    {form.educationCategory === 'Internship / Training Program' && (
+                      <>
+                        <input name="courseName" value={form.courseName} onChange={handleChange} placeholder="PROGRAM NAME *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="institute" value={form.institute} onChange={handleChange} placeholder="COMPANY / INSTITUTE *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                        <input name="duration" value={form.duration} onChange={handleChange} placeholder="DURATION (e.g. 6 Months)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="salary" value={form.salary} onChange={handleChange} placeholder="STIPEND (₹) or 'Unpaid'" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                        <input name="skills" value={form.skills} onChange={handleChange} placeholder="SKILLS REQUIRED" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                      </>
+                    )}
                   </div>
                 )}
 

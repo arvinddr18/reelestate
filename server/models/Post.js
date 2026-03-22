@@ -62,6 +62,23 @@ const postSchema = new mongoose.Schema(
     institute: { type: String },
     collegeWebsite: { type: String },
     serviceAvailable: { type: String },
+    // ── 🎓 EDUCATION SPECIFIC ──
+    educationCategory: { type: String }, // 'School', 'Coaching', etc.
+    institutionType: { type: String },   // 'School', 'College', 'University'
+    board: { type: String },             // 'CBSE', 'State Board'
+    classesOffered: { type: String }, 
+    facilities: { type: String },
+    courseName: { type: String },
+    educationMode: { type: String },     // 'Online', 'Offline'
+    skills: { type: String },
+    subject: { type: String },
+    classLevel: { type: String },
+    tutorName: { type: String },
+    eligibility: { type: String },
+    admissionDeadline: { type: String }, // Can save as date string
+    speaker: { type: String },
+    materialType: { type: String },      // 'Notes', 'Books'
+    materialFormat: { type: String },    // 'Digital', 'Physical'
 
     // ── 🏋️ GYM, SPORTS & BEAUTY SPECIFIC ──
     timings: { type: String }, // 'AM', 'PM', '24/7'

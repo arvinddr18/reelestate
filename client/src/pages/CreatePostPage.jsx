@@ -34,6 +34,27 @@ const MusicPicker = ({ onSelect, onClose }) => {
 };
 
 const LocationPicker = ({ onSelect, onClose }) => {
+  const USERS = [{ id: '1', handle: '@arvinddr', name: 'Arvind' }, { id: '2', handle: '@nodexa', name: 'Nodexa Official' }];
+  return (
+    <div className="fixed inset-0 z-[100] bg-[#0B0F19]/95 backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex flex-col p-6">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-xl font-black italic tracking-tighter">TAG PEOPLE</h2>
+        <button onClick={onClose} className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest">Close</button>
+      </div>
+      <div className="space-y-3">
+        {USERS.map(user => (
+          <button key={user.id} onClick={() => { onSelect(user); onClose(); }} className="w-full flex items-center gap-4 p-4 bg-[#151A25] rounded-2xl border border-[#1E2532] hover:border-[#00F0FF] text-left">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center font-black">{user.name[0]}</div>
+            <div>
+              <span className="text-xs font-black text-white block">{user.handle}</span>
+              <span className="text-[10px] text-gray-500 font-bold">{user.name}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
   /* ... (Your exact same Location Picker code) ... */
   const LOCATIONS = [{ id: '1', name: 'Bengaluru, Karnataka', type: 'City' }];
   return (
@@ -51,7 +72,7 @@ const LocationPicker = ({ onSelect, onClose }) => {
       </div>
     </div>
   );
-};
+
 
 // ─── MAIN MASTER PAGE ───
 export default function CreatePostPage() {
@@ -66,11 +87,18 @@ export default function CreatePostPage() {
   // 2. CORE FORM STATE
   const [showMusicModal, setShowMusicModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showTagModal, setShowTagModal] = useState(false);
   const [mediaType, setMediaType] = useState('images'); 
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const FILTERS = [ // 👈 NEW: CSS Filters for Instagram look
+    { name: 'Normal', class: '' },
+    { name: 'Vivid', class: 'contrast-125 brightness-110 saturate-150' },
+    { name: 'Cool', class: 'brightness-105 hue-rotate-15 saturate-50' },
+    { name: 'Mono', class: 'grayscale contrast-125' }
+  ];
 
   const [form, setForm] = useState({
     title: '', description: '', price: '', propertyType: '', area: '', bedrooms: '', locationTag: '', music: '',
@@ -78,7 +106,8 @@ export default function CreatePostPage() {
     salary: '', jobType: '', experience: '', condition: '', brand: '', mileage: '',
     eventDate: '', eventTime: '', ticketPrice: '', cuisine: '', dietary: '',
     institute: '', collegeWebsite: '', serviceAvailable: '', timings: '', genderFocus: '', 
-    entryFees: '', serviceType: '', warranty: '', age: '', breed: '', ageGroup: '', rooms: ''
+    entryFees: '', serviceType: '', warranty: '', age: '', breed: '', ageGroup: '', rooms: '',
+    taggedUsers: [], mediaFilter: ''
   });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -252,32 +281,57 @@ export default function CreatePostPage() {
               </div>
               <label className="group cursor-pointer block">
                 <div className="border-2 border-dashed border-[#1E2532] rounded-2xl p-10 text-center bg-[#0B0F19]/50 group-hover:border-[#00F0FF]/50 transition-all overflow-hidden">
+                  {/* Notice 'multiple' is here, allowing gallery selection! */}
                   <input type="file" accept={mediaType === 'video' ? 'video/*' : 'image/*'} multiple={mediaType === 'images'} onChange={handleFileChange} className="hidden" />
                   <IoMdCloudUpload size={40} className="mx-auto text-gray-600 group-hover:text-[#00F0FF] transition-colors mb-2" />
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{files.length > 0 ? `${files.length} Selected` : `Upload ${mediaType}`}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{files.length > 0 ? `${files.length} Selected` : `Tap to open Gallery`}</p>
                 </div>
               </label>
+
+              {/* Previews & Filters */}
               {previews.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto no-scrollbar py-4 mt-2">
-                  {previews.map((p, i) => (
-                    <div key={i} className="w-20 h-20 rounded-xl overflow-hidden bg-[#1E2532] shrink-0 border border-[#2A3441]">
-                      {p.type.startsWith('video') ? <video src={p.url} className="w-full h-full object-cover" /> : <img src={p.url} className="w-full h-full object-cover" alt=""/>}
+                <div className="mt-4">
+                  {/* Horizontal Scroll of Images */}
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    {previews.map((p, i) => (
+                      <div key={i} className="w-24 h-24 rounded-xl overflow-hidden bg-[#1E2532] shrink-0 border border-[#2A3441] relative">
+                        {p.type.startsWith('video') ? 
+                          <video src={p.url} className={`w-full h-full object-cover ${form.mediaFilter}`} /> : 
+                          <img src={p.url} className={`w-full h-full object-cover ${form.mediaFilter}`} alt=""/>
+                        }
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* 🎨 FILTER SELECTOR */}
+                  {mediaType === 'images' && (
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-[#1E2532]">
+                      {FILTERS.map(filter => (
+                        <button type="button" key={filter.name} onClick={() => setForm({...form, mediaFilter: filter.class})} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shrink-0 transition-all ${form.mediaFilter === filter.class ? 'bg-[#00F0FF] text-black' : 'bg-[#0B0F19] text-gray-500 border border-[#1E2532]'}`}>
+                          {filter.name}
+                        </button>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
 
-            {/* --- THE SOCIAL FORM --- */}
-            {(createMode === 'social' || (createMode === 'hub-form' && postIntent === 'activity')) && (
-              <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-6 shadow-xl">
-                <div className="flex gap-4 bg-[#0B0F19] p-4 rounded-3xl border border-[#1E2532]">
-                  <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden shrink-0 border border-[#1E2532]">
-                    {previews[0] ? <img src={previews[0].url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-900" />}
+            {/* --- SOCIAL OR ACTIVITY FEED FORM --- */}
+            {(createMode === 'social' || postIntent === 'activity') && (
+              <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-6 shadow-xl relative overflow-hidden">
+                {createMode === 'hub-form' && (
+                  <div className="absolute top-0 left-0 right-0 bg-[#0057FF]/20 text-[#00F0FF] text-center text-[10px] font-black uppercase tracking-[0.2em] py-1.5 border-b border-[#00F0FF]/20">
+                    {selectedHub} Community Feed
                   </div>
-                  <textarea name="description" placeholder="Write a caption..." value={form.description} onChange={handleChange} className="w-full bg-transparent text-sm outline-none resize-none pt-2 text-white" rows={3} />
+                )}
+
+                <div className={`flex gap-4 bg-[#0B0F19] p-4 rounded-3xl border border-[#1E2532] ${createMode === 'hub-form' ? 'mt-4' : ''}`}>
+                  <textarea name="description" placeholder={createMode === 'social' ? "Write a caption..." : `Share an update with the ${selectedHub} community...`} value={form.description} onChange={handleChange} className="w-full bg-transparent text-sm outline-none resize-none pt-2 text-white" rows={4} />
                 </div>
+                
                 <div className="overflow-hidden rounded-3xl border border-[#1E2532] bg-[#0B0F19]">
+                  {/* Add Audio */}
                   <button type="button" onClick={() => setShowMusicModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
                     <div className="flex items-center gap-4">
                       <span className="text-xl">🎵</span>
@@ -288,12 +342,26 @@ export default function CreatePostPage() {
                     </div>
                     <span className="text-gray-600 text-lg">❯</span>
                   </button>
-                  <button type="button" onClick={() => setShowLocationModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors">
+
+                  {/* Add Location */}
+                  <button type="button" onClick={() => setShowLocationModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors border-b border-[#1E2532]/50">
                     <div className="flex items-center gap-4">
                       <span className="text-xl">📍</span>
                       <div className="text-left">
                         <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">{form.locationTag ? 'Location Tagged' : 'Add Location'}</span>
                         {form.locationTag && <p className="text-[9px] text-[#00F0FF] font-black uppercase mt-0.5">{form.locationTag}</p>}
+                      </div>
+                    </div>
+                    <span className="text-gray-600 text-lg">❯</span>
+                  </button>
+
+                  {/* 👤 TAG PEOPLE */}
+                  <button type="button" onClick={() => setShowTagModal(true)} className="w-full flex items-center justify-between p-5 hover:bg-[#1E2532] transition-colors">
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl">👤</span>
+                      <div className="text-left">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">{form.taggedUsers.length > 0 ? `${form.taggedUsers.length} People Tagged` : 'Tag People'}</span>
+                        {form.taggedUsers.length > 0 && <p className="text-[9px] text-[#00F0FF] font-black uppercase mt-0.5">{form.taggedUsers.join(', ')}</p>}
                       </div>
                     </div>
                     <span className="text-gray-600 text-lg">❯</span>
@@ -525,6 +593,7 @@ export default function CreatePostPage() {
 
       {showMusicModal && <MusicPicker onClose={() => setShowMusicModal(false)} onSelect={(song) => setForm({ ...form, music: `${song.title} - ${song.artist}` })} />}
       {showLocationModal && <LocationPicker onClose={() => setShowLocationModal(false)} onSelect={(loc) => setForm({ ...form, locationTag: loc.name })} />}
+      {showTagModal && <TagPicker onClose={() => setShowTagModal(false)} onSelect={(user) => setForm({ ...form, taggedUsers: [...form.taggedUsers, user.handle] })} />}
     </div>
   );
 }

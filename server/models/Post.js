@@ -69,6 +69,8 @@ const postSchema = new mongoose.Schema(
     // ── 📸 SOCIAL SPECIFIC ──
     music: { type: String },       // e.g., 'Levitating - Dua Lipa'
     locationTag: { type: String }, // e.g., 'Bengaluru, Karnataka'
+    taggedUsers: [{ type: String }],
+    mediaFilter: { type: String, default: 'none' },
 
     // ── MAPS & LOCATION ──
     taluk: { type: String, trim: true },

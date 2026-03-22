@@ -61,6 +61,7 @@ export default function CreatePostPage() {
   // 'selection' (Big Buttons) -> 'social' (Insta Mode) OR 'hub-grid' (Category Grid) -> 'hub-form' (Listing Mode)
   const [createMode, setCreateMode] = useState('selection'); 
   const [selectedHub, setSelectedHub] = useState('');
+  const [postIntent, setPostIntent] = useState('business');
 
   // 2. CORE FORM STATE
   const [showMusicModal, setShowMusicModal] = useState(false);
@@ -96,11 +97,11 @@ export default function CreatePostPage() {
     let safeForm = { ...form };
     
     // Auto-Format based on the route chosen
-    if (createMode === 'social') {
+    if (createMode === 'social' || postIntent === 'activity') {
       safeForm.price = 0; 
       safeForm.propertyType = 'other';
-      safeForm.mainCategory = 'Social';
-      safeForm.title = safeForm.description ? `${safeForm.description.substring(0, 20)}...` : 'Social Update';
+      safeForm.mainCategory = createMode === 'social' ? 'Social' : selectedHub;
+      safeForm.title = safeForm.description ? `${safeForm.description.substring(0, 20)}...` : 'Community Update';
     } else {
       safeForm.mainCategory = selectedHub; // Use the hub they clicked
       if (!safeForm.price || isNaN(safeForm.price)) safeForm.price = 0;
@@ -192,7 +193,7 @@ export default function CreatePostPage() {
               {MAIN_CATEGORIES.filter(cat => cat.name !== 'Social').map(cat => (
                 <button 
                   key={cat.name} 
-                  onClick={() => { setSelectedHub(cat.name); setCreateMode('hub-form'); }}
+                  onClick={() => { setSelectedHub(cat.name); setCreateMode('hub-intent'); }}
                   className="bg-[#151A25] border border-[#1E2532] hover:border-[#00F0FF] hover:bg-[#1E2532] transition-all p-5 rounded-2xl flex flex-col items-center gap-3 active:scale-95 group"
                 >
                   <span className="text-3xl group-hover:scale-110 transition-transform">{cat.icon}</span>
@@ -203,6 +204,37 @@ export default function CreatePostPage() {
           </div>
         )}
 
+{/* ────────────────────────────────────────────────────────
+            NEW VIEW: THE INTENT SELECTOR (Activity vs Business)
+        ──────────────────────────────────────────────────────── */}
+        {createMode === 'hub-intent' && (
+          <div className="animate-in zoom-in-95 duration-300">
+            <div className="text-center mb-8">
+              <div className="bg-[#00F0FF]/10 text-[#00F0FF] px-4 py-1.5 rounded-full inline-block text-[10px] font-black uppercase tracking-widest mb-4 border border-[#00F0FF]/30">
+                {selectedHub}
+              </div>
+              <h2 className="text-2xl font-black text-white">What type of post is this?</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
+              <div onClick={() => { setPostIntent('activity'); setCreateMode('hub-form'); }} className="bg-[#151A25] border border-[#1E2532] hover:border-[#00F0FF] p-6 rounded-3xl cursor-pointer transition-all active:scale-95 group flex items-center gap-6">
+                <div className="w-14 h-14 rounded-full bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📸</div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Activity Feed</h3>
+                  <p className="text-xs text-gray-400 font-bold mt-1">Share photos, updates, or vibes with the community.</p>
+                </div>
+              </div>
+
+              <div onClick={() => { setPostIntent('business'); setCreateMode('hub-form'); }} className="bg-[#151A25] border border-[#1E2532] hover:border-[#00F0FF] p-6 rounded-3xl cursor-pointer transition-all active:scale-95 group flex items-center gap-6">
+                <div className="w-14 h-14 rounded-full bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🏪</div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Business Listing</h3>
+                  <p className="text-xs text-gray-400 font-bold mt-1">Sell, Hire, Rent, or Advertise specific details.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* ────────────────────────────────────────────────────────
             VIEW 3: THE ACTUAL CREATION FORMS
         ──────────────────────────────────────────────────────── */}
@@ -237,7 +269,7 @@ export default function CreatePostPage() {
             </div>
 
             {/* --- THE SOCIAL FORM --- */}
-            {createMode === 'social' && (
+            {(createMode === 'social' || (createMode === 'hub-form' && postIntent === 'activity')) && (
               <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-6 shadow-xl">
                 <div className="flex gap-4 bg-[#0B0F19] p-4 rounded-3xl border border-[#1E2532]">
                   <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden shrink-0 border border-[#1E2532]">
@@ -271,7 +303,7 @@ export default function CreatePostPage() {
             )}
 
             {/* --- THE DYNAMIC HUB FORM --- */}
-            {createMode === 'hub-form' && (
+            {createMode === 'hub-form' && postIntent === 'business' && (
               <div className="bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 space-y-5 shadow-xl">
                 <div className="bg-[#00F0FF]/10 border border-[#00F0FF]/30 p-3 rounded-xl mb-4 flex items-center gap-2">
                   <span className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest">Posting in: {selectedHub}</span>

@@ -13,7 +13,6 @@ const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'plot', 'commercial', 'fa
 
 // ─── HELPER COMPONENTS ───
 const MusicPicker = ({ onSelect, onClose }) => {
-  /* ... (Your exact same Music Picker code goes here - keeping it brief for the structural view) ... */
   const [query, setQuery] = useState('');
   const SONGS = [{ id: '1', title: 'Midnight City', artist: 'M83', icon: '🎧' }, { id: '2', title: 'Levitating', artist: 'Dua Lipa', icon: '✨' }];
   return (
@@ -51,24 +50,29 @@ const LocationPicker = ({ onSelect, onClose }) => {
     </div>
   );
 };
-  /* ... (Your exact same Location Picker code) ... */
-  const LOCATIONS = [{ id: '1', name: 'Bengaluru, Karnataka', type: 'City' }];
+
+const TagPicker = ({ onSelect, onClose }) => {
+  const USERS = [{ id: '1', handle: '@arvinddr', name: 'Arvind' }, { id: '2', handle: '@nodexa', name: 'Nodexa Official' }];
   return (
     <div className="fixed inset-0 z-[100] bg-[#0B0F19]/95 backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex flex-col p-6">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-xl font-black italic tracking-tighter">TAG LOCATION</h2>
+        <h2 className="text-xl font-black italic tracking-tighter">TAG PEOPLE</h2>
         <button onClick={onClose} className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest">Close</button>
       </div>
       <div className="space-y-3">
-        {LOCATIONS.map(loc => (
-          <button key={loc.id} onClick={() => { onSelect(loc); onClose(); }} className="w-full flex items-center justify-between p-4 bg-[#151A25] rounded-2xl border border-[#1E2532] hover:border-[#00F0FF] text-left">
-            <span className="text-xs font-black text-white">{loc.name}</span>
+        {USERS.map(user => (
+          <button key={user.id} onClick={() => { onSelect(user); onClose(); }} className="w-full flex items-center gap-4 p-4 bg-[#151A25] rounded-2xl border border-[#1E2532] hover:border-[#00F0FF] text-left">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center font-black">{user.name[0]}</div>
+            <div>
+              <span className="text-xs font-black text-white block">{user.handle}</span>
+              <span className="text-[10px] text-gray-500 font-bold">{user.name}</span>
+            </div>
           </button>
         ))}
       </div>
     </div>
   );
-
+};
 
 // ─── MAIN MASTER PAGE ───
 export default function CreatePostPage() {

@@ -19,6 +19,7 @@ const formatPrice = (p) => {
 // ─── THE MASTER CATEGORY LIST ───
 const SEARCH_CATEGORIES = [
   { id: 'All', name: 'All Hubs', icon: '🌍' },
+  { id: 'Social', name: 'Social', icon: '📸' },
   { id: 'Sale Hub', name: 'Sale Hub', icon: '🏠' },
   { id: 'Rents', name: 'Rents', icon: '🔑' },
   { id: 'PGs & Co-Living', name: 'PGs & Hostels', icon: '🛏️' },

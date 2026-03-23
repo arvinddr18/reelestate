@@ -111,6 +111,7 @@ export default function CreatePostPage() {
     marketplaceCategory: '', priceType: '',
     educationCategory: '', institutionType: '', board: '', classesOffered: '', facilities: '', courseName: '', educationMode: '', skills: '', subject: '', classLevel: '', tutorName: '', eligibility: '', admissionDeadline: '', speaker: '', materialType: '', materialFormat: '',
     dishName: '', restaurantName: '', offer: '', swiggyLink: '', zomatoLink: '', restaurantWebsite: '',
+    kidsCategory: '',
     taggedUsers: [], mediaFilter: ''
   });
 
@@ -602,10 +603,94 @@ export default function CreatePostPage() {
                   </div>
                 )}
 
-                {/* 🧸 KIDS */}
+                {/* 🧸 KIDS (Ultimate Categorized View) */}
                 {selectedHub === 'Kids' && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
+                    {/* Price Type */}
+                    <select name="priceType" value={form.priceType} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">PRICE TYPE</option>
+                      <option value="Fixed price">Fixed price</option>
+                      <option value="Negotiable">Negotiable</option>
+                      <option value="Free">Free</option>
+                    </select>
+
+                    {/* Dynamic Price Input */}
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) *" disabled={form.priceType === 'Free'} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors disabled:opacity-50" required={form.priceType !== 'Free'} />
+
+                    {/* Massive Category Dropdown */}
+                    <select name="kidsCategory" value={form.kidsCategory} onChange={handleChange} className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none text-[#00F0FF]" required>
+                      <option value="">SELECT KIDS CATEGORY *</option>
+                      
+                      <optgroup label="── 🎲 TOYS & GAMES ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Soft toys" className="text-white">Soft toys</option>
+                        <option value="Remote cars" className="text-white">Remote cars</option>
+                        <option value="Dolls" className="text-white">Dolls</option>
+                        <option value="Educational toys" className="text-white">Educational toys</option>
+                        <option value="Board games" className="text-white">Board games</option>
+                        <option value="Outdoor toys" className="text-white">Outdoor toys</option>
+                      </optgroup>
+
+                      <optgroup label="── 👶 BABY PRODUCTS ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Baby clothes" className="text-white">Baby clothes</option>
+                        <option value="Diapers" className="text-white">Diapers</option>
+                        <option value="Feeding bottles" className="text-white">Feeding bottles</option>
+                        <option value="Baby beds / cradles" className="text-white">Baby beds / cradles</option>
+                        <option value="Baby walkers" className="text-white">Baby walkers</option>
+                        <option value="Baby care kits" className="text-white">Baby care kits</option>
+                      </optgroup>
+
+                      <optgroup label="── 👕 KIDS CLOTHING ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Boys clothing" className="text-white">Boys clothing</option>
+                        <option value="Girls clothing" className="text-white">Girls clothing</option>
+                        <option value="School uniforms" className="text-white">School uniforms</option>
+                        <option value="Shoes & sandals" className="text-white">Shoes & sandals</option>
+                      </optgroup>
+
+                      <optgroup label="── 🎒 SCHOOL ITEMS ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="School bags" className="text-white">School bags</option>
+                        <option value="Books" className="text-white">Books</option>
+                        <option value="Notebooks" className="text-white">Notebooks</option>
+                        <option value="Stationery" className="text-white">Stationery (pens, pencils)</option>
+                        <option value="Lunch boxes" className="text-white">Lunch boxes</option>
+                      </optgroup>
+
+                      <optgroup label="── 🛏 KIDS FURNITURE ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Baby bed" className="text-white">Baby bed</option>
+                        <option value="Study table" className="text-white">Study table</option>
+                        <option value="Chairs" className="text-white">Chairs</option>
+                        <option value="Cupboards" className="text-white">Cupboards</option>
+                      </optgroup>
+
+                      <optgroup label="── ⚽ SPORTS & OUTDOOR ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Cricket kits" className="text-white">Cricket kits</option>
+                        <option value="Football" className="text-white">Football</option>
+                        <option value="Bicycle" className="text-white">Bicycle</option>
+                        <option value="Skating" className="text-white">Skating</option>
+                        <option value="Play equipment" className="text-white">Play equipment</option>
+                      </optgroup>
+
+                      <optgroup label="── 📚 LEARNING & EDUCATION ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Story books" className="text-white">Story books</option>
+                        <option value="Educational kits" className="text-white">Educational kits</option>
+                        <option value="Online classes" className="text-white">Online classes</option>
+                        <option value="Tuition services" className="text-white">Tuition services</option>
+                      </optgroup>
+
+                      <optgroup label="── 🧑‍🏫 SERVICES FOR KIDS ──" className="text-[#00F0FF] bg-[#151A25]">
+                        <option value="Home tuition" className="text-white">Home tuition</option>
+                        <option value="Daycare" className="text-white">Daycare</option>
+                        <option value="Babysitting" className="text-white">Babysitting</option>
+                        <option value="Activity classes" className="text-white">Activity classes (dance, drawing)</option>
+                      </optgroup>
+                    </select>
+
+                    <select name="condition" value={form.condition} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
+                      <option value="">CONDITION</option>
+                      <option value="New">New</option>
+                      <option value="Used">Used</option>
+                    </select>
+
                     <input name="ageGroup" value={form.ageGroup} onChange={handleChange} placeholder="AGE GROUP (e.g. 0-2 Yrs)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
                   </div>
                 )}

@@ -57,6 +57,12 @@ const postSchema = new mongoose.Schema(
     // ── 🍔 FOOD & CAFES SPECIFIC ──
     cuisine: { type: String },    // e.g., 'Italian', 'South Indian'
     dietary: { type: String },    // e.g., 'Pure Veg', 'Non-Veg', 'Both'
+    dishName: { type: String },         
+    restaurantName: { type: String },    
+    offer: { type: String },             
+    swiggyLink: { type: String },        
+    zomatoLink: { type: String },      
+    restaurantWebsite: { type: String }, 
 
     // ── 🎓 EDUCATION & 💼 SERVICES SPECIFIC ──
     institute: { type: String },

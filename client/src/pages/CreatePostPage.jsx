@@ -110,6 +110,7 @@ export default function CreatePostPage() {
     destination: '', packageType: '', duration: '', included: '',
     marketplaceCategory: '', priceType: '',
     educationCategory: '', institutionType: '', board: '', classesOffered: '', facilities: '', courseName: '', educationMode: '', skills: '', subject: '', classLevel: '', tutorName: '', eligibility: '', admissionDeadline: '', speaker: '', materialType: '', materialFormat: '',
+    dishName: '', restaurantName: '', offer: '', swiggyLink: '', zomatoLink: '', restaurantWebsite: '',
     taggedUsers: [], mediaFilter: ''
   });
 
@@ -722,10 +723,28 @@ export default function CreatePostPage() {
                 {/* 🍔 FOOD & CAFES */}
                 {selectedHub === 'Food & Cafes' && (
                   <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
-                    <input name="cuisine" value={form.cuisine} onChange={handleChange} placeholder="CUISINE *" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
+                    <input name="restaurantName" value={form.restaurantName} onChange={handleChange} placeholder="RESTAURANT / CAFE NAME *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
+                    <input name="dishName" value={form.dishName} onChange={handleChange} placeholder="DISH / ITEM NAME *" className="col-span-2 bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" required />
+                    
+                    <input name="cuisine" value={form.cuisine} onChange={handleChange} placeholder="CUISINE (e.g. Italian, Cafe)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
                     <select name="dietary" value={form.dietary} onChange={handleChange} className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-[11px] font-black uppercase text-gray-400 outline-none">
                       <option value="">DIETARY</option><option value="Pure Veg">Pure Veg</option><option value="Non-Veg">Non-Veg</option><option value="Both">Both</option>
                     </select>
+
+                    <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="PRICE (₹) (Recommended)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    
+                    <input name="offer" value={form.offer} onChange={handleChange} placeholder="OFFER / DISCOUNT (Optional)" className="bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+
+                    <div className="col-span-2 space-y-3 pt-3 mt-2 border-t border-[#1E2532]">
+                       <p className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest pl-2">Delivery & Order Links (Optional)</p>
+                       <input name="swiggyLink" value={form.swiggyLink} onChange={handleChange} placeholder="SWIGGY LINK" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                       <input name="zomatoLink" value={form.zomatoLink} onChange={handleChange} placeholder="ZOMATO LINK" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                       <input name="restaurantWebsite" value={form.restaurantWebsite} onChange={handleChange} placeholder="WEBSITE LINK" className="w-full bg-[#0B0F19] border border-[#1E2532] p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50" />
+                    </div>
+
                   </div>
                 )}
 

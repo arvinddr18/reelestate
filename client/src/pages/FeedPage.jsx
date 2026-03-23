@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { IoMdSearch } from 'react-icons/io'; // Removed IoMdAdd
+import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Added IoMdAdd back here!
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
 import api from '../services/api';
@@ -95,7 +95,6 @@ export default function FeedPage() {
             <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all">
               <IoMdSearch size={20} />
             </Link>
-            {/* The duplicate + button was removed from here! */}
           </div>
         </div>
 
@@ -134,6 +133,43 @@ export default function FeedPage() {
 
       {/* ─── MAIN FEED CONTENT ─── */}
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        
+        {/* ─── ⚡ STORIES / REELS SECTION (Only on 'For You') ─── */}
+        {activeCategory === 'All' && (
+          <div className="mb-8 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex gap-4 items-start">
+              
+              {/* Add Story Button */}
+              <button className="flex flex-col items-center gap-2 shrink-0 group">
+                <div className="w-16 h-16 rounded-full p-[2px] bg-[#1E2532] group-hover:bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] group-active:scale-95 transition-all">
+                  <div className="w-full h-full rounded-full border-2 border-[#0B0F19] bg-[#151A25] flex items-center justify-center relative overflow-hidden">
+                    <IoMdAdd size={26} className="text-[#00F0FF]" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Add Story</span>
+              </button>
+
+              {/* View Stories (Triggers ReelSwiper) */}
+              {/* Note: Map over your real users/stories here later! Using dummies for UI structure */}
+              {[1, 2, 3, 4, 5, 6].map((story) => (
+                <button 
+                  key={story} 
+                  onClick={() => setShowReels(true)} 
+                  className="flex flex-col items-center gap-2 shrink-0 group"
+                >
+                  <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-[#F5A623] to-[#F76B1C] group-active:scale-95 transition-transform shadow-[0_0_10px_rgba(245,166,35,0.3)]">
+                    <div className="w-full h-full rounded-full border-2 border-[#0B0F19] bg-[#1E2532] overflow-hidden">
+                      {/* Placeholder avatar - replace with real user photo */}
+                      <img src={`https://i.pravatar.cc/150?img=${story * 10}`} alt="story" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest truncate w-16 text-center">User {story}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((n) => (

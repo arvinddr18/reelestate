@@ -13,11 +13,14 @@ import RegisterPage from './pages/RegisterPage';
 import FeedPage from './pages/FeedPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatePostPage from './pages/CreatePostPage';
-import MessagesPage from './pages/MessagesPage';
 import SearchPage from './pages/SearchPage';
 import AdminPage from './pages/AdminPage';
 import PostDetailPage from './pages/PostDetailPage';
 import SavedPage from './pages/SavedPage';
+
+// ─── NEW 2045 MESSAGING COMPONENTS ───
+import Messages from './pages/Messages'; // The Holographic Hub (Inbox)
+import ChatRoom from './pages/ChatRoom'; // The Individual Floating Chat
 
 // Layout
 import Layout from './components/common/Layout';
@@ -26,7 +29,7 @@ import Layout from './components/common/Layout';
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   // Change from bg-black to bg-brand-950
-if (loading) return <div className="min-h-screen bg-brand-950 flex items-center justify-center"><div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" /></div>;
+if (loading) return <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#00F0FF] border-t-transparent rounded-full animate-spin" /></div>;
   return user ? children : <Navigate to="/login" replace />;
 };
 
@@ -54,10 +57,13 @@ function AppRoutes() {
         <Route index element={<FeedPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="create" element={<CreatePostPage />} />
-        <Route path="messages" element={<MessagesPage />} />
-        <Route path="messages/:userId" element={<MessagesPage />} />
+        
+        {/* ─── SPLIT MESSAGING ROUTES ─── */}
+        <Route path="messages" element={<Messages />} />
+        <Route path="messages/:userId" element={<ChatRoom />} />
+        
         <Route path="saved" element={<SavedPage />} />
-        <Route path="profile/:userId" element={<ProfilePage />} />
+        <Route path="profile/:userId?" element={<ProfilePage />} />
         <Route path="post/:postId" element={<PostDetailPage />} />
         <Route path="admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
       </Route>
@@ -73,12 +79,12 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
-        {/* Toast notifications */}
+        {/* Toast notifications (Updated to match 2045 Cyberpunk Theme) */}
         <Toaster
           position="top-right"
           toastOptions={{
-            style: { background: '#1c1c1e', color: '#fff', border: '1px solid #333' },
-            success: { iconTheme: { primary: '#f97316', secondary: '#000' } },
+            style: { background: '#151A25', color: '#fff', border: '1px solid #1E2532' },
+            success: { iconTheme: { primary: '#00F0FF', secondary: '#151A25' } },
           }}
         />
       </AuthProvider>

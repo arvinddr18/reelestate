@@ -361,25 +361,28 @@ export default function ProfilePage() {
               {/* TAB: Personal Info */}
               {settingsTab === 'personal' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-in fade-in duration-300 pb-20">
+                  
+                  {/* Full Name */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Full Name</label>
                     <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold shadow-inner" />
                   </div>
+                  
+                  {/* Location (Moved up next to Full Name) */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Phone Number</label>
-                    <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold shadow-inner" />
-                  </div>
-                  <div className="space-y-1.5 md:col-span-2">
                     <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Location</label>
                     <input type="text" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold shadow-inner" />
                   </div>
+                  
+                  {/* Bio (Spans across both columns) */}
                   <div className="space-y-1.5 md:col-span-2">
                     <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Bio</label>
                     <textarea value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl h-24 outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold resize-none shadow-inner" />
                   </div>
+                  
                 </div>
               )}
-
+              
               {/* TAB: Privacy & Security */}
               {settingsTab === 'privacy' && (
                 <div className="space-y-6 animate-in fade-in duration-300 pb-20">

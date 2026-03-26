@@ -19,7 +19,8 @@ import PostDetailPage from './pages/PostDetailPage';
 import SavedPage from './pages/SavedPage';
 
 // ─── NEW 2045 MESSAGING COMPONENTS ───
-import Messages from './pages/Messages'; // The Holographic Hub (Inbox)
+// To match your actual file name (probably this):
+import Messages from './pages/MessagesPage';
 import ChatRoom from './pages/ChatRoom'; // The Individual Floating Chat
 
 // Layout

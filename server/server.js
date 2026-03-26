@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const http = require('http'); // NEW: Required for Socket.io
-const { Server } = require('socket.io'); // NEW: Required for Socket.io
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 require('dotenv').config();
 
 // --- 1. Import Routes ---
@@ -14,7 +14,7 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
-// --- NEW: Wrap Express in an HTTP server for the Chat Pipe ---
+// --- Wrap Express in an HTTP server for the Chat Pipe ---
 const server = http.createServer(app);
 
 // --- 2. Security & Limits (MUST BE BEFORE ROUTES) ---
@@ -26,7 +26,7 @@ app.use(cors({
   credentials: true
 }));
 
-// --- 3. SOCKET.IO CHAT SETUP ---
+// --- 3. SOCKET.IO PRIVATE CHAT SETUP ---
 const io = new Server(server, {
   cors: {
     origin: ["https://reelestate-beta.vercel.app", "http://localhost:5173"],
@@ -37,11 +37,18 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('⚡ User connected to chat:', socket.id);
 
-  // When a user sends a message...
+  // 1. Listen for a user joining a specific private room
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined private room: ${roomId}`);
+  });
+
+  // 2. When a user sends a message...
   socket.on('send_message', (data) => {
-    console.log("Message received on server:", data);
-    // ...instantly broadcast it to everyone else!
-    io.emit('receive_message', data); 
+    console.log("Private message routed to room:", data.room);
+    
+    // 3. ONLY send it to the other person in that specific room!
+    socket.to(data.room).emit('receive_message', data); 
   });
 
   socket.on('disconnect', () => {
@@ -59,15 +66,12 @@ app.use('/api/admin', adminRoutes);
 app.get('/api/health', (req, res) => res.json({ status: 'OK', time: new Date() }));
 
 // --- 5. Database Connection & Server Start ---
-// Use Render's port or default to 10000
 const PORT = process.env.PORT || 10000;
 
-// 1. Open the port IMMEDIATELY with '0.0.0.0' so Render doesn't time out
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT} with Live Chat!`);
+  console.log(`🚀 Server running on port ${PORT} with Private Live Chat!`);
 });
 
-// 2. Connect to Database independently
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ Connected to MongoDB");

@@ -134,42 +134,67 @@ export default function FeedPage() {
       {/* ─── MAIN FEED CONTENT ─── */}
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         
-        {/* ─── ⚡ STORIES / REELS SECTION (Only on 'For You') ─── */}
+        {/* ─── ⚡ NEXT-GEN STORY PORTALS (Only on 'For You') ─── */}
         {activeCategory === 'All' && (
-          <div className="mb-8 overflow-x-auto no-scrollbar pb-2">
-            <div className="flex gap-4 items-start">
+          <div className="mb-8 overflow-x-auto no-scrollbar pb-4 pt-2 -mx-4 px-4">
+            <div className="flex gap-3 items-center">
               
-              {/* Add Story Button */}
-              <button className="flex flex-col items-center gap-2 shrink-0 group">
-                <div className="w-16 h-16 rounded-full p-[2px] bg-[#1E2532] group-hover:bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] group-active:scale-95 transition-all">
-                  <div className="w-full h-full rounded-full border-2 border-[#0B0F19] bg-[#151A25] flex items-center justify-center relative overflow-hidden">
-                    <IoMdAdd size={26} className="text-[#00F0FF]" />
-                  </div>
+              {/* 1. THE "CREATE" PORTAL */}
+              <button className="w-[84px] h-[120px] shrink-0 rounded-[28px] relative overflow-hidden group bg-gradient-to-b from-[#151A25] to-[#0B0F19] border border-[#1E2532] flex flex-col items-center justify-center hover:border-[#00F0FF]/50 transition-all active:scale-95 shadow-lg">
+                {/* Glowing Plus Icon */}
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center mb-3 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.6)] group-hover:scale-110 transition-all duration-300">
+                  <IoMdAdd size={24} className="text-white" />
                 </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Add Story</span>
+                <span className="text-[9px] font-black text-white uppercase tracking-widest z-10">Create</span>
+                {/* Subtle background glow */}
+                <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-[#0057FF]/20 blur-xl rounded-full" />
               </button>
 
-              {/* View Stories (Triggers ReelSwiper) */}
-              {/* Note: Map over your real users/stories here later! Using dummies for UI structure */}
+              {/* 2. THE USER STORY PORTALS */}
+              {/* Note: Mapping dummy data. Replace with real post/story previews later */}
               {[1, 2, 3, 4, 5, 6].map((story) => (
                 <button 
                   key={story} 
                   onClick={() => setShowReels(true)} 
-                  className="flex flex-col items-center gap-2 shrink-0 group"
+                  className="w-[84px] h-[120px] shrink-0 rounded-[28px] relative group p-[2px] bg-gradient-to-b from-[#0057FF] via-[#00F0FF] to-transparent hover:to-[#00F0FF] transition-all active:scale-95 shadow-[0_8px_20px_rgba(0,87,255,0.15)] hover:shadow-[0_8px_25px_rgba(0,240,255,0.3)]"
                 >
-                  <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-[#F5A623] to-[#F76B1C] group-active:scale-95 transition-transform shadow-[0_0_10px_rgba(245,166,35,0.3)]">
-                    <div className="w-full h-full rounded-full border-2 border-[#0B0F19] bg-[#1E2532] overflow-hidden">
-                      {/* Placeholder avatar - replace with real user photo */}
-                      <img src={`https://i.pravatar.cc/150?img=${story * 10}`} alt="story" className="w-full h-full object-cover" />
+                  {/* The Inner Glass Card */}
+                  <div className="w-full h-full rounded-[26px] overflow-hidden relative bg-[#0B0F19]">
+                    
+                    {/* Story Content Preview (Blurred/Dimmed) */}
+                    <img 
+                      src={`https://picsum.photos/200/300?random=${story}`} 
+                      alt="story preview" 
+                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-90 transition-all duration-700" 
+                    />
+                    
+                    {/* Shadow Gradient so text is readable */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                    
+                    {/* Floating Avatar & Name */}
+                    <div className="absolute bottom-3 left-0 right-0 flex flex-col items-center z-10 transform group-hover:-translate-y-1 transition-transform duration-300">
+                      <div className="relative mb-1.5">
+                        <img 
+                          src={`https://i.pravatar.cc/150?img=${story * 10}`} 
+                          alt="avatar" 
+                          className="w-7 h-7 rounded-full border-[1.5px] border-[#00F0FF] object-cover" 
+                        />
+                        {/* Live/Unread dot */}
+                        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#00F0FF] rounded-full border-2 border-[#0B0F19] animate-pulse" />
+                      </div>
+                      <span className="text-[9px] font-black text-white uppercase tracking-widest truncate w-[90%] text-center drop-shadow-md">
+                        User {story}
+                      </span>
                     </div>
+
                   </div>
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest truncate w-16 text-center">User {story}</span>
                 </button>
               ))}
+              
             </div>
           </div>
         )}
-
+        
         {loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((n) => (

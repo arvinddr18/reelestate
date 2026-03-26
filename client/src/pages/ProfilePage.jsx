@@ -8,6 +8,7 @@ import {
   IoMdPerson, IoMdLock, IoMdNotifications
 } from 'react-icons/io';
 import PostCard from '../components/feed/PostCard'; 
+import { useAuth } from '../context/AuthContext'; // 👈 IMPORTED AUTH CONTEXT
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -35,6 +36,9 @@ export default function ProfilePage() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  
+  // ── GET REAL LOGGED IN USER FROM CONTEXT ──
+  const { user: currentUser } = useAuth(); 
 
   const [user, setUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]); 
@@ -44,24 +48,23 @@ export default function ProfilePage() {
 
   // ── SETTINGS MODAL STATE ──
   const [isEditing, setIsEditing] = useState(false);
-  const [settingsTab, setSettingsTab] = useState('personal'); // 'personal' | 'privacy' | 'notifications'
+  const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({ 
     fullName: '', bio: '', location: '', phone: '', website: '',
     isPrivate: false, hideActivity: false, emailAlerts: true
   });
 
-  // ── BULLETPROOF OWNER CHECK ──
-  const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const currentUserId = loggedInUser?._id || loggedInUser?.id || loggedInUser?.userId;
-  
-  // You are the owner if: No userId in URL, URL matches your ID, or fetched profile matches your ID.
-  const canEditProfile = !userId || String(userId) === String(currentUserId) || String(user?._id) === String(currentUserId);
+  // ── 100% BULLETPROOF OWNER CHECK ──
+  // If there is no userId in URL, OR the URL userId matches the Context user ID, you are the owner.
+  const canEditProfile = !userId || String(userId) === String(currentUser?._id);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const id = userId || currentUserId;
+        const id = userId || currentUser?._id; // Fallback to current user if no ID in URL
+        if (!id) return; // Prevent fetching if no ID is available yet
+
         const res = await axios.get(getApiUrl(`/api/users/${id}`), getAuthConfig());
         
         const userData = res.data.data?.user || res.data.data || res.data;
@@ -81,7 +84,6 @@ export default function ProfilePage() {
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
 
-        // Try fetching saved posts
         if (canEditProfile) {
           try {
             const savedRes = await axios.get(getApiUrl('/api/posts/saved'), getAuthConfig());
@@ -96,8 +98,11 @@ export default function ProfilePage() {
         setLoading(false);
       }
     };
-    fetchProfile();
-  }, [userId, currentUserId, canEditProfile]);
+    
+    if (currentUser !== undefined) {
+      fetchProfile();
+    }
+  }, [userId, currentUser, canEditProfile]);
 
   const handleUpdate = async () => {
     try {
@@ -190,7 +195,7 @@ export default function ProfilePage() {
                 {/* ── ACTION BUTTONS ── */}
                 <div className="flex items-center justify-center gap-3">
                   {canEditProfile ? (
-                    // THIS IS THE BIG SETTINGS BUTTON YOU SHOULD SEE NOW
+                    // SETTINGS BUTTON (Only visible to the owner)
                     <button 
                       onClick={() => setIsEditing(true)} 
                       className="px-6 py-3 rounded-2xl font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 bg-[#1E2532] text-white border border-[#2A3441] hover:bg-[#00F0FF] hover:text-[#0B0F19] hover:shadow-[0_0_20px_rgba(0,240,255,0.5)] active:scale-95"
@@ -198,7 +203,7 @@ export default function ProfilePage() {
                       <IoMdSettings size={18}/> Settings & Privacy
                     </button>
                   ) : (
-                    // IF IT SAYS CALL/CHAT, IT MEANS canEditProfile FAILED
+                    // CALL/CHAT BUTTONS (Visible to visitors)
                     <>
                       <button className="px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-105 active:scale-95 flex items-center gap-2">
                         <IoMdCall size={16}/> Call
@@ -309,7 +314,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ─── 🚀 2045 FULL-SCREEN SETTINGS MODAL (Overlays the entire screen) ─── */}
+      {/* ─── 🚀 2045 FULL-SCREEN SETTINGS MODAL ─── */}
       {isEditing && (
         <div className="fixed inset-0 z-[100] bg-[#0B0F19]/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
           
@@ -383,7 +388,6 @@ export default function ProfilePage() {
                       <p className="text-sm font-black text-white flex items-center gap-2"><IoMdLock className="text-[#00F0FF]"/> Private Account</p>
                       <p className="text-[10px] font-bold text-gray-500 mt-1">Only approved followers can see your posts and listings.</p>
                     </div>
-                    {/* iOS Style Neon Toggle */}
                     <button onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.isPrivate ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}>
                       <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.isPrivate ? 'right-1' : 'left-1'}`} />
                     </button>

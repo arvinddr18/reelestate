@@ -4,7 +4,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   IoMdSettings, IoMdCamera, IoMdGrid, IoMdClose, IoMdCreate, 
   IoMdPin, IoMdCall, IoMdMail, IoMdArrowBack, IoMdBookmark, 
-  IoMdHeart, IoMdCheckmarkCircle, IoMdTime, IoMdStar, IoMdShareAlt 
+  IoMdHeart, IoMdCheckmarkCircle, IoMdTime, IoMdStar, IoMdShareAlt,
+  IoMdPerson, IoMdLock, IoMdNotifications
 } from 'react-icons/io';
 import PostCard from '../components/feed/PostCard'; 
 
@@ -39,10 +40,16 @@ export default function ProfilePage() {
   const [userPosts, setUserPosts] = useState([]); 
   const [savedPosts, setSavedPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('grid'); 
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ fullName: '', bio: '', location: '', phone: '', website: '' });
-  const [avatarPreview, setAvatarPreview] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // ── SETTINGS & EDIT MODAL STATE ──
+  const [isEditing, setIsEditing] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('personal'); // 'personal' | 'privacy' | 'notifications'
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [formData, setFormData] = useState({ 
+    fullName: '', bio: '', location: '', phone: '', website: '',
+    isPrivate: false, hideActivity: false, emailAlerts: true // Added new privacy/settings states
+  });
 
   const loggedInUser = JSON.parse(localStorage.getItem('user'));
   const currentUserId = loggedInUser?._id || loggedInUser?.id;
@@ -64,7 +71,10 @@ export default function ProfilePage() {
           bio: userData.bio || '',
           location: userData.location || '',
           phone: userData.phone || '',
-          website: userData.website || ''
+          website: userData.website || '',
+          isPrivate: userData.isPrivate || false,
+          hideActivity: userData.hideActivity || false,
+          emailAlerts: userData.emailAlerts !== false, // default true
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
 
@@ -104,14 +114,13 @@ export default function ProfilePage() {
     </div>
   );
 
-  // Calculate some fake "Trust" analytics based on real data length for visual flair
   const trustScore = Math.min(98, 70 + (userPosts.length * 2)); 
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white font-sans pb-24 overflow-x-hidden relative">
       
       {/* ── STICKY TOP BAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-transparent pointer-events-none">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between pointer-events-auto">
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]">
             <IoMdArrowBack size={20} />
@@ -123,7 +132,7 @@ export default function ProfilePage() {
                </button>
             )}
             {canEditProfile && (
-              <button onClick={() => setIsEditing(!isEditing)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+              <button onClick={() => setIsEditing(true)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]">
                 <IoMdSettings size={20} />
               </button>
             )}
@@ -131,12 +140,10 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* ── 2045 HERO BANNER (Animated Data Grid) ── */}
+      {/* ── 2045 HERO BANNER ── */}
       <div className="h-56 md:h-72 bg-gradient-to-b from-[#0057FF]/30 via-[#0B0F19] to-[#0B0F19] relative overflow-hidden flex items-center justify-center">
-        {/* Animated Background Orbs */}
         <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-[#00F0FF] opacity-20 blur-[100px] rounded-full mix-blend-screen animate-pulse" />
         <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-[#0057FF] opacity-20 blur-[100px] rounded-full mix-blend-screen" />
-        {/* Cyberpunk Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.05)_1px,transparent_1px)] bg-[size:30px_30px] opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent" />
       </div>
@@ -145,18 +152,12 @@ export default function ProfilePage() {
         
         {/* ── HOLOGRAPHIC PROFILE INFO CARD ── */}
         <div className="bg-[#151A25]/80 backdrop-blur-2xl border border-[#1E2532] rounded-[32px] p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 relative overflow-hidden group">
-          
-          {/* Subtle hover glow on the card */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#00F0FF]/0 via-[#00F0FF]/0 to-[#00F0FF]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 relative z-10">
             
-            {/* Avatar Section with Rotating Neon Border */}
+            {/* Avatar Section */}
             <div className="relative shrink-0">
               <div className="w-36 h-36 rounded-full relative flex items-center justify-center shadow-[0_0_40px_rgba(0,240,255,0.2)]">
-                {/* The Rotating Ring */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] animate-[spin_4s_linear_infinite]" />
-                {/* The Inner Image Mask */}
                 <div className="absolute inset-[3px] rounded-full bg-[#0B0F19] overflow-hidden flex items-center justify-center text-4xl font-black text-white">
                   {avatarPreview ? (
                     <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="Profile" />
@@ -165,32 +166,16 @@ export default function ProfilePage() {
                   )}
                 </div>
               </div>
-              
-              {canEditProfile && (
-                <button 
-                  onClick={() => fileInputRef.current.click()}
-                  className="absolute bottom-1 right-1 bg-[#151A25] p-2.5 rounded-full border-2 border-[#1E2532] text-[#00F0FF] hover:text-white hover:bg-[#00F0FF] hover:border-[#00F0FF] transition-all shadow-[0_0_15px_rgba(0,240,255,0.3)] cursor-pointer"
-                >
-                  <IoMdCamera size={18} />
-                </button>
-              )}
-              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onload = () => setAvatarPreview(reader.result);
-                }
-              }} />
             </div>
 
-            {/* Profile Details Section */}
+            {/* Profile Details */}
             <div className="flex-1 text-center md:text-left w-full mt-2">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-3xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2">
                     {user?.fullName || `@${user?.username}`}
                     {user?.isVerified && <IoMdCheckmarkCircle className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" size={24} />}
+                    {user?.isPrivate && <IoMdLock className="text-gray-500 ml-1" size={18} title="Private Account"/>}
                   </h2>
                   <p className="text-[#00F0FF] text-[11px] font-black tracking-[0.2em] uppercase mt-1">
                     {user?.role || 'Verified Member'} • Joined 2026
@@ -201,11 +186,10 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-center gap-3">
                   {canEditProfile ? (
                     <button 
-                      onClick={() => setIsEditing(!isEditing)} 
-                      className={`px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all flex items-center gap-2 ${isEditing ? 'bg-[#1E2532] text-white hover:bg-[#2A3441]' : 'bg-[#0B0F19] text-[#00F0FF] border border-[#00F0FF]/30 hover:bg-[#00F0FF]/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] active:scale-95'}`}
+                      onClick={() => setIsEditing(true)} 
+                      className="px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all flex items-center gap-2 bg-[#0B0F19] text-[#00F0FF] border border-[#00F0FF]/30 hover:bg-[#00F0FF]/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] active:scale-95"
                     >
-                      {isEditing ? <IoMdClose size={16}/> : <IoMdCreate size={16}/>}
-                      {isEditing ? 'Cancel' : 'Edit Info'}
+                      <IoMdSettings size={16}/> Settings
                     </button>
                   ) : (
                     <>
@@ -220,7 +204,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* 2045 Reputation Badges */}
+              {/* Badges */}
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-4">
                 <span className="bg-[#00F0FF]/10 text-[#00F0FF] text-[10px] font-bold px-2.5 py-1 rounded-md border border-[#00F0FF]/30 flex items-center gap-1.5 shadow-inner">
                   <IoMdStar size={12}/> {trustScore}% Trust Score
@@ -228,17 +212,11 @@ export default function ProfilePage() {
                 <span className="bg-purple-500/10 text-purple-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-purple-500/30 flex items-center gap-1.5 shadow-inner">
                   <IoMdTime size={12}/> Responds in &lt;1hr
                 </span>
-                {userPosts.length > 5 && (
-                  <span className="bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-orange-500/30 flex items-center gap-1.5 shadow-inner">
-                    🔥 Top Contributor
-                  </span>
-                )}
               </div>
 
               {/* Bio & Details */}
               <div className="mt-5 max-w-2xl mx-auto md:mx-0">
                 {user?.bio && <p className="text-gray-300 text-sm leading-relaxed mb-4">{user.bio}</p>}
-                
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs font-bold text-gray-400">
                   {user?.location && (
                     <span className="flex items-center gap-1.5 bg-[#0B0F19] px-4 py-2 rounded-xl border border-[#1E2532]">
@@ -252,12 +230,11 @@ export default function ProfilePage() {
                   )}
                 </div>
               </div>
-
             </div>
           </div>
         </div>
 
-        {/* ── ADVANCED STATS COMMAND CENTER ── */}
+        {/* ── ADVANCED STATS ── */}
         <div className="mb-8">
           <div className="flex bg-[#151A25]/80 backdrop-blur-xl border border-[#1E2532] rounded-[24px] p-2 divide-x divide-[#1E2532] shadow-lg">
             <div className="flex-1 flex flex-col items-center justify-center py-4 hover:bg-[#1E2532]/50 transition-colors rounded-l-[20px] cursor-pointer">
@@ -275,107 +252,32 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── EDIT PROFILE FORM (Remains unchanged logic, updated styling) ── */}
-        {isEditing && (
-          <div className="mb-8 bg-[#151A25] border border-[#1E2532] rounded-[32px] p-6 md:p-8 animate-in slide-in-from-top shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-            <h3 className="text-lg font-black text-white mb-6 flex items-center gap-2">
-              <IoMdCreate className="text-[#00F0FF]"/> Update Master Data
-            </h3>
-            {/* Form Inputs (Same as before) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Full Name</label>
-                <input type="text" placeholder="John Doe" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all text-sm font-bold" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Phone / WhatsApp</label>
-                <input type="text" placeholder="+1 234 567 8900" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all text-sm font-bold" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Location / District</label>
-                <input type="text" placeholder="New York, USA" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all text-sm font-bold" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Website URL</label>
-                <input type="text" placeholder="https://yourwebsite.com" value={formData.website} onChange={(e) => setFormData({...formData, website: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all text-sm font-bold" />
-              </div>
-              <div className="space-y-1.5 md:col-span-2">
-                <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Bio</label>
-                <textarea placeholder="Tell clients about yourself..." value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl h-24 outline-none focus:border-[#00F0FF]/50 focus:shadow-[0_0_15px_rgba(0,240,255,0.1)] transition-all text-sm font-bold resize-none" />
-              </div>
-            </div>
-            
-            <button onClick={handleUpdate} className="mt-8 w-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white py-4 rounded-2xl font-black tracking-widest uppercase shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-              Initialize Updates
-            </button>
-          </div>
-        )}
-
-        {/* ── SMART TABS (Sliding Glass Indicator) ── */}
+        {/* ── SMART TABS ── */}
         <div className="mb-6">
           <div className="flex bg-[#151A25] border border-[#1E2532] rounded-2xl p-1 relative max-w-md mx-auto shadow-inner">
-            <button 
-              onClick={() => setActiveTab('grid')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'grid' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              <IoMdGrid size={16} /> Grid
-            </button>
-            <button 
-              onClick={() => setActiveTab('list')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'list' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg> List
-            </button>
+            <button onClick={() => setActiveTab('grid')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'grid' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}><IoMdGrid size={16} /> Grid</button>
+            <button onClick={() => setActiveTab('list')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'list' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg> List</button>
+            {canEditProfile && <button onClick={() => setActiveTab('saved')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'saved' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}><IoMdBookmark size={16} /> Saved</button>}
             
-            {canEditProfile && (
-              <button 
-                onClick={() => setActiveTab('saved')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'saved' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                <IoMdBookmark size={16} /> Saved
-              </button>
-            )}
-
-            {/* Sliding Background Box */}
-            <div className={`absolute top-1 bottom-1 bg-[#1E2532] border border-gray-600/30 rounded-xl transition-all duration-300 ease-out shadow-md ${
-              canEditProfile 
-                ? (activeTab === 'grid' ? 'left-1 w-[calc(33.33%-4px)]' : activeTab === 'list' ? 'left-[calc(33.33%+2px)] w-[calc(33.33%-4px)]' : 'left-[calc(66.66%+2px)] w-[calc(33.33%-4px)]')
-                : (activeTab === 'grid' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)]')
-            }`} />
+            <div className={`absolute top-1 bottom-1 bg-[#1E2532] border border-gray-600/30 rounded-xl transition-all duration-300 ease-out shadow-md ${canEditProfile ? (activeTab === 'grid' ? 'left-1 w-[calc(33.33%-4px)]' : activeTab === 'list' ? 'left-[calc(33.33%+2px)] w-[calc(33.33%-4px)]' : 'left-[calc(66.66%+2px)] w-[calc(33.33%-4px)]') : (activeTab === 'grid' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)]')}`} />
           </div>
         </div>
 
         {/* ── TAB CONTENT ── */}
         <div className="pb-10 min-h-[300px]">
-          
-          {/* TAB 1: IMMERSIVE GRID */}
+          {/* TAB 1: GRID */}
           {activeTab === 'grid' && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-bottom-4 duration-500">
-              {userPosts.length === 0 ? (
-                <div className="col-span-full text-center py-20 text-gray-500">No data found in grid.</div>
-              ) : (
+              {userPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500">No data found in grid.</div> : (
                 userPosts.map(post => (
                   <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] overflow-hidden group border border-[#1E2532] hover:border-[#00F0FF]/50 transition-all bg-[#151A25] shadow-lg">
-                    {post.mediaType === 'video' ? (
-                      <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110 transition-transform duration-700">🎬</div>
-                    ) : (
-                      <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${post.mediaFilter || ''}`} />
-                    )}
+                    {post.mediaType === 'video' ? <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110 transition-transform duration-700">🎬</div> : <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${post.mediaFilter || ''}`} />}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-                    {post.mainCategory && post.mainCategory !== 'Social' && (
-                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md text-[8px] font-black text-[#00F0FF] uppercase tracking-widest border border-[#00F0FF]/20 shadow-lg">
-                        {post.mainCategory}
-                      </div>
-                    )}
                     <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
                       <p className="text-[11px] font-black text-white truncate drop-shadow-md mb-1.5">{post.title || 'Update'}</p>
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black text-[#00F0FF] drop-shadow-md">
-                          {post.price ? `₹${post.price.toLocaleString('en-IN')}` : (post.salary ? post.salary : '')}
-                        </span>
-                        <span className="text-[10px] font-bold text-gray-300 flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-md">
-                          <IoMdHeart size={12} className="text-red-500"/> {post.likesCount || 0}
-                        </span>
+                        <span className="text-[11px] font-black text-[#00F0FF] drop-shadow-md">{post.price ? `₹${post.price.toLocaleString('en-IN')}` : ''}</span>
+                        <span className="text-[10px] font-bold text-gray-300 flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full"><IoMdHeart size={12} className="text-red-500"/> {post.likesCount || 0}</span>
                       </div>
                     </div>
                   </Link>
@@ -384,56 +286,147 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* TAB 2: LISTINGS FEED */}
+          {/* TAB 2: LIST */}
           {activeTab === 'list' && (
             <div className="max-w-[470px] mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-              {userPosts.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">No active listings.</div>
-              ) : (
-                userPosts.map(post => (
-                  <PostCard key={post._id} post={post} />
-                ))
-              )}
+              {userPosts.length === 0 ? <div className="text-center py-20 text-gray-500">No active listings.</div> : userPosts.map(post => <PostCard key={post._id} post={post} />)}
             </div>
           )}
 
-          {/* TAB 3: SAVED POSTS (Private Vault) */}
+          {/* TAB 3: SAVED */}
           {activeTab === 'saved' && canEditProfile && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-bottom-4 duration-500">
-              {savedPosts.length === 0 ? (
-                <div className="col-span-full flex flex-col items-center justify-center text-center py-20 text-gray-500">
-                  <div className="w-20 h-20 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center mb-4 shadow-inner">
-                    <IoMdBookmark size={30} className="text-gray-600" />
-                  </div>
-                  <p className="font-black uppercase tracking-widest text-[11px] text-white mb-2">Private Vault is Empty</p>
-                  <p className="text-[10px] max-w-xs text-gray-400 font-bold leading-relaxed">Properties, jobs, and items you bookmark will be securely stored here.</p>
-                </div>
-              ) : (
-                savedPosts.map(post => (
-                  <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] overflow-hidden group border border-[#1E2532] hover:border-yellow-400/50 transition-all bg-[#151A25] shadow-lg">
-                    {post.mediaType === 'video' ? (
-                      <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110 transition-transform duration-700">🎬</div>
-                    ) : (
-                      <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute top-3 right-3 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">
-                      <IoMdBookmark size={24} />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                      <p className="text-[11px] font-black text-white truncate drop-shadow-md mb-1">{post.title || 'Saved Asset'}</p>
-                      <span className="text-[11px] font-black text-yellow-400 drop-shadow-md">
-                        {post.price ? `₹${post.price.toLocaleString('en-IN')}` : ''}
-                      </span>
-                    </div>
-                  </Link>
-                ))
-              )}
+              {savedPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500">Private Vault is Empty</div> : savedPosts.map(post => (
+                <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] overflow-hidden group border border-[#1E2532] hover:border-yellow-400/50 transition-all bg-[#151A25]">
+                  {post.mediaType === 'video' ? <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110">🎬</div> : <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute top-3 right-3 text-yellow-400"><IoMdBookmark size={24} /></div>
+                </Link>
+              ))}
             </div>
           )}
-
         </div>
       </div>
+
+      {/* ─── 🚀 2045 FULL-SCREEN SETTINGS MODAL ─── */}
+      {isEditing && (
+        <div className="fixed inset-0 z-[100] bg-[#0B0F19]/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
+          
+          <div className="w-full max-w-4xl bg-[#151A25] border border-[#1E2532] rounded-[32px] overflow-hidden shadow-[0_20px_70px_rgba(0,0,0,0.8)] flex flex-col md:flex-row h-[85vh] md:h-[600px] animate-in zoom-in-95 duration-300">
+            
+            {/* Modal Sidebar */}
+            <div className="w-full md:w-64 bg-[#0B0F19]/50 border-r border-[#1E2532] p-6 flex flex-col">
+              <h3 className="text-xl font-black italic tracking-tighter text-white mb-8">SETTINGS</h3>
+              
+              <div className="flex flex-col gap-2 flex-1">
+                <button onClick={() => setSettingsTab('personal')} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${settingsTab === 'personal' ? 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30' : 'text-gray-500 hover:bg-[#1E2532] hover:text-white'}`}>
+                  <IoMdPerson size={18} /> Personal Info
+                </button>
+                <button onClick={() => setSettingsTab('privacy')} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${settingsTab === 'privacy' ? 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30' : 'text-gray-500 hover:bg-[#1E2532] hover:text-white'}`}>
+                  <IoMdLock size={18} /> Privacy & Security
+                </button>
+                <button onClick={() => setSettingsTab('notifications')} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${settingsTab === 'notifications' ? 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30' : 'text-gray-500 hover:bg-[#1E2532] hover:text-white'}`}>
+                  <IoMdNotifications size={18} /> Notifications
+                </button>
+              </div>
+
+              <button onClick={() => setIsEditing(false)} className="mt-auto px-4 py-3 bg-[#1E2532] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-red-500/20 hover:text-red-500 transition-colors flex items-center justify-center gap-2">
+                <IoMdClose size={16} /> Close
+              </button>
+            </div>
+
+            {/* Modal Content Area */}
+            <div className="flex-1 p-6 md:p-8 overflow-y-auto no-scrollbar relative">
+              
+              {/* Avatar Upload (Visible on all tabs at the top for context) */}
+              <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[#1E2532]">
+                <div className="w-20 h-20 rounded-full border-2 border-[#1E2532] overflow-hidden relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
+                  <img src={resolveMediaUrl(avatarPreview) || 'https://via.placeholder.com/150'} alt="Avatar" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <IoMdCamera size={24} className="text-white" />
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-white">Profile Photo</h4>
+                  <p className="text-xs text-gray-500 font-bold mt-1">Click image to upload new JPG, GIF or PNG.</p>
+                </div>
+              </div>
+
+              {/* TAB: Personal Info */}
+              {settingsTab === 'personal' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-in fade-in duration-300">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Full Name</label>
+                    <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Phone Number</label>
+                    <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold" />
+                  </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Location</label>
+                    <input type="text" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold" />
+                  </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Bio</label>
+                    <textarea value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl h-24 outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold resize-none" />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: Privacy & Security */}
+              {settingsTab === 'privacy' && (
+                <div className="space-y-6 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between p-5 bg-[#0B0F19] border border-[#1E2532] rounded-3xl">
+                    <div>
+                      <p className="text-sm font-black text-white flex items-center gap-2"><IoMdLock className="text-[#00F0FF]"/> Private Account</p>
+                      <p className="text-[10px] font-bold text-gray-500 mt-1 max-w-[200px] md:max-w-none">Only approved followers can see your posts and listings.</p>
+                    </div>
+                    {/* iOS Style Neon Toggle */}
+                    <button onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.isPrivate ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}>
+                      <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.isPrivate ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-5 bg-[#0B0F19] border border-[#1E2532] rounded-3xl">
+                    <div>
+                      <p className="text-sm font-black text-white flex items-center gap-2"><IoMdStar className="text-yellow-500"/> Hide Online Status</p>
+                      <p className="text-[10px] font-bold text-gray-500 mt-1 max-w-[200px] md:max-w-none">Turn off the green dot on your profile and messages.</p>
+                    </div>
+                    <button onClick={() => setFormData({...formData, hideActivity: !formData.hideActivity})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.hideActivity ? 'bg-yellow-500' : 'bg-[#1E2532]'}`}>
+                      <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.hideActivity ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: Notifications */}
+              {settingsTab === 'notifications' && (
+                <div className="space-y-6 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between p-5 bg-[#0B0F19] border border-[#1E2532] rounded-3xl">
+                    <div>
+                      <p className="text-sm font-black text-white flex items-center gap-2"><IoMdMail className="text-[#00F0FF]"/> Email Alerts</p>
+                      <p className="text-[10px] font-bold text-gray-500 mt-1">Get emails when someone messages you or saves your post.</p>
+                    </div>
+                    <button onClick={() => setFormData({...formData, emailAlerts: !formData.emailAlerts})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.emailAlerts ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}>
+                      <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.emailAlerts ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Action Bar */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 bg-gradient-to-t from-[#151A25] via-[#151A25] to-transparent">
+                <button onClick={handleUpdate} className="w-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white py-4 rounded-2xl font-black tracking-widest uppercase shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
+                  Save Changes
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

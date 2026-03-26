@@ -1,13 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdHappy, IoMdImage, IoMdMic } from 'react-icons/io';
+import io from 'socket.io-client';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+
+// ─── CONNECT TO BACKEND ───
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000'; // Match your backend port
+const socket = io(API_URL);
 
 export default function ChatRoom() {
   const { userId } = useParams(); 
+  const { user: currentUser } = useAuth(); // Get the logged-in user
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
   const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([]); // Starts empty, fetches from DB!
+  
+  // You can later dynamically fetch this user's profile info
   const [chatUser, setChatUser] = useState({
     username: 'alex_investments',
     fullName: 'Alex Reynolds',
@@ -15,41 +26,84 @@ export default function ChatRoom() {
     isOnline: true,
   });
 
-  const [messages, setMessages] = useState([
-    { _id: '1', text: 'Hey! I saw your new property listing in the Sale Hub.', senderId: 'them', time: '10:42 AM' },
-    { _id: '2', text: 'Is it still available for a viewing this weekend?', senderId: 'them', time: '10:43 AM' },
-    { _id: '3', text: 'Hello Alex! Yes, it is still available. I have open slots on Saturday afternoon.', senderId: 'me', time: '10:45 AM' },
-    { _id: '4', text: 'Perfect. Let\'s lock in 2:00 PM.', senderId: 'them', time: '10:47 AM' },
-  ]);
+  // Create a unique, consistent room ID for these two users
+  const room = [currentUser?._id, userId].sort().join('_');
 
+  // ─── 1. FETCH MEMORY & CONNECT SOCKET ───
+  useEffect(() => {
+    if (!currentUser?._id || !userId) return;
+
+    const fetchChatHistory = async () => {
+      try {
+        const token = localStorage.getItem('reelestate_token');
+        const res = await axios.get(`${API_URL}/api/messages/${room}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setMessages(res.data); // Load the history
+      } catch (err) {
+        console.error("Could not fetch history:", err);
+      }
+    };
+    
+    fetchChatHistory();
+
+    // Join the Live Socket Room
+    socket.emit('join_room', room);
+
+    // Listen for incoming messages from the other person
+    socket.on('receive_message', (data) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
+    // Cleanup when leaving the room
+    return () => {
+      socket.off('receive_message');
+    };
+  }, [room, currentUser, userId]);
+
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = (e) => {
+  // ─── 2. SEND & SAVE MESSAGE ───
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
 
-    const newMsg = {
-      _id: Date.now().toString(),
+    const messageData = {
+      room: room,
       text: message,
-      senderId: 'me', 
+      senderId: currentUser?._id, 
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages([...messages, newMsg]);
+    // Update our own UI instantly
+    setMessages((prev) => [...prev, messageData]);
     setMessage('');
+
+    // Blast to the other user via Socket
+    socket.emit('send_message', messageData);
+
+    // Save permanently to MongoDB
+    try {
+      const token = localStorage.getItem('reelestate_token');
+      await axios.post(`${API_URL}/api/messages`, messageData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error("Failed to save message to DB", err);
+    }
   };
 
   return (
-    // We use min-h-[100dvh] and flex-col to perfectly structure the room
     <div className="min-h-[100dvh] flex flex-col bg-[#0B0F19] text-white relative font-sans overflow-hidden">
       
-      {/* ─── AMBIENT BACKGROUND GLOWS (Fixed to viewport) ─── */}
+      {/* ─── AMBIENT BACKGROUND GLOWS ─── */}
       <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none" />
       <div className="fixed bottom-[10%] right-[-10%] w-96 h-96 bg-[#00F0FF] opacity-10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* ─── 1. FULL-WIDTH GLASS HEADER ─── */}
+      {/* ─── FULL-WIDTH GLASS HEADER ─── */}
       <header className="sticky top-0 z-50 w-full bg-[#0B0F19]/80 backdrop-blur-2xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -77,10 +131,9 @@ export default function ChatRoom() {
         </div>
       </header>
 
-      {/* ─── 2. HOLOGRAPHIC CHAT AREA ─── */}
+      {/* ─── HOLOGRAPHIC CHAT AREA ─── */}
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pt-6 pb-4 flex flex-col gap-6 relative z-10">
         
-        {/* End-to-End Encryption Badge */}
         <div className="flex justify-center mb-2">
           <div className="bg-[#151A25]/60 backdrop-blur-md border border-[#1E2532] px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
             <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
@@ -89,13 +142,13 @@ export default function ChatRoom() {
         </div>
 
         {messages.map((msg, index) => {
-          const isMe = msg.senderId === 'me';
+          // Verify if the message sender is the current logged in user
+          const isMe = msg.senderId === currentUser?._id;
           
           return (
-            <div key={msg._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
+            <div key={msg._id || index} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
               <div className={`max-w-[85%] sm:max-w-[75%] relative group flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                 
-                {/* ── THE MESSAGE "PANEL" ── */}
                 <div className={`px-5 py-3.5 text-sm font-bold leading-relaxed relative z-10 shadow-lg transition-all
                   ${isMe 
                     ? 'bg-gradient-to-br from-[#0057FF]/90 to-[#00F0FF]/80 backdrop-blur-xl text-white rounded-3xl rounded-tr-[8px] border border-white/20 shadow-[0_5px_15px_rgba(0,87,255,0.2)] hover:shadow-[0_5px_20px_rgba(0,240,255,0.4)]' 
@@ -105,7 +158,6 @@ export default function ChatRoom() {
                   {msg.text}
                 </div>
 
-                {/* Time Stamp */}
                 <span className={`text-[9px] font-black uppercase tracking-widest mt-1.5 px-2 ${isMe ? 'text-[#00F0FF]/70 text-right' : 'text-gray-500 text-left'}`}>
                   {msg.time}
                 </span>
@@ -117,12 +169,7 @@ export default function ChatRoom() {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* ─── 3. SMART STICKY INPUT PILL ─── */}
-      {/* This is the magic fix! 
-        bottom-[90px] perfectly clears the mobile nav bar.
-        md:bottom-8 perfectly floats it on Desktop.
-        The gradient background fades the messages out smoothly as they scroll underneath.
-      */}
+      {/* ─── SMART STICKY INPUT PILL ─── */}
       <div className="sticky bottom-[90px] md:bottom-8 z-50 w-full px-4 pt-10 pb-2 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/90 to-transparent pointer-events-none">
         
         <form onSubmit={handleSend} className="max-w-2xl mx-auto pointer-events-auto bg-[#151A25]/95 backdrop-blur-2xl border border-[#1E2532] p-1.5 rounded-[32px] flex items-center shadow-[0_20px_50px_rgba(0,0,0,0.8)] focus-within:border-[#00F0FF]/50 focus-within:shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all duration-300">

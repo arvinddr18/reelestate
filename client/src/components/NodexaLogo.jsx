@@ -1,15 +1,14 @@
 import React from 'react';
 import MyLogo from '../assets/nodexa-logo.png'; 
 
-export default function NodexaLogo({ size = "w-72" }) {
+export default function NodexaLogo({ size = "w-48 md:w-64" }) {
   return (
     <div className={`relative ${size} flex flex-col items-center animate-float`}>
-      
-      {/* THE FIX: Removed drop-shadow, kept mix-blend-screen */}
+      {/* Just the pure, transparent sticker image */}
       <img 
         src={MyLogo} 
         alt="Nodexa" 
-        className="w-full h-auto mix-blend-screen" 
+        className="w-full h-auto drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]" 
       />
       
       {/* OMNI Subtext */}

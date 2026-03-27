@@ -19,12 +19,13 @@ export default function Messages() {
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ─── FETCH ENTIRE NETWORK (BULLETPROOF VERSION) ───
+  // ─── FETCH ENTIRE NETWORK (WITH X-RAY LOGS) ───
   useEffect(() => {
     const fetchNetwork = async () => {
-      // 1. Ensure we have the user ID before asking the database
       const userId = currentUser?._id || currentUser?.id;
       if (!userId) return; 
+
+      console.log("🔵 1. Fetching network for User ID:", userId); // X-RAY
 
       try {
         const token = localStorage.getItem('reelestate_token');
@@ -32,43 +33,49 @@ export default function Messages() {
         
         let combinedNetwork = [];
 
-        // 2. Fetch Following (Independent Try/Catch)
+        // Fetch Following
         try {
           const followingRes = await axios.get(`${API_URL}/api/users/${userId}/following`, { headers });
+          console.log("🟡 2. RAW 'Following' Response:", followingRes.data); // X-RAY
           if (followingRes.data?.success && Array.isArray(followingRes.data.data)) {
             combinedNetwork = [...combinedNetwork, ...followingRes.data.data];
           }
         } catch (err) {
-          console.warn("Could not fetch following, skipping...", err);
+          console.error("🔴 Following Fetch Error:", err.message);
         }
 
-        // 3. Fetch Followers (Independent Try/Catch)
+        // Fetch Followers
         try {
           const followersRes = await axios.get(`${API_URL}/api/users/${userId}/followers`, { headers });
+          console.log("🟠 3. RAW 'Followers' Response:", followersRes.data); // X-RAY
           if (followersRes.data?.success && Array.isArray(followersRes.data.data)) {
             combinedNetwork = [...combinedNetwork, ...followersRes.data.data];
           }
         } catch (err) {
-          console.warn("Could not fetch followers, skipping...", err);
+          console.error("🔴 Followers Fetch Error:", err.message);
         }
 
-        // 4. Clean Data: Remove nulls, yourself, and duplicates
+        console.log("🟣 4. Combined Raw Array before cleaning:", combinedNetwork); // X-RAY
+
+        // Clean Data
         const uniqueUsers = [];
         const seenIds = new Set();
         
         combinedNetwork.forEach(user => {
-          if (!user) return; // Skip broken records
+          if (!user) return; 
           
           const uId = user._id || user.id;
-          if (!uId) return; // Skip if no ID
+          if (!uId) return; 
           
-          if (String(uId) === String(userId)) return; // Don't message yourself
+          if (String(uId) === String(userId)) return; 
           
           if (!seenIds.has(String(uId))) {
             seenIds.add(String(uId));
             uniqueUsers.push(user);
           }
         });
+
+        console.log("🟢 5. Final Cleaned Users given to UI:", uniqueUsers); // X-RAY
 
         setDbUsers(uniqueUsers);
       } catch (err) {

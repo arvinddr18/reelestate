@@ -1,83 +1,86 @@
-/**
- * pages/RegisterPage.jsx
- * Registration form with role selection (buyer/seller).
- */
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import NodexaLogo from '../components/NodexaLogo';
+import { IoMdPerson, IoMdMail, IoMdLock, IoMdRocket } from 'react-icons/io';
 
-export default function RegisterPage() {
-  const { login } = useAuth();
+export default function Register() {
+  const [formData, setFormData] = useState({ fullName: '', username: '', email: '', password: '' });
+  const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', email: '', password: '', fullName: '', role: 'buyer' });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 6) { toast.error('Password must be at least 6 characters.'); return; }
-    setLoading(true);
-    try {
-      const { data } = await api.post('/auth/register', form);
-      login(data.data);
-      toast.success('Account created! Welcome to ReelEstate 🏠');
-      navigate('/');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed.');
-    } finally {
-      setLoading(false);
-    }
+    const success = await register(formData);
+    if (success) navigate('/feed');
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold"><span className="text-orange-500">Reel</span>Estate</h1>
-          <p className="text-zinc-400 text-sm mt-2">Join thousands discovering properties through reels</p>
-        </div>
+    <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      
+      {/* Background Decals */}
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#0057FF]/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#00F0FF]/10 blur-[150px] rounded-full pointer-events-none" />
 
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-5">Create Account</h2>
+      <div className="mb-12">
+        <NodexaLogo size="text-5xl" />
+      </div>
 
-          {/* Role selector */}
-          <div className="grid grid-cols-2 gap-2 mb-5">
-            {['buyer', 'seller'].map(role => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => setForm(f => ({ ...f, role }))}
-                className={`py-2.5 rounded-xl text-sm font-semibold capitalize transition-all
-                  ${form.role === role
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-              >
-                {role === 'buyer' ? '🏡 Buyer' : '🏗️ Seller'}
-              </button>
-            ))}
+      <div className="w-full max-w-md bg-[#151A25]/40 backdrop-blur-3xl border border-white/5 p-8 rounded-[40px] shadow-2xl relative">
+        <div className="absolute top-6 right-8 opacity-20 text-[10px] font-black text-white uppercase tracking-[0.5em]">Phase 01: Init</div>
+        
+        <h2 className="text-2xl font-black italic mb-8 tracking-tighter uppercase">Initialize Operator</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+             <input 
+              type="text" 
+              placeholder="FULL NAME" 
+              className="w-full bg-[#0B0F19] border border-[#1E2532] rounded-2xl py-3 px-4 text-xs font-bold outline-none focus:border-[#00F0FF]/50"
+              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+              required
+            />
+             <input 
+              type="text" 
+              placeholder="@HANDLE" 
+              className="w-full bg-[#0B0F19] border border-[#1E2532] rounded-2xl py-3 px-4 text-xs font-bold outline-none focus:border-[#00F0FF]/50"
+              onChange={(e) => setFormData({...formData, username: e.target.value})}
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full name" className="input-field" />
-            <input name="username" value={form.username} onChange={handleChange} placeholder="Username" className="input-field" required minLength={3} />
-            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email" className="input-field" required />
-            <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password (6+ chars)" className="input-field" required minLength={6} />
+          <div className="relative group">
+            <IoMdMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
+            <input 
+              type="email" 
+              placeholder="IDENTITY (EMAIL)" 
+              className="w-full bg-[#0B0F19] border border-[#1E2532] rounded-2xl py-4 pl-12 pr-4 text-xs font-bold outline-none focus:border-[#00F0FF]/50"
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              required
+            />
+          </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base mt-2">
-              {loading ? 'Creating account...' : `Join as ${form.role === 'buyer' ? 'Buyer' : 'Seller'}`}
-            </button>
-          </form>
+          <div className="relative group">
+            <IoMdLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
+            <input 
+              type="password" 
+              placeholder="ACCESS KEY (PASSWORD)" 
+              className="w-full bg-[#0B0F19] border border-[#1E2532] rounded-2xl py-4 pl-12 pr-4 text-xs font-bold outline-none focus:border-[#00F0FF]/50"
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              required
+            />
+          </div>
+
+          <button type="submit" className="w-full py-4 mt-4 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white font-black uppercase tracking-widest rounded-2xl shadow-[0_10px_30px_rgba(0,87,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+            Launch NODEXA <IoMdRocket size={18} />
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <Link to="/login" className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">
+            Already registered? Sign In here
+          </Link>
         </div>
-
-        <p className="text-center text-zinc-400 text-sm mt-6">
-          Already have an account?{' '}
-          <Link to="/login" className="text-orange-400 hover:text-orange-300 font-medium">Sign in</Link>
-        </p>
       </div>
     </div>
   );

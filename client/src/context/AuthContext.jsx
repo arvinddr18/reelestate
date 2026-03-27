@@ -1,9 +1,3 @@
-/**
- * context/AuthContext.jsx
- * Global authentication state using React Context API.
- * Provides: user, login, logout, updateUser functions.
- */
-
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import socketService from '../services/socket';
@@ -12,9 +6,9 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // true while checking stored token
+  const [loading, setLoading] = useState(true);
 
-  // On mount: check if a valid token exists in localStorage
+  // On mount: check if a valid VIP token exists
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('reelestate_token');
@@ -24,10 +18,10 @@ export function AuthProvider({ children }) {
           const { data } = await api.get('/auth/me');
           if (data.success) {
             setUser(data.data);
-            socketService.connect(data.data._id); // Connect socket on app load
+            socketService.connect(data.data._id);
           }
         } catch {
-          // Token invalid/expired — clear it
+          // Token is dead - clear it out
           localStorage.removeItem('reelestate_token');
           delete api.defaults.headers.common['Authorization'];
         }
@@ -37,14 +31,54 @@ export function AuthProvider({ children }) {
     initAuth();
   }, []);
 
-  // Login: store token, set user, connect socket
-  const login = useCallback((userData) => {
-    const { token, ...userInfo } = userData;
-    localStorage.setItem('reelestate_token', token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(userInfo);
-    socketService.connect(userInfo._id);
-  }, []);
+  // ─── UPGRADED LOGIN ROUTE ───
+  const login = async (email, password) => {
+    try {
+      // 1. Send credentials to backend
+      const response = await api.post('/auth/login', { email, password });
+      
+      // Handle the data structure (whether wrapped in 'data' or not)
+      const userData = response.data.data || response.data;
+      const { token, ...userInfo } = userData;
+
+      if (token) {
+        // 2. Lock in the secure token
+        localStorage.setItem('reelestate_token', token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(userInfo);
+        if (userInfo._id) socketService.connect(userInfo._id);
+        return true; // Success! Let them in.
+      }
+      return false;
+    } catch (error) {
+      console.error("Login Error:", error.response?.data?.message || error.message);
+      return false; // Tells UI to show error
+    }
+  };
+
+  // ─── NEW REGISTER ROUTE ───
+  const register = async (formData) => {
+    try {
+      // 1. Send new operator data to backend
+      const response = await api.post('/auth/register', formData);
+      
+      const userData = response.data.data || response.data;
+      const { token, ...userInfo } = userData;
+
+      if (token) {
+        // 2. Lock in the secure token
+        localStorage.setItem('reelestate_token', token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(userInfo);
+        if (userInfo._id) socketService.connect(userInfo._id);
+        return true; // Success! Let them in.
+      }
+      return false;
+    } catch (error) {
+      console.error("Registration Error:", error.response?.data?.message || error.message);
+      return false; // Tells UI to show error
+    }
+  };
 
   // Logout: clear everything
   const logout = useCallback(() => {
@@ -60,7 +94,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

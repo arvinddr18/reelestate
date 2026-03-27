@@ -1,5 +1,5 @@
 import React from 'react';
-import MyLogo from '../assets/logo.nodexa.png'; // Make sure this path is correct!
+import MyLogo from '../assets/nodexa-logo.png';
 
 export default function NodexaLogo({ size = "w-64" }) {
   return (

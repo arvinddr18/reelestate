@@ -20,34 +20,54 @@ export default function Messages() {
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ─── FETCH REAL FRIENDS (FOLLOWING) FROM DATABASE ───
+  // ─── FETCH ENTIRE NETWORK (FOLLOWERS & FOLLOWING) ───
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchNetwork = async () => {
       // Don't fetch until we know exactly who is logged in
       if (!currentUser?._id) return; 
 
       try {
         const token = localStorage.getItem('reelestate_token');
+        const headers = { Authorization: `Bearer ${token}` };
         
-        // THE FIX: Fetch ONLY the people the current user is following!
-        const res = await axios.get(`${API_URL}/api/users/${currentUser._id}/following`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // THE FIX: Fetch BOTH followers and following at the exact same time!
+        const [followingRes, followersRes] = await Promise.all([
+          axios.get(`${API_URL}/api/users/${currentUser._id}/following`, { headers }),
+          axios.get(`${API_URL}/api/users/${currentUser._id}/followers`, { headers })
+        ]);
         
-        if (res.data.success) {
-          // res.data.data now contains an array of your actual friends!
-          setDbUsers(res.data.data);
+        let combinedNetwork = [];
+        
+        // Add all 'Following' to the array
+        if (followingRes.data.success) {
+          combinedNetwork = [...combinedNetwork, ...followingRes.data.data];
         }
+        
+        // Add all 'Followers' to the array
+        if (followersRes.data.success) {
+          combinedNetwork = [...combinedNetwork, ...followersRes.data.data];
+        }
+
+        // Clean the data: Remove nulls, remove yourself, and remove duplicates
+        const uniqueUsers = Array.from(
+          new Map(
+            combinedNetwork
+              .filter(u => u && u._id && String(u._id) !== String(currentUser._id)) // Keep only valid other users
+              .map(u => [u._id, u]) // Map by ID to remove duplicates
+          ).values()
+        );
+
+        setDbUsers(uniqueUsers);
       } catch (err) {
-        console.error("Failed to fetch friends for inbox:", err);
+        console.error("Failed to fetch network for inbox:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchNetwork();
   }, [currentUser]);
-
+  
   // Filter users based on search query
   const filteredUsers = dbUsers.filter(u => 
     (u.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 

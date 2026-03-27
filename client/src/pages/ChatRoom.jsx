@@ -11,27 +11,27 @@ const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 const socket = io(API_URL);
 
 export default function ChatRoom() {
-  const { userId } = useParams(); // The ID of the friend you clicked on!
+  const { userId } = useParams(); 
   const { user: currentUser } = useAuth(); 
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  
-  // ─── THE FIX: DYNAMIC CHAT USER STATE ───
   const [chatUser, setChatUser] = useState(null);
 
-  const room = [currentUser?._id, userId].sort().join('_');
+  // 1. BULLETPROOF ID CHECK (Prevents "undefined" room bugs)
+  const myId = currentUser?._id || currentUser?.id;
+  const room = myId && userId ? [myId, userId].sort().join('_') : null;
 
-  // 1. FETCH THE SPECIFIC FRIEND's PROFILE DATA
+  // FETCH THE FRIEND'S PROFILE
   useEffect(() => {
     const fetchFriendProfile = async () => {
       if (!userId) return;
       try {
         const res = await axios.get(`${API_URL}/api/users/${userId}`);
         if (res.data.success) {
-          setChatUser(res.data.data.user); // Pull their real name and photo!
+          setChatUser(res.data.data.user); 
         }
       } catch (err) {
         console.error("Could not fetch friend's profile:", err);
@@ -40,19 +40,23 @@ export default function ChatRoom() {
     fetchFriendProfile();
   }, [userId]);
 
-  // 2. FETCH MEMORY & CONNECT SOCKET
+  // FETCH MEMORY & CONNECT SOCKET (WITH X-RAY)
   useEffect(() => {
-    if (!currentUser?._id || !userId) return;
+    if (!myId || !userId || !room) return;
 
     const fetchChatHistory = async () => {
       try {
         const token = localStorage.getItem('reelestate_token');
+        console.log(`🔵 1. Fetching history for room: ${room}`); // X-RAY
+        
         const res = await axios.get(`${API_URL}/api/messages/${room}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        
+        console.log("🟢 2. History Fetched Successfully:", res.data); // X-RAY
         setMessages(res.data);
       } catch (err) {
-        console.error("Could not fetch history:", err);
+        console.error("🔴 3. Fetch History Failed:", err.response?.data || err.message); // X-RAY
       }
     };
     
@@ -67,37 +71,44 @@ export default function ChatRoom() {
     return () => {
       socket.off('receive_message');
     };
-  }, [room, currentUser, userId]);
+  }, [room, myId, userId]);
 
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 3. SEND MESSAGE
+  // SEND MESSAGE (WITH X-RAY)
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !room || !myId) return;
 
     const messageData = {
       room: room,
       text: message,
-      senderId: currentUser?._id, 
+      senderId: myId, 
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
+    // Update UI instantly
     setMessages((prev) => [...prev, messageData]);
     setMessage('');
 
+    // Blast via Socket
     socket.emit('send_message', messageData);
 
+    // Save to Database
     try {
       const token = localStorage.getItem('reelestate_token');
-      await axios.post(`${API_URL}/api/messages`, messageData, {
+      console.log("🟡 4. Attempting to save message to DB:", messageData); // X-RAY
+      
+      const res = await axios.post(`${API_URL}/api/messages`, messageData, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log("🟣 5. DB Save Success:", res.data); // X-RAY
     } catch (err) {
-      console.error("Failed to save message to DB", err);
+      console.error("🔴 6. DB Save Failed:", err.response?.data || err.message); // X-RAY
     }
   };
 
@@ -117,7 +128,6 @@ export default function ChatRoom() {
             
             <Link to={`/profile/${userId}`} className="flex items-center gap-3 group">
               <div className="relative">
-                {/* Dynamically show their real photo or a fallback initial */}
                 <div className="w-10 h-10 rounded-full bg-[#1E2532] border border-[#1E2532] group-hover:border-[#00F0FF]/50 transition-colors shadow-md overflow-hidden flex items-center justify-center font-bold">
                   {chatUser?.profilePhoto ? (
                      <img src={chatUser.profilePhoto} alt="User" className="w-full h-full object-cover" />
@@ -153,7 +163,7 @@ export default function ChatRoom() {
         </div>
 
         {messages.map((msg, index) => {
-          const isMe = msg.senderId === currentUser?._id;
+          const isMe = msg.senderId === myId;
           
           return (
             <div key={msg._id || index} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
@@ -196,7 +206,6 @@ export default function ChatRoom() {
             type="text" 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            // Dynamically uses their first name! e.g., "Message Gahana..."
             placeholder={`Message ${chatUser?.fullName?.split(' ')[0] || '...'} `}
             className="flex-1 bg-transparent text-sm text-white px-3 outline-none placeholder-gray-500 font-bold"
           />

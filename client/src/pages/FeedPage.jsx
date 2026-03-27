@@ -1,3 +1,4 @@
+import { MdOutlineDoubleArrow } from 'react-icons/md';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Added IoMdAdd back here!
@@ -30,6 +31,26 @@ const FEED_CATEGORIES = [
   { id: 'Pets', name: 'Pets', icon: '🐾' },
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
+
+// ─── PASTE THIS RIGHT ABOVE YOUR CATEGORIES OR FEEDPAGE FUNCTION ───
+export function ScrollTrigger() {
+  return (
+    <Link 
+      to="/scroll"
+      className="fixed right-0 top-1/2 -translate-y-1/2 z-50 group flex items-center"
+    >
+      <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/20 to-transparent blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-700 animate-pulse" />
+      <div className="relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border border-[#00F0FF]/30 border-r-0 rounded-l-2xl py-8 px-2 shadow-[-5px_0_20px_rgba(0,240,255,0.15)] hover:shadow-[-5px_0_30px_rgba(0,240,255,0.4)] hover:-translate-x-2 transition-all duration-300 cursor-pointer">
+        <div className="flex flex-col items-center mr-2 text-[#00F0FF] opacity-70 group-hover:opacity-100">
+           <MdOutlineDoubleArrow className="rotate-180 text-xl animate-[bounce_2s_infinite]" />
+        </div>
+        <span className="text-[10px] font-black tracking-[0.5em] text-white uppercase" style={{ writingMode: 'vertical-rl' }}>
+          Enter Scroll
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 export default function FeedPage() {
   const [posts, setPosts] = useState([]);
@@ -82,6 +103,9 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white relative pb-24">
+    
+    {/* ─── ADD THIS ONE LINE HERE ─── */}
+      <ScrollTrigger />
       
       {/* ─── PREMIUM GLASS HEADER ─── */}
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">

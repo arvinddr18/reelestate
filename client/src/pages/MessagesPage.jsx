@@ -1,65 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { 
   IoMdArrowBack, IoMdSearch, IoMdMic, IoMdImage, 
   IoMdCheckmark, IoMdAdd, IoMdMore, IoMdPulse 
 } from 'react-icons/io';
+import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
 export default function Messages() {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState('all'); // all, unread, business
+  const { user: currentUser } = useAuth();
+  
+  const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // ─── NEW: REAL DATABASE USERS STATE ───
+  const [dbUsers, setDbUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // ─── DUMMY DATA FOR 2045 ───
-  const activeUsers = [
-    { id: 1, name: 'Aravind', img: 'https://i.pravatar.cc/150?img=11', isLive: true },
-    { id: 2, name: 'Sarah_Real', img: 'https://i.pravatar.cc/150?img=44', isLive: true },
-    { id: 3, name: 'Vortex', img: 'https://i.pravatar.cc/150?img=33', isLive: false },
-    { id: 4, name: 'Elena', img: 'https://i.pravatar.cc/150?img=47', isLive: true },
-    { id: 5, name: 'Marcus', img: 'https://i.pravatar.cc/150?img=15', isLive: true },
-  ];
+  // ─── FETCH REAL USERS FROM DATABASE ───
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('reelestate_token');
+        // Fetching from your user routes (Assuming GET /api/users gets all users)
+        const res = await axios.get(`${API_URL}/api/users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.data.success) {
+          // Filter out the current logged-in user so you don't message yourself
+          const otherUsers = res.data.data.filter(u => String(u._id) !== String(currentUser?._id));
+          setDbUsers(otherUsers);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users for inbox:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const chatThreads = [
-    {
-      id: 'chat1',
-      user: { name: 'Aravind D R', img: 'https://i.pravatar.cc/150?img=11', isOnline: true },
-      lastMessage: 'Are we still on for the property tour?',
-      time: 'Just now',
-      unread: 3,
-      type: 'text',
-      isTyping: true,
-      category: 'business'
-    },
-    {
-      id: 'chat2',
-      user: { name: 'Sarah Jenkins', img: 'https://i.pravatar.cc/150?img=44', isOnline: true },
-      lastMessage: '0:14',
-      time: '10:42 AM',
-      unread: 1,
-      type: 'voice',
-      category: 'all'
-    },
-    {
-      id: 'chat3',
-      user: { name: 'Neo Estates', img: 'https://i.pravatar.cc/150?img=33', isOnline: false },
-      lastMessage: 'Sent an image',
-      time: 'Yesterday',
-      unread: 0,
-      type: 'image',
-      status: 'read',
-      category: 'business'
-    },
-    {
-      id: 'chat4',
-      user: { name: 'Tech Gadgets Hub', img: 'https://i.pravatar.cc/150?img=15', isOnline: false },
-      lastMessage: 'Your order has been shipped via Drone.',
-      time: 'Mon',
-      unread: 0,
-      type: 'text',
-      status: 'delivered',
-      category: 'all'
+    if (currentUser) {
+      fetchUsers();
     }
-  ];
+  }, [currentUser]);
+
+  // Filter users based on search query
+  const filteredUsers = dbUsers.filter(u => 
+    (u.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (u.username || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white font-sans overflow-x-hidden relative pb-20">
@@ -107,33 +99,41 @@ export default function Messages() {
 
       <main className="max-w-3xl mx-auto px-4 mt-6 space-y-8 relative z-10">
         
-        {/* ─── ACTIVE RADAR (The 2045 Stories Alternative) ─── */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Active Radar</h2>
-            <span className="text-[10px] font-black text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-0.5 rounded-full border border-[#00F0FF]/30">{activeUsers.filter(u => u.isLive).length} Online</span>
-          </div>
-          
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
-            {activeUsers.map(user => (
-              <div key={user.id} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
-                <div className="relative">
-                  {/* Glowing Orbit Ring */}
-                  <div className={`absolute -inset-1 rounded-full border border-dashed transition-transform duration-[3000ms] group-hover:rotate-180 ${user.isLive ? 'border-[#00F0FF] animate-[spin_10s_linear_infinite]' : 'border-[#1E2532]'}`} />
-                  {/* Avatar */}
-                  <div className="w-16 h-16 rounded-full bg-[#151A25] border-2 border-[#0B0F19] overflow-hidden relative z-10">
-                    <img src={user.img} alt={user.name} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
-                  </div>
-                  {/* Online Dot */}
-                  {user.isLive && (
+        {/* ─── ACTIVE RADAR ─── */}
+        {!loading && dbUsers.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Active Radar</h2>
+              <span className="text-[10px] font-black text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-0.5 rounded-full border border-[#00F0FF]/30">
+                {dbUsers.length} Networked
+              </span>
+            </div>
+            
+            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
+              {dbUsers.slice(0, 10).map(user => (
+                <Link to={`/messages/${user._id}`} key={user._id} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
+                  <div className="relative">
+                    {/* Glowing Orbit Ring */}
+                    <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
+                    {/* Avatar */}
+                    <div className="w-16 h-16 rounded-full bg-[#151A25] border-2 border-[#0B0F19] overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold">
+                      {user.profilePhoto ? (
+                        <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                      ) : (
+                        (user.fullName || user.username || 'U')[0].toUpperCase()
+                      )}
+                    </div>
+                    {/* Online Dot */}
                     <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-                  )}
-                </div>
-                <span className="text-[10px] font-black text-white uppercase tracking-wider">{user.name}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+                  </div>
+                  <span className="text-[10px] font-black text-white uppercase tracking-wider truncate w-16 text-center">
+                    {user.fullName || user.username}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ─── SMART FILTERS ─── */}
         <div className="flex gap-2 border-b border-[#1E2532] pb-1">
@@ -151,101 +151,70 @@ export default function Messages() {
           ))}
         </div>
 
-        {/* ─── FLOATING THREADS (The Chat List) ─── */}
+        {/* ─── FLOATING THREADS (Real Users List) ─── */}
         <div className="space-y-3">
-          {chatThreads.map(chat => (
-            // In a real app, this Link goes to /messages/${chat.id}
-            <Link 
-              key={chat.id} 
-              to={`/messages/${chat.id}`} 
-              className={`block p-4 rounded-[24px] bg-[#151A25]/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)] group relative overflow-hidden ${
-                chat.unread > 0 
-                  ? 'border border-[#00F0FF]/40 shadow-[inset_0_0_20px_rgba(0,240,255,0.05)]' 
-                  : 'border border-[#1E2532] hover:border-[#2A3441]'
-              }`}
-            >
-              
-              {/* Subtle neon hover sweep */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-
-              <div className="flex items-center gap-4 relative z-10">
+          {loading ? (
+            <div className="text-center py-10 text-[#00F0FF] animate-pulse font-bold text-sm tracking-widest uppercase">
+              Decrypting Network...
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="text-center py-10 text-gray-500 font-bold text-sm">
+              No users found in sector.
+            </div>
+          ) : (
+            filteredUsers.map(user => (
+              <Link 
+                key={user._id} 
+                to={`/messages/${user._id}`} 
+                className="block p-4 rounded-[24px] bg-[#151A25]/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)] border border-[#1E2532] hover:border-[#2A3441] group relative overflow-hidden"
+              >
                 
-                {/* Avatar */}
-                <div className="relative shrink-0">
-                  <img src={chat.user.img} alt={chat.user.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#0B0F19] shadow-lg" />
-                  {chat.user.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00F0FF] rounded-full border-2 border-[#151A25]" />
-                  )}
-                </div>
+                {/* Subtle neon hover sweep */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className={`text-sm font-black truncate ${chat.unread > 0 ? 'text-white' : 'text-gray-200'}`}>
-                      {chat.user.name}
-                    </h3>
-                    <span className={`text-[9px] font-black uppercase tracking-widest shrink-0 ${chat.unread > 0 ? 'text-[#00F0FF]' : 'text-gray-500'}`}>
-                      {chat.time}
-                    </span>
+                <div className="flex items-center gap-4 relative z-10">
+                  
+                  {/* Avatar */}
+                  <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#0B0F19] bg-[#1E2532] shadow-lg overflow-hidden text-lg font-bold">
+                    {user.profilePhoto ? (
+                      <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
+                    ) : (
+                      (user.fullName || user.username || 'U')[0].toUpperCase()
+                    )}
+                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00F0FF] rounded-full border-2 border-[#151A25]" />
                   </div>
 
-                  <div className="flex items-center justify-between gap-4">
-                    
-                    {/* Dynamic Message Preview */}
-                    <div className="flex-1 truncate">
-                      {chat.isTyping ? (
-                        <span className="text-[11px] font-bold text-[#00F0FF] italic flex items-center gap-1">
-                          Typing<span className="animate-bounce">.</span><span className="animate-bounce delay-100">.</span><span className="animate-bounce delay-200">.</span>
-                        </span>
-                      ) : (
-                        <div className="flex items-center gap-1.5 truncate">
-                          
-                          {/* Message Type Icons */}
-                          {chat.type === 'voice' && <IoMdMic className="text-[#F5A623] shrink-0" size={14} />}
-                          {chat.type === 'image' && <IoMdImage className="text-purple-400 shrink-0" size={14} />}
-                          
-                          {/* Mini Soundwave for Voice */}
-                          {chat.type === 'voice' && (
-                            <div className="flex items-center gap-[2px] mr-1">
-                              {[1, 3, 2, 4, 2].map((h, i) => (
-                                <div key={i} className={`w-0.5 bg-[#F5A623] rounded-full h-${h}`} style={{ height: `${h * 3}px` }} />
-                              ))}
-                            </div>
-                          )}
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-black truncate text-white">
+                        {user.fullName || `@${user.username}`}
+                      </h3>
+                    </div>
 
-                          <span className={`text-xs font-bold truncate ${chat.unread > 0 ? 'text-gray-300' : 'text-gray-500'}`}>
-                            {chat.lastMessage}
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 truncate">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="text-xs font-bold truncate text-gray-500">
+                            Tap to open secure channel...
                           </span>
                         </div>
-                      )}
-                    </div>
+                      </div>
 
-                    {/* Status & Badges */}
-                    <div className="shrink-0 flex items-center gap-2">
-                      {chat.unread > 0 ? (
-                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-[9px] font-black text-white shadow-[0_0_10px_rgba(0,240,255,0.5)]">
-                          {chat.unread}
-                        </div>
-                      ) : (
-                        chat.status === 'read' ? (
-                          <div className="flex -space-x-1">
-                            <IoMdCheckmark className="text-[#00F0FF]" size={14} />
-                            <IoMdCheckmark className="text-[#00F0FF]" size={14} />
-                          </div>
-                        ) : chat.status === 'delivered' ? (
-                          <div className="flex -space-x-1">
+                      {/* Status Checkmarks */}
+                      <div className="shrink-0 flex items-center gap-2">
+                         <div className="flex -space-x-1">
                             <IoMdCheckmark className="text-gray-500" size={14} />
                             <IoMdCheckmark className="text-gray-500" size={14} />
                           </div>
-                        ) : null
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-              </div>
-            </Link>
-          ))}
+                </div>
+              </Link>
+            ))
+          )}
         </div>
 
       </main>

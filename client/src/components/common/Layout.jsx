@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import appLogo from '../../assets/logo.nodexa.png'; 
-
+import appLogo from '../../assets/nodexa-logo.png';
 // --- Premium SVG Icons ---
 const HomeIcon = ({ filled }) => (
   <svg viewBox="0 0 24 24" className="w-6 h-6" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>

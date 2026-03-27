@@ -1,22 +1,33 @@
 import React from 'react';
-import { IoMdPulse } from 'react-icons/io';
+// This grabs your newly renamed image from the assets folder!
+import MyLogo from '../assets/nodexa-logo.png'; 
 
-export default function NodexaLogo({ size = "text-6xl" }) {
+export default function NodexaLogo({ size = "w-64" }) {
   return (
-    <div className={`flex flex-col items-center justify-center font-black italic tracking-tighter ${size} select-none group`}>
-      <div className="relative">
-        <span className="bg-gradient-to-r from-white via-white to-gray-500 bg-clip-text text-transparent drop-shadow-2xl">
-          NODEXA
-        </span>
-        {/* Holographic underline */}
-        <div className="absolute -bottom-2 left-0 w-0 h-[3px] bg-gradient-to-r from-[#0057FF] to-[#00F0FF] transition-all duration-700 group-hover:w-full shadow-[0_0_15px_rgba(0,240,255,0.8)]" />
+    <div className={`relative ${size} flex flex-col items-center group animate-float`}>
+      {/* 1. The glowing aura behind the logo */}
+      <div className="absolute inset-0 bg-[#00F0FF] opacity-20 blur-[60px] rounded-full group-hover:opacity-40 transition-opacity duration-700" />
+      
+      {/* 2. Your actual image file */}
+      <div className="relative z-10 select-none cursor-default flex flex-col items-center">
+        <img 
+          src={MyLogo} 
+          alt="Nodexa" 
+          className="w-full h-auto drop-shadow-[0_0_20px_rgba(0,240,255,0.6)] mix-blend-screen" 
+        />
+        
+        {/* Optional: OMNI Subtext below the image */}
+        <div className="mt-2 flex items-center justify-center gap-2">
+            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#00F0FF]" />
+            <span className="text-[9px] font-black tracking-[0.6em] text-[#00F0FF] uppercase opacity-80">
+                OMNI ECOSYSTEM
+            </span>
+            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#00F0FF]" />
+        </div>
       </div>
-      <div className="flex items-center gap-2 mt-2">
-         <span className="text-[10px] uppercase tracking-[0.5em] text-[#00F0FF] font-black animate-pulse">
-           OMNI ECOSYSTEM
-         </span>
-         <IoMdPulse className="text-[#00F0FF] text-xs" />
-      </div>
+      
+      {/* 3. Reflection effect at the bottom */}
+      <div className="absolute -bottom-4 w-full h-8 bg-gradient-to-t from-[#00F0FF]/20 to-transparent blur-md opacity-30 skew-x-12" />
     </div>
   );
 }

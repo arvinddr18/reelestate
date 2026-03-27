@@ -9,6 +9,7 @@ const holoMessageSchema = new mongoose.Schema({
   room: { type: String, required: true },
   senderId: { type: String, required: true },
   text: { type: String, required: true },
+  image: { type: String }, // Stores the Base64 Hologram string
   time: { type: String }
 }, { timestamps: true });
 

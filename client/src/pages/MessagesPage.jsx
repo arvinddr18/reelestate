@@ -20,31 +20,32 @@ export default function Messages() {
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ─── FETCH REAL USERS FROM DATABASE ───
+  // ─── FETCH REAL FRIENDS (FOLLOWING) FROM DATABASE ───
   useEffect(() => {
     const fetchUsers = async () => {
+      // Don't fetch until we know exactly who is logged in
+      if (!currentUser?._id) return; 
+
       try {
         const token = localStorage.getItem('reelestate_token');
-        // Fetching from your user routes (Assuming GET /api/users gets all users)
-        const res = await axios.get(`${API_URL}/api/users`, {
+        
+        // THE FIX: Fetch ONLY the people the current user is following!
+        const res = await axios.get(`${API_URL}/api/users/${currentUser._id}/following`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (res.data.success) {
-          // Filter out the current logged-in user so you don't message yourself
-          const otherUsers = res.data.data.filter(u => String(u._id) !== String(currentUser?._id));
-          setDbUsers(otherUsers);
+          // res.data.data now contains an array of your actual friends!
+          setDbUsers(res.data.data);
         }
       } catch (err) {
-        console.error("Failed to fetch users for inbox:", err);
+        console.error("Failed to fetch friends for inbox:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (currentUser) {
-      fetchUsers();
-    }
+    fetchUsers();
   }, [currentUser]);
 
   // Filter users based on search query

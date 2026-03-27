@@ -37,18 +37,22 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('⚡ User connected to chat:', socket.id);
 
-  // 1. Listen for a user joining a specific private room
   socket.on('join_room', (roomId) => {
     socket.join(roomId);
     console.log(`User ${socket.id} joined private room: ${roomId}`);
   });
 
-  // 2. When a user sends a message...
   socket.on('send_message', (data) => {
-    console.log("Private message routed to room:", data.room);
-    
-    // 3. ONLY send it to the other person in that specific room!
     socket.to(data.room).emit('receive_message', data); 
+  });
+
+  // ─── NEW: TYPING INDICATOR RADAR ───
+  socket.on('typing', (data) => {
+    socket.to(data.room).emit('display_typing', data);
+  });
+
+  socket.on('stop_typing', (data) => {
+    socket.to(data.room).emit('hide_typing', data);
   });
 
   socket.on('disconnect', () => {

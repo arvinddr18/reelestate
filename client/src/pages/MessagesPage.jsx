@@ -7,7 +7,11 @@ import {
 } from 'react-icons/io';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+// ─── CONNECT TO BACKEND (BULLETPROOF URL) ───
+const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+// This automatically deletes any extra '/api' or '/' at the end of your Vercel variable
+// so we NEVER get the dreaded /api/api/ bug!
+const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 export default function Messages() {
   const navigate = useNavigate();

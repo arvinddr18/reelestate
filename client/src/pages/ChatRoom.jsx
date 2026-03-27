@@ -6,7 +6,11 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 // ─── CONNECT TO BACKEND ───
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000'; // Match your backend port
+// ─── CONNECT TO BACKEND (BULLETPROOF URL) ───
+const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+// This automatically deletes any extra '/api' or '/' at the end of your Vercel variable
+// so we NEVER get the dreaded /api/api/ bug!
+const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 const socket = io(API_URL);
 
 export default function ChatRoom() {

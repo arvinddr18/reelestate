@@ -5,35 +5,42 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-// ─── CONNECT TO BACKEND ───
 // ─── CONNECT TO BACKEND (BULLETPROOF URL) ───
 const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
-// This automatically deletes any extra '/api' or '/' at the end of your Vercel variable
-// so we NEVER get the dreaded /api/api/ bug!
 const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 const socket = io(API_URL);
 
 export default function ChatRoom() {
-  const { userId } = useParams(); 
-  const { user: currentUser } = useAuth(); // Get the logged-in user
+  const { userId } = useParams(); // The ID of the friend you clicked on!
+  const { user: currentUser } = useAuth(); 
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]); // Starts empty, fetches from DB!
+  const [messages, setMessages] = useState([]);
   
-  // You can later dynamically fetch this user's profile info
-  const [chatUser, setChatUser] = useState({
-    username: 'alex_investments',
-    fullName: 'Alex Reynolds',
-    profilePhoto: 'https://i.pravatar.cc/150?img=11',
-    isOnline: true,
-  });
+  // ─── THE FIX: DYNAMIC CHAT USER STATE ───
+  const [chatUser, setChatUser] = useState(null);
 
-  // Create a unique, consistent room ID for these two users
   const room = [currentUser?._id, userId].sort().join('_');
 
-  // ─── 1. FETCH MEMORY & CONNECT SOCKET ───
+  // 1. FETCH THE SPECIFIC FRIEND's PROFILE DATA
+  useEffect(() => {
+    const fetchFriendProfile = async () => {
+      if (!userId) return;
+      try {
+        const res = await axios.get(`${API_URL}/api/users/${userId}`);
+        if (res.data.success) {
+          setChatUser(res.data.data.user); // Pull their real name and photo!
+        }
+      } catch (err) {
+        console.error("Could not fetch friend's profile:", err);
+      }
+    };
+    fetchFriendProfile();
+  }, [userId]);
+
+  // 2. FETCH MEMORY & CONNECT SOCKET
   useEffect(() => {
     if (!currentUser?._id || !userId) return;
 
@@ -43,7 +50,7 @@ export default function ChatRoom() {
         const res = await axios.get(`${API_URL}/api/messages/${room}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setMessages(res.data); // Load the history
+        setMessages(res.data);
       } catch (err) {
         console.error("Could not fetch history:", err);
       }
@@ -51,26 +58,23 @@ export default function ChatRoom() {
     
     fetchChatHistory();
 
-    // Join the Live Socket Room
     socket.emit('join_room', room);
 
-    // Listen for incoming messages from the other person
     socket.on('receive_message', (data) => {
       setMessages((prev) => [...prev, data]);
     });
 
-    // Cleanup when leaving the room
     return () => {
       socket.off('receive_message');
     };
   }, [room, currentUser, userId]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ─── 2. SEND & SAVE MESSAGE ───
+  // 3. SEND MESSAGE
   const handleSend = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -82,14 +86,11 @@ export default function ChatRoom() {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    // Update our own UI instantly
     setMessages((prev) => [...prev, messageData]);
     setMessage('');
 
-    // Blast to the other user via Socket
     socket.emit('send_message', messageData);
 
-    // Save permanently to MongoDB
     try {
       const token = localStorage.getItem('reelestate_token');
       await axios.post(`${API_URL}/api/messages`, messageData, {
@@ -103,11 +104,10 @@ export default function ChatRoom() {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-[#0B0F19] text-white relative font-sans overflow-hidden">
       
-      {/* ─── AMBIENT BACKGROUND GLOWS ─── */}
       <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none" />
       <div className="fixed bottom-[10%] right-[-10%] w-96 h-96 bg-[#00F0FF] opacity-10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* ─── FULL-WIDTH GLASS HEADER ─── */}
+      {/* ─── DYNAMIC HEADER ─── */}
       <header className="sticky top-0 z-50 w-full bg-[#0B0F19]/80 backdrop-blur-2xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -115,16 +115,23 @@ export default function ChatRoom() {
               <IoMdArrowBack size={20} />
             </button>
             
-            <Link to={`/profile/${userId || 'demo'}`} className="flex items-center gap-3 group">
+            <Link to={`/profile/${userId}`} className="flex items-center gap-3 group">
               <div className="relative">
-                <img src={chatUser.profilePhoto} alt="User" className="w-10 h-10 rounded-full object-cover border border-[#1E2532] group-hover:border-[#00F0FF]/50 transition-colors shadow-md" />
-                {chatUser.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#00F0FF] rounded-full border-2 border-[#0B0F19] shadow-[0_0_10px_rgba(0,240,255,0.8)] animate-pulse" />
-                )}
+                {/* Dynamically show their real photo or a fallback initial */}
+                <div className="w-10 h-10 rounded-full bg-[#1E2532] border border-[#1E2532] group-hover:border-[#00F0FF]/50 transition-colors shadow-md overflow-hidden flex items-center justify-center font-bold">
+                  {chatUser?.profilePhoto ? (
+                     <img src={chatUser.profilePhoto} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                     (chatUser?.fullName || chatUser?.username || 'U')[0].toUpperCase()
+                  )}
+                </div>
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#00F0FF] rounded-full border-2 border-[#0B0F19] shadow-[0_0_10px_rgba(0,240,255,0.8)] animate-pulse" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-black text-white leading-tight group-hover:text-[#00F0FF] transition-colors">{chatUser.fullName}</span>
-                <span className="text-[9px] font-black text-[#00F0FF] tracking-widest uppercase">{chatUser.isOnline ? 'Active Now' : 'Offline'}</span>
+                <span className="text-sm font-black text-white leading-tight group-hover:text-[#00F0FF] transition-colors">
+                  {chatUser?.fullName || `@${chatUser?.username}` || 'Loading...'}
+                </span>
+                <span className="text-[9px] font-black text-[#00F0FF] tracking-widest uppercase">Active Now</span>
               </div>
             </Link>
           </div>
@@ -146,7 +153,6 @@ export default function ChatRoom() {
         </div>
 
         {messages.map((msg, index) => {
-          // Verify if the message sender is the current logged in user
           const isMe = msg.senderId === currentUser?._id;
           
           return (
@@ -173,7 +179,7 @@ export default function ChatRoom() {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* ─── SMART STICKY INPUT PILL ─── */}
+      {/* ─── DYNAMIC INPUT FIELD ─── */}
       <div className="sticky bottom-[90px] md:bottom-8 z-50 w-full px-4 pt-10 pb-2 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/90 to-transparent pointer-events-none">
         
         <form onSubmit={handleSend} className="max-w-2xl mx-auto pointer-events-auto bg-[#151A25]/95 backdrop-blur-2xl border border-[#1E2532] p-1.5 rounded-[32px] flex items-center shadow-[0_20px_50px_rgba(0,0,0,0.8)] focus-within:border-[#00F0FF]/50 focus-within:shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all duration-300">
@@ -190,7 +196,8 @@ export default function ChatRoom() {
             type="text" 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Message Alex..."
+            // Dynamically uses their first name! e.g., "Message Gahana..."
+            placeholder={`Message ${chatUser?.fullName?.split(' ')[0] || '...'} `}
             className="flex-1 bg-transparent text-sm text-white px-3 outline-none placeholder-gray-500 font-bold"
           />
 

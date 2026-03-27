@@ -16,50 +16,63 @@ export default function Messages() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // ─── NEW: REAL DATABASE USERS STATE ───
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ─── FETCH ENTIRE NETWORK (FOLLOWERS & FOLLOWING) ───
+  // ─── FETCH ENTIRE NETWORK (BULLETPROOF VERSION) ───
   useEffect(() => {
     const fetchNetwork = async () => {
-      // Don't fetch until we know exactly who is logged in
-      if (!currentUser?._id) return; 
+      // 1. Ensure we have the user ID before asking the database
+      const userId = currentUser?._id || currentUser?.id;
+      if (!userId) return; 
 
       try {
         const token = localStorage.getItem('reelestate_token');
         const headers = { Authorization: `Bearer ${token}` };
         
-        // THE FIX: Fetch BOTH followers and following at the exact same time!
-        const [followingRes, followersRes] = await Promise.all([
-          axios.get(`${API_URL}/api/users/${currentUser._id}/following`, { headers }),
-          axios.get(`${API_URL}/api/users/${currentUser._id}/followers`, { headers })
-        ]);
-        
         let combinedNetwork = [];
-        
-        // Add all 'Following' to the array
-        if (followingRes.data.success) {
-          combinedNetwork = [...combinedNetwork, ...followingRes.data.data];
-        }
-        
-        // Add all 'Followers' to the array
-        if (followersRes.data.success) {
-          combinedNetwork = [...combinedNetwork, ...followersRes.data.data];
+
+        // 2. Fetch Following (Independent Try/Catch)
+        try {
+          const followingRes = await axios.get(`${API_URL}/api/users/${userId}/following`, { headers });
+          if (followingRes.data?.success && Array.isArray(followingRes.data.data)) {
+            combinedNetwork = [...combinedNetwork, ...followingRes.data.data];
+          }
+        } catch (err) {
+          console.warn("Could not fetch following, skipping...", err);
         }
 
-        // Clean the data: Remove nulls, remove yourself, and remove duplicates
-        const uniqueUsers = Array.from(
-          new Map(
-            combinedNetwork
-              .filter(u => u && u._id && String(u._id) !== String(currentUser._id)) // Keep only valid other users
-              .map(u => [u._id, u]) // Map by ID to remove duplicates
-          ).values()
-        );
+        // 3. Fetch Followers (Independent Try/Catch)
+        try {
+          const followersRes = await axios.get(`${API_URL}/api/users/${userId}/followers`, { headers });
+          if (followersRes.data?.success && Array.isArray(followersRes.data.data)) {
+            combinedNetwork = [...combinedNetwork, ...followersRes.data.data];
+          }
+        } catch (err) {
+          console.warn("Could not fetch followers, skipping...", err);
+        }
+
+        // 4. Clean Data: Remove nulls, yourself, and duplicates
+        const uniqueUsers = [];
+        const seenIds = new Set();
+        
+        combinedNetwork.forEach(user => {
+          if (!user) return; // Skip broken records
+          
+          const uId = user._id || user.id;
+          if (!uId) return; // Skip if no ID
+          
+          if (String(uId) === String(userId)) return; // Don't message yourself
+          
+          if (!seenIds.has(String(uId))) {
+            seenIds.add(String(uId));
+            uniqueUsers.push(user);
+          }
+        });
 
         setDbUsers(uniqueUsers);
       } catch (err) {
-        console.error("Failed to fetch network for inbox:", err);
+        console.error("Critical error fetching network:", err);
       } finally {
         setLoading(false);
       }
@@ -67,12 +80,17 @@ export default function Messages() {
 
     fetchNetwork();
   }, [currentUser]);
-  
-  // Filter users based on search query
-  const filteredUsers = dbUsers.filter(u => 
-    (u.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (u.username || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  // ─── BULLETPROOF SEARCH FILTER ───
+  const filteredUsers = dbUsers.filter(u => {
+    if (!searchQuery) return true; // If search is empty, show everyone
+    
+    const query = searchQuery.toLowerCase().trim();
+    const fullName = (u.fullName || '').toLowerCase();
+    const username = (u.username || '').toLowerCase();
+    
+    return fullName.includes(query) || username.includes(query);
+  });
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white font-sans overflow-x-hidden relative pb-20">
@@ -109,7 +127,7 @@ export default function Messages() {
             </div>
             <input 
               type="text" 
-              placeholder="Search neural network..." 
+              placeholder="Search your network..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-sm text-white font-bold outline-none placeholder-gray-600"
@@ -132,11 +150,9 @@ export default function Messages() {
             
             <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
               {dbUsers.slice(0, 10).map(user => (
-                <Link to={`/messages/${user._id}`} key={user._id} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
+                <Link to={`/messages/${user._id || user.id}`} key={user._id || user.id} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
                   <div className="relative">
-                    {/* Glowing Orbit Ring */}
                     <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
-                    {/* Avatar */}
                     <div className="w-16 h-16 rounded-full bg-[#151A25] border-2 border-[#0B0F19] overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold">
                       {user.profilePhoto ? (
                         <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
@@ -144,7 +160,6 @@ export default function Messages() {
                         (user.fullName || user.username || 'U')[0].toUpperCase()
                       )}
                     </div>
-                    {/* Online Dot */}
                     <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
                   </div>
                   <span className="text-[10px] font-black text-white uppercase tracking-wider truncate w-16 text-center">
@@ -156,22 +171,6 @@ export default function Messages() {
           </section>
         )}
 
-        {/* ─── SMART FILTERS ─── */}
-        <div className="flex gap-2 border-b border-[#1E2532] pb-1">
-          {['all', 'unread', 'business'].map(filter => (
-            <button 
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`pb-3 px-4 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeFilter === filter ? 'text-[#00F0FF]' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              {filter}
-              {activeFilter === filter && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-              )}
-            </button>
-          ))}
-        </div>
-
         {/* ─── FLOATING THREADS (Real Users List) ─── */}
         <div className="space-y-3">
           {loading ? (
@@ -180,22 +179,18 @@ export default function Messages() {
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-10 text-gray-500 font-bold text-sm">
-              No users found in sector.
+              {searchQuery ? "No matches found." : "No networked users found."}
             </div>
           ) : (
             filteredUsers.map(user => (
               <Link 
-                key={user._id} 
-                to={`/messages/${user._id}`} 
+                key={user._id || user.id} 
+                to={`/messages/${user._id || user.id}`} 
                 className="block p-4 rounded-[24px] bg-[#151A25]/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)] border border-[#1E2532] hover:border-[#2A3441] group relative overflow-hidden"
               >
-                
-                {/* Subtle neon hover sweep */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
                 <div className="flex items-center gap-4 relative z-10">
-                  
-                  {/* Avatar */}
                   <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#0B0F19] bg-[#1E2532] shadow-lg overflow-hidden text-lg font-bold">
                     {user.profilePhoto ? (
                       <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
@@ -205,7 +200,6 @@ export default function Messages() {
                     <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00F0FF] rounded-full border-2 border-[#151A25]" />
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="text-sm font-black truncate text-white">
@@ -222,7 +216,6 @@ export default function Messages() {
                         </div>
                       </div>
 
-                      {/* Status Checkmarks */}
                       <div className="shrink-0 flex items-center gap-2">
                          <div className="flex -space-x-1">
                             <IoMdCheckmark className="text-gray-500" size={14} />
@@ -231,7 +224,6 @@ export default function Messages() {
                       </div>
                     </div>
                   </div>
-
                 </div>
               </Link>
             ))

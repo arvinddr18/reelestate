@@ -1,6 +1,6 @@
 import { MdOutlineDoubleArrow } from 'react-icons/md';
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Added IoMdAdd back here!
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
@@ -32,23 +32,74 @@ const FEED_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
-// ─── PASTE THIS RIGHT ABOVE YOUR CATEGORIES OR FEEDPAGE FUNCTION ───
+// ─── THE NEW SWIPEABLE, AUTO-HIDING SCROLL TRIGGER ───
 export function ScrollTrigger() {
+  const [isVisible, setIsVisible] = useState(true);
+  const navigate = useNavigate();
+  const [touchStart, setTouchStart] = useState(null);
+
+  // 1. Logic to Hide/Show based on scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      // If the user scrolls down more than 50px, hide the trigger
+      if (window.scrollY > 50) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 2. Logic to handle Swipe/Drag gestures
+  const handleDragStart = (e) => {
+    // Works for both touch screens and mouse clicks
+    setTouchStart(e.clientX || e.targetTouches?.[0]?.clientX);
+  };
+
+  const handleDragEnd = (e) => {
+    if (!touchStart) return;
+    const touchEnd = e.clientX || e.changedTouches?.[0]?.clientX;
+    const distance = touchStart - touchEnd;
+
+    // If they swiped left more than 30 pixels, OR just clicked it
+    if (distance > 30 || distance === 0) {
+      navigate('/scroll');
+    }
+    setTouchStart(null);
+  };
+
   return (
-    <Link 
-      to="/scroll"
-      className="fixed right-0 top-1/2 -translate-y-1/2 z-50 group flex items-center"
+    <div 
+      // This CSS handles the sliding in and out animation when scrolling
+      className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 group flex items-center transition-transform duration-700 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-[120%]'}`}
+      
+      // Swipe & Drag Event Listeners
+      onTouchStart={handleDragStart}
+      onTouchEnd={handleDragEnd}
+      onMouseDown={handleDragStart}
+      onMouseUp={handleDragEnd}
+      onMouseLeave={() => setTouchStart(null)}
     >
-      <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/20 to-transparent blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-700 animate-pulse" />
-      <div className="relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border border-[#00F0FF]/30 border-r-0 rounded-l-2xl py-8 px-2 shadow-[-5px_0_20px_rgba(0,240,255,0.15)] hover:shadow-[-5px_0_30px_rgba(0,240,255,0.4)] hover:-translate-x-2 transition-all duration-300 cursor-pointer">
-        <div className="flex flex-col items-center mr-2 text-[#00F0FF] opacity-70 group-hover:opacity-100">
-           <MdOutlineDoubleArrow className="rotate-180 text-xl animate-[bounce_2s_infinite]" />
+      {/* The glowing pulse effect */}
+      <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 animate-pulse pointer-events-none" />
+      
+      {/* The Half-Oval Tab (rounded-l-full creates the perfect half shape) */}
+      <div className="relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] hover:shadow-[-5px_0_30px_rgba(0,240,255,0.4)] hover:bg-[#151A25] transition-all duration-300 cursor-grab active:cursor-grabbing">
+        
+        {/* Animated Arrows - Now they slide slightly left on hover */}
+        <div className="flex flex-col items-center mr-1 text-[#00F0FF] opacity-80 group-hover:opacity-100 transition-transform duration-300 group-hover:-translate-x-1">
+           <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
         </div>
-        <span className="text-[10px] font-black tracking-[0.5em] text-white uppercase" style={{ writingMode: 'vertical-rl' }}>
-          Enter Scroll
+
+        {/* Vertical Text - Just "SCROLL" */}
+        <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase ml-1 drop-shadow-md" style={{ writingMode: 'vertical-rl' }}>
+          Scroll
         </span>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -103,7 +154,7 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white relative pb-24">
-    
+
     {/* ─── ADD THIS ONE LINE HERE ─── */}
       <ScrollTrigger />
       

@@ -2,6 +2,7 @@
  * App.jsx — Root component
  * Sets up React Router, Auth context, and all application routes.
  */
+import ScrollPage from './pages/ScrollPage';
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -52,6 +53,10 @@ function AppRoutes() {
       {/* Public routes */}
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+
+      {/* ─── ⚡ THE FULL-SCREEN SCROLL ROUTE ⚡ ─── */}
+      {/* It uses ProtectedRoute so only users can enter, but is OUTSIDE Layout so it's full screen */}
+      <Route path="/scroll" element={<ProtectedRoute><ScrollPage /></ProtectedRoute>} />
 
       {/* Protected routes with sidebar layout */}
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>

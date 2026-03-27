@@ -6,7 +6,7 @@ const messageSchema = new mongoose.Schema({
     required: true 
   },
   senderId: { 
-    type: String, // Keeping as string to match your frontend logic easily
+    type: String, 
     required: true 
   },
   text: { 
@@ -18,5 +18,6 @@ const messageSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// 🚀 THE FIX IS THIS EXACT LINE:
-module.exports = mongoose.models.Message || mongoose.model('Message', messageSchema);
+// THE FIX: We added 'holographic_messages' at the end. 
+// This forces MongoDB to ignore old rules and create a fresh, clean table!
+module.exports = mongoose.models.Message || mongoose.model('Message', messageSchema, 'holographic_messages');

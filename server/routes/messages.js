@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth'); 
-const Message = require('../models/Message'); // Importing our new Model!
+const Message = require('../models/Message'); 
 
 // ─── 1. FETCH CHAT HISTORY ───
 router.get('/:room', protect, async (req, res) => {
@@ -9,8 +9,8 @@ router.get('/:room', protect, async (req, res) => {
     const messages = await Message.find({ room: req.params.room }).sort({ createdAt: 1 });
     res.status(200).json(messages);
   } catch (err) {
-    console.error("Fetch History Error:", err);
-    res.status(500).json({ error: "Failed to fetch messages" });
+    // Spits the exact error out so we don't have to guess!
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -22,7 +22,8 @@ router.post('/', protect, async (req, res) => {
     res.status(200).json(savedMessage);
   } catch (err) {
     console.error("Save Message Error:", err);
-    res.status(500).json({ error: "Failed to save message" });
+    // THE FIX: Spits the exact database error back to your frontend console!
+    res.status(500).json({ error: err.message });
   }
 });
 

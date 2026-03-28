@@ -1,5 +1,5 @@
 // At the top of FeedPage.jsx
-import importedLogo from '../assets/YOUR_EXACT_FILE_NAME.png';
+import importedLogo from '../assets/nodexa-logo.png';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; // 👈 Fixed Shield Import

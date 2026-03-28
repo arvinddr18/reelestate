@@ -149,14 +149,14 @@ export default function Layout() {
         </div>
       </main>
 
-      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (SLEEK GLASS DOCK) ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[70px] bg-[#0B0F19]/90 backdrop-blur-xl border-t border-x border-[#1E2532] rounded-t-[80px] z-[100] flex items-center justify-around px-2 pb-safe">
+  {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (HALF-EGG DOME) ── */}
+      <nav className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-[96%] max-w-[420px] h-[85px] bg-gradient-to-t from-[#0B0F19] to-[#151A25]/95 backdrop-blur-3xl border-t border-x border-[#1E2532]/80 rounded-t-[100px] border-b-0 z-[100] flex items-center justify-around px-6 pb-2 shadow-[0_-15px_40px_rgba(0,0,0,0.8)] transition-all duration-300">
         
-        {/* ⚡ Ultra-Thin Accent Glow ⚡ */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/40 to-transparent" />
+        {/* ⚡ Glowing Peak of the Egg ⚡ */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF]/80 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-12 bg-[#00F0FF]/15 blur-[20px] rounded-full pointer-events-none" />
         
-        {/* Nav links stay exactly as they were below here! */}
-        
+        {/* ── Nav Links ── */}
         <NavLink to="/" end className={navLinkClassMobile}>
           {({ isActive }) => <HomeIcon filled={isActive} />}
         </NavLink>
@@ -165,7 +165,8 @@ export default function Layout() {
           {({ isActive }) => <SearchIcon filled={isActive} />}
         </NavLink>
 
-        <NavLink to="/create" className="relative -top-5 flex flex-col items-center justify-center">
+        {/* ── Center Create Button ── */}
+        <NavLink to="/create" className="relative -top-3 flex flex-col items-center justify-center">
           <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] p-[2px] shadow-[0_4px_20px_rgba(0,240,255,0.4)] active:scale-95 transition-transform">
             <div className="w-full h-full rounded-full bg-[#0B0F19] flex items-center justify-center text-white">
               <PlusIcon />

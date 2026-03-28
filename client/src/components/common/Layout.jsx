@@ -150,8 +150,8 @@ export default function Layout() {
       </main>
 
   {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (HALF-EGG DOME) ── */}
-      <nav className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-[90%] max-w-[380px] h-[60px] bg-[#0B0F19]/90 backdrop-blur-xl border-t border-x border-[#1E2532] rounded-t-[80px] z-[100] flex items-center justify-around px-4 pb-safe">
-        
+     <nav className="md:hidden fixed bottom-0 left-0 w-full h-[70px] bg-[#0B0F19]/90 backdrop-blur-xl border-t border-[#1E2532] rounded-t-[50px] z-[100] flex items-center justify-around px-4 pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.6)]">
+     
         {/* ⚡ Glowing Peak of the Egg ⚡ */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF]/80 to-transparent" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-12 bg-[#00F0FF]/15 blur-[20px] rounded-full pointer-events-none" />

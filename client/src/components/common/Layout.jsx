@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import appLogo from '../../assets/nodexa-logo.png';
+
 // --- Premium SVG Icons ---
 const HomeIcon = ({ filled }) => (
   <svg viewBox="0 0 24 24" className="w-6 h-6" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
@@ -53,16 +53,7 @@ export default function Layout() {
       {/* ── 💻 DESKTOP SIDEBAR (Hidden on Mobile) ── */}
       <aside className="hidden md:flex flex-col w-[280px] h-full border-r border-[#1E2532] bg-[#0B0F19]/90 backdrop-blur-3xl py-8 px-4 z-50">
         
-        {/* App Branding */}
-        <div className="mb-10 px-4 flex items-center gap-3">
-          <div className="w-10 h-10">
-            <img src={appLogo} alt="Logo" className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]" />
-          </div>
-          <h1 className="text-2xl font-black tracking-tighter leading-none">
-            <span className="text-white">NODE</span>
-            <span className="bg-gradient-to-r from-[#00F0FF] to-[#0057FF] bg-clip-text text-transparent">XA</span>
-          </h1>
-        </div>
+        
 
         {/* Desktop Navigation Links */}
         <nav className="flex-1 space-y-2">

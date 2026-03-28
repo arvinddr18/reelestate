@@ -219,10 +219,10 @@ export default function FeedPage() {
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-md relative">
           
-          {/* Left Side: Flawless Branding Lockup */}
-          <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
+         {/* Left Side: Flawless Branding Lockup (HIDDEN ON DESKTOP) */}
+          <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10 md:hidden">
             
-          {/* ─── THE CYBER-CORE LOGO ─── */}
+            {/* ─── THE CYBER-CORE LOGO ─── */}
             <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
                {/* 1. Deep Ambient Glow (Pulses on hover) */}
                <div className="absolute inset-0 bg-[#0057FF] blur-[15px] opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full pointer-events-none" />
@@ -246,11 +246,9 @@ export default function FeedPage() {
               NODEXA
             </h1>
           </Link>
-            
-           
 
-          {/* Right Side: Search Icon */}
-          <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] z-10">
+          {/* Right Side: Search Icon (Stays on the right) */}
+          <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] z-10 ml-auto">
             <IoMdSearch size={20} />
           </Link>
           

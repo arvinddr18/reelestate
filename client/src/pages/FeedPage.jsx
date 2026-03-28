@@ -246,32 +246,28 @@ export default function FeedPage() {
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
-        <div className="px-5 py-5 flex items-center justify-between relative overflow-hidden">
+        <div className="px-5 py-4 flex items-center justify-between border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-md">
           
           {/* Left Side: Flawless Branding Lockup */}
-          <Link to="/" className="flex items-center gap-4 group cursor-pointer z-10">
-            
-            {/* The Holographic Logo Icon */}
-            <div className="relative w-11 h-11 flex items-center justify-center group-hover:scale-110 transition-all duration-500">
-              {/* Ambient Hover Glow behind the logo */}
-              <div className="absolute inset-0 bg-[#00F0FF] blur-[15px] opacity-0 group-hover:opacity-50 transition-opacity duration-500 rounded-full pointer-events-none" />
-              <NodexaLogo size="w-full relative z-10" />
+          <Link to="/" className="flex items-center gap-3 group cursor-pointer">
+            {/* Glowing Logo Icon */}
+            <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] transition-all duration-300">
+              <NodexaLogo size="w-full" />
             </div>
             
-            {/* The Elite Text (No extra sentences!) */}
-            <h1 className="text-[26px] mt-1 font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00F0FF] to-[#0057FF] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)] group-hover:drop-shadow-[0_0_25px_rgba(0,240,255,0.8)] transition-all duration-500">
+            {/* Razor-Sharp Text */}
+            <h1 className="text-2xl mt-1 font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.4)] transition-all duration-300">
               NODEXA
             </h1>
-            
           </Link>
 
           {/* Right Side: Search Icon */}
-          <div className="flex items-center gap-3 z-10">
-            <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25]/80 backdrop-blur-md border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-              <IoMdSearch size={20} />
-            </Link>
-          </div>
+          <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+            <IoMdSearch size={20} />
+          </Link>
           
+        </div>
+        
           {/* Subtle bottom border glow line */}
           <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/20 to-transparent opacity-50" />
         </div>

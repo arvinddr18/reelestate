@@ -32,7 +32,7 @@ const FEED_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
-// ─── THE NEW LIGHTNING SWIPE TRIGGER ───
+// ─── THE NEW HORIZONTAL ROCKET SWIPE TRIGGER ───
 export function ScrollTrigger() {
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState(null);
@@ -43,11 +43,11 @@ export function ScrollTrigger() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowHint(false);
-    }, 4500); // Gives them 4.5 seconds to see the lightning effect
+    }, 4500); // 4.5 seconds for the user to see the rocket and learn the swipe!
     return () => clearTimeout(timer);
   }, []);
 
-  // 2. STRICT Swipe/Drag Math (No Tapping Allowed!)
+  // 2. SWIPE LOGIC (Horizontal Drag > 40px)
   const handleDragStart = (e) => {
     setTouchStart(e.clientX || e.targetTouches?.[0]?.clientX);
   };
@@ -55,10 +55,9 @@ export function ScrollTrigger() {
   const handleDragEnd = (e) => {
     if (!touchStart) return;
     const touchEnd = e.clientX || e.changedTouches?.[0]?.clientX;
-    const distance = touchStart - touchEnd;
+    const distance = touchStart - touchEnd; // Positive number means they swiped Left
 
-    // THE FIX: Must be a deliberate swipe left (drag distance > 40px). 
-    // Taps will no longer do anything!
+    // If they swipe LEFT across the screen, launch the feed!
     if (distance > 40) {
       navigate('/scroll');
     }
@@ -69,24 +68,24 @@ export function ScrollTrigger() {
 
   return (
     <>
-      {/* ─── CUSTOM HIGH-SPEED ROCKET ANIMATION ─── */}
+      {/* ─── CUSTOM HORIZONTAL ROCKET ANIMATION ─── */}
       <style>
         {`
-          @keyframes rocketStrike {
-            0% { transform: translateY(-150%); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(150%); opacity: 0; }
+          @keyframes horizontalRocket {
+            0% { transform: translate(20px, -50%); opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { transform: translate(-400px, -50%); opacity: 0; }
           }
-          .animate-rocket {
-            animation: rocketStrike 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          .animate-rocket-horizontal {
+            animation: horizontalRocket 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
           }
         `}
       </style>
 
       <div 
-        // THE INVISIBLE SWIPE ZONE (Slightly wider to catch fast swipes)
-        className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-16 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
+        // INVISIBLE SWIPE ZONE (Widened to w-24 to easily catch the user's thumb!)
+        className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-24 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => { setIsHovered(false); setTouchStart(null); }}
         onTouchStart={handleDragStart}
@@ -94,25 +93,30 @@ export function ScrollTrigger() {
         onMouseDown={handleDragStart}
         onMouseUp={handleDragEnd}
       >
+        
+        {/* ⚡ THE HORIZONTAL ROCKET / LIGHTNING STRIKE ⚡ */}
+        {/* It shoots directly OUT of the button, across the feed page! */}
+        {isVisible && (
+          <div className="absolute top-1/2 right-12 flex items-center pointer-events-none animate-rocket-horizontal">
+             {/* The Rocket Tail (Fading gradient) */}
+             <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#0057FF] to-[#00F0FF]" />
+             {/* The Rocket Head (Glowing star) */}
+             <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_20px_6px_#00F0FF]" />
+          </div>
+        )}
+
         {/* THE VISUAL TAB */}
         <div 
-          className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out overflow-hidden ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
+          className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
         >
-          
-          {/* ⚡ THE LIGHTNING / ROCKET STRIKE ⚡ (Shoots down the edge) */}
-          {isVisible && (
-            <div className="absolute left-[1px] w-[2px] h-16 bg-white shadow-[0_0_20px_4px_#00F0FF] animate-rocket rounded-full" />
-          )}
-
           {/* Background Aura */}
           {isVisible && <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 pointer-events-none" />}
           
-          {/* Animated Arrows */}
+          {/* Animated Arrows pointing the swipe direction */}
           <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
              <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
           </div>
 
-          {/* Vertical Text */}
           <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase ml-1 drop-shadow-md pointer-events-none" style={{ writingMode: 'vertical-rl' }}>
             Scroll
           </span>

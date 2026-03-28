@@ -4,7 +4,7 @@ import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; // 👈 Fixed S
 import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Cleaned up duplicates
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
-import NodexaLogo from '../components/NodexaLogo';
+import myLogo from '../assets/logo.png'; 
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -222,9 +222,9 @@ export default function FeedPage() {
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
-            {/* YOUR EXACT LOGO */}
+           {/* RAW ASSET LOGO */}
             <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-all duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
-               <NodexaLogo size="w-full" />
+               <img src={myLogo} alt="Nodexa" className="w-full h-full object-contain" />
             </div>
             
             {/* Razor-Sharp Text */}

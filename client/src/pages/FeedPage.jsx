@@ -214,7 +214,7 @@ export default function FeedPage() {
       <ScrollTrigger />
       
       {/* ─── PREMIUM GLASS HEADER (SEAMLESS) ─── */}
-      <header className="sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.7)]">
+      <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-2xl border-none shadow-none">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between relative">

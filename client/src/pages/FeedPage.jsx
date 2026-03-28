@@ -213,11 +213,11 @@ export default function FeedPage() {
 
       <ScrollTrigger />
       
-      {/* ─── PREMIUM GLASS HEADER ─── */}
-      <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+      {/* ─── PREMIUM GLASS HEADER (SEAMLESS) ─── */}
+      <header className="sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.7)]">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
-        <div className="px-5 py-4 flex items-center justify-between border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-md relative">
+        <div className="px-5 py-4 flex items-center justify-between relative">
           
         {/* Left Side: Flawless Branding Lockup (VISIBLE ON ALL SCREENS) */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">

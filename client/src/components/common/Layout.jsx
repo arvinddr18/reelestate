@@ -149,12 +149,13 @@ export default function Layout() {
         </div>
       </main>
 
-      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (CYBER-DOME) ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[80px] bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/95 to-[#151A25]/90 backdrop-blur-3xl border-t border-x border-[#1E2532]/80 rounded-t-[40px] z-[100] flex items-center justify-around px-4 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.7)]">
+      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (FLOATING CYBER-PILL) ── */}
+      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] h-[75px] bg-gradient-to-b from-[#151A25]/95 to-[#0B0F19]/95 backdrop-blur-3xl border border-[#1E2532]/80 rounded-full z-[100] flex items-center justify-around px-4 shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-all duration-300">
         
-        {/* ⚡ Holographic Top Edge Glow ⚡ */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF]/60 to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-10 bg-[#00F0FF]/15 blur-[20px] rounded-full pointer-events-none" />
+        {/* ⚡ Holographic Floating Glows ⚡ */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/60 to-transparent" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-[#0057FF]/60 to-transparent" />
+        <div className="absolute inset-0 bg-[#00F0FF]/[0.03] blur-[15px] rounded-full pointer-events-none" />
         
         <NavLink to="/" end className={navLinkClassMobile}>
           {({ isActive }) => <HomeIcon filled={isActive} />}

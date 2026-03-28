@@ -1,4 +1,4 @@
-import NodexaLogo from '../components/NodexaLogo';
+import { IoMdSearch, IoMdAdd, IoMdShield } from 'react-icons/io';
 import { MdOutlineDoubleArrow } from 'react-icons/md';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -242,7 +242,7 @@ export default function FeedPage() {
     {/* ─── ADD THIS ONE LINE HERE ─── */}
       <ScrollTrigger />
       
-     {/* ─── PREMIUM GLASS HEADER ─── */}
+    {/* ─── PREMIUM GLASS HEADER ─── */}
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
@@ -250,9 +250,15 @@ export default function FeedPage() {
           
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
-            {/* Glowing Logo Icon */}
-            <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] transition-all duration-300">
-              <NodexaLogo size="w-full" />
+            
+            {/* Custom Glowing Shield Icon (Bypasses NodexaLogo completely!) */}
+            <div className="relative w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+               {/* Background Glow */}
+               <div className="absolute inset-0 bg-[#00F0FF] blur-[10px] opacity-40 group-hover:opacity-80 rounded-full transition-opacity duration-300" />
+               {/* The Shield Container */}
+               <div className="w-full h-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] rounded-xl flex items-center justify-center border border-white/30 shadow-lg relative z-10">
+                  <IoMdShield className="text-white drop-shadow-md" size={18} />
+               </div>
             </div>
             
             {/* Razor-Sharp Text */}

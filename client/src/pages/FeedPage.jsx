@@ -32,30 +32,23 @@ const FEED_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
-// ─── THE NEW SWIPEABLE, AUTO-HIDING SCROLL TRIGGER ───
+// ─── THE NEW "GHOST" SCROLL TRIGGER (Auto-hiding, invisible swipe zone) ───
 export function ScrollTrigger() {
-  const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState(null);
+  const [showHint, setShowHint] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // 1. Logic to Hide/Show based on scrolling
+  // 1. The "Notification" Timer: Shows for 4 seconds on load, then vanishes forever!
   useEffect(() => {
-    const handleScroll = () => {
-      // If the user scrolls down more than 50px, hide the trigger
-      if (window.scrollY > 50) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const timer = setTimeout(() => {
+      setShowHint(false);
+    }, 4000);
+    return () => clearTimeout(timer);
   }, []);
 
-  // 2. Logic to handle Swipe/Drag gestures
+  // 2. Swipe/Drag Math
   const handleDragStart = (e) => {
-    // Works for both touch screens and mouse clicks
     setTouchStart(e.clientX || e.targetTouches?.[0]?.clientX);
   };
 
@@ -64,37 +57,43 @@ export function ScrollTrigger() {
     const touchEnd = e.clientX || e.changedTouches?.[0]?.clientX;
     const distance = touchStart - touchEnd;
 
-    // If they swiped left more than 30 pixels, OR just clicked it
+    // If they swipe left, OR just click the invisible zone, launch the scroll!
     if (distance > 30 || distance === 0) {
       navigate('/scroll');
     }
     setTouchStart(null);
   };
 
+  // It is visible IF the intro timer is running, OR if they hover the invisible zone with a mouse
+  const isVisible = showHint || isHovered;
+
   return (
     <div 
-      // This CSS handles the sliding in and out animation when scrolling
-      className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 group flex items-center transition-transform duration-700 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-[120%]'}`}
+      // THE INVISIBLE SWIPE ZONE: Tall (h-[60vh]) and hugs the right edge (w-12). 
+      // It's always there catching swipes, even when you can't see it!
+      className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-12 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
       
-      // Swipe & Drag Event Listeners
+      // Event Listeners for Hover and Swiping
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { setIsHovered(false); setTouchStart(null); }}
       onTouchStart={handleDragStart}
       onTouchEnd={handleDragEnd}
       onMouseDown={handleDragStart}
       onMouseUp={handleDragEnd}
-      onMouseLeave={() => setTouchStart(null)}
     >
-      {/* The glowing pulse effect */}
-      <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 animate-pulse pointer-events-none" />
-      
-      {/* The Half-Oval Tab (rounded-l-full creates the perfect half shape) */}
-      <div className="relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] hover:shadow-[-5px_0_30px_rgba(0,240,255,0.4)] hover:bg-[#151A25] transition-all duration-300 cursor-grab active:cursor-grabbing">
+      {/* THE VISUAL TAB: Translates completely off-screen (translate-x-[120%]) when not active */}
+      <div 
+        className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
+      >
+        {/* Glowing pulse (only active when visible) */}
+        {isVisible && <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 animate-pulse pointer-events-none" />}
         
-        {/* Animated Arrows - Now they slide slightly left on hover */}
-        <div className="flex flex-col items-center mr-1 text-[#00F0FF] opacity-80 group-hover:opacity-100 transition-transform duration-300 group-hover:-translate-x-1">
+        {/* Animated Arrows */}
+        <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
            <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
         </div>
 
-        {/* Vertical Text - Just "SCROLL" */}
+        {/* Vertical Text */}
         <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase ml-1 drop-shadow-md" style={{ writingMode: 'vertical-rl' }}>
           Scroll
         </span>

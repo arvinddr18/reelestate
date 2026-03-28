@@ -1,3 +1,5 @@
+// At the top of FeedPage.jsx
+import importedLogo from '../assets/YOUR_EXACT_FILE_NAME.png';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; // 👈 Fixed Shield Import
@@ -222,9 +224,9 @@ export default function FeedPage() {
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
-           {/* RAW ASSET LOGO */}
+            {/* YOUR EXACT RAW ASSET LOGO */}
             <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-all duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
-               <img src={myLogo} alt="Nodexa" className="w-full h-full object-contain" />
+               <img src={importedLogo} alt="Nodexa" className="w-full h-full object-contain" />
             </div>
             
             {/* Razor-Sharp Text */}
@@ -232,6 +234,8 @@ export default function FeedPage() {
               NODEXA
             </h1>
           </Link>
+            
+           
 
           {/* Right Side: Search Icon */}
           <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] z-10">

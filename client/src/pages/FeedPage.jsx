@@ -1,12 +1,10 @@
-// At the top of FeedPage.jsx
-import importedLogo from '../assets/nodexa-logo.png';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; // 👈 Fixed Shield Import
-import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Cleaned up duplicates
+import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; 
+import { IoMdSearch, IoMdAdd } from 'react-icons/io'; 
+import importedLogo from '../assets/nodexa-logo.png'; // 👈 Your exact file!
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
-import myLogo from '../assets/logo.png'; 
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -224,7 +222,7 @@ export default function FeedPage() {
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
-            {/* YOUR EXACT RAW ASSET LOGO */}
+           {/* YOUR EXACT LOGO */}
             <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-all duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
                <img src={importedLogo} alt="Nodexa" className="w-full h-full object-contain" />
             </div>

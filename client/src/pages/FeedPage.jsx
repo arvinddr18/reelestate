@@ -160,10 +160,13 @@ export function ScrollTrigger() {
 
           {/* The Initial Physical Tab (Hides as they pull) */}
           <div 
-            className={`absolute right-0 flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 transition-all duration-300 ${showHint && !isDragging ? 'translate-x-0' : 'translate-x-[120%]'}`}
+            className={`absolute right-0 flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-2 transition-all duration-300 ${showHint && !isDragging ? 'translate-x-0' : 'translate-x-[120%]'}`}
           >
-            <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
-               <MdOutlineDoubleArrow className="rotate-180 text-2xl" />
+            <div className="flex flex-col items-center text-[#00F0FF]">
+               <MdOutlineDoubleArrow className="rotate-180 text-2xl mb-1" />
+               <span className="text-[10px] font-black tracking-[0.4em] text-white uppercase drop-shadow-md ml-1" style={{ writingMode: 'vertical-rl' }}>
+                 Scroll
+               </span>
             </div>
           </div>
         </div>

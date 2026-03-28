@@ -4,6 +4,7 @@ import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; // 👈 Fixed S
 import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Cleaned up duplicates
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
+import NodexaLogo from '../components/NodexaLogo';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -221,13 +222,9 @@ export default function FeedPage() {
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
-            {/* Custom Glowing Shield Icon */}
-            <div className="relative w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-               <div className="absolute inset-0 bg-[#00F0FF] blur-[10px] opacity-40 group-hover:opacity-80 rounded-full transition-opacity duration-300" />
-               <div className="w-full h-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] rounded-xl flex items-center justify-center border border-white/30 shadow-lg relative z-10">
-                  {/* ⚡ THIS WAS THE CRASH! FIXED TO MdShield ⚡ */}
-                  <MdShield className="text-white drop-shadow-md" size={18} />
-               </div>
+            {/* YOUR EXACT LOGO */}
+            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-all duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
+               <NodexaLogo size="w-full" />
             </div>
             
             {/* Razor-Sharp Text */}

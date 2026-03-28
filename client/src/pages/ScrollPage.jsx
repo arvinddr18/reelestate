@@ -10,7 +10,7 @@ export default function ScrollPage() {
   const [loading, setLoading] = useState(true);
   const [activeReel, setActiveReel] = useState(0);
   
-  // ─── NEW: CINEMATIC INTRO STATE ───
+  // ─── THE CINEMATIC INTRO STATE ───
   const [showIntro, setShowIntro] = useState(true);
   const scrollRef = useRef(null);
 
@@ -40,10 +40,11 @@ export default function ScrollPage() {
     fetchReels();
   }, []);
 
-  // 2. Intro Timer (Dissolves the title after 1.5 seconds)
+  // 2. Intro Timer (Shortened to 1.8s to match the single-blink requirement)
   useEffect(() => {
     if (!loading) {
-      const timer = setTimeout(() => setShowIntro(false), 1500);
+      // It stays active for exactly 2 seconds before violently dissolving
+      const timer = setTimeout(() => setShowIntro(false), 2000);
       return () => clearTimeout(timer);
     }
   }, [loading]);
@@ -77,20 +78,60 @@ export default function ScrollPage() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center overflow-hidden">
+    <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center overflow-hidden font-sans">
       
-      {/* ─── ⚡ THE CINEMATIC HUD INTRO ⚡ ─── */}
+      {/* ─── CUSTOM MASTERPIECE ANIMATIONS ─── */}
+      <style>
+        {`
+          /* Phase 1 & 2: Assemble, Snap, Warp */
+          @keyframes textRevealWarp {
+            0% { transform: scale(0.2) translateY(50px); filter: blur(20px) contrast(2); opacity: 0; letter-spacing: 2em; }
+            40% { transform: scale(1.1) translateY(0); filter: blur(0px) contrast(1); opacity: 1; letter-spacing: 0em; }
+            50% { transform: scale(1); filter: blur(0px) contrast(1); opacity: 1; letter-spacing: 0.2em; color: white; text-shadow: 0 0 20px #00F0FF; }
+            
+            70% { transform: scale(1); opacity: 1; } /* Hold razor sharp focus */
+
+            /* Phase 4: Warp Out */
+            100% { transform: scale(2.5) translateY(-50px); filter: blur(30px); opacity: 0; }
+          }
+
+          /* Phase 3: The Sapphire Glint Sweep */
+          @keyframes glintSweep {
+            0% { left: -150%; }
+            100% { left: 150%; }
+          }
+
+          .animate-introText {
+            animation: textRevealWarp 1.9s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+          }
+
+          /* The Glint is applied as a pseudo-element after the text focuses */
+          .animate-introText::after {
+            content: "SCROLL";
+            position: absolute;
+            top: 0; left: -150%;
+            width: 100%; height: 100%;
+            color: white;
+            filter: drop-shadow(0 0 5px white);
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            animation: glintSweep 0.8s ease-in-out forwards;
+            animation-delay: 0.6s; /* Firing right after the Snap Focus */
+          }
+        `}
+      </style>
+
+      {/* ─── ⚡ THE CINEMATIC HUD INTRO (Masterpiece Edition) ⚡ ─── */}
       <div 
         className={`absolute inset-0 z-[200] flex flex-col items-center justify-center pointer-events-none transition-all duration-1000 ease-in-out ${showIntro ? 'bg-black/80 backdrop-blur-xl opacity-100' : 'bg-transparent backdrop-blur-none opacity-0'}`}
       >
         <h1 
-          className={`text-5xl md:text-7xl font-black italic tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-[#0057FF] to-[#00F0FF] drop-shadow-[0_0_30px_rgba(0,240,255,0.8)] transition-transform duration-1000 ease-out ${showIntro ? 'scale-100' : 'scale-[2] blur-xl'}`}
+          className={`relative text-7xl md:text-[140px] font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#0057FF] to-[#00F0FF] opacity-0 overflow-hidden ${showIntro ? 'animate-introText' : ''}`}
         >
           SCROLL
         </h1>
-        <p className={`text-[#00F0FF] text-[10px] font-black tracking-[0.5em] uppercase mt-4 transition-all duration-700 ${showIntro ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          Immersion Engaged
-        </p>
       </div>
 
       {/* ─── EXIT BUTTON ─── */}

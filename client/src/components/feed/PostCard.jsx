@@ -142,8 +142,8 @@ export default function PostCard({ post: initialPost }) {
     );
   };
 
-  return (
-    <article className="card max-w-[470px] mx-auto mb-6 border border-[#1E2532] bg-[#0B0F19] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+ return (
+    <article className="card max-w-none md:max-w-[470px] -mx-4 md:mx-auto mb-8 border-y border-x-0 md:border-x border-[#1E2532] bg-[#0B0F19] rounded-none md:rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
       
       {/* ── HEADER (Author Info) ── */}
       <div className="flex items-center justify-between p-4">

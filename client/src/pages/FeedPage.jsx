@@ -32,22 +32,22 @@ const FEED_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
-// ─── THE NEW "GHOST" SCROLL TRIGGER (Auto-hiding, invisible swipe zone) ───
+// ─── THE NEW LIGHTNING SWIPE TRIGGER ───
 export function ScrollTrigger() {
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState(null);
   const [showHint, setShowHint] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
 
-  // 1. The "Notification" Timer: Shows for 4 seconds on load, then vanishes forever!
+  // 1. The "Notification" Timer
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowHint(false);
-    }, 4000);
+    }, 4500); // Gives them 4.5 seconds to see the lightning effect
     return () => clearTimeout(timer);
   }, []);
 
-  // 2. Swipe/Drag Math
+  // 2. STRICT Swipe/Drag Math (No Tapping Allowed!)
   const handleDragStart = (e) => {
     setTouchStart(e.clientX || e.targetTouches?.[0]?.clientX);
   };
@@ -57,48 +57,68 @@ export function ScrollTrigger() {
     const touchEnd = e.clientX || e.changedTouches?.[0]?.clientX;
     const distance = touchStart - touchEnd;
 
-    // If they swipe left, OR just click the invisible zone, launch the scroll!
-    if (distance > 30 || distance === 0) {
+    // THE FIX: Must be a deliberate swipe left (drag distance > 40px). 
+    // Taps will no longer do anything!
+    if (distance > 40) {
       navigate('/scroll');
     }
     setTouchStart(null);
   };
 
-  // It is visible IF the intro timer is running, OR if they hover the invisible zone with a mouse
   const isVisible = showHint || isHovered;
 
   return (
-    <div 
-      // THE INVISIBLE SWIPE ZONE: Tall (h-[60vh]) and hugs the right edge (w-12). 
-      // It's always there catching swipes, even when you can't see it!
-      className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-12 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
-      
-      // Event Listeners for Hover and Swiping
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); setTouchStart(null); }}
-      onTouchStart={handleDragStart}
-      onTouchEnd={handleDragEnd}
-      onMouseDown={handleDragStart}
-      onMouseUp={handleDragEnd}
-    >
-      {/* THE VISUAL TAB: Translates completely off-screen (translate-x-[120%]) when not active */}
-      <div 
-        className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
-      >
-        {/* Glowing pulse (only active when visible) */}
-        {isVisible && <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 animate-pulse pointer-events-none" />}
-        
-        {/* Animated Arrows */}
-        <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
-           <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
-        </div>
+    <>
+      {/* ─── CUSTOM HIGH-SPEED ROCKET ANIMATION ─── */}
+      <style>
+        {`
+          @keyframes rocketStrike {
+            0% { transform: translateY(-150%); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(150%); opacity: 0; }
+          }
+          .animate-rocket {
+            animation: rocketStrike 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          }
+        `}
+      </style>
 
-        {/* Vertical Text */}
-        <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase ml-1 drop-shadow-md" style={{ writingMode: 'vertical-rl' }}>
-          Scroll
-        </span>
+      <div 
+        // THE INVISIBLE SWIPE ZONE (Slightly wider to catch fast swipes)
+        className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-16 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => { setIsHovered(false); setTouchStart(null); }}
+        onTouchStart={handleDragStart}
+        onTouchEnd={handleDragEnd}
+        onMouseDown={handleDragStart}
+        onMouseUp={handleDragEnd}
+      >
+        {/* THE VISUAL TAB */}
+        <div 
+          className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out overflow-hidden ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
+        >
+          
+          {/* ⚡ THE LIGHTNING / ROCKET STRIKE ⚡ (Shoots down the edge) */}
+          {isVisible && (
+            <div className="absolute left-[1px] w-[2px] h-16 bg-white shadow-[0_0_20px_4px_#00F0FF] animate-rocket rounded-full" />
+          )}
+
+          {/* Background Aura */}
+          {isVisible && <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 pointer-events-none" />}
+          
+          {/* Animated Arrows */}
+          <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
+             <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
+          </div>
+
+          {/* Vertical Text */}
+          <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase ml-1 drop-shadow-md pointer-events-none" style={{ writingMode: 'vertical-rl' }}>
+            Scroll
+          </span>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

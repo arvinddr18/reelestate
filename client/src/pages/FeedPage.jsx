@@ -32,43 +32,56 @@ const FEED_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
-// ─── THE NEW HORIZONTAL ROCKET SWIPE TRIGGER (Single Strike) ───
+// ─── THE UNBEATABLE "NEURAL-LINK" MAGNETIC PULL TRIGGER ───
 export function ScrollTrigger() {
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState(null);
+  const [currentPull, setCurrentPull] = useState(0); // Tracks the exact pixel distance of the pull
   const [showHint, setShowHint] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
 
-  // 1. The "Notification" Timer (Shortened to exactly 2 seconds)
+  // The 2-second intro rocket
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowHint(false);
-    }, 2000); 
+    const timer = setTimeout(() => setShowHint(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // 2. SWIPE LOGIC (Horizontal Drag > 40px)
+  // ─── INTERACTIVE PHYSICS LOGIC ───
   const handleDragStart = (e) => {
     setTouchStart(e.clientX || e.targetTouches?.[0]?.clientX);
   };
 
-  const handleDragEnd = (e) => {
+  const handleDragMove = (e) => {
     if (!touchStart) return;
-    const touchEnd = e.clientX || e.changedTouches?.[0]?.clientX;
-    const distance = touchStart - touchEnd; 
+    const currentX = e.clientX || e.targetTouches?.[0]?.clientX;
+    const distance = touchStart - currentX;
 
-    // If they swipe LEFT across the screen, launch the feed!
-    if (distance > 40) {
-      navigate('/scroll');
+    // Only stretch if they are pulling LEFT (positive distance)
+    if (distance > 0) {
+      setCurrentPull(distance);
     }
-    setTouchStart(null);
   };
 
-  const isVisible = showHint || isHovered;
+  const handleDragEnd = () => {
+    if (!touchStart) return;
+    
+    // The "Warp Threshold": They must pull exactly 120 pixels to trigger the jump
+    if (currentPull > 120) {
+      // SUCCESS: Navigate instantly
+      navigate('/scroll');
+    }
+    
+    // Reset state (If they didn't pull far enough, it "snaps" back to 0)
+    setTouchStart(null);
+    setCurrentPull(0);
+  };
+
+  // Math for the visuals
+  const isDragging = currentPull > 0;
+  const pullPercentage = Math.min((currentPull / 120) * 100, 100).toFixed(0);
+  const isHovered = currentPull > 0;
 
   return (
     <>
-      {/* ─── CUSTOM HORIZONTAL ROCKET ANIMATION ─── */}
       <style>
         {`
           @keyframes horizontalRocket {
@@ -78,45 +91,93 @@ export function ScrollTrigger() {
             100% { transform: translate(-400px, -50%); opacity: 0; }
           }
           .animate-rocket-horizontal {
-            /* Removed 'infinite', added 'forwards' so it fires exactly ONCE and disappears */
-            animation: horizontalRocket 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: horizontalRocket 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           }
         `}
       </style>
 
+      {/* THE INVISIBLE CATCHER
+        When dragging starts, it expands to 100vw to ensure it catches the mouse/finger 
+        no matter how fast or far they pull across the screen!
+      */}
       <div 
-        // INVISIBLE SWIPE ZONE
-        className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-24 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => { setIsHovered(false); setTouchStart(null); }}
-        onTouchStart={handleDragStart}
+        className={`fixed right-0 top-0 h-screen z-[100] flex items-center justify-end ${touchStart ? 'w-screen' : 'w-24'}`}
+        onMouseMove={handleDragMove}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={handleDragEnd}
+        onTouchMove={handleDragMove}
         onTouchEnd={handleDragEnd}
         onMouseDown={handleDragStart}
-        onMouseUp={handleDragEnd}
+        onTouchStart={handleDragStart}
       >
         
-        {/* ⚡ THE SINGLE HORIZONTAL ROCKET STRIKE ⚡ */}
-        {isVisible && (
+        {/* ─── THE INTRO ROCKET (Only runs once) ─── */}
+        {showHint && (
           <div className="absolute top-1/2 right-12 flex items-center pointer-events-none animate-rocket-horizontal">
              <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#0057FF] to-[#00F0FF]" />
              <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_20px_6px_#00F0FF]" />
           </div>
         )}
 
-        {/* THE VISUAL TAB */}
+        {/* ─── THE MAGNETIC NEURAL TETHER ─── */}
         <div 
-          className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
+          className="absolute right-0 flex items-center h-full pointer-events-none"
+          // This creates the physical stretch effect, translating left by exactly how many pixels they pull
+          style={{ 
+            transform: `translateX(-${isDragging ? currentPull : 0}px)`,
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' // Rubber-band snap back!
+          }}
         >
-          {isVisible && <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 pointer-events-none" />}
-          
-          <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
-             <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
+          {/* The Dark Expanding Portal Void
+            This shadow physically grows into the screen as they pull!
+          */}
+          <div 
+            className="absolute right-0 h-[150vh] bg-[#05070A] shadow-[-30px_0_50px_rgba(0,240,255,0.2)]"
+            style={{ 
+              width: `${isDragging ? currentPull + 50 : 0}px`, 
+              opacity: isDragging ? 0.95 : 0 
+            }}
+          />
+
+          {/* Real-time Percentage Counter & Glowing Node */}
+          <div 
+            className="relative flex items-center opacity-0 transition-opacity duration-300"
+            style={{ opacity: isDragging ? 1 : 0 }}
+          >
+            {/* The Connecting Laser Line */}
+            <div className="w-16 h-[1px] bg-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
+            
+            {/* The Text & Data */}
+            <div className="flex flex-col items-end mr-6 whitespace-nowrap">
+              <span className="text-[#00F0FF] text-[8px] font-black tracking-[0.3em] uppercase animate-pulse">
+                Decrypting Node
+              </span>
+              <span className={`text-3xl font-black italic tracking-tighter ${pullPercentage >= 100 ? 'text-white drop-shadow-[0_0_20px_#fff]' : 'text-transparent bg-clip-text bg-gradient-to-r from-[#0057FF] to-[#00F0FF]'}`}>
+                {pullPercentage}%
+              </span>
+            </div>
           </div>
 
-          <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase ml-1 drop-shadow-md pointer-events-none" style={{ writingMode: 'vertical-rl' }}>
-            Scroll
-          </span>
+          {/* The Initial Physical Tab (Hides as they pull) */}
+          <div 
+            className={`absolute right-0 flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 transition-all duration-300 ${showHint && !isDragging ? 'translate-x-0' : 'translate-x-[120%]'}`}
+          >
+            <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
+               <MdOutlineDoubleArrow className="rotate-180 text-2xl" />
+            </div>
+          </div>
         </div>
+
+        {/* ─── THE WARP FLASHBANG ─── */}
+        {/* If they hit 100%, the entire screen flashes white before navigating */}
+        <div 
+          className="fixed inset-0 bg-white z-[200] pointer-events-none"
+          style={{
+            opacity: pullPercentage >= 100 ? 1 : 0,
+            transition: 'opacity 0.1s ease-in'
+          }}
+        />
+
       </div>
     </>
   );

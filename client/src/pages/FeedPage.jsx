@@ -1,8 +1,7 @@
-import { IoMdSearch, IoMdAdd, IoMdShield } from 'react-icons/io';
-import { MdOutlineDoubleArrow } from 'react-icons/md';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Added IoMdAdd back here!
+import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md';
+import { IoMdSearch, IoMdAdd } from 'react-icons/io';
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
 import api from '../services/api';

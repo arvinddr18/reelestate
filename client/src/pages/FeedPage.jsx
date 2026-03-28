@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md';
-import { IoMdSearch, IoMdAdd } from 'react-icons/io';
+import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; // 👈 Fixed Shield Import
+import { IoMdSearch, IoMdAdd } from 'react-icons/io'; // 👈 Cleaned up duplicates
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
 import api from '../services/api';
@@ -36,16 +36,14 @@ const FEED_CATEGORIES = [
 export function ScrollTrigger() {
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState(null);
-  const [currentPull, setCurrentPull] = useState(0); // Tracks the exact pixel distance of the pull
+  const [currentPull, setCurrentPull] = useState(0); 
   const [showHint, setShowHint] = useState(true);
 
-  // The 2-second intro rocket
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // ─── INTERACTIVE PHYSICS LOGIC ───
   const handleDragStart = (e) => {
     setTouchStart(e.clientX || e.targetTouches?.[0]?.clientX);
   };
@@ -55,7 +53,6 @@ export function ScrollTrigger() {
     const currentX = e.clientX || e.targetTouches?.[0]?.clientX;
     const distance = touchStart - currentX;
 
-    // Only stretch if they are pulling LEFT (positive distance)
     if (distance > 0) {
       setCurrentPull(distance);
     }
@@ -64,21 +61,16 @@ export function ScrollTrigger() {
   const handleDragEnd = () => {
     if (!touchStart) return;
     
-    // The "Warp Threshold": They must pull exactly 120 pixels to trigger the jump
     if (currentPull > 120) {
-      // SUCCESS: Navigate instantly
       navigate('/scroll');
     }
     
-    // Reset state (If they didn't pull far enough, it "snaps" back to 0)
     setTouchStart(null);
     setCurrentPull(0);
   };
 
-  // Math for the visuals
   const isDragging = currentPull > 0;
   const pullPercentage = Math.min((currentPull / 120) * 100, 100).toFixed(0);
-  const isHovered = currentPull > 0;
 
   return (
     <>
@@ -96,10 +88,6 @@ export function ScrollTrigger() {
         `}
       </style>
 
-      {/* THE INVISIBLE CATCHER
-        When dragging starts, it expands to 100vw to ensure it catches the mouse/finger 
-        no matter how fast or far they pull across the screen!
-      */}
       <div 
         className={`fixed right-0 top-0 h-screen z-[100] flex items-center justify-end ${touchStart ? 'w-screen' : 'w-24'}`}
         onMouseMove={handleDragMove}
@@ -111,7 +99,6 @@ export function ScrollTrigger() {
         onTouchStart={handleDragStart}
       >
         
-        {/* ─── THE INTRO ROCKET (Only runs once) ─── */}
         {showHint && (
           <div className="absolute top-1/2 right-12 flex items-center pointer-events-none animate-rocket-horizontal">
              <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#0057FF] to-[#00F0FF]" />
@@ -119,18 +106,13 @@ export function ScrollTrigger() {
           </div>
         )}
 
-        {/* ─── THE MAGNETIC NEURAL TETHER ─── */}
         <div 
           className="absolute right-0 flex items-center h-full pointer-events-none"
-          // This creates the physical stretch effect, translating left by exactly how many pixels they pull
           style={{ 
             transform: `translateX(-${isDragging ? currentPull : 0}px)`,
-            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' // Rubber-band snap back!
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
           }}
         >
-          {/* The Dark Expanding Portal Void
-            This shadow physically grows into the screen as they pull!
-          */}
           <div 
             className="absolute right-0 h-[150vh] bg-[#05070A] shadow-[-30px_0_50px_rgba(0,240,255,0.2)]"
             style={{ 
@@ -139,15 +121,11 @@ export function ScrollTrigger() {
             }}
           />
 
-          {/* Real-time Percentage Counter & Glowing Node */}
           <div 
             className="relative flex items-center opacity-0 transition-opacity duration-300"
             style={{ opacity: isDragging ? 1 : 0 }}
           >
-            {/* The Connecting Laser Line */}
             <div className="w-16 h-[1px] bg-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-            
-            {/* The Text & Data */}
             <div className="flex flex-col items-end mr-6 whitespace-nowrap">
               <span className="text-[#00F0FF] text-[8px] font-black tracking-[0.3em] uppercase animate-pulse">
                 Decrypting Node
@@ -158,7 +136,6 @@ export function ScrollTrigger() {
             </div>
           </div>
 
-          {/* The Initial Physical Tab (Hides as they pull) */}
           <div 
             className={`absolute right-0 flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-2 transition-all duration-300 ${showHint && !isDragging ? 'translate-x-0' : 'translate-x-[120%]'}`}
           >
@@ -171,8 +148,6 @@ export function ScrollTrigger() {
           </div>
         </div>
 
-        {/* ─── THE WARP FLASHBANG ─── */}
-        {/* If they hit 100%, the entire screen flashes white before navigating */}
         <div 
           className="fixed inset-0 bg-white z-[200] pointer-events-none"
           style={{
@@ -192,8 +167,6 @@ export default function FeedPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeSub, setActiveSub] = useState('All');
   const [showReels, setShowReels] = useState(false);
-  
-  // ─── NEW STATE FOR CATEGORY MODAL & SEARCH ───
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
@@ -229,7 +202,6 @@ export default function FeedPage() {
     setActiveSub('All'); 
   };
 
-  // Filter categories for the modal search
   const filteredCategoriesForModal = FEED_CATEGORIES.filter(c =>
     c.name.toLowerCase().includes(categorySearchQuery.toLowerCase()) ||
     c.id.toLowerCase().includes(categorySearchQuery.toLowerCase())
@@ -238,10 +210,9 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white relative pb-24">
 
-    {/* ─── ADD THIS ONE LINE HERE ─── */}
       <ScrollTrigger />
       
-    {/* ─── PREMIUM GLASS HEADER ─── */}
+      {/* ─── PREMIUM GLASS HEADER ─── */}
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
@@ -250,13 +221,12 @@ export default function FeedPage() {
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
-            {/* Custom Glowing Shield Icon (Bypasses NodexaLogo completely!) */}
+            {/* Custom Glowing Shield Icon */}
             <div className="relative w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-               {/* Background Glow */}
                <div className="absolute inset-0 bg-[#00F0FF] blur-[10px] opacity-40 group-hover:opacity-80 rounded-full transition-opacity duration-300" />
-               {/* The Shield Container */}
                <div className="w-full h-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] rounded-xl flex items-center justify-center border border-white/30 shadow-lg relative z-10">
-                  <IoMdShield className="text-white drop-shadow-md" size={18} />
+                  {/* ⚡ THIS WAS THE CRASH! FIXED TO MdShield ⚡ */}
+                  <MdShield className="text-white drop-shadow-md" size={18} />
                </div>
             </div>
             
@@ -328,7 +298,6 @@ export default function FeedPage() {
               </button>
 
               {/* 2. THE USER STORY PORTALS */}
-              {/* Note: Mapping dummy data. Replace with real post/story previews later */}
               {[1, 2, 3, 4, 5, 6].map((story) => (
                 <button 
                   key={story} 
@@ -337,18 +306,12 @@ export default function FeedPage() {
                 >
                   {/* The Inner Glass Card */}
                   <div className="w-full h-full rounded-[26px] overflow-hidden relative bg-[#0B0F19]">
-                    
-                    {/* Story Content Preview (Blurred/Dimmed) */}
                     <img 
                       src={`https://picsum.photos/200/300?random=${story}`} 
                       alt="story preview" 
                       className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-90 transition-all duration-700" 
                     />
-                    
-                    {/* Shadow Gradient so text is readable */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                    
-                    {/* Floating Avatar & Name */}
                     <div className="absolute bottom-3 left-0 right-0 flex flex-col items-center z-10 transform group-hover:-translate-y-1 transition-transform duration-300">
                       <div className="relative mb-1.5">
                         <img 
@@ -356,14 +319,12 @@ export default function FeedPage() {
                           alt="avatar" 
                           className="w-7 h-7 rounded-full border-[1.5px] border-[#00F0FF] object-cover" 
                         />
-                        {/* Live/Unread dot */}
                         <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#00F0FF] rounded-full border-2 border-[#0B0F19] animate-pulse" />
                       </div>
                       <span className="text-[9px] font-black text-white uppercase tracking-widest truncate w-[90%] text-center drop-shadow-md">
                         User {story}
                       </span>
                     </div>
-
                   </div>
                 </button>
               ))}
@@ -464,7 +425,7 @@ export default function FeedPage() {
                 onClick={() => {
                   handleCategoryClick(cat.id);
                   setShowCategoryModal(false);
-                  setCategorySearchQuery(''); // Reset search when closed
+                  setCategorySearchQuery(''); 
                 }}
                 className={`flex flex-col items-center gap-3 p-6 rounded-3xl border transition-all active:scale-95 ${activeCategory === cat.id ? 'bg-[#00F0FF]/10 border-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]' : 'bg-[#151A25] border-[#1E2532] hover:border-[#00F0FF]/50 hover:bg-[#1E2532]'}`}
               >

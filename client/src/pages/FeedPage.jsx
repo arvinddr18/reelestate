@@ -222,9 +222,23 @@ export default function FeedPage() {
           {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
-           {/* YOUR EXACT LOGO */}
-            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-all duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
-               <img src={importedLogo} alt="Nodexa" className="w-full h-full object-contain" />
+          {/* ─── THE CYBER-CORE LOGO ─── */}
+            <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+               {/* 1. Deep Ambient Glow (Pulses on hover) */}
+               <div className="absolute inset-0 bg-[#0057FF] blur-[15px] opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full pointer-events-none" />
+               
+               {/* 2. Spinning Holographic Ring (Spins faster on hover) */}
+               <div className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-[#00F0FF]/40 animate-[spin_8s_linear_infinite] group-hover:border-[#00F0FF] group-hover:animate-[spin_3s_linear_infinite] transition-all duration-500" />
+               
+               {/* 3. Inner Stabilization Ring */}
+               <div className="absolute inset-1.5 rounded-full border border-[#00F0FF]/20 group-hover:scale-110 group-hover:border-[#00F0FF]/50 transition-all duration-500" />
+
+               {/* 4. Your Exact Uploaded Image (Razor sharp with neon shadow) */}
+               <img 
+                 src={importedLogo} 
+                 alt="Nodexa" 
+                 className="w-7 h-7 object-contain relative z-10 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] group-hover:scale-110 transition-transform duration-500" 
+               />
             </div>
             
             {/* Razor-Sharp Text */}

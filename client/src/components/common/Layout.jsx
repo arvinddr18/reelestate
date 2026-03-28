@@ -50,8 +50,13 @@ export default function Layout() {
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-[#0B0F19]">
       
-      {/* ── 💻 DESKTOP SIDEBAR (Hidden on Mobile) ── */}
-      <aside className="hidden md:flex flex-col w-[280px] h-full border-r border-[#1E2532] bg-[#0B0F19]/90 backdrop-blur-3xl py-8 px-4 z-50">
+      {/* ── 💻 DESKTOP SIDEBAR (FLOATING CYBER PANEL) ── */}
+      <aside className="hidden md:flex flex-col w-[280px] h-[calc(100vh-40px)] my-5 ml-5 rounded-[40px] border border-[#1E2532]/80 bg-gradient-to-b from-[#151A25]/90 to-[#0B0F19]/95 backdrop-blur-3xl py-8 px-4 z-50 shadow-[10px_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden group transition-all duration-500 hover:border-[#00F0FF]/20 hover:shadow-[0_0_30px_rgba(0,240,255,0.05)]">
+        
+        {/* ⚡ Subtle Cyber Glowing Accents ⚡ */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF]/60 to-transparent" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-gradient-to-r from-transparent via-[#0057FF]/60 to-transparent" />
+        <div className="absolute -left-10 top-1/4 w-20 h-40 bg-[#00F0FF]/5 blur-[50px] rounded-full pointer-events-none" />
         
         
 

@@ -149,13 +149,13 @@ export default function Layout() {
         </div>
       </main>
 
-      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (FLOATING CYBER-PILL) ── */}
-      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] h-[75px] bg-gradient-to-b from-[#151A25]/95 to-[#0B0F19]/95 backdrop-blur-3xl border border-[#1E2532]/80 rounded-full z-[100] flex items-center justify-around px-4 shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-all duration-300">
+      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (SLEEK GLASS DOCK) ── */}
+      <nav className="md:hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[94%] max-w-[400px] h-[65px] bg-gradient-to-b from-[#151A25]/90 to-[#0B0F19]/95 backdrop-blur-3xl border border-[#1E2532] rounded-[24px] z-[100] flex items-center justify-around px-2 shadow-[0_15px_30px_rgba(0,0,0,0.8)] transition-all duration-300">
         
-        {/* ⚡ Holographic Floating Glows ⚡ */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/60 to-transparent" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-[#0057FF]/60 to-transparent" />
-        <div className="absolute inset-0 bg-[#00F0FF]/[0.03] blur-[15px] rounded-full pointer-events-none" />
+        {/* ⚡ Ultra-Thin Accent Glow ⚡ */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/40 to-transparent" />
+        
+        {/* Nav links stay exactly as they were below here! */}
         
         <NavLink to="/" end className={navLinkClassMobile}>
           {({ isActive }) => <HomeIcon filled={isActive} />}

@@ -242,14 +242,14 @@ export default function FeedPage() {
     {/* ─── ADD THIS ONE LINE HERE ─── */}
       <ScrollTrigger />
       
-      {/* ─── PREMIUM GLASS HEADER ─── */}
+     {/* ─── PREMIUM GLASS HEADER ─── */}
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
-        <div className="px-5 py-4 flex items-center justify-between border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-md">
+        <div className="px-5 py-4 flex items-center justify-between border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-md relative">
           
           {/* Left Side: Flawless Branding Lockup */}
-          <Link to="/" className="flex items-center gap-3 group cursor-pointer">
+          <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             {/* Glowing Logo Icon */}
             <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] transition-all duration-300">
               <NodexaLogo size="w-full" />
@@ -262,12 +262,10 @@ export default function FeedPage() {
           </Link>
 
           {/* Right Side: Search Icon */}
-          <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+          <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] z-10">
             <IoMdSearch size={20} />
           </Link>
           
-        </div>
-        
           {/* Subtle bottom border glow line */}
           <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/20 to-transparent opacity-50" />
         </div>

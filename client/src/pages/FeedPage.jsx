@@ -1,3 +1,4 @@
+import NodexaLogo from '../components/NodexaLogo';
 import { MdOutlineDoubleArrow } from 'react-icons/md';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -246,9 +247,18 @@ export default function FeedPage() {
         
         {/* Top Navbar */}
         <div className="px-5 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-black tracking-tighter italic bg-gradient-to-r from-[#0057FF] to-[#00F0FF] bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]">
-            NODEXA
-          </h1>
+          
+          {/* ─── PREMIUM BRANDING LOCKUP ─── */}
+          <Link to="/" className="flex items-center gap-3 group">
+            {/* The Glowing Logo Icon */}
+            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
+              <NodexaLogo size="w-full" />
+            </div>
+            {/* The Stylized Text */}
+            <h1 className="text-2xl font-black tracking-tighter italic bg-gradient-to-r from-[#0057FF] to-[#00F0FF] bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(0,240,255,0.3)] mt-1">
+              NODEXA
+            </h1>
+          </Link>
           <div className="flex items-center gap-3">
             <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all">
               <IoMdSearch size={20} />

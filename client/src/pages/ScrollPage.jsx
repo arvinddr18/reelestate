@@ -9,17 +9,19 @@ export default function ScrollPage() {
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeReel, setActiveReel] = useState(0);
+  
+  // ─── NEW: CINEMATIC INTRO STATE ───
+  const [showIntro, setShowIntro] = useState(true);
   const scrollRef = useRef(null);
 
+  // 1. Fetch Real Data
   useEffect(() => {
     const fetchReels = async () => {
       try {
         setLoading(true);
         const res = await api.get('/posts'); 
-        
         const actualPosts = res.data?.data || res.data || [];
         
-        // Safely filter for posts with media
         const postsWithMedia = actualPosts.filter(post => 
           (Array.isArray(post?.media) && post.media.length > 0) || 
           (Array.isArray(post?.images) && post.images.length > 0) || 
@@ -35,10 +37,18 @@ export default function ScrollPage() {
         setLoading(false);
       }
     };
-
     fetchReels();
   }, []);
 
+  // 2. Intro Timer (Dissolves the title after 1.5 seconds)
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => setShowIntro(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  // 3. Autoplay Tracker
   useEffect(() => {
     const handleScroll = () => {
       if (!scrollRef.current) return;
@@ -69,6 +79,21 @@ export default function ScrollPage() {
   return (
     <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center overflow-hidden">
       
+      {/* ─── ⚡ THE CINEMATIC HUD INTRO ⚡ ─── */}
+      <div 
+        className={`absolute inset-0 z-[200] flex flex-col items-center justify-center pointer-events-none transition-all duration-1000 ease-in-out ${showIntro ? 'bg-black/80 backdrop-blur-xl opacity-100' : 'bg-transparent backdrop-blur-none opacity-0'}`}
+      >
+        <h1 
+          className={`text-5xl md:text-7xl font-black italic tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-[#0057FF] to-[#00F0FF] drop-shadow-[0_0_30px_rgba(0,240,255,0.8)] transition-transform duration-1000 ease-out ${showIntro ? 'scale-100' : 'scale-[2] blur-xl'}`}
+        >
+          SCROLL
+        </h1>
+        <p className={`text-[#00F0FF] text-[10px] font-black tracking-[0.5em] uppercase mt-4 transition-all duration-700 ${showIntro ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          Immersion Engaged
+        </p>
+      </div>
+
+      {/* ─── EXIT BUTTON ─── */}
       <Link 
         to="/" 
         className="absolute top-6 left-6 z-50 p-3 bg-black/40 backdrop-blur-md rounded-full border border-white/10 text-white hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]"
@@ -76,6 +101,7 @@ export default function ScrollPage() {
         <IoMdArrowBack size={24} />
       </Link>
 
+      {/* ─── SNAP SCROLLING CONTAINER ─── */}
       <div 
         ref={scrollRef}
         className="w-full max-w-[500px] h-full overflow-y-scroll snap-y snap-mandatory no-scrollbar relative border-x border-white/5 bg-[#05070A]"
@@ -87,9 +113,6 @@ export default function ScrollPage() {
            </div>
         ) : (
           reels.map((reel, index) => {
-            
-            // ─── BULLETPROOF MEDIA EXTRACTION ───
-            // Extracts the URL safely regardless of how the database returns it
             let mediaUrl = '';
             if (reel?.media && Array.isArray(reel.media) && reel.media[0]) {
                mediaUrl = reel.media[0].url || reel.media[0];
@@ -99,11 +122,9 @@ export default function ScrollPage() {
                mediaUrl = reel?.image || reel?.videoUrl || '';
             }
 
-            // Ensure mediaUrl is a string before checking for video extensions
             const isString = typeof mediaUrl === 'string';
             const isVideo = isString && (mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i) || reel?.media?.[0]?.type === 'video');
 
-            // ─── BULLETPROOF SAFE NUMBERS ───
             const likeCount = Array.isArray(reel?.likes) ? reel.likes.length : (Number(reel?.likes) || 0);
             const commentCount = Array.isArray(reel?.comments) ? reel.comments.length : (Number(reel?.comments) || 0);
             const displayPrice = reel?.price ? `$${Number(reel.price).toLocaleString()}` : 'MARKET VALUE';
@@ -123,7 +144,7 @@ export default function ScrollPage() {
                     />
                   ) : (
                     <img 
-                      src={isString ? mediaUrl : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075'} // Safe fallback image
+                      src={isString ? mediaUrl : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075'} 
                       alt="Property" 
                       className="w-full h-full object-cover" 
                     />

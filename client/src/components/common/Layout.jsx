@@ -150,7 +150,7 @@ export default function Layout() {
       </main>
 
       {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (SLEEK GLASS DOCK) ── */}
-      <nav className="md:hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[94%] max-w-[400px] h-[65px] bg-gradient-to-b from-[#151A25]/90 to-[#0B0F19]/95 backdrop-blur-3xl border border-[#1E2532] rounded-[24px] z-[100] flex items-center justify-around px-2 shadow-[0_15px_30px_rgba(0,0,0,0.8)] transition-all duration-300">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[70px] bg-[#0B0F19]/90 backdrop-blur-xl border-t border-x border-[#1E2532] rounded-t-[80px] z-[100] flex items-center justify-around px-2 pb-safe">
         
         {/* ⚡ Ultra-Thin Accent Glow ⚡ */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/40 to-transparent" />

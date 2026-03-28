@@ -213,28 +213,27 @@ export default function FeedPage() {
 
       <ScrollTrigger />
       
-      {/* ─── PREMIUM GLASS HEADER (SEAMLESS) ─── */}
-      <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-2xl border-none shadow-none">
+      {/* ─── PREMIUM GLASS HEADER (100% BORDERLESS) ─── */}
+      <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-2xl">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
-       {/* ─── ULTRA PREMIUM TOP NAVBAR (ZERO LINES) ─── */}
-        <div className="px-5 py-4 flex items-center justify-between relative">
+        <div className="px-5 py-4 flex items-center justify-between">
           
-        {/* Left Side: Flawless Branding Lockup (VISIBLE ON ALL SCREENS) */}
+          {/* Left Side: Flawless Branding Lockup */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer z-10">
             
             {/* ─── THE CYBER-CORE LOGO ─── */}
             <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-               {/* 1. Deep Ambient Glow */}
+               {/* Deep Ambient Glow */}
                <div className="absolute inset-0 bg-[#0057FF] blur-[15px] opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full pointer-events-none" />
                
-               {/* 2. Spinning Holographic Ring */}
+               {/* Spinning Holographic Ring */}
                <div className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-[#00F0FF]/40 animate-[spin_8s_linear_infinite] group-hover:border-[#00F0FF] group-hover:animate-[spin_3s_linear_infinite] transition-all duration-500" />
                
-               {/* 3. Inner Stabilization Ring */}
+               {/* Inner Stabilization Ring */}
                <div className="absolute inset-1.5 rounded-full border border-[#00F0FF]/20 group-hover:scale-110 group-hover:border-[#00F0FF]/50 transition-all duration-500" />
 
-               {/* 4. Your Exact Uploaded Image */}
+               {/* Your Exact Uploaded Image */}
                <img 
                  src={importedLogo} 
                  alt="Nodexa" 
@@ -247,14 +246,12 @@ export default function FeedPage() {
               NODEXA
             </h1>
           </Link>
-          
-          {/* Right Side: Search Icon (Stays on the right) */}
+
+          {/* Right Side: Search Icon */}
           <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] z-10 ml-auto">
             <IoMdSearch size={20} />
           </Link>
-
-          {/* Subtle bottom border glow line */}
-          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/20 to-transparent opacity-50" />
+          
         </div>
         
         {/* ─── THE SHAPE-SHIFTING CATEGORY BAR ─── */}

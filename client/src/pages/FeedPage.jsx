@@ -245,27 +245,37 @@ export default function FeedPage() {
       {/* ─── PREMIUM GLASS HEADER ─── */}
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1E2532] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         
-        {/* Top Navbar */}
-        <div className="px-5 py-4 flex items-center justify-between">
+        {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
+        <div className="px-5 py-5 flex items-center justify-between relative overflow-hidden">
           
-          {/* ─── PREMIUM BRANDING LOCKUP ─── */}
-          <Link to="/" className="flex items-center gap-3 group">
-            {/* The Glowing Logo Icon */}
-            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">
-              <NodexaLogo size="w-full" />
+          {/* Left Side: Flawless Branding Lockup */}
+          <Link to="/" className="flex items-center gap-4 group cursor-pointer z-10">
+            
+            {/* The Holographic Logo Icon */}
+            <div className="relative w-11 h-11 flex items-center justify-center group-hover:scale-110 transition-all duration-500">
+              {/* Ambient Hover Glow behind the logo */}
+              <div className="absolute inset-0 bg-[#00F0FF] blur-[15px] opacity-0 group-hover:opacity-50 transition-opacity duration-500 rounded-full pointer-events-none" />
+              <NodexaLogo size="w-full relative z-10" />
             </div>
-            {/* The Stylized Text */}
-            <h1 className="text-2xl font-black tracking-tighter italic bg-gradient-to-r from-[#0057FF] to-[#00F0FF] bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(0,240,255,0.3)] mt-1">
+            
+            {/* The Elite Text (No extra sentences!) */}
+            <h1 className="text-[26px] mt-1 font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00F0FF] to-[#0057FF] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)] group-hover:drop-shadow-[0_0_25px_rgba(0,240,255,0.8)] transition-all duration-500">
               NODEXA
             </h1>
+            
           </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all">
+
+          {/* Right Side: Search Icon */}
+          <div className="flex items-center gap-3 z-10">
+            <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25]/80 backdrop-blur-md border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)]">
               <IoMdSearch size={20} />
             </Link>
           </div>
+          
+          {/* Subtle bottom border glow line */}
+          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/20 to-transparent opacity-50" />
         </div>
-
+        
         {/* ─── THE SHAPE-SHIFTING CATEGORY BAR ─── */}
         <div className="px-4 pb-4 pt-1">
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth snap-x">

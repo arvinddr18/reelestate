@@ -32,18 +32,18 @@ const FEED_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
-// ─── THE NEW HORIZONTAL ROCKET SWIPE TRIGGER ───
+// ─── THE NEW HORIZONTAL ROCKET SWIPE TRIGGER (Single Strike) ───
 export function ScrollTrigger() {
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState(null);
   const [showHint, setShowHint] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
 
-  // 1. The "Notification" Timer
+  // 1. The "Notification" Timer (Shortened to exactly 2 seconds)
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowHint(false);
-    }, 4500); // 4.5 seconds for the user to see the rocket and learn the swipe!
+    }, 2000); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -55,7 +55,7 @@ export function ScrollTrigger() {
   const handleDragEnd = (e) => {
     if (!touchStart) return;
     const touchEnd = e.clientX || e.changedTouches?.[0]?.clientX;
-    const distance = touchStart - touchEnd; // Positive number means they swiped Left
+    const distance = touchStart - touchEnd; 
 
     // If they swipe LEFT across the screen, launch the feed!
     if (distance > 40) {
@@ -78,13 +78,14 @@ export function ScrollTrigger() {
             100% { transform: translate(-400px, -50%); opacity: 0; }
           }
           .animate-rocket-horizontal {
-            animation: horizontalRocket 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            /* Removed 'infinite', added 'forwards' so it fires exactly ONCE and disappears */
+            animation: horizontalRocket 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           }
         `}
       </style>
 
       <div 
-        // INVISIBLE SWIPE ZONE (Widened to w-24 to easily catch the user's thumb!)
+        // INVISIBLE SWIPE ZONE
         className="fixed right-0 top-1/2 -translate-y-1/2 h-[60vh] w-24 z-50 flex items-center justify-end cursor-grab active:cursor-grabbing"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => { setIsHovered(false); setTouchStart(null); }}
@@ -94,13 +95,10 @@ export function ScrollTrigger() {
         onMouseUp={handleDragEnd}
       >
         
-        {/* ⚡ THE HORIZONTAL ROCKET / LIGHTNING STRIKE ⚡ */}
-        {/* It shoots directly OUT of the button, across the feed page! */}
+        {/* ⚡ THE SINGLE HORIZONTAL ROCKET STRIKE ⚡ */}
         {isVisible && (
           <div className="absolute top-1/2 right-12 flex items-center pointer-events-none animate-rocket-horizontal">
-             {/* The Rocket Tail (Fading gradient) */}
              <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#0057FF] to-[#00F0FF]" />
-             {/* The Rocket Head (Glowing star) */}
              <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_20px_6px_#00F0FF]" />
           </div>
         )}
@@ -109,10 +107,8 @@ export function ScrollTrigger() {
         <div 
           className={`relative flex items-center bg-[#0B0F19]/90 backdrop-blur-md border-y border-l border-[#00F0FF]/40 rounded-l-full py-10 px-3 shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-700 ease-in-out ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'}`}
         >
-          {/* Background Aura */}
           {isVisible && <div className="absolute right-0 w-16 h-48 bg-gradient-to-l from-[#00F0FF]/30 to-transparent blur-xl opacity-60 pointer-events-none" />}
           
-          {/* Animated Arrows pointing the swipe direction */}
           <div className="flex flex-col items-center mr-1 text-[#00F0FF]">
              <MdOutlineDoubleArrow className="rotate-180 text-2xl animate-[pulse_1.5s_infinite]" />
           </div>

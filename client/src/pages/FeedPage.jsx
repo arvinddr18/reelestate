@@ -217,6 +217,7 @@ export default function FeedPage() {
       <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-2xl border-none shadow-none">
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
+       {/* ─── ULTRA PREMIUM TOP NAVBAR (ZERO LINES) ─── */}
         <div className="px-5 py-4 flex items-center justify-between relative">
           
         {/* Left Side: Flawless Branding Lockup (VISIBLE ON ALL SCREENS) */}

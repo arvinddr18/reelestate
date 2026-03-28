@@ -149,8 +149,12 @@ export default function Layout() {
         </div>
       </main>
 
-      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[70px] bg-[#0B0F19]/90 backdrop-blur-xl border-t border-[#1E2532] z-[100] flex items-center justify-around px-2 pb-safe">
+      {/* ── 📱 MOBILE BOTTOM NAVIGATION BAR (CYBER-DOME) ── */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[80px] bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/95 to-[#151A25]/90 backdrop-blur-3xl border-t border-x border-[#1E2532]/80 rounded-t-[40px] z-[100] flex items-center justify-around px-4 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.7)]">
+        
+        {/* ⚡ Holographic Top Edge Glow ⚡ */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF]/60 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-10 bg-[#00F0FF]/15 blur-[20px] rounded-full pointer-events-none" />
         
         <NavLink to="/" end className={navLinkClassMobile}>
           {({ isActive }) => <HomeIcon filled={isActive} />}

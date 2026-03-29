@@ -177,19 +177,27 @@ export default function FeedPage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      // If scrolling down and past 100px, hide the header. If scrolling up, show it!
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
+      // Bulletproof tracking: checks window, body, and document elements
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setShowHeader(false); // Scrolled down: Hide Header
+      } else if (currentScrollY < lastScrollY) {
+        setShowHeader(true);  // Scrolled up: Show Header
       }
       setLastScrollY(currentScrollY);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Also attach to window touch events for mobile precision
+    window.addEventListener('touchmove', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+    };
   }, [lastScrollY]);
+  // ───────────────────────────────────
  
 
   useEffect(() => {
@@ -235,7 +243,7 @@ export default function FeedPage() {
       <ScrollTrigger />
       
       {/* ─── PREMIUM GLASS HEADER (100% BORDERLESS) ─── */}
-     <header className={`sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-2xl border-none shadow-none ring-0 outline-none transition-transform duration-500 ease-out ${showHeader ? 'translate-y-0' : '-translate-y-[150%]'}`}>
+      <header className={`fixed top-0 left-0 w-full z-40 bg-[#0B0F19]/90 backdrop-blur-2xl transition-transform duration-500 ease-in-out shadow-[0_10px_30px_rgba(0,0,0,0.5)] ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between">
@@ -333,7 +341,7 @@ export default function FeedPage() {
       </header>
 
       {/* ─── MAIN FEED CONTENT ─── */}
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-2xl mx-auto px-4 pb-6 space-y-6 pt-[150px]">
         
         {/* ─── ⚡ NEXT-GEN STORY PORTALS (Only on 'For You') ─── */}
         {activeCategory === 'All' && (

@@ -235,7 +235,7 @@ export default function FeedPage() {
       <ScrollTrigger />
       
       {/* ─── PREMIUM GLASS HEADER (100% BORDERLESS) ─── */}
-      <header className={`sticky z-40 bg-[#0B0F19]/90 backdrop-blur-2xl border-none shadow-none ring-0 outline-none transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${showHeader ? 'top-0' : '-top-40'}`}>
+     <header className={`sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-2xl border-none shadow-none ring-0 outline-none transition-transform duration-500 ease-out ${showHeader ? 'translate-y-0' : '-translate-y-[150%]'}`}>
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between">

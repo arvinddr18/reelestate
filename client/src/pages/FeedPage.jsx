@@ -247,9 +247,23 @@ export default function FeedPage() {
             </h1>
           </Link>
 
-          {/* Right Side: Search Icon */}
-          <Link to="/search" className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] z-10 ml-auto">
-            <IoMdSearch size={20} />
+         {/* Right Side: Cyber-Pulse Notification Hub */}
+          <Link to="/notifications" className="relative w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] z-10 ml-auto group overflow-hidden">
+            
+            {/* Ambient Glass Glow on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#0057FF]/10 to-[#00F0FF]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Notification Bell Icon (Interactive) */}
+            <svg className="w-5 h-5 relative z-10 transform group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_5px_rgba(0,240,255,0)] group-hover:drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            
+            {/* The "Cyber-Pulse" Unread Indicator */}
+            <span className="absolute top-[8px] right-[10px] flex h-2.5 w-2.5 -mr-1 -mt-1 z-20">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-80"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00F0FF] border-[1.5px] border-[#151A25] shadow-[0_0_8px_#00F0FF]"></span>
+            </span>
+            
           </Link>
           
         </div>

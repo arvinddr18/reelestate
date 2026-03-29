@@ -9,8 +9,6 @@ import { useAuth } from '../context/AuthContext';
 
 // ─── CONNECT TO BACKEND (BULLETPROOF URL) ───
 const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
-// This automatically deletes any extra '/api' or '/' at the end of your Vercel variable
-// so we NEVER get the dreaded /api/api/ bug!
 const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 export default function Messages() {
@@ -23,7 +21,11 @@ export default function Messages() {
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 👇 NEW: State to control the split-screen chat view
+  const [activeChat, setActiveChat] = useState(null);
+
   // ─── FETCH ENTIRE NETWORK (WITH X-RAY LOGS) ───
+  // Note: Your exact logic is completely untouched!
   useEffect(() => {
     const fetchNetwork = async () => {
       const userId = currentUser?._id || currentUser?.id;
@@ -94,7 +96,7 @@ export default function Messages() {
 
   // ─── BULLETPROOF SEARCH FILTER ───
   const filteredUsers = dbUsers.filter(u => {
-    if (!searchQuery) return true; // If search is empty, show everyone
+    if (!searchQuery) return true; 
     
     const query = searchQuery.toLowerCase().trim();
     const fullName = (u.fullName || '').toLowerCase();
@@ -104,34 +106,35 @@ export default function Messages() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white font-sans overflow-x-hidden relative pb-20">
+    <div className="h-[100dvh] w-full bg-[#05070A] text-white font-sans flex overflow-hidden relative">
       
       {/* ─── CYBERPUNK AMBIENT BACKGROUND ─── */}
-      <div className="fixed top-0 left-0 w-full h-96 bg-gradient-to-b from-[#0057FF]/10 to-transparent pointer-events-none" />
-      <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#00F0FF] opacity-5 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#0057FF]/10 to-transparent pointer-events-none z-0" />
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#00F0FF] opacity-5 blur-[150px] rounded-full pointer-events-none z-0" />
 
-      {/* ─── HOLOGRAPHIC HEADER ─── */}
-      <header className="sticky top-0 z-50 bg-[#0B0F19]/80 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors">
-              <IoMdArrowBack size={20} />
-            </button>
-            <div>
-              <h1 className="text-xl font-black tracking-tighter italic text-white flex items-center gap-2">
-                COMMS HUB <IoMdPulse className="text-[#00F0FF] animate-pulse" />
-              </h1>
-              <p className="text-[9px] font-black text-[#00F0FF] uppercase tracking-[0.2em]">Quantum Encrypted</p>
+      {/* ─── LEFT PANE: COMMS HUB (Your exact layout converted to a column) ─── */}
+      <div className={`w-full md:w-[400px] lg:w-[450px] h-full flex flex-col bg-[#0B0F19]/80 backdrop-blur-2xl border-r border-[#1E2532] z-10 shrink-0 transition-transform duration-500 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
+        
+        {/* HOLOGRAPHIC HEADER */}
+        <header className="px-6 py-5 border-b border-[#1E2532] shrink-0">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-4">
+              <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors">
+                <IoMdArrowBack size={20} />
+              </button>
+              <div>
+                <h1 className="text-xl font-black tracking-tighter italic text-white flex items-center gap-2">
+                  COMMS HUB <IoMdPulse className="text-[#00F0FF] animate-pulse" />
+                </h1>
+                <p className="text-[9px] font-black text-[#00F0FF] uppercase tracking-[0.2em]">Quantum Encrypted</p>
+              </div>
             </div>
+            <button className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-110 transition-transform">
+              <IoMdAdd size={24} />
+            </button>
           </div>
-          
-          <button className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-110 transition-transform">
-            <IoMdAdd size={24} />
-          </button>
-        </div>
 
-        {/* Smart Search Pill */}
-        <div className="max-w-3xl mx-auto mt-5">
+          {/* Smart Search Pill */}
           <div className="bg-[#151A25]/90 border border-[#1E2532] rounded-full p-1.5 flex items-center shadow-inner focus-within:border-[#00F0FF]/50 transition-colors">
             <div className="w-10 h-10 flex items-center justify-center text-gray-500">
               <IoMdSearch size={20} />
@@ -144,104 +147,206 @@ export default function Messages() {
               className="flex-1 bg-transparent text-sm text-white font-bold outline-none placeholder-gray-600"
             />
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-3xl mx-auto px-4 mt-6 space-y-8 relative z-10">
-        
-        {/* ─── ACTIVE RADAR ─── */}
-        {!loading && dbUsers.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Active Radar</h2>
-              <span className="text-[10px] font-black text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-0.5 rounded-full border border-[#00F0FF]/30">
-                {dbUsers.length} Networked
-              </span>
+        {/* SCROLLABLE LIST AREA */}
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-4 px-4 pt-6">
+          
+          {/* ─── ACTIVE RADAR (Your exact radar UI) ─── */}
+          {!loading && dbUsers.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Active Radar</h2>
+                <span className="text-[10px] font-black text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-0.5 rounded-full border border-[#00F0FF]/30">
+                  {dbUsers.length} Networked
+                </span>
+              </div>
+              
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 snap-x">
+                {dbUsers.slice(0, 10).map(user => (
+                  <div key={user._id || user.id} onClick={() => setActiveChat(user)} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
+                    <div className="relative">
+                      <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
+                      <div className="w-16 h-16 rounded-full bg-[#151A25] border-2 border-[#0B0F19] overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold">
+                        {user.profilePhoto ? (
+                          <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                        ) : (
+                          (user.fullName || user.username || 'U')[0].toUpperCase()
+                        )}
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
+                    </div>
+                    <span className="text-[10px] font-black text-white uppercase tracking-wider truncate w-16 text-center">
+                      {user.fullName || user.username}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
+
+          {/* ─── FLOATING THREADS (Your exact mapping logic) ─── */}
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Encrypted Channels</h2>
             
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
-              {dbUsers.slice(0, 10).map(user => (
-                <Link to={`/messages/${user._id || user.id}`} key={user._id || user.id} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
-                  <div className="relative">
-                    <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
-                    <div className="w-16 h-16 rounded-full bg-[#151A25] border-2 border-[#0B0F19] overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold">
+            {loading ? (
+              <div className="text-center py-10 text-[#00F0FF] animate-pulse font-bold text-sm tracking-widest uppercase">
+                Decrypting Network...
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="text-center py-10 text-gray-500 font-bold text-sm">
+                {searchQuery ? "No matches found." : "No networked users found."}
+              </div>
+            ) : (
+              filteredUsers.map(user => (
+                <div 
+                  key={user._id || user.id} 
+                  // 👇 FIX: Clicking now opens the chat on the right instead of leaving the page!
+                  onClick={() => setActiveChat(user)} 
+                  className={`block p-4 rounded-[24px] backdrop-blur-xl transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/10 border-[#00F0FF]/40 shadow-[0_0_20px_rgba(0,240,255,0.1)]' : 'bg-[#151A25]/60 border-[#1E2532] hover:border-[#2A3441] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#0B0F19] bg-[#1E2532] shadow-lg overflow-hidden text-lg font-bold">
                       {user.profilePhoto ? (
-                        <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                        <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
                       ) : (
                         (user.fullName || user.username || 'U')[0].toUpperCase()
                       )}
-                    </div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-                  </div>
-                  <span className="text-[10px] font-black text-white uppercase tracking-wider truncate w-16 text-center">
-                    {user.fullName || user.username}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ─── FLOATING THREADS (Real Users List) ─── */}
-        <div className="space-y-3">
-          {loading ? (
-            <div className="text-center py-10 text-[#00F0FF] animate-pulse font-bold text-sm tracking-widest uppercase">
-              Decrypting Network...
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 font-bold text-sm">
-              {searchQuery ? "No matches found." : "No networked users found."}
-            </div>
-          ) : (
-            filteredUsers.map(user => (
-              <Link 
-                key={user._id || user.id} 
-                to={`/messages/${user._id || user.id}`} 
-                className="block p-4 rounded-[24px] bg-[#151A25]/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)] border border-[#1E2532] hover:border-[#2A3441] group relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#0B0F19] bg-[#1E2532] shadow-lg overflow-hidden text-lg font-bold">
-                    {user.profilePhoto ? (
-                      <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
-                    ) : (
-                      (user.fullName || user.username || 'U')[0].toUpperCase()
-                    )}
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00F0FF] rounded-full border-2 border-[#151A25]" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-black truncate text-white">
-                        {user.fullName || `@${user.username}`}
-                      </h3>
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00F0FF] rounded-full border-2 border-[#151A25]" />
                     </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 truncate">
-                        <div className="flex items-center gap-1.5 truncate">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className={`text-sm font-black truncate ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}>
+                          {user.fullName || `@${user.username}`}
+                        </h3>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 truncate">
                           <span className="text-xs font-bold truncate text-gray-500">
                             Tap to open secure channel...
                           </span>
                         </div>
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-2">
-                         <div className="flex -space-x-1">
-                            <IoMdCheckmark className="text-gray-500" size={14} />
-                            <IoMdCheckmark className="text-gray-500" size={14} />
-                          </div>
+                        <div className="shrink-0 flex items-center gap-2">
+                            <div className="flex -space-x-1">
+                              <IoMdCheckmark className="text-gray-500" size={14} />
+                              <IoMdCheckmark className="text-gray-500" size={14} />
+                            </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </Link>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
+      </div>
 
-      </main>
+      {/* ─── RIGHT PANE: THE DATA TERMINAL (Live Chat) ─── */}
+      <div className={`flex-1 h-full flex flex-col relative bg-[#05070A] z-0 ${!activeChat ? 'hidden md:flex' : 'flex'}`}>
+        
+        {/* Holographic Blueprint Grid */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+        {activeChat ? (
+          <>
+            {/* Active Chat Header */}
+            <div className="h-20 px-6 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-[#1E2532] flex items-center justify-between z-20 shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+              <div className="flex items-center gap-4">
+                {/* Mobile Back Button - Hides the right pane and goes back to the list */}
+                <button onClick={() => setActiveChat(null)} className="md:hidden w-10 h-10 rounded-full bg-[#151A25] flex items-center justify-center text-white border border-[#1E2532]">
+                  <IoMdArrowBack size={20} />
+                </button>
+                <div className="w-12 h-12 rounded-full p-[1.5px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                   <div className="w-full h-full rounded-full bg-[#1E2532] border-2 border-[#0B0F19] overflow-hidden flex items-center justify-center text-white font-bold">
+                     {activeChat.profilePhoto ? (
+                        <img src={activeChat.profilePhoto} className="w-full h-full object-cover" alt="avatar" />
+                     ) : (
+                        (activeChat.fullName || activeChat.username || 'U')[0].toUpperCase()
+                     )}
+                   </div>
+                </div>
+                <div className="flex flex-col">
+                  <h2 className="text-white font-black text-[16px]">{activeChat.fullName || `@${activeChat.username}`}</h2>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_5px_#00F0FF]" />
+                    <span className="text-[#00F0FF] text-[10px] font-bold tracking-widest uppercase">Secure Channel Sync</span>
+                  </div>
+                </div>
+              </div>
+              <button className="w-10 h-10 rounded-full bg-[#151A25] hover:bg-[#1E2532] border border-[#1E2532] flex items-center justify-center transition-colors text-white">
+                <IoMdMore size={20} />
+              </button>
+            </div>
+
+            {/* Messages Area (Mocked for layout until you connect your message fetching) */}
+            <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar">
+              
+              <div className="flex justify-center mb-4 mt-4">
+                <span className="px-3 py-1 rounded-full bg-[#151A25] border border-[#1E2532] text-[9px] font-black text-gray-500 tracking-widest uppercase">Encryption Started • Today</span>
+              </div>
+
+              {/* Received Data Panel */}
+              <div className="flex flex-col items-start w-full">
+                <div className="bg-[#151A25] border border-[#1E2532] p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 rounded-l-sm" />
+                  <p className="text-gray-200 text-sm leading-relaxed mb-2 font-medium">Network established. Ready to securely exchange property assets.</p>
+                  <span className="text-gray-500 text-[9px] font-bold font-mono">10:41 AM • DECRYPTED</span>
+                </div>
+              </div>
+
+              {/* Sent Data Panel */}
+              <div className="flex flex-col items-end w-full">
+                <div className="bg-[#00F0FF]/10 border border-[#00F0FF]/30 p-4 rounded-2xl rounded-tr-sm max-w-[80%] md:max-w-[60%] relative shadow-[0_5px_20px_rgba(0,240,255,0.05)]">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-[#00F0FF] rounded-r-sm shadow-[0_0_8px_#00F0FF]" />
+                  <p className="text-white text-sm leading-relaxed mb-2 font-medium">Confirmed. Standing by for data transmission.</p>
+                  <div className="flex justify-end items-center gap-1.5">
+                    <span className="text-[#00F0FF]/70 text-[9px] font-bold font-mono">10:42 AM • UPLINKED</span>
+                    <div className="flex -space-x-1">
+                      <IoMdCheckmark className="text-[#00F0FF]" size={12} />
+                      <IoMdCheckmark className="text-[#00F0FF]" size={12} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Input Terminal */}
+            <div className="p-4 md:p-6 bg-gradient-to-t from-[#05070A] via-[#05070A]/80 to-transparent z-20 shrink-0 pb-8 md:pb-6">
+              <div className="flex items-center gap-3 bg-[#0B0F19] border border-[#1E2532] p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] focus-within:border-[#00F0FF]/30 transition-colors">
+                <button className="w-10 h-10 rounded-xl bg-[#151A25] hover:bg-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
+                  <IoMdAdd size={20} />
+                </button>
+                <input 
+                  type="text" 
+                  placeholder="Transmit secure message..." 
+                  className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder-gray-600 font-medium px-2"
+                />
+                <button className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,240,255,0.4)] shrink-0">
+                  <svg className="w-4 h-4 translate-x-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Empty State: Holographic Logo */
+          <div className="flex-1 flex flex-col items-center justify-center z-10 bg-gradient-to-br from-[#05070A] to-[#0B0F19]">
+            <div className="w-32 h-32 rounded-full border border-dashed border-[#00F0FF]/30 flex items-center justify-center animate-[spin_10s_linear_infinite] mb-6">
+              <div className="w-24 h-24 rounded-full border border-[#0057FF]/50 flex items-center justify-center animate-[spin_5s_linear_infinite_reverse]">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] opacity-10 blur-xl animate-pulse" />
+                <IoMdPulse size={40} className="text-[#00F0FF] opacity-50 absolute" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-widest uppercase drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">Comms Hub</h2>
+            <p className="text-gray-500 text-sm font-medium mt-2">Select a channel from the left to establish a secure uplink.</p>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

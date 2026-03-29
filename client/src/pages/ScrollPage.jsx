@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// EXACT SAME IMPORTS - No new icons added
+// 100% SAFE IMPORTS - Unchanged
 import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack } from 'react-icons/io';
 import api from '../services/api';
 
@@ -10,7 +10,6 @@ export default function ScrollPage() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // EXACT SAME LOGIC
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -46,28 +45,43 @@ export default function ScrollPage() {
   if (loading) {
     return (
       <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center text-white">
-         <div className="w-10 h-10 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
-         <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Streams...</span>
+        <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Decrypting Feed...</span>
       </div>
     );
   }
 
   if (posts.length === 0) {
     return (
-      <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center text-white">
-        <h2 className="text-xl font-bold mb-4">No posts found</h2>
-        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-gray-800 rounded-lg">Go Back</button>
+      <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center text-white relative">
+        <button onClick={() => navigate(-1)} className="absolute top-8 left-8 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors z-50">
+          <IoMdArrowBack size={24} />
+        </button>
+        <h2 className="text-2xl font-black mb-4">No Streams Found</h2>
       </div>
     );
   }
 
+  // Get active media for the desktop ambient background
+  const activePost = posts[activeIndex] || posts[0];
+  const activeMediaUrl = resolveMediaUrl(activePost?.images?.[0]?.url || activePost?.image);
+  const isBgVideo = activeMediaUrl && typeof activeMediaUrl === 'string' && activeMediaUrl.match(/\.(mp4|webm|ogg)$/i);
+
   return (
-    <div className="h-screen w-full bg-black relative flex justify-center">
+    <div className="h-screen w-full bg-[#05070A] relative flex justify-center overflow-hidden">
       
-      {/* ─── PREMIUM BACK BUTTON ─── */}
+      {/* ─── DESKTOP AMBIENT AURA (Hidden on mobile) ─── */}
+      <div className="absolute inset-0 hidden md:block z-0 pointer-events-none transition-all duration-1000">
+        {activeMediaUrl && !isBgVideo && (
+          <img src={activeMediaUrl} className="w-full h-full object-cover blur-[80px] opacity-30 scale-125" alt="aura" />
+        )}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-3xl" />
+      </div>
+
+      {/* ─── FLOATING BACK BUTTON ─── */}
       <button 
         onClick={() => navigate(-1)} 
-        className="absolute top-6 left-4 z-50 p-3 bg-black/20 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-[#00F0FF]/20 hover:text-[#00F0FF] transition-all shadow-[0_5px_15px_rgba(0,0,0,0.5)]"
+        className="absolute top-6 left-4 md:left-8 z-50 w-12 h-12 flex items-center justify-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white hover:bg-white/20 transition-all shadow-lg"
       >
         <IoMdArrowBack size={24} />
       </button>
@@ -75,19 +89,19 @@ export default function ScrollPage() {
       {/* ─── MAIN SCROLL CONTAINER ─── */}
       <div 
         onScroll={handleScroll}
-        className="w-full max-w-[450px] h-screen overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,240,255,0.05)]"
+        className="w-full max-w-[450px] h-screen overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 md:shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-black"
       >
         {posts.map((post, index) => {
           if (!post) return null;
 
           const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
-          const isVideo = post.mediaType === 'video' || mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+          const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
 
           return (
-            <div key={post._id || index} className="w-full h-screen snap-start snap-always relative bg-[#05070A]">
+            <div key={post._id || index} className="w-full h-screen snap-start snap-always relative">
               
-              {/* 1. EDGE-TO-EDGE MEDIA */}
+              {/* MEDIA */}
               {isVideo && mediaUrl ? (
                 <video 
                   src={mediaUrl} 
@@ -103,64 +117,70 @@ export default function ScrollPage() {
                 <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
               )}
 
-              {/* 2. HEAVY BOTTOM GRADIENT (Makes text pop) */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
+              {/* TALL GRADIENT OVERLAY (Ensures text pops heavily) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
 
-              {/* 3. PREMIUM BOTTOM-LEFT DATA HUD */}
-              <div className="absolute bottom-6 left-4 right-[70px] z-20">
+              {/* ─── BOTTOM LEFT: PREMIUM HUD ─── */}
+              <div className="absolute bottom-6 left-4 right-[80px] z-20">
                 
-                {/* Modern User Profile Pill */}
-                <div className="flex items-center gap-3 mb-4 p-1.5 pr-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-full w-max shadow-lg cursor-pointer">
-                  <div className="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF]">
-                    <img 
-                      src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=00F0FF`} 
-                      alt="avatar" 
-                      className="w-full h-full rounded-full object-cover border-2 border-black"
-                    />
+                {/* Frosted Glass User Pill */}
+                <div className="flex items-center gap-3 mb-4 p-1.5 pr-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full w-max shadow-lg cursor-pointer hover:bg-white/20 transition-colors">
+                  <img 
+                    src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=00F0FF&color=000`} 
+                    alt="avatar" 
+                    className="w-8 h-8 rounded-full object-cover border border-white/40"
+                  />
+                  <div className="flex flex-col justify-center">
+                    <p className="text-white font-bold text-[13px] leading-tight drop-shadow-md">@{post.author?.username || 'user'}</p>
                   </div>
-                  <div className="flex flex-col">
-                    <p className="text-white font-black text-sm drop-shadow-md">@{post.author?.username || 'user'}</p>
-                    <p className="text-[#00F0FF] text-[9px] font-black uppercase tracking-widest">{post.author?.role || 'Seller'}</p>
-                  </div>
+                  <button className="ml-2 px-3 py-1 bg-[#00F0FF] text-black text-[9px] font-black uppercase rounded-full tracking-widest hover:scale-105 transition-transform">
+                    Follow
+                  </button>
                 </div>
 
                 {/* Property Title */}
-                <h3 className="text-white font-black text-xl leading-tight mb-1 line-clamp-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                  {post.title || 'Untitled Property'}
+                <h3 className="text-white font-black text-xl leading-tight mb-1 line-clamp-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                  {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Price Tag */}
-                <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.4)] mb-3">
-                  {post.price ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
+                {/* Glowing Neon Price */}
+                <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] to-[#0057FF] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)] mb-2">
+                  {post.price ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Market Price'}
                 </p>
 
                 {post.description && (
-                  <p className="text-gray-300 text-sm line-clamp-2 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  <p className="text-gray-200 text-sm line-clamp-2 font-medium drop-shadow-md pr-4">
                     {post.description}
                   </p>
                 )}
               </div>
 
-              {/* 4. PREMIUM RIGHT-SIDE ICONS (Floating without dark circles) */}
-              <div className="absolute bottom-6 right-2 z-20 flex flex-col gap-6 items-center">
+              {/* ─── RIGHT SIDE: FROSTED GLASS ORBS ─── */}
+              <div className="absolute bottom-8 right-3 z-20 flex flex-col gap-5 items-center">
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdHeart size={36} className="text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.8)] group-hover:text-red-500 transition-colors" />
-                  <span className="text-white text-xs font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{post.likesCount || 0}</span>
+                  <div className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white group-hover:bg-red-500/20 group-hover:border-red-500/50 group-hover:text-red-500 transition-all shadow-[0_5px_15px_rgba(0,0,0,0.3)]">
+                    <IoMdHeart size={22} />
+                  </div>
+                  <span className="text-white text-[10px] font-bold drop-shadow-md">{post.likesCount || 0}</span>
                 </button>
 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdText size={34} className="text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
-                  <span className="text-white text-xs font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{post.comments?.length || 0}</span>
+                  <div className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white group-hover:bg-[#00F0FF]/20 group-hover:border-[#00F0FF]/50 group-hover:text-[#00F0FF] transition-all shadow-[0_5px_15px_rgba(0,0,0,0.3)]">
+                    <IoMdText size={22} />
+                  </div>
+                  <span className="text-white text-[10px] font-bold drop-shadow-md">{post.comments?.length || 0}</span>
                 </button>
 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdBookmark size={34} className="text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.8)] group-hover:text-yellow-400 transition-colors" />
-                  <span className="text-white text-[10px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Save</span>
+                  <div className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white group-hover:bg-yellow-400/20 group-hover:border-yellow-400/50 group-hover:text-yellow-400 transition-all shadow-[0_5px_15px_rgba(0,0,0,0.3)]">
+                    <IoMdBookmark size={22} />
+                  </div>
+                  <span className="text-white text-[10px] font-bold drop-shadow-md">Save</span>
                 </button>
 
-                <button className="flex flex-col items-center gap-1 mt-2 group active:scale-90 transition-transform">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-[0_5px_20px_rgba(0,240,255,0.4)] border-2 border-transparent group-hover:border-white transition-all">
+                <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-[0_0_20px_rgba(0,240,255,0.5)] border border-white/40 group-hover:scale-110 transition-all">
                     <IoMdShareAlt size={24} />
                   </div>
                 </button>

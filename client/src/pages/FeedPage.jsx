@@ -171,32 +171,31 @@ export default function FeedPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
-  // ─── THE 2050 SMART SCROLL BRAIN ───
+  // ─── THE 2050 SMART SCROLL BRAIN (CONTAINER AWARE) ───
   const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      // Bulletproof tracking: checks window, body, and document elements
-      const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        setShowHeader(false); // Scrolled down: Hide Header
-      } else if (currentScrollY < lastScrollY) {
-        setShowHeader(true);  // Scrolled up: Show Header
+    const handleScroll = (e) => {
+      // Magic trick: Gets scroll position even if it's inside a sidebar layout container
+      const target = e.target === document ? document.documentElement : e.target;
+      const currentScrollY = target.scrollTop || window.scrollY;
+
+      if (currentScrollY === lastScrollY.current) return; // Ignore horizontal scrolls
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setShowHeader(false); // Hide when scrolling down
+      } else {
+        setShowHeader(true);  // Show when scrolling up
       }
-      setLastScrollY(currentScrollY);
+      
+      lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Also attach to window touch events for mobile precision
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
-    };
-  }, [lastScrollY]);
+    // 'capture: true' forces the listener to catch the scroll deep inside your layout divs
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    return () => window.removeEventListener('scroll', handleScroll, { capture: true });
+  }, []);
   // ───────────────────────────────────
  
 
@@ -242,8 +241,11 @@ export default function FeedPage() {
 
       <ScrollTrigger />
       
-      {/* ─── PREMIUM GLASS HEADER (100% BORDERLESS) ─── */}
-      <header className={`sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-2xl transition-transform duration-500 ease-in-out ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
+    {/* ─── PREMIUM SMART GLASS HEADER (AUTO-HIDES ON SCROLL) ─── */}
+      <header 
+        className="sticky z-40 bg-[#0B0F19]/90 backdrop-blur-2xl transition-all duration-500 ease-in-out"
+        style={{ top: showHeader ? '0px' : '-180px' }}
+      >
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between">

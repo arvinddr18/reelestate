@@ -87,7 +87,7 @@ export default function ScrollPage() {
           return (
             <div key={post._id || index} className="w-full h-screen snap-start snap-always relative bg-black overflow-hidden">
               
-              {/* ─── TRUE FULL SCREEN MEDIA FIX ─── */}
+              {/* ─── TRUE FULL SCREEN MEDIA ─── */}
               <div className="absolute inset-0 w-full h-full">
                 {isVideo && mediaUrl ? (
                   <video 
@@ -99,54 +99,57 @@ export default function ScrollPage() {
                     playsInline 
                   />
                 ) : mediaUrl ? (
-                  /* Changed back to object-cover so it fills the screen perfectly */
                   <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
                 )}
               </div>
 
-              {/* TALL GRADIENT FOR TEXT READABILITY OVER FULL SCREEN IMAGE */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10 pointer-events-none" />
+              {/* HEAVY GRADIENT (Required so pure text is readable over white/bright videos) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
-              {/* ─── BOTTOM LEFT: PREMIUM GLASS HUD ─── */}
-              <div className="absolute bottom-6 left-4 right-[70px] z-20">
+              {/* ─── BOTTOM LEFT: PURE FLOATING HUD ─── */}
+              <div className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1.5">
                 
-                <div className="flex items-center gap-3 mb-3 cursor-pointer w-max p-1.5 pr-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.3)] hover:bg-white/20 transition-all">
-                  <div className="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF]">
+                {/* Clean User Profile (NO BACKGROUND BOX) */}
+                <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
+                  <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     <img 
                       src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} 
                       alt="avatar" 
                       className="w-full h-full rounded-full object-cover border-2 border-black"
                     />
                   </div>
-                  <div className="flex flex-col">
-                    <p className="text-white font-bold text-[14px] leading-tight drop-shadow-md">@{post.author?.username || 'user'}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                      @{post.author?.username || 'user'}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-white/70 shadow-md mx-0.5"></span>
+                    <button className="text-[#00F0FF] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hover:text-white transition-colors">
+                      Follow
+                    </button>
                   </div>
-                  <span className="w-1 h-1 rounded-full bg-white/50 mx-1"></span>
-                  <button className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest drop-shadow-[0_0_5px_rgba(0,240,255,0.4)] hover:text-white transition-colors">
-                    Follow
-                  </button>
                 </div>
 
-                <h3 className="text-white font-black text-[22px] leading-tight mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2">
+                {/* Property Title */}
+                <h3 className="text-white font-black text-[22px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                <div className="inline-flex items-center bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-1.5 rounded-lg mb-2 shadow-lg">
-                  <p className="text-[#00F0FF] font-black text-xl drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
-                    {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
-                  </p>
-                </div>
+                {/* Glowing Floating Price (NO BACKGROUND BOX) */}
+                <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                  {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
+                </p>
 
+                {/* Description */}
                 {post.description && (
-                  <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] pr-2 leading-relaxed">
+                  <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-1">
                     {post.description}
                   </p>
                 )}
               </div>
 
-              {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS (NO COLUMN) ─── */}
+              {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS ─── */}
               <div className="absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6">
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">

@@ -1,30 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Using universally stable Material Design icons to prevent import crashes
-import { MdFavorite, MdChatBubble, MdBookmark, MdShare, MdArrowBack, MdLocationOn } from 'react-icons/md';
+import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
 import api from '../services/api';
 
-// ─── 100% SAFE REACT VIDEO PLAYER COMPONENT ───
-// This prevents React from crashing when trying to play/pause videos
-const SafeVideoPlayer = ({ src, isActive }) => {
+// ─── CRASH-PROOF VIDEO COMPONENT ───
+const VideoNode = ({ src, isActive }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if (isActive && videoRef.current) {
-      videoRef.current.play().catch(() => console.log("Autoplay blocked"));
-    } else if (!isActive && videoRef.current) {
+    if (!videoRef.current) return;
+    if (isActive) {
+      videoRef.current.play().catch(() => {}); // Safely catch autoplay blocks
+    } else {
       videoRef.current.pause();
     }
   }, [isActive]);
 
   return (
     <video 
-      ref={videoRef}
+      ref={videoRef} 
       src={src} 
       loop 
       muted 
       playsInline 
-      className="absolute inset-0 w-full h-full object-cover"
+      className="absolute inset-0 w-full h-full object-cover" 
     />
   );
 };
@@ -34,36 +33,53 @@ export default function ScrollPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
-  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchPosts = async () => {
       try {
         const res = await api.get('/posts');
-        const fetchedData = res.data?.data || res.data || [];
-        setPosts(Array.isArray(fetchedData) ? fetchedData : []);
+        if (isMounted) {
+          const fetchedData = res.data?.data || res.data || [];
+          setPosts(Array.isArray(fetchedData) ? fetchedData : []);
+          setLoading(false);
+        }
       } catch (err) {
         console.error("Fetch Error:", err);
-        setPosts([]);
-      } finally {
-        setLoading(false);
+        if (isMounted) {
+          setPosts([]);
+          setLoading(false);
+        }
       }
     };
+
     fetchPosts();
+
+    // 🚀 ULTIMATE FAILSAFE: If API hangs, forcefully stop loading after 3 seconds
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        setLoading(false);
+      }
+    }, 3000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
-  // ─── SAFE SCROLL TRACKER (NO INTERSECTION OBSERVER) ───
-  const handleScroll = () => {
-    if (!scrollContainerRef.current) return;
-    const { scrollTop, clientHeight } = scrollContainerRef.current;
-    // Calculate which post is currently taking up the majority of the screen
-    const newIndex = Math.round(scrollTop / clientHeight);
-    if (newIndex !== activeIndex) {
-      setActiveIndex(newIndex);
+  // ─── SAFE SCROLL TRACKER ───
+  const handleScroll = (e) => {
+    const container = e.target;
+    // Calculate which post is currently taking up the screen
+    const index = Math.round(container.scrollTop / container.clientHeight);
+    if (index !== activeIndex) {
+      setActiveIndex(index);
     }
   };
 
-  // ─── SAFE MEDIA RESOLVER ───
+  // ─── SECURE URL RESOLVER ───
   const resolveMediaUrl = (source) => {
     if (!source) return '';
     if (typeof source === 'object' && source.url) return source.url;
@@ -73,47 +89,44 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
-  // 1. SAFE LOADING STATE
+  // 1. LOADING SCREEN
   if (loading) {
     return (
       <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
-        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Establishing Uplink...</span>
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Streams...</span>
       </div>
     );
   }
 
-  // 2. SAFE EMPTY STATE
-  if (!posts || posts.length === 0) {
+  // 2. EMPTY STATE (If no posts found or API failed)
+  if (posts.length === 0) {
     return (
       <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center p-6 text-center relative">
         <button onClick={() => navigate(-1)} className="absolute top-8 left-8 w-12 h-12 rounded-full bg-[#151A25] border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] transition-colors z-50">
-          <MdArrowBack size={24} />
+          <IoMdArrowBack size={24} />
         </button>
-        <div className="w-24 h-24 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-4xl mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-          🎬
-        </div>
+        <div className="w-24 h-24 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-4xl mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">🎬</div>
         <h2 className="text-2xl font-black text-white mb-2">No Streams Found</h2>
-        <p className="text-sm text-gray-400 font-bold max-w-xs">There are no encrypted nodes available in this sector right now.</p>
+        <p className="text-sm text-gray-400 font-bold max-w-xs">There are no encrypted nodes available to view.</p>
       </div>
     );
   }
 
-  // 3. SECURE RENDER VARIABLES
+  // 3. MAIN VARIABLES
   const activePost = posts[activeIndex] || posts[0];
   const activeMediaUrl = resolveMediaUrl(activePost?.images?.[0]?.url || activePost?.image);
-  const isActiveVideo = activePost?.mediaType === 'video' || activeMediaUrl.includes('.mp4') || activeMediaUrl.includes('.webm');
+  const isBgVideo = activeMediaUrl.includes('.mp4') || activeMediaUrl.includes('.webm');
 
   return (
     <div className="h-screen w-full bg-[#05070A] relative overflow-hidden flex justify-center">
       
       {/* ─── DESKTOP AMBIENT VOID ─── */}
       <div className="absolute inset-0 hidden md:block z-0 pointer-events-none overflow-hidden">
-        {activeMediaUrl && !isActiveVideo && (
+        {activeMediaUrl && !isBgVideo && (
           <img src={activeMediaUrl} alt="ambient" className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[80px] scale-125 transition-opacity duration-1000" />
         )}
         <div className="absolute inset-0 bg-[#05070A]/80 backdrop-blur-3xl" />
-        {/* Safe CSS Grid pattern */}
         <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(0,240,255,0.15) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
       </div>
 
@@ -123,7 +136,7 @@ export default function ScrollPage() {
           onClick={() => navigate(-1)} 
           className="w-12 h-12 rounded-full bg-[#0B0F19]/80 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] transition-all shadow-lg pointer-events-auto"
         >
-          <MdArrowBack size={24} />
+          <IoMdArrowBack size={24} />
         </button>
         <div className="px-6 py-2 rounded-full bg-[#0B0F19]/80 backdrop-blur-xl border border-white/10 shadow-lg pointer-events-auto flex items-center gap-2">
            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_red]" />
@@ -133,7 +146,6 @@ export default function ScrollPage() {
 
       {/* ─── THE SNAP SCROLL CONTAINER ─── */}
       <div 
-        ref={scrollContainerRef}
         onScroll={handleScroll}
         className="w-full max-w-[450px] h-screen overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 md:py-10"
       >
@@ -146,14 +158,14 @@ export default function ScrollPage() {
 
           return (
             <div 
-              key={post._id || `node-${index}`} 
+              key={post._id || index} 
               className="w-full h-screen md:h-[calc(100vh-80px)] snap-start snap-always relative flex items-center justify-center md:px-4"
             >
               <div className={`w-full h-full relative overflow-hidden md:rounded-[40px] bg-[#151A25] transition-all duration-700 ${isActive ? 'md:scale-100 md:border border-white/10 md:shadow-[0_0_40px_rgba(0,240,255,0.15)]' : 'md:scale-95 md:opacity-50'}`}>
                 
-                {/* SAFE MEDIA RENDER */}
+                {/* MEDIA RENDER */}
                 {isVideo && mediaUrl ? (
-                  <SafeVideoPlayer src={mediaUrl} isActive={isActive} />
+                  <VideoNode src={mediaUrl} isActive={isActive} />
                 ) : (
                   mediaUrl ? (
                     <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover" />
@@ -164,12 +176,7 @@ export default function ScrollPage() {
 
                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#05070A]/95 pointer-events-none" />
 
-                {/* Safe CSS Scanline */}
-                {isActive && (
-                  <div className="absolute top-1/4 left-0 w-full h-[1px] bg-[#00F0FF] opacity-30 shadow-[0_0_20px_#00F0FF] animate-pulse pointer-events-none" />
-                )}
-
-                {/* ── THE DATA HUD (BOTTOM LEFT) ── */}
+                {/* THE DATA HUD (BOTTOM LEFT) */}
                 <div className="absolute bottom-6 md:bottom-10 left-4 md:left-8 right-[80px] z-20 pointer-events-auto">
                   <div className={`transition-all duration-700 ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     
@@ -195,7 +202,7 @@ export default function ScrollPage() {
                       
                       {post.location && (
                         <p className="flex items-center gap-1.5 text-gray-300 text-xs font-bold mb-3">
-                          <MdLocationOn className="text-[#00F0FF]" /> {post.location}
+                          <IoMdPin className="text-[#00F0FF]" /> {post.location}
                         </p>
                       )}
                       
@@ -210,34 +217,34 @@ export default function ScrollPage() {
                   </div>
                 </div>
 
-                {/* ── THE COMMAND PILLAR (RIGHT ALIGNED) ── */}
+                {/* THE COMMAND PILLAR (RIGHT ALIGNED) */}
                 <div className="absolute bottom-6 md:bottom-10 right-2 md:right-4 z-20 pointer-events-auto">
                   <div className={`flex flex-col gap-4 bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 p-2 md:p-3 rounded-full transition-all duration-700 ${isActive ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}>
                     
                     <button className="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
                       <div className="w-10 h-10 rounded-full bg-[#151A25] flex items-center justify-center text-white border border-transparent group-hover:border-red-500/50 group-hover:text-red-500 transition-colors">
-                        <MdFavorite size={20} />
+                        <IoMdHeart size={20} />
                       </div>
                       <span className="text-[9px] font-black text-white">{post.likesCount || '0'}</span>
                     </button>
 
                     <button className="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
                       <div className="w-10 h-10 rounded-full bg-[#151A25] flex items-center justify-center text-white border border-transparent group-hover:border-[#00F0FF]/50 group-hover:text-[#00F0FF] transition-colors">
-                        <MdChatBubble size={20} />
+                        <IoMdText size={20} />
                       </div>
                       <span className="text-[9px] font-black text-white">{post.comments?.length || '0'}</span>
                     </button>
 
                     <button className="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
                       <div className="w-10 h-10 rounded-full bg-[#151A25] flex items-center justify-center text-white border border-transparent group-hover:border-yellow-400/50 group-hover:text-yellow-400 transition-colors">
-                        <MdBookmark size={20} />
+                        <IoMdBookmark size={20} />
                       </div>
                       <span className="text-[9px] font-black text-white">Save</span>
                     </button>
 
                     <button className="flex flex-col items-center gap-1 mt-2 group active:scale-95 transition-transform">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] group-hover:shadow-[0_0_25px_rgba(0,240,255,0.8)] transition-shadow">
-                        <MdShare size={20} />
+                        <IoMdShareAlt size={20} />
                       </div>
                     </button>
 

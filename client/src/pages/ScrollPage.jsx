@@ -105,13 +105,14 @@ export default function ScrollPage() {
                 )}
               </div>
 
-              {/* HEAVY GRADIENT (Required so pure text is readable over white/bright videos) */}
+              {/* HEAVY GRADIENT */}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
               {/* ─── BOTTOM LEFT: PURE FLOATING HUD ─── */}
-              <div className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1.5">
+              {/* 👇 Pushed down to bottom-4 instead of bottom-6 */}
+              <div className="absolute bottom-4 left-4 right-[70px] z-20 flex flex-col gap-1.5">
                 
-                {/* Clean User Profile (NO BACKGROUND BOX) */}
+                {/* Clean User Profile */}
                 <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
                   <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     <img 
@@ -136,7 +137,7 @@ export default function ScrollPage() {
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Floating Price (NO BACKGROUND BOX) */}
+                {/* Glowing Floating Price */}
                 <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
                 </p>
@@ -150,7 +151,8 @@ export default function ScrollPage() {
               </div>
 
               {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS ─── */}
-              <div className="absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6">
+              {/* 👇 Pushed down to bottom-4 instead of bottom-6 */}
+              <div className="absolute bottom-4 right-3 z-20 flex flex-col items-center gap-6">
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
                   <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />

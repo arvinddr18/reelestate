@@ -87,7 +87,7 @@ export default function ScrollPage() {
           return (
             <div key={post._id || index} className="w-full h-screen snap-start snap-always relative bg-black overflow-hidden">
               
-              {/* ─── MEDIA DISPLAY WITH SEAMLESS BLUR BACKGROUND ─── */}
+              {/* ─── TRUE FULL SCREEN MEDIA FIX ─── */}
               <div className="absolute inset-0 w-full h-full">
                 {isVideo && mediaUrl ? (
                   <video 
@@ -99,24 +99,19 @@ export default function ScrollPage() {
                     playsInline 
                   />
                 ) : mediaUrl ? (
-                  <>
-                    {/* Layer 1: Blurred background fills the whole screen so no black bars exist */}
-                    <img src={mediaUrl} className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-60 scale-125" alt="blur-bg" />
-                    {/* Layer 2: Actual image fits perfectly in the center without cutting edges */}
-                    <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-contain z-10" />
-                  </>
+                  /* Changed back to object-cover so it fills the screen perfectly */
+                  <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
                 )}
               </div>
 
-              {/* TALL GRADIENT FOR PREMIUM TEXT READABILITY */}
+              {/* TALL GRADIENT FOR TEXT READABILITY OVER FULL SCREEN IMAGE */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10 pointer-events-none" />
 
               {/* ─── BOTTOM LEFT: PREMIUM GLASS HUD ─── */}
               <div className="absolute bottom-6 left-4 right-[70px] z-20">
                 
-                {/* Clean User Profile Pill */}
                 <div className="flex items-center gap-3 mb-3 cursor-pointer w-max p-1.5 pr-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.3)] hover:bg-white/20 transition-all">
                   <div className="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF]">
                     <img 
@@ -134,12 +129,10 @@ export default function ScrollPage() {
                   </button>
                 </div>
 
-                {/* Property Title */}
                 <h3 className="text-white font-black text-[22px] leading-tight mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Glass Price Box */}
                 <div className="inline-flex items-center bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-1.5 rounded-lg mb-2 shadow-lg">
                   <p className="text-[#00F0FF] font-black text-xl drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
                     {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
@@ -156,7 +149,6 @@ export default function ScrollPage() {
               {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS (NO COLUMN) ─── */}
               <div className="absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6">
                 
-                {/* Notice: No background box here. Just pure floating icons with heavy drop shadows */}
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
                   <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />
                   <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
@@ -172,7 +164,6 @@ export default function ScrollPage() {
                   <span className="text-white text-[10px] font-bold uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Save</span>
                 </button>
 
-                {/* Share Button is a glowing glass circle */}
                 <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
                   <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
                     <IoMdShareAlt size={24} />

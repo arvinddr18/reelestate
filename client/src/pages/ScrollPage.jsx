@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
+// 100% SAFE IMPORTS: Only using the exact 5 icons from your working code!
+import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack } from 'react-icons/io';
 import api from '../services/api';
 
 export default function ScrollPage() {
@@ -39,7 +40,7 @@ export default function ScrollPage() {
     }
   };
 
-  // 100% CRASH-PROOF URL RESOLVER
+  // Safe Media Resolver
   const resolveMediaUrl = (source) => {
     if (!source) return '';
     let url = '';
@@ -53,15 +54,17 @@ export default function ScrollPage() {
     return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
+  // 1. SAFE LOADING STATE
   if (loading) {
     return (
       <div className="h-screen w-full bg-black flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
-        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Establishing Uplink...</span>
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Feed...</span>
       </div>
     );
   }
 
+  // 2. SAFE EMPTY STATE
   if (posts.length === 0) {
     return (
       <div className="h-screen w-full bg-black flex flex-col items-center justify-center p-6 text-center relative">
@@ -76,8 +79,7 @@ export default function ScrollPage() {
 
   const activePost = posts[activeIndex] || posts[0];
   const activeMediaUrl = resolveMediaUrl(activePost?.images?.[0]?.url || activePost?.image);
-  // Safely check string before includes
-  const isBgVideo = typeof activeMediaUrl === 'string' && (activeMediaUrl.includes('.mp4') || activeMediaUrl.includes('.webm'));
+  const isBgVideo = typeof activeMediaUrl === 'string' && (activeMediaUrl.includes('.mp4') || activeMediaUrl.includes('.webm') || activeMediaUrl.includes('.ogg'));
 
   return (
     <div className="h-screen w-full bg-black relative overflow-hidden flex justify-center">
@@ -110,14 +112,13 @@ export default function ScrollPage() {
           if (!post) return null;
           
           const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
-          // Safely verify it's a string before calling .match() to prevent crash!
           const isVideo = post.mediaType === 'video' || (typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
 
           return (
             <div key={post._id || index} className="w-full h-screen snap-start snap-always relative">
               
-              {/* TRUE FULL SCREEN MEDIA (Using the proven native video tag from your old code) */}
+              {/* TRUE FULL SCREEN MEDIA */}
               <div className="w-full h-full relative overflow-hidden bg-black">
                 {isVideo && mediaUrl ? (
                   <video 
@@ -159,10 +160,12 @@ export default function ScrollPage() {
                   </div>
                 </div>
 
-                {/* Location Badge */}
+                {/* Location Badge (Using pure SVG instead of imported icon) */}
                 {post.location && (
                   <div className="inline-flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-2 py-1 rounded-md w-max shadow-sm">
-                    <IoMdPin className="text-[#00F0FF] text-xs" />
+                    <svg className="w-3 h-3 text-[#00F0FF]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
                     <span className="text-white text-[10px] font-bold tracking-wide drop-shadow-md">{post.location}</span>
                   </div>
                 )}

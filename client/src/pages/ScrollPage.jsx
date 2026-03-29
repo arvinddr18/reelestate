@@ -43,7 +43,7 @@ export default function ScrollPage() {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-white">
+      <div className="h-[100dvh] w-full bg-black flex flex-col items-center justify-center text-white">
         <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
         <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Feed...</span>
       </div>
@@ -52,7 +52,7 @@ export default function ScrollPage() {
 
   if (posts.length === 0) {
     return (
-      <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-white relative">
+      <div className="h-[100dvh] w-full bg-black flex flex-col items-center justify-center text-white relative">
         <button onClick={() => navigate(-1)} className="absolute top-8 left-8 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors z-50">
           <IoMdArrowBack size={24} />
         </button>
@@ -62,7 +62,7 @@ export default function ScrollPage() {
   }
 
   return (
-    <div className="h-screen w-full bg-black relative flex justify-center">
+    <div className="h-[100dvh] w-full bg-black relative flex justify-center">
       
       {/* ─── FLOATING BACK BUTTON ─── */}
       <button 
@@ -75,7 +75,7 @@ export default function ScrollPage() {
       {/* ─── MAIN SCROLL CONTAINER ─── */}
       <div 
         onScroll={handleScroll}
-        className="w-full max-w-[450px] h-screen overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10"
+        className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10"
       >
         {posts.map((post, index) => {
           if (!post) return null;
@@ -85,7 +85,7 @@ export default function ScrollPage() {
           const isActive = index === activeIndex;
 
           return (
-            <div key={post._id || index} className="w-full h-screen snap-start snap-always relative bg-black overflow-hidden">
+            <div key={post._id || index} className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden">
               
               {/* ─── TRUE FULL SCREEN MEDIA ─── */}
               <div className="absolute inset-0 w-full h-full">
@@ -109,10 +109,9 @@ export default function ScrollPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
               {/* ─── BOTTOM LEFT: PURE FLOATING HUD ─── */}
-              {/* 👇 Pushed down to bottom-4 instead of bottom-6 */}
-              <div className="absolute bottom-4 left-4 right-[70px] z-20 flex flex-col gap-1.5">
+              {/* 👇 Lifted to bottom-16 so it perfectly clears the mobile bottom edge */}
+              <div className="absolute bottom-16 left-4 right-[70px] z-20 flex flex-col gap-1.5">
                 
-                {/* Clean User Profile */}
                 <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
                   <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     <img 
@@ -132,17 +131,14 @@ export default function ScrollPage() {
                   </div>
                 </div>
 
-                {/* Property Title */}
                 <h3 className="text-white font-black text-[22px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Floating Price */}
                 <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
                 </p>
 
-                {/* Description */}
                 {post.description && (
                   <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-1">
                     {post.description}
@@ -151,8 +147,8 @@ export default function ScrollPage() {
               </div>
 
               {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS ─── */}
-              {/* 👇 Pushed down to bottom-4 instead of bottom-6 */}
-              <div className="absolute bottom-4 right-3 z-20 flex flex-col items-center gap-6">
+              {/* 👇 Lifted to bottom-16 to align properly and avoid being cut off */}
+              <div className="absolute bottom-16 right-3 z-20 flex flex-col items-center gap-6">
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
                   <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />

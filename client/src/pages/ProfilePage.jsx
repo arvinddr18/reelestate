@@ -309,18 +309,51 @@ export default function ProfilePage() {
         {/* ── TAB CONTENT ── */}
         <div className="pb-10 min-h-[300px]">
           {activeTab === 'grid' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-bottom-4 duration-500">
-              {userPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500">No data found in grid.</div> : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 animate-in slide-in-from-bottom-4 duration-500">
+              {userPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500 font-bold uppercase tracking-widest text-xs">No Nodes Discovered</div> : (
                 userPosts.map(post => (
-                  <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] overflow-hidden group border border-[#1E2532] hover:border-[#00F0FF]/50 transition-all bg-[#151A25] shadow-lg">
-                    {post.mediaType === 'video' ? <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110 transition-transform duration-700">🎬</div> : <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${post.mediaFilter || ''}`} />}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                      <p className="text-[11px] font-black text-white truncate drop-shadow-md mb-1.5">{post.title || 'Update'}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black text-[#00F0FF] drop-shadow-md">{post.price ? `₹${post.price.toLocaleString('en-IN')}` : ''}</span>
+                  <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] md:rounded-[32px] overflow-hidden group border border-white/5 hover:border-[#00F0FF]/40 transition-all duration-500 bg-[#0B0F19] shadow-[0_8px_25px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(0,240,255,0.2)]">
+                    
+                    {/* Media Layer */}
+                    {post.mediaType === 'video' ? (
+                      <div className="w-full h-full flex items-center justify-center bg-[#151A25] text-4xl group-hover:scale-110 group-hover:opacity-50 transition-all duration-700">🎬</div>
+                    ) : (
+                      <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className={`w-full h-full object-cover group-hover:scale-110 group-hover:opacity-50 transition-all duration-700 ${post.mediaFilter || ''}`} />
+                    )}
+                    
+                    {/* Ambient Core Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent opacity-90" />
+
+                    {/* TOP HUD: Category Badge (Slides down on hover) */}
+                    <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-[#0B0F19]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-xl translate-y-[-150%] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out z-10">
+                       <span className="text-[8px] md:text-[9px] font-black text-[#00F0FF] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
+                         {post.mainCategory || 'Intel'}
+                       </span>
+                    </div>
+
+                    {/* BOTTOM HUD: Glass Data Plate (Slides up on hover) */}
+                    <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 translate-y-[120%] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out">
+                      <div className="bg-[#151A25]/90 backdrop-blur-xl border border-white/10 rounded-[18px] p-3 md:p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                        {/* Inner Neon Glow */}
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/50 to-transparent" />
+                        
+                        <p className="text-[11px] md:text-xs font-black text-white truncate mb-2">{post.title || 'Encrypted Node'}</p>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] md:text-[11px] font-black tracking-widest text-[#00F0FF]">
+                            {post.price ? `₹${post.price.toLocaleString('en-IN')}` : 'View Stream'}
+                          </span>
+                          
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <span className="flex items-center gap-1 text-[9px] font-bold">
+                              <IoMdHeart className="text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]" size={14} /> 
+                              {post.likesCount || 0}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
+
                   </Link>
                 ))
               )}

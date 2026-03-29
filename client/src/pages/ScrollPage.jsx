@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
+// 100% Correct matching imports
+import { IoMdHeart, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
 import api from '../services/api';
 
 // ─── CRASH-PROOF VIDEO COMPONENT ───
@@ -10,7 +11,7 @@ const VideoNode = ({ src, isActive }) => {
   useEffect(() => {
     if (!videoRef.current) return;
     if (isActive) {
-      videoRef.current.play().catch(() => {}); // Safely catch autoplay blocks
+      videoRef.current.play().catch(() => {}); 
     } else {
       videoRef.current.pause();
     }
@@ -56,25 +57,18 @@ export default function ScrollPage() {
 
     fetchPosts();
 
-    // 🚀 ULTIMATE FAILSAFE: If API hangs, forcefully stop loading after 3 seconds
-    const safetyTimeout = setTimeout(() => {
-      if (isMounted && loading) {
-        setLoading(false);
-      }
-    }, 3000);
-
     return () => {
       isMounted = false;
-      clearTimeout(safetyTimeout);
     };
   }, []);
 
   // ─── SAFE SCROLL TRACKER ───
   const handleScroll = (e) => {
     const container = e.target;
-    // Calculate which post is currently taking up the screen
-    const index = Math.round(container.scrollTop / container.clientHeight);
-    if (index !== activeIndex) {
+    const clientHeight = container.clientHeight || 1;
+    const index = Math.round(container.scrollTop / clientHeight);
+    
+    if (index !== activeIndex && index >= 0 && index < posts.length) {
       setActiveIndex(index);
     }
   };
@@ -94,12 +88,12 @@ export default function ScrollPage() {
     return (
       <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
-        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Streams...</span>
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Establishing Uplink...</span>
       </div>
     );
   }
 
-  // 2. EMPTY STATE (If no posts found or API failed)
+  // 2. EMPTY STATE
   if (posts.length === 0) {
     return (
       <div className="h-screen w-full bg-[#05070A] flex flex-col items-center justify-center p-6 text-center relative">
@@ -228,9 +222,12 @@ export default function ScrollPage() {
                       <span className="text-[9px] font-black text-white">{post.likesCount || '0'}</span>
                     </button>
 
+                    {/* SVG directly used to avoid import crashes */}
                     <button className="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
                       <div className="w-10 h-10 rounded-full bg-[#151A25] flex items-center justify-center text-white border border-transparent group-hover:border-[#00F0FF]/50 group-hover:text-[#00F0FF] transition-colors">
-                        <IoMdText size={20} />
+                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                        </svg>
                       </div>
                       <span className="text-[9px] font-black text-white">{post.comments?.length || '0'}</span>
                     </button>

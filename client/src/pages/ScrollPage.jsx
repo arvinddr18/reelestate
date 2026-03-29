@@ -140,15 +140,12 @@ const RadialMenu = ({ isOpen, onClose, onAction }) => {
   );
 };
 
-const CATEGORIES = ['All', 'Sale Hub', 'Hotels', 'Rents', 'Education', 'Resorts', 'Farms', 'Commercial'];
-
 export default function ScrollPage() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('All');
 
   const [radialMenuOpen, setRadialMenuOpen] = useState(false);
   const pressTimer = useRef(null);
@@ -175,6 +172,14 @@ export default function ScrollPage() {
     }
   }, [loading, posts.length]);
 
+  const handleScroll = (e) => {
+    const container = e.target;
+    const index = Math.round(container.scrollTop / container.clientHeight);
+    if (index !== activeIndex) {
+      setActiveIndex(index);
+    }
+  };
+
   const resolveMediaUrl = (source) => {
     if (!source) return '';
     if (typeof source === 'object' && source.url) return source.url;
@@ -184,38 +189,11 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
-  const displayPosts = activeCategory === 'All' 
-    ? posts 
-    : posts.filter(post => {
-        const cat = (post.category || post.propertyType || '').toLowerCase();
-        return cat === activeCategory.toLowerCase() || cat.includes(activeCategory.toLowerCase());
-      });
-
-  // 👇 NEW: Framer Motion Drag Handler for Swiping Cards 👇
-  const handleDragEnd = (e, { offset, velocity }) => {
-    const swipeX = offset.x;
-    const velocityX = velocity.x;
-
-    // Swiped left (Go to Next Card)
-    if (swipeX < -50 || velocityX < -500) {
-      if (activeIndex < displayPosts.length - 1) setActiveIndex(prev => prev + 1);
-    } 
-    // Swiped right (Go to Previous Card)
-    else if (swipeX > 50 || velocityX > 500) {
-      if (activeIndex > 0) setActiveIndex(prev => prev - 1);
-    }
-  };
-
-  // Prevent drag from triggering the long-press menu
   const handlePointerDown = () => {
     pressTimer.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(50);
       setRadialMenuOpen(true);
     }, 400); 
-  };
-
-  const handlePointerMove = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
   };
 
   const handlePointerUpOrLeave = () => {
@@ -248,7 +226,7 @@ export default function ScrollPage() {
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-[#05070A] relative flex justify-center overflow-hidden touch-none select-none">
+    <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden touch-none select-none">
       
       <RadialMenu 
         isOpen={radialMenuOpen} 
@@ -263,179 +241,114 @@ export default function ScrollPage() {
         <IoMdArrowBack size={24} />
       </button>
 
-      {/* ─── TOP CATEGORY SELECTOR ─── */}
-      <div className={`absolute top-6 left-[68px] right-4 z-50 h-12 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center overflow-hidden transition-all duration-1000 delay-200 ease-out ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}>
-        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#05070A] to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#05070A] to-transparent z-10 pointer-events-none" />
-        
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full px-6 py-2">
-          {CATEGORIES.map((cat) => (
-            <button 
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat);
-                setActiveIndex(0);
-              }}
-              className={`snap-center shrink-0 px-4 py-1.5 rounded-full font-black tracking-widest uppercase transition-all duration-500 ease-out flex items-center gap-2 ${
-                activeCategory === cat 
-                  ? 'bg-[#00F0FF]/10 text-[#00F0FF] text-[12px] scale-105 border border-[#00F0FF]/40 drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]' 
-                  : 'text-gray-500 text-[10px] scale-90 border border-transparent hover:text-white hover:bg-white/5'
-              }`}
+      <div 
+        onScroll={handleScroll}
+        className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10"
+      >
+        {posts.map((post, index) => {
+          if (!post) return null;
+
+          const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
+          const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
+          const isActive = index === activeIndex;
+          
+          const showUI = isRevealed && isActive;
+
+          return (
+            <div 
+              key={post._id || index} 
+              className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden"
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUpOrLeave}
+              onPointerLeave={handlePointerUpOrLeave}
+              onContextMenu={(e) => e.preventDefault()} 
             >
-              {activeCategory === cat && <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_5px_#00F0FF]" />}
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
+              
+              <div className={`absolute inset-0 w-full h-full transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-105'}`}>
+                {isVideo && mediaUrl ? (
+                  <video 
+                    src={mediaUrl} 
+                    className="w-full h-full object-cover pointer-events-none" 
+                    loop 
+                    muted={!isActive} 
+                    autoPlay={isActive} 
+                    playsInline 
+                  />
+                ) : mediaUrl ? (
+                  <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
+                )}
+              </div>
 
-      {/* 👇 NEW: 3D LAYERED CARD STACK CONTAINER 👇 */}
-      <div className="relative w-full max-w-[450px] h-[100dvh] bg-[#05070A] overflow-hidden sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10">
-        
-        {displayPosts.length === 0 ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-center px-6 relative bg-[#05070A]">
-            <div className="w-24 h-24 rounded-full border-2 border-dashed border-[#00F0FF]/30 flex items-center justify-center animate-[spin_10s_linear_infinite] mb-6">
-              <IoMdSearch size={30} className="text-[#00F0FF] opacity-50 animate-[spin_5s_linear_infinite_reverse]" />
-            </div>
-            <h3 className="text-[#00F0FF] font-black text-xl tracking-widest uppercase drop-shadow-[0_0_10px_rgba(0,240,255,0.4)]">No Intel Found</h3>
-            <p className="text-gray-400 text-sm mt-2 font-medium">No properties uploaded in the <span className="text-white">[{activeCategory}]</span> sector yet.</p>
-          </div>
-        ) : (
-          displayPosts.map((post, index) => {
-            if (!post) return null;
+              <div className={`absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10 pointer-events-none transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
 
-            // Math to calculate distance from the active card
-            const offsetIndex = index - activeIndex;
-            const isFront = offsetIndex === 0;
-            const isVisible = Math.abs(offsetIndex) <= 3; // Render max 3 cards ahead/behind for performance
-
-            if (!isVisible) return null;
-
-            const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
-            const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
-            
-            return (
-              <motion.div 
-                key={post._id || index} 
-                drag={isFront ? "x" : false} // Only the front card can be dragged
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.8}
-                onDragEnd={handleDragEnd}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove} // Prevents menu opening while dragging
-                onPointerUp={handlePointerUpOrLeave}
-                onPointerLeave={handlePointerUpOrLeave}
-                onContextMenu={(e) => e.preventDefault()} 
-                animate={{
-                  // The 3D Layering Logic! 
-                  x: isFront ? 0 : offsetIndex > 0 ? `${offsetIndex * 12}%` : '-120%',
-                  scale: isFront ? 1 : 1 - (offsetIndex * 0.08),
-                  opacity: isFront ? 1 : offsetIndex > 0 ? 1 - (offsetIndex * 0.2) : 0,
-                  zIndex: 50 - index, 
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                style={{
-                  borderRadius: isFront ? '0px' : '32px', // Cards behind have rounded corners
-                  boxShadow: offsetIndex > 0 ? '-15px 0 40px rgba(0,0,0,0.9)' : 'none', // Shadow for depth
-                }}
-                className={`absolute inset-0 w-full h-full bg-black overflow-hidden origin-right ${!isFront && 'border border-white/20'}`}
-              >
+              {/* ─── BOTTOM LEFT: PROPERTY INFO ─── */}
+              <div className={`absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 transition-all duration-700 ease-out delay-100 pointer-events-none ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                 
-                {/* ─── MEDIA ─── */}
-                <div className="absolute inset-0 w-full h-full">
-                  {isVideo && mediaUrl ? (
-                    <video 
-                      src={mediaUrl} 
-                      className="w-full h-full object-cover pointer-events-none" 
-                      loop 
-                      muted={!isFront} 
-                      autoPlay={isFront} 
-                      playsInline 
+                <div className="flex items-center gap-3 mb-1 cursor-pointer w-max pointer-events-auto">
+                  <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                    <img 
+                      src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} 
+                      alt="avatar" 
+                      className="w-full h-full rounded-full object-cover border-2 border-black"
                     />
-                  ) : mediaUrl ? (
-                    <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                      @{post.author?.username || 'user'}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-white/70 shadow-md mx-0.5"></span>
+                    <button className="text-[#00F0FF] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hover:text-white transition-colors">
+                      Follow
+                    </button>
+                  </div>
                 </div>
 
-                <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 pointer-events-none" />
+                <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
+                  {post.title || 'Exclusive Listing'}
+                </h3>
+                
+                <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                  {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
+                </p>
 
-                {/* Only show text and icons if the card is at the front! */}
-                {isFront && (
-                  <>
-                    {/* ─── BOTTOM LEFT: PROPERTY INFO ─── */}
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                      className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 pointer-events-none"
-                    >
-                      <div className="flex items-center gap-3 mb-1 cursor-pointer w-max pointer-events-auto">
-                        <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                          <img 
-                            src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} 
-                            alt="avatar" 
-                            className="w-full h-full rounded-full object-cover border-2 border-black"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                            @{post.author?.username || 'user'}
-                          </span>
-                          <span className="w-1 h-1 rounded-full bg-white/70 shadow-md mx-0.5"></span>
-                          <button className="text-[#00F0FF] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hover:text-white transition-colors">
-                            Follow
-                          </button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
-                        {post.title || 'Exclusive Listing'}
-                      </h3>
-                      
-                      <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-                        {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
-                      </p>
-
-                      {post.description && (
-                        <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
-                          {post.description}
-                        </p>
-                      )}
-                    </motion.div>
-
-                    {/* ─── CENTER-RIGHT FLOATING ICONS ─── */}
-                    <motion.div 
-                      initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-                      className="absolute top-1/2 -translate-y-1/2 right-3 z-20 flex flex-col items-center gap-6 pointer-events-auto"
-                    >
-                      <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                        <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />
-                        <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
-                      </button>
-
-                      <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                        <IoMdText size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-[#00F0FF] transition-colors" />
-                        <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
-                      </button>
-
-                      <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                        <IoMdBookmark size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-yellow-400 transition-colors" />
-                        <span className="text-white text-[10px] font-bold uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Save</span>
-                      </button>
-
-                      <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
-                        <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
-                          <IoMdShareAlt size={24} />
-                        </div>
-                      </button>
-                    </motion.div>
-                  </>
+                {post.description && (
+                  <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
+                    {post.description}
+                  </p>
                 )}
+              </div>
 
-              </motion.div>
-            );
-          })
-        )}
+              {/* 👇 THE FIX: CENTER-RIGHT FLOATING ICONS 👇 */}
+              <div className={`absolute top-1/2 -translate-y-1/2 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 pointer-events-auto ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+                
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                  <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />
+                  <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
+                </button>
+
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                  <IoMdText size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-[#00F0FF] transition-colors" />
+                  <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
+                </button>
+
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                  <IoMdBookmark size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-yellow-400 transition-colors" />
+                  <span className="text-white text-[10px] font-bold uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Save</span>
+                </button>
+
+                <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
+                  <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
+                    <IoMdShareAlt size={24} />
+                  </div>
+                </button>
+
+              </div>
+
+            </div>
+          );
+        })}
       </div>
 
     </div>

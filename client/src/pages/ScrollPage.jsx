@@ -109,7 +109,8 @@ export default function ScrollPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
               {/* ─── BOTTOM LEFT: PURE FLOATING HUD ─── */}
-              <div className="absolute bottom-16 left-4 right-[70px] z-20 flex flex-col gap-1">
+              {/* 👇 Pushed down to bottom-6 to fill that empty gap */}
+              <div className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1">
                 
                 {/* Clean User Profile */}
                 <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
@@ -131,17 +132,17 @@ export default function ScrollPage() {
                   </div>
                 </div>
 
-                {/* Property Title (Font size reduced to 15px to match username) */}
+                {/* Property Title */}
                 <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Floating Price (Font size reduced to 15px to match username) */}
+                {/* Glowing Floating Price */}
                 <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
                 </p>
 
-                {/* Description (Already small, kept at 13px for hierarchy) */}
+                {/* Description */}
                 {post.description && (
                   <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
                     {post.description}
@@ -150,7 +151,8 @@ export default function ScrollPage() {
               </div>
 
               {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS ─── */}
-              <div className="absolute bottom-16 right-3 z-20 flex flex-col items-center gap-6">
+              {/* 👇 Pushed down to bottom-6 to perfectly align with the text */}
+              <div className="absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6">
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
                   <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />

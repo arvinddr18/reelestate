@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IoMdHeart, IoMdChatboxes, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
+// 👇 Reverted back to IoMdText which we know 100% works on your build
+import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
 import api from '../services/api';
 
 export default function ScrollPage() {
@@ -14,7 +15,6 @@ export default function ScrollPage() {
     const fetchPosts = async () => {
       try {
         const res = await api.get('/posts');
-        // Bulletproof array check to prevent map crashes
         const fetchedPosts = res.data?.data || res.data || [];
         setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
       } catch (err) {
@@ -54,7 +54,6 @@ export default function ScrollPage() {
     return () => observer.disconnect();
   }, [posts]);
 
-  // Bulletproof media resolver
   const resolveMediaUrl = (source) => {
     if (!source) return null;
     if (typeof source === 'object' && source.url) return source.url;
@@ -77,7 +76,6 @@ export default function ScrollPage() {
     );
   }
 
-  // Safely get active media for desktop blur background
   const activePost = posts[activeIndex] || posts[0];
   const activeMedia = activePost ? (activePost.images?.[0]?.url || resolveMediaUrl(activePost.image)) : null;
 
@@ -116,7 +114,6 @@ export default function ScrollPage() {
       >
         {Array.isArray(posts) && posts.map((post, index) => {
           const mediaUrl = post.images?.[0]?.url || resolveMediaUrl(post.image);
-          // Safely check for video extension
           const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
 
@@ -147,7 +144,6 @@ export default function ScrollPage() {
                   )
                 )}
 
-                {/* Cyberpunk Vignette */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-[#05070A]/90 pointer-events-none" />
                 {isActive && (
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00F0FF]/50 to-transparent opacity-30 animate-[scan_4s_ease-in-out_infinite] pointer-events-none" />
@@ -189,11 +185,9 @@ export default function ScrollPage() {
                         </p>
                       )}
                       
-                      {/* Cyber Price Tag */}
                       <div className="inline-flex items-center gap-3 bg-[#0B0F19]/80 border border-[#00F0FF]/30 px-4 py-2 rounded-xl">
                         <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">Value</span>
                         <span className="text-lg font-black text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
-                          {/* Bulletproof number conversion */}
                           {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Market Price'}
                         </span>
                       </div>
@@ -219,9 +213,10 @@ export default function ScrollPage() {
                       <span className="text-[10px] font-black text-white drop-shadow-md">{post.likesCount || '0'}</span>
                     </button>
 
+                    {/* 👇 THIS IS THE ICON THAT CRASHED EVERYTHING - NOW FIXED 👇 */}
                     <button className="flex flex-col items-center gap-1 group active:scale-95 transition-all">
                       <div className="w-12 h-12 rounded-full bg-[#151A25]/80 border border-white/10 flex items-center justify-center group-hover:border-[#00F0FF]/50 group-hover:bg-[#00F0FF]/10 transition-colors shadow-inner">
-                        <IoMdChatboxes className="text-white group-hover:text-[#00F0FF] transition-colors drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]" size={22} />
+                        <IoMdText className="text-white group-hover:text-[#00F0FF] transition-colors drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]" size={22} />
                       </div>
                       <span className="text-[10px] font-black text-white drop-shadow-md">{post.comments?.length || '0'}</span>
                     </button>

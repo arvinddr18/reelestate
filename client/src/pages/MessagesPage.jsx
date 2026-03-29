@@ -21,17 +21,15 @@ export default function Messages() {
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 👇 NEW: State to control the split-screen chat view
   const [activeChat, setActiveChat] = useState(null);
 
-  // ─── FETCH ENTIRE NETWORK (WITH X-RAY LOGS) ───
-  // Note: Your exact logic is completely untouched!
+  // ─── FETCH ENTIRE NETWORK ───
   useEffect(() => {
     const fetchNetwork = async () => {
       const userId = currentUser?._id || currentUser?.id;
       if (!userId) return; 
 
-      console.log("🔵 1. Fetching network for User ID:", userId); // X-RAY
+      console.log("🔵 1. Fetching network for User ID:", userId);
 
       try {
         const token = localStorage.getItem('reelestate_token');
@@ -39,10 +37,8 @@ export default function Messages() {
         
         let combinedNetwork = [];
 
-        // Fetch Following
         try {
           const followingRes = await axios.get(`${API_URL}/api/users/${userId}/following`, { headers });
-          console.log("🟡 2. RAW 'Following' Response:", followingRes.data); // X-RAY
           if (followingRes.data?.success && Array.isArray(followingRes.data.data)) {
             combinedNetwork = [...combinedNetwork, ...followingRes.data.data];
           }
@@ -50,10 +46,8 @@ export default function Messages() {
           console.error("🔴 Following Fetch Error:", err.message);
         }
 
-        // Fetch Followers
         try {
           const followersRes = await axios.get(`${API_URL}/api/users/${userId}/followers`, { headers });
-          console.log("🟠 3. RAW 'Followers' Response:", followersRes.data); // X-RAY
           if (followersRes.data?.success && Array.isArray(followersRes.data.data)) {
             combinedNetwork = [...combinedNetwork, ...followersRes.data.data];
           }
@@ -61,18 +55,13 @@ export default function Messages() {
           console.error("🔴 Followers Fetch Error:", err.message);
         }
 
-        console.log("🟣 4. Combined Raw Array before cleaning:", combinedNetwork); // X-RAY
-
-        // Clean Data
         const uniqueUsers = [];
         const seenIds = new Set();
         
         combinedNetwork.forEach(user => {
           if (!user) return; 
-          
           const uId = user._id || user.id;
           if (!uId) return; 
-          
           if (String(uId) === String(userId)) return; 
           
           if (!seenIds.has(String(uId))) {
@@ -80,8 +69,6 @@ export default function Messages() {
             uniqueUsers.push(user);
           }
         });
-
-        console.log("🟢 5. Final Cleaned Users given to UI:", uniqueUsers); // X-RAY
 
         setDbUsers(uniqueUsers);
       } catch (err) {
@@ -112,10 +99,9 @@ export default function Messages() {
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#0057FF]/10 to-transparent pointer-events-none z-0" />
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#00F0FF] opacity-5 blur-[150px] rounded-full pointer-events-none z-0" />
 
-      {/* ─── LEFT PANE: COMMS HUB (Your exact layout converted to a column) ─── */}
+      {/* ─── LEFT PANE: COMMS HUB ─── */}
       <div className={`w-full md:w-[400px] lg:w-[450px] h-full flex flex-col bg-[#0B0F19]/80 backdrop-blur-2xl border-r border-[#1E2532] z-10 shrink-0 transition-transform duration-500 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
         
-        {/* HOLOGRAPHIC HEADER */}
         <header className="px-6 py-5 border-b border-[#1E2532] shrink-0">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-4">
@@ -134,7 +120,6 @@ export default function Messages() {
             </button>
           </div>
 
-          {/* Smart Search Pill */}
           <div className="bg-[#151A25]/90 border border-[#1E2532] rounded-full p-1.5 flex items-center shadow-inner focus-within:border-[#00F0FF]/50 transition-colors">
             <div className="w-10 h-10 flex items-center justify-center text-gray-500">
               <IoMdSearch size={20} />
@@ -149,10 +134,8 @@ export default function Messages() {
           </div>
         </header>
 
-        {/* SCROLLABLE LIST AREA */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-4 px-4 pt-6">
           
-          {/* ─── ACTIVE RADAR (Your exact radar UI) ─── */}
           {!loading && dbUsers.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -185,7 +168,6 @@ export default function Messages() {
             </div>
           )}
 
-          {/* ─── FLOATING THREADS (Your exact mapping logic) ─── */}
           <div className="space-y-3">
             <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Encrypted Channels</h2>
             
@@ -201,7 +183,6 @@ export default function Messages() {
               filteredUsers.map(user => (
                 <div 
                   key={user._id || user.id} 
-                  // 👇 FIX: Clicking now opens the chat on the right instead of leaving the page!
                   onClick={() => setActiveChat(user)} 
                   className={`block p-4 rounded-[24px] backdrop-blur-xl transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/10 border-[#00F0FF]/40 shadow-[0_0_20px_rgba(0,240,255,0.1)]' : 'bg-[#151A25]/60 border-[#1E2532] hover:border-[#2A3441] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
                 >
@@ -246,7 +227,7 @@ export default function Messages() {
         </div>
       </div>
 
-      {/* ─── RIGHT PANE: THE DATA TERMINAL (Live Chat) ─── */}
+      {/* ─── RIGHT PANE: THE DATA TERMINAL ─── */}
       <div className={`flex-1 h-full flex flex-col relative bg-[#05070A] z-0 ${!activeChat ? 'hidden md:flex' : 'flex'}`}>
         
         {/* Holographic Blueprint Grid */}
@@ -257,7 +238,6 @@ export default function Messages() {
             {/* Active Chat Header */}
             <div className="h-20 px-6 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-[#1E2532] flex items-center justify-between z-20 shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
               <div className="flex items-center gap-4">
-                {/* Mobile Back Button - Hides the right pane and goes back to the list */}
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-10 h-10 rounded-full bg-[#151A25] flex items-center justify-center text-white border border-[#1E2532]">
                   <IoMdArrowBack size={20} />
                 </button>
@@ -283,14 +263,13 @@ export default function Messages() {
               </button>
             </div>
 
-            {/* Messages Area (Mocked for layout until you connect your message fetching) */}
+            {/* Messages Area (Mocked for layout until connected) */}
             <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar">
               
               <div className="flex justify-center mb-4 mt-4">
                 <span className="px-3 py-1 rounded-full bg-[#151A25] border border-[#1E2532] text-[9px] font-black text-gray-500 tracking-widest uppercase">Encryption Started • Today</span>
               </div>
 
-              {/* Received Data Panel */}
               <div className="flex flex-col items-start w-full">
                 <div className="bg-[#151A25] border border-[#1E2532] p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group">
                   <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 rounded-l-sm" />
@@ -299,7 +278,6 @@ export default function Messages() {
                 </div>
               </div>
 
-              {/* Sent Data Panel */}
               <div className="flex flex-col items-end w-full">
                 <div className="bg-[#00F0FF]/10 border border-[#00F0FF]/30 p-4 rounded-2xl rounded-tr-sm max-w-[80%] md:max-w-[60%] relative shadow-[0_5px_20px_rgba(0,240,255,0.05)]">
                   <div className="absolute top-0 right-0 w-1 h-full bg-[#00F0FF] rounded-r-sm shadow-[0_0_8px_#00F0FF]" />
@@ -333,16 +311,70 @@ export default function Messages() {
             </div>
           </>
         ) : (
-          /* Empty State: Holographic Logo */
-          <div className="flex-1 flex flex-col items-center justify-center z-10 bg-gradient-to-br from-[#05070A] to-[#0B0F19]">
-            <div className="w-32 h-32 rounded-full border border-dashed border-[#00F0FF]/30 flex items-center justify-center animate-[spin_10s_linear_infinite] mb-6">
-              <div className="w-24 h-24 rounded-full border border-[#0057FF]/50 flex items-center justify-center animate-[spin_5s_linear_infinite_reverse]">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] opacity-10 blur-xl animate-pulse" />
-                <IoMdPulse size={40} className="text-[#00F0FF] opacity-50 absolute" />
+          
+          /* 👇 THE NEW FEATURE: QUANTUM RADAR DASHBOARD (Empty State) 👇 */
+          <div className="flex-1 flex flex-col items-center justify-center z-10 bg-[#05070A] relative overflow-hidden">
+            
+            {/* Live Sweeping Radar Background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+              <div className="relative w-[600px] h-[600px] flex items-center justify-center">
+                
+                {/* Concentric Rings */}
+                <div className="absolute w-full h-full rounded-full border border-[#00F0FF]/10" />
+                <div className="absolute w-3/4 h-3/4 rounded-full border border-[#00F0FF]/15" />
+                <div className="absolute w-1/2 h-1/2 rounded-full border border-[#00F0FF]/20" />
+                <div className="absolute w-1/4 h-1/4 rounded-full border border-[#0057FF]/30" />
+                
+                {/* Sweeping Scanner Line */}
+                <div className="absolute w-[300px] h-[300px] top-0 right-1/2 origin-bottom-right animate-[spin_4s_linear_infinite]">
+                  <div className="w-full h-full border-r-2 border-b-2 border-[#00F0FF] rounded-br-full opacity-40 shadow-[10px_10px_30px_rgba(0,240,255,0.2)]" />
+                </div>
+
+                {/* Radar Pings (Simulating Users) */}
+                <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-[#00F0FF] rounded-full animate-ping shadow-[0_0_10px_#00F0FF]" />
+                <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-[#0057FF] rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] delay-75" />
+                <div className="absolute top-1/2 right-1/3 w-2.5 h-2.5 bg-white rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] delay-150" />
               </div>
             </div>
-            <h2 className="text-2xl font-black text-white tracking-widest uppercase drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">Comms Hub</h2>
-            <p className="text-gray-500 text-sm font-medium mt-2">Select a channel from the left to establish a secure uplink.</p>
+
+            {/* Foreground Dashboard Centerpiece */}
+            <div className="relative z-10 flex flex-col items-center w-full max-w-lg px-6">
+              
+              <div className="w-24 h-24 rounded-full bg-[#151A25]/80 backdrop-blur-xl border border-[#00F0FF]/30 flex items-center justify-center shadow-[0_0_50px_rgba(0,240,255,0.2)] mb-6 relative group cursor-pointer">
+                <div className="absolute inset-0 rounded-full border-t-2 border-[#00F0FF] animate-spin" />
+                <IoMdPulse size={40} className="text-[#00F0FF] group-hover:scale-110 transition-transform" />
+              </div>
+
+              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] tracking-widest uppercase mb-2 drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+                System Secure
+              </h2>
+              <p className="text-gray-400 text-[13px] font-bold tracking-wide mb-10 text-center leading-relaxed max-w-sm">
+                Live monitoring of your real estate network. Select a channel to establish an uplink.
+              </p>
+
+              {/* Quick Live Diagnostics Grid */}
+              <div className="grid grid-cols-3 gap-4 w-full">
+                
+                {/* Real-time Data Card 1 */}
+                <div className="bg-[#0B0F19]/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center hover:border-[#00F0FF]/30 transition-colors shadow-lg">
+                  <span className="text-[#00F0FF] font-black text-3xl drop-shadow-[0_0_5px_rgba(0,240,255,0.5)] leading-none mb-2">{dbUsers.length}</span>
+                  <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center">Active<br/>Nodes</span>
+                </div>
+                
+                {/* Real-time Data Card 2 */}
+                <div className="bg-[#0B0F19]/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center hover:border-white/20 transition-colors shadow-lg">
+                  <span className="text-white font-black text-3xl drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] leading-none mb-2">100<span className="text-lg">%</span></span>
+                  <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center">Signal<br/>Integrity</span>
+                </div>
+                
+                {/* Real-time Data Card 3 */}
+                <div className="bg-[#0B0F19]/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center hover:border-[#0057FF]/30 transition-colors shadow-lg">
+                  <span className="text-[#0057FF] font-black text-3xl drop-shadow-[0_0_5px_rgba(0,87,255,0.5)] leading-none mb-2">{filteredUsers.length}</span>
+                  <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest text-center">Encrypted<br/>Channels</span>
+                </div>
+
+              </div>
+            </div>
           </div>
         )}
       </div>

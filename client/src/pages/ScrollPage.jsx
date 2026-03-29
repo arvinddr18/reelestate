@@ -109,11 +109,11 @@ export default function ScrollPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
               {/* ─── BOTTOM LEFT: PURE FLOATING HUD ─── */}
-              {/* 👇 Lifted to bottom-16 so it perfectly clears the mobile bottom edge */}
-              <div className="absolute bottom-16 left-4 right-[70px] z-20 flex flex-col gap-1.5">
+              <div className="absolute bottom-16 left-4 right-[70px] z-20 flex flex-col gap-1">
                 
+                {/* Clean User Profile */}
                 <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
-                  <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                  <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     <img 
                       src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} 
                       alt="avatar" 
@@ -131,23 +131,25 @@ export default function ScrollPage() {
                   </div>
                 </div>
 
-                <h3 className="text-white font-black text-[22px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
+                {/* Property Title (Font size reduced to 15px to match username) */}
+                <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                {/* Glowing Floating Price (Font size reduced to 15px to match username) */}
+                <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
                 </p>
 
+                {/* Description (Already small, kept at 13px for hierarchy) */}
                 {post.description && (
-                  <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-1">
+                  <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
                     {post.description}
                   </p>
                 )}
               </div>
 
               {/* ─── RIGHT SIDE: CLEAN FLOATING ICONS ─── */}
-              {/* 👇 Lifted to bottom-16 to align properly and avoid being cut off */}
               <div className="absolute bottom-16 right-3 z-20 flex flex-col items-center gap-6">
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">

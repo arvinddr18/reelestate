@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack } from 'react-icons/io';
+// 👇 Added IoMdSearch for the empty state radar animation
+import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdSearch } from 'react-icons/io';
 import api from '../services/api';
+
+// 👇 NEW: The categories for the wheel
+const CATEGORIES = ['All', 'Sale Hub', 'Hotels', 'Rents', 'Education', 'Resorts', 'Farms', 'Commercial'];
 
 export default function ScrollPage() {
   const navigate = useNavigate();
@@ -10,6 +14,9 @@ export default function ScrollPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   
   const [isRevealed, setIsRevealed] = useState(false);
+  
+  // 👇 NEW: State to track the active category in the wheel
+  const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -50,11 +57,19 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
+  // 👇 NEW: Filter the posts based on the selected category from the wheel
+  const displayPosts = activeCategory === 'All' 
+    ? posts 
+    : posts.filter(post => {
+        const cat = (post.category || post.propertyType || '').toLowerCase();
+        return cat === activeCategory.toLowerCase() || cat.includes(activeCategory.toLowerCase());
+      });
+
   if (loading) {
     return (
       <div className="h-[100dvh] w-full bg-black flex flex-col items-center justify-center text-white">
         <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
-        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Feed...</span>
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Establishing Uplink...</span>
       </div>
     );
   }
@@ -71,120 +86,163 @@ export default function ScrollPage() {
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-black relative flex justify-center">
+    <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden">
       
       {/* ─── GLOBAL FLOATING BACK BUTTON ─── */}
       <button 
         onClick={() => navigate(-1)} 
-        className={`absolute top-6 left-4 z-50 p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-white/10 transition-all duration-1000 ease-out shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}
+        className={`absolute top-6 left-4 z-50 p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-[#00F0FF] hover:border-transparent hover:text-black transition-all duration-1000 ease-out shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}
       >
         <IoMdArrowBack size={24} />
       </button>
+
+      {/* 👇 NEW: THE HOLOGRAPHIC CATEGORY WHEEL 👇 */}
+      <div className={`absolute top-6 left-[68px] right-4 z-50 h-12 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center overflow-hidden transition-all duration-1000 delay-200 ease-out ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}>
+        
+        {/* Shadow Masks for 3D curved cylinder effect */}
+        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+        
+        {/* The Scrolling Dial */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full px-6 py-2">
+          {CATEGORIES.map((cat) => (
+            <button 
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                setActiveIndex(0); // Reset scroll to top when category changes
+              }}
+              className={`snap-center shrink-0 px-4 py-1.5 rounded-full font-black tracking-widest uppercase transition-all duration-500 ease-out flex items-center gap-2 ${
+                activeCategory === cat 
+                  ? 'bg-[#00F0FF]/10 text-[#00F0FF] text-[12px] scale-105 border border-[#00F0FF]/40 drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]' 
+                  : 'text-gray-500 text-[10px] scale-90 border border-transparent hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {activeCategory === cat && <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_5px_#00F0FF]" />}
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* ─── MAIN SCROLL CONTAINER ─── */}
       <div 
         onScroll={handleScroll}
         className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10"
       >
-        {posts.map((post, index) => {
-          if (!post) return null;
-
-          const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
-          const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
-          const isActive = index === activeIndex;
+        {displayPosts.length === 0 ? (
           
-          const showUI = isRevealed && isActive;
+          /* 👇 NEW: EMPTY STATE CYBER-RADAR (If category has no posts) 👇 */
+          <div className="w-full h-full flex flex-col items-center justify-center text-center px-6 relative bg-[#05070A]">
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            <div className="w-24 h-24 rounded-full border-2 border-dashed border-[#00F0FF]/30 flex items-center justify-center animate-[spin_10s_linear_infinite] mb-6">
+              <IoMdSearch size={30} className="text-[#00F0FF] opacity-50 animate-[spin_5s_linear_infinite_reverse]" />
+            </div>
+            <h3 className="text-[#00F0FF] font-black text-xl tracking-widest uppercase drop-shadow-[0_0_10px_rgba(0,240,255,0.4)]">No Intel Found</h3>
+            <p className="text-gray-400 text-sm mt-2 font-medium">No properties uploaded in the <span className="text-white">[{activeCategory}]</span> sector yet.</p>
+          </div>
 
-          return (
-            <div key={post._id || index} className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden">
-              
-              {/* ─── TRUE FULL SCREEN MEDIA ─── */}
-              <div className={`absolute inset-0 w-full h-full transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-105'}`}>
-                {isVideo && mediaUrl ? (
-                  <video 
-                    src={mediaUrl} 
-                    className="w-full h-full object-cover" 
-                    loop 
-                    muted={!isActive} 
-                    autoPlay={isActive} 
-                    playsInline 
-                  />
-                ) : mediaUrl ? (
-                  <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
-                )}
-              </div>
+        ) : (
+          displayPosts.map((post, index) => {
+            if (!post) return null;
 
-              {/* 👇 THE FIX: Lighter, shorter gradient! No more 100% black blocking the video */}
-              <div className={`absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10 pointer-events-none transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
+            const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
+            const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
+            const isActive = index === activeIndex;
+            
+            const showUI = isRevealed && isActive;
 
-              {/* ─── BOTTOM LEFT: DYNAMIC SLIDE-IN HUD ─── */}
-              <div className={`absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 transition-all duration-700 ease-out delay-100 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            return (
+              <div key={post._id || index} className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden">
                 
-                <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
-                  <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                    <img 
-                      src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} 
-                      alt="avatar" 
-                      className="w-full h-full rounded-full object-cover border-2 border-black"
+                {/* ─── TRUE FULL SCREEN MEDIA ─── */}
+                <div className={`absolute inset-0 w-full h-full transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-105'}`}>
+                  {isVideo && mediaUrl ? (
+                    <video 
+                      src={mediaUrl} 
+                      className="w-full h-full object-cover" 
+                      loop 
+                      muted={!isActive} 
+                      autoPlay={isActive} 
+                      playsInline 
                     />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                      @{post.author?.username || 'user'}
-                    </span>
-                    <span className="w-1 h-1 rounded-full bg-white/70 shadow-md mx-0.5"></span>
-                    <button className="text-[#00F0FF] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hover:text-white transition-colors">
-                      Follow
-                    </button>
-                  </div>
+                  ) : mediaUrl ? (
+                    <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
+                  )}
                 </div>
 
-                <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
-                  {post.title || 'Exclusive Listing'}
-                </h3>
-                
-                <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-                  {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
-                </p>
+                {/* THE CLEAR VIEW GRADIENT */}
+                <div className={`absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10 pointer-events-none transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
 
-                {post.description && (
-                  <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
-                    {post.description}
-                  </p>
-                )}
-              </div>
-
-              {/* ─── RIGHT SIDE: STAGGERED SLIDE-IN ICONS ─── */}
-              <div className={`absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-                
-                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />
-                  <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
-                </button>
-
-                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdText size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-[#00F0FF] transition-colors" />
-                  <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
-                </button>
-
-                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdBookmark size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-yellow-400 transition-colors" />
-                  <span className="text-white text-[10px] font-bold uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Save</span>
-                </button>
-
-                <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
-                  <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
-                    <IoMdShareAlt size={24} />
+                {/* ─── BOTTOM LEFT: DYNAMIC SLIDE-IN HUD ─── */}
+                <div className={`absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 transition-all duration-700 ease-out delay-100 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                  
+                  <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
+                    <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                      <img 
+                        src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} 
+                        alt="avatar" 
+                        className="w-full h-full rounded-full object-cover border-2 border-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        @{post.author?.username || 'user'}
+                      </span>
+                      <span className="w-1 h-1 rounded-full bg-white/70 shadow-md mx-0.5"></span>
+                      <button className="text-[#00F0FF] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hover:text-white transition-colors">
+                        Follow
+                      </button>
+                    </div>
                   </div>
-                </button>
+
+                  <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
+                    {post.title || 'Exclusive Listing'}
+                  </h3>
+                  
+                  <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                    {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
+                  </p>
+
+                  {post.description && (
+                    <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
+                      {post.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* ─── RIGHT SIDE: STAGGERED SLIDE-IN ICONS ─── */}
+                <div className={`absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+                  
+                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />
+                    <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <IoMdText size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-[#00F0FF] transition-colors" />
+                    <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <IoMdBookmark size={34} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-yellow-400 transition-colors" />
+                    <span className="text-white text-[10px] font-bold uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Save</span>
+                  </button>
+
+                  <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
+                    <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
+                      <IoMdShareAlt size={24} />
+                    </div>
+                  </button>
+
+                </div>
 
               </div>
-
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
     </div>

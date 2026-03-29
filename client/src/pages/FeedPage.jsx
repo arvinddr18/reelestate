@@ -243,7 +243,7 @@ export default function FeedPage() {
       <ScrollTrigger />
       
       {/* ─── PREMIUM GLASS HEADER (100% BORDERLESS) ─── */}
-      <header className={`fixed top-0 left-0 w-full z-40 bg-[#0B0F19]/90 backdrop-blur-2xl transition-transform duration-500 ease-in-out shadow-[0_10px_30px_rgba(0,0,0,0.5)] ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header className={`sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-2xl transition-transform duration-500 ease-in-out ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between">
@@ -341,7 +341,7 @@ export default function FeedPage() {
       </header>
 
       {/* ─── MAIN FEED CONTENT ─── */}
-      <main className="max-w-2xl mx-auto px-4 pb-6 space-y-6 pt-[150px]">
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         
         {/* ─── ⚡ NEXT-GEN STORY PORTALS (Only on 'For You') ─── */}
         {activeCategory === 'All' && (

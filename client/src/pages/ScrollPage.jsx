@@ -4,23 +4,21 @@ import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdSea
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 
-// ─── RADIAL MENU COMPONENT (The Long-Press Command Center) ───
+// ─── RADIAL MENU COMPONENT ───
 const RadialMenu = ({ isOpen, onClose, onAction }) => {
   const [hoveredAction, setHoveredAction] = useState(null);
 
   const ACTIONS = [
-    { id: 'like', icon: <IoMdHeart size={28} />, label: 'Like', color: 'text-red-500', bg: 'bg-red-500/20', angle: 270 }, // Top
-    { id: 'share', icon: <IoMdShareAlt size={28} />, label: 'Share', color: 'text-[#00F0FF]', bg: 'bg-[#00F0FF]/20', angle: 0 }, // Right
-    { id: 'save', icon: <IoMdBookmark size={28} />, label: 'Save', color: 'text-yellow-400', bg: 'bg-yellow-400/20', angle: 90 }, // Bottom
-    { id: 'hide', icon: <IoMdCloseCircle size={28} />, label: 'Hide', color: 'text-gray-400', bg: 'bg-gray-400/20', angle: 180 }, // Left
+    { id: 'like', icon: <IoMdHeart size={28} />, label: 'Like', color: 'text-red-500', bg: 'bg-red-500/20', angle: 270 },
+    { id: 'share', icon: <IoMdShareAlt size={28} />, label: 'Share', color: 'text-[#00F0FF]', bg: 'bg-[#00F0FF]/20', angle: 0 },
+    { id: 'save', icon: <IoMdBookmark size={28} />, label: 'Save', color: 'text-yellow-400', bg: 'bg-yellow-400/20', angle: 90 },
+    { id: 'hide', icon: <IoMdCloseCircle size={28} />, label: 'Hide', color: 'text-gray-400', bg: 'bg-gray-400/20', angle: 180 },
   ];
 
-  // Global event listeners to track the thumb dragging even when it leaves the original element
   useEffect(() => {
     if (!isOpen) return;
 
     const handleMove = (e) => {
-      // Get pointer coordinates (supports both mouse and touch)
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       
@@ -30,20 +28,17 @@ const RadialMenu = ({ isOpen, onClose, onAction }) => {
       const dy = clientY - cy;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // Only select if finger is dragged at least 40px from the center
       if (distance > 40) {
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI); // -180 to 180
-        if (angle < 0) angle += 360; // Convert to 0-360
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        if (angle < 0) angle += 360;
 
-        // Determine which quadrant the finger is in
         let active = null;
-        if (angle >= 315 || angle < 45) active = 'share'; // Right
-        else if (angle >= 45 && angle < 135) active = 'save'; // Bottom
-        else if (angle >= 135 && angle < 225) active = 'hide'; // Left
-        else if (angle >= 225 && angle < 315) active = 'like'; // Top
+        if (angle >= 315 || angle < 45) active = 'share';
+        else if (angle >= 45 && angle < 135) active = 'save';
+        else if (angle >= 135 && angle < 225) active = 'hide';
+        else if (angle >= 225 && angle < 315) active = 'like';
 
         setHoveredAction(active);
-        // Optional: Light vibration when sliding over an icon
         if (active !== hoveredAction && navigator.vibrate) navigator.vibrate(10);
       } else {
         setHoveredAction(null);
@@ -79,7 +74,6 @@ const RadialMenu = ({ isOpen, onClose, onAction }) => {
         >
           <div className="relative w-[280px] h-[280px] flex items-center justify-center">
             
-            {/* Center Hub */}
             <motion.div 
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -90,10 +84,8 @@ const RadialMenu = ({ isOpen, onClose, onAction }) => {
               <div className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_10px_#00F0FF]" />
             </motion.div>
 
-            {/* Radial Actions */}
             {ACTIONS.map((action, index) => {
               const isHovered = hoveredAction === action.id;
-              // Trigonometry to place buttons in a circle (Radius = 100px)
               const RADIUS = 100;
               const rad = (action.angle * Math.PI) / 180;
               const x = Math.cos(rad) * RADIUS;
@@ -117,7 +109,6 @@ const RadialMenu = ({ isOpen, onClose, onAction }) => {
                     {action.icon}
                   </div>
                   
-                  {/* Label pops up only when hovered */}
                   <AnimatePresence>
                     {isHovered && (
                       <motion.span 
@@ -135,7 +126,6 @@ const RadialMenu = ({ isOpen, onClose, onAction }) => {
             })}
           </div>
           
-          {/* Helper Text */}
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -157,7 +147,6 @@ export default function ScrollPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  // Radial Menu State
   const [radialMenuOpen, setRadialMenuOpen] = useState(false);
   const pressTimer = useRef(null);
 
@@ -200,12 +189,11 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
-  // ─── LONG PRESS LOGIC ───
   const handlePointerDown = () => {
     pressTimer.current = setTimeout(() => {
-      if (navigator.vibrate) navigator.vibrate(50); // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(50);
       setRadialMenuOpen(true);
-    }, 400); // 400ms hold triggers the menu
+    }, 400); 
   };
 
   const handlePointerUpOrLeave = () => {
@@ -214,7 +202,6 @@ export default function ScrollPage() {
 
   const handleRadialAction = (action) => {
     console.log(`Action triggered on Post ${activeIndex}:`, action);
-    // Add your actual logic here (e.g., api.post(`/posts/${posts[activeIndex]._id}/like`))
   };
 
   if (loading) {
@@ -241,14 +228,12 @@ export default function ScrollPage() {
   return (
     <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden touch-none select-none">
       
-      {/* RADIAl COMMAND MENU OVERLAY */}
       <RadialMenu 
         isOpen={radialMenuOpen} 
         onClose={() => setRadialMenuOpen(false)} 
         onAction={handleRadialAction} 
       />
 
-      {/* ─── GLOBAL FLOATING BACK BUTTON ─── */}
       <button 
         onClick={() => navigate(-1)} 
         className={`absolute top-6 left-4 z-50 p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-[#00F0FF] hover:border-transparent hover:text-black transition-all duration-1000 ease-out shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}
@@ -256,7 +241,6 @@ export default function ScrollPage() {
         <IoMdArrowBack size={24} />
       </button>
 
-      {/* ─── MAIN SCROLL CONTAINER ─── */}
       <div 
         onScroll={handleScroll}
         className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10"
@@ -274,14 +258,12 @@ export default function ScrollPage() {
             <div 
               key={post._id || index} 
               className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden"
-              // 👇 Long Press Triggers Added Here 👇
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUpOrLeave}
               onPointerLeave={handlePointerUpOrLeave}
-              onContextMenu={(e) => e.preventDefault()} // Prevents native right-click menu
+              onContextMenu={(e) => e.preventDefault()} 
             >
               
-              {/* ─── TRUE FULL SCREEN MEDIA ─── */}
               <div className={`absolute inset-0 w-full h-full transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-105'}`}>
                 {isVideo && mediaUrl ? (
                   <video 
@@ -301,7 +283,7 @@ export default function ScrollPage() {
 
               <div className={`absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10 pointer-events-none transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
 
-              {/* ─── BOTTOM LEFT: DYNAMIC SLIDE-IN HUD ─── */}
+              {/* ─── BOTTOM LEFT: PROPERTY INFO ─── */}
               <div className={`absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 transition-all duration-700 ease-out delay-100 pointer-events-none ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                 
                 <div className="flex items-center gap-3 mb-1 cursor-pointer w-max pointer-events-auto">
@@ -338,8 +320,8 @@ export default function ScrollPage() {
                 )}
               </div>
 
-              {/* ─── RIGHT SIDE: STAGGERED SLIDE-IN ICONS ─── */}
-              <div className={`absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 pointer-events-auto ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+              {/* 👇 THE FIX: CENTER-RIGHT FLOATING ICONS 👇 */}
+              <div className={`absolute top-1/2 -translate-y-1/2 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 pointer-events-auto ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
                   <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />

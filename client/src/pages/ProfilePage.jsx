@@ -129,20 +129,26 @@ export default function ProfilePage() {
       {/* ── STICKY TOP BAR ── */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-transparent pointer-events-none">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between pointer-events-auto">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-            <IoMdArrowBack size={20} />
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] active:scale-95 group">
+            <IoMdArrowBack size={20} className="group-hover:-translate-x-1 transition-transform" />
           </button>
+          
           <div className="flex gap-3">
-            {!canEditProfile && (
-               <button className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                 <IoMdShareAlt size={20} />
-               </button>
-            )}
-            {canEditProfile && (
-              <button onClick={() => setIsEditing(true)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-[#00F0FF] hover:bg-[#00F0FF] hover:text-white transition-colors shadow-[0_0_15px_rgba(0,240,255,0.5)]">
-                <IoMdSettings size={20} />
-              </button>
-            )}
+            {/* Universal Share Profile Button */}
+            <button 
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: 'Nodexa Profile', url: window.location.href }).catch(console.error);
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert("Profile Link Copied to Clipboard!");
+                }
+              }} 
+              className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-[#00F0FF] hover:bg-[#00F0FF] hover:text-[#0B0F19] transition-all shadow-[0_0_15px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.8)] active:scale-95"
+              title="Share Profile"
+            >
+              <IoMdShareAlt size={20} />
+            </button>
           </div>
         </div>
       </header>

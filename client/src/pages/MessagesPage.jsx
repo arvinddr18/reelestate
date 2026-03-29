@@ -93,37 +93,37 @@ export default function Messages() {
   return (
     <div className="h-[100dvh] w-full bg-[#05070A] text-white font-sans flex overflow-hidden relative">
       
-      {/* ─── PURE ANIMATED RADAR BACKGROUND (Spans the whole app now!) ─── */}
-      <div className="absolute inset-0 z-0 flex items-start md:items-center justify-center md:justify-end overflow-hidden pointer-events-none opacity-40">
-        {/* On mobile: shifted up behind the search bar. On desktop: centered on the right pane */}
-        <div className="relative w-[800px] h-[800px] md:w-[1000px] md:h-[1000px] -mt-[150px] md:mt-0 md:-mr-[200px] flex items-center justify-center">
+      {/* ─── PURE ANIMATED RADAR BACKGROUND (Now centered and highly visible!) ─── */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center md:justify-end overflow-hidden pointer-events-none opacity-60 md:opacity-40">
+        {/* Adjusted sizing and positioning so it fits beautifully on mobile screens behind the UI */}
+        <div className="relative w-[600px] h-[600px] md:w-[1000px] md:h-[1000px] -mt-[20%] md:mt-0 md:-mr-[200px] flex items-center justify-center">
           
           {/* Concentric Rings */}
-          <div className="absolute w-full h-full rounded-full border border-[#00F0FF]/15" />
-          <div className="absolute w-3/4 h-3/4 rounded-full border border-[#00F0FF]/20" />
-          <div className="absolute w-1/2 h-1/2 rounded-full border border-[#00F0FF]/30" />
-          <div className="absolute w-1/4 h-1/4 rounded-full border border-[#0057FF]/40" />
+          <div className="absolute w-full h-full rounded-full border border-[#00F0FF]/20" />
+          <div className="absolute w-3/4 h-3/4 rounded-full border border-[#00F0FF]/30" />
+          <div className="absolute w-1/2 h-1/2 rounded-full border border-[#00F0FF]/40" />
+          <div className="absolute w-1/4 h-1/4 rounded-full border border-[#0057FF]/50" />
           
           {/* Sweeping Scanner Line */}
           <div className="absolute w-1/2 h-1/2 top-0 right-1/2 origin-bottom-right animate-[spin_4s_linear_infinite]">
-            <div className="w-full h-full border-r-2 border-b-2 border-[#00F0FF] rounded-br-full opacity-40 shadow-[10px_10px_30px_rgba(0,240,255,0.3)]" />
+            <div className="w-full h-full border-r-2 border-b-2 border-[#00F0FF] rounded-br-full opacity-50 shadow-[10px_10px_30px_rgba(0,240,255,0.4)]" />
           </div>
 
           {/* Random Pings */}
           <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-[#00F0FF] rounded-full animate-ping shadow-[0_0_15px_#00F0FF]" />
           <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-[#0057FF] rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] delay-75" />
-          <div className="absolute top-1/2 right-1/3 w-2.5 h-2.5 bg-white rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] delay-150" />
+          <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-white rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 shadow-[0_0_10px_white]" />
         </div>
       </div>
 
       {/* ─── LEFT PANE: COMMS HUB ─── */}
-      {/* 👇 Less background blur (bg/40) so the radar shows through perfectly on mobile */}
-      <div className={`w-full md:w-[400px] lg:w-[450px] h-full flex flex-col bg-[#0B0F19]/40 backdrop-blur-xl border-r border-[#1E2532] z-10 shrink-0 transition-transform duration-500 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
+      {/* 👇 FIX: Changed to bg-black/20 and backdrop-blur-md so the radar glows cleanly through it on mobile! */}
+      <div className={`w-full md:w-[400px] lg:w-[450px] h-full flex flex-col bg-black/20 backdrop-blur-md border-r border-[#1E2532] z-10 shrink-0 transition-transform duration-500 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
         
-        <header className="px-6 py-5 border-b border-[#1E2532] shrink-0">
+        <header className="px-6 py-5 shrink-0 relative z-10">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-4">
-              <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-black/40 border border-[#1E2532] flex items-center justify-center text-gray-300 hover:text-[#00F0FF] transition-colors shadow-lg">
+              <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#00F0FF] transition-colors shadow-lg backdrop-blur-md">
                 <IoMdArrowBack size={20} />
               </button>
               <div>
@@ -138,7 +138,7 @@ export default function Messages() {
             </button>
           </div>
 
-          <div className="bg-black/40 border border-[#1E2532] rounded-full p-1.5 flex items-center shadow-inner focus-within:border-[#00F0FF]/50 transition-colors backdrop-blur-md">
+          <div className="bg-white/5 border border-white/10 rounded-full p-1.5 flex items-center shadow-inner focus-within:border-[#00F0FF]/50 transition-colors backdrop-blur-xl">
             <div className="w-10 h-10 flex items-center justify-center text-[#00F0FF]/70">
               <IoMdSearch size={20} />
             </div>
@@ -147,18 +147,18 @@ export default function Messages() {
               placeholder="Search your network..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-white font-bold outline-none placeholder-gray-500"
+              className="flex-1 bg-transparent text-sm text-white font-bold outline-none placeholder-gray-400"
             />
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-4 px-4 pt-6">
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-4 px-4 pt-2 relative z-10">
           
           {!loading && dbUsers.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Radar</h2>
-                <span className="text-[10px] font-black text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-0.5 rounded-full border border-[#00F0FF]/30">
+                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest drop-shadow-md">Active Radar</h2>
+                <span className="text-[10px] font-black text-[#00F0FF] bg-[#00F0FF]/10 px-2 py-0.5 rounded-full border border-[#00F0FF]/30 backdrop-blur-md">
                   {dbUsers.length} Networked
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function Messages() {
                   <div key={user._id || user.id} onClick={() => setActiveChat(user)} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
                     <div className="relative">
                       <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
-                      <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md border-2 border-[#0B0F19] overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+                      <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-xl border-2 border-white/10 overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
                         {user.profilePhoto ? (
                           <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
                         ) : (
@@ -177,7 +177,7 @@ export default function Messages() {
                       </div>
                       <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
                     </div>
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-wider truncate w-16 text-center drop-shadow-md">
+                    <span className="text-[10px] font-black text-gray-200 uppercase tracking-wider truncate w-16 text-center drop-shadow-md">
                       {user.fullName || user.username}
                     </span>
                   </div>
@@ -187,14 +187,14 @@ export default function Messages() {
           )}
 
           <div className="space-y-3">
-            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Encrypted Channels</h2>
+            <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 drop-shadow-md">Encrypted Channels</h2>
             
             {loading ? (
               <div className="text-center py-10 text-[#00F0FF] animate-pulse font-bold text-sm tracking-widest uppercase">
                 Decrypting Network...
               </div>
             ) : filteredUsers.length === 0 ? (
-              <div className="text-center py-10 text-gray-500 font-bold text-sm">
+              <div className="text-center py-10 text-gray-400 font-bold text-sm">
                 {searchQuery ? "No matches found." : "No networked users found."}
               </div>
             ) : (
@@ -202,12 +202,12 @@ export default function Messages() {
                 <div 
                   key={user._id || user.id} 
                   onClick={() => setActiveChat(user)} 
-                  className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/10 border-[#00F0FF]/40 shadow-[0_0_20px_rgba(0,240,255,0.1)]' : 'bg-black/40 border-[#1E2532] hover:border-[#2A3441] hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
+                  className={`block p-4 rounded-[24px] backdrop-blur-xl transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/20 border-[#00F0FF]/50 shadow-[0_0_20px_rgba(0,240,255,0.2)]' : 'bg-black/40 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
                   <div className="flex items-center gap-4 relative z-10">
-                    <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#0B0F19] bg-[#1E2532] shadow-lg overflow-hidden text-lg font-bold">
+                    <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-transparent bg-[#1E2532]/50 shadow-lg overflow-hidden text-lg font-bold">
                       {user.profilePhoto ? (
                         <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
                       ) : (
@@ -225,14 +225,14 @@ export default function Messages() {
 
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 truncate">
-                          <span className="text-[11px] font-bold truncate text-gray-400">
+                          <span className="text-[11px] font-bold truncate text-gray-300">
                             Tap to open secure channel...
                           </span>
                         </div>
                         <div className="shrink-0 flex items-center gap-2">
                             <div className="flex -space-x-1">
-                              <IoMdCheckmark className="text-gray-500" size={14} />
-                              <IoMdCheckmark className="text-gray-500" size={14} />
+                              <IoMdCheckmark className="text-[#00F0FF]" size={14} />
+                              <IoMdCheckmark className="text-[#00F0FF]" size={14} />
                             </div>
                         </div>
                       </div>
@@ -254,9 +254,9 @@ export default function Messages() {
         {activeChat ? (
           <>
             {/* Active Chat Header */}
-            <div className="h-20 px-6 bg-black/60 backdrop-blur-2xl border-b border-[#1E2532] flex items-center justify-between z-20 shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+            <div className="h-20 px-6 bg-black/60 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
               <div className="flex items-center gap-4">
-                <button onClick={() => setActiveChat(null)} className="md:hidden w-10 h-10 rounded-full bg-black/40 flex items-center justify-center text-white border border-[#1E2532]">
+                <button onClick={() => setActiveChat(null)} className="md:hidden w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={20} />
                 </button>
                 <div className="w-12 h-12 rounded-full p-[1.5px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
@@ -276,19 +276,19 @@ export default function Messages() {
                   </div>
                 </div>
               </div>
-              <button className="w-10 h-10 rounded-full bg-black/40 hover:bg-[#1E2532] border border-[#1E2532] flex items-center justify-center transition-colors text-white">
+              <button className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors text-white backdrop-blur-md">
                 <IoMdMore size={20} />
               </button>
             </div>
 
-            {/* Messages Area (Mocked) */}
+            {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-[#05070A]/80 backdrop-blur-md">
               <div className="flex justify-center mb-4 mt-4">
-                <span className="px-3 py-1 rounded-full bg-black/60 border border-[#1E2532] text-[9px] font-black text-gray-500 tracking-widest uppercase">Encryption Started • Today</span>
+                <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
               <div className="flex flex-col items-start w-full">
-                <div className="bg-black/60 backdrop-blur-md border border-[#1E2532] p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
+                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
                   <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 rounded-l-sm" />
                   <p className="text-gray-200 text-sm leading-relaxed mb-2 font-medium">Network established. Ready to securely exchange property assets.</p>
                   <span className="text-gray-500 text-[9px] font-bold font-mono">10:41 AM • DECRYPTED</span>
@@ -311,15 +311,15 @@ export default function Messages() {
             </div>
 
             {/* Input Terminal */}
-            <div className="p-4 md:p-6 bg-black/80 backdrop-blur-2xl border-t border-[#1E2532] z-20 shrink-0 pb-8 md:pb-6">
-              <div className="flex items-center gap-3 bg-[#0B0F19] border border-[#1E2532] p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] focus-within:border-[#00F0FF]/30 transition-colors">
-                <button className="w-10 h-10 rounded-xl bg-[#151A25] hover:bg-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
+            <div className="p-4 md:p-6 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20 shrink-0 pb-8 md:pb-6">
+              <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] focus-within:border-[#00F0FF]/50 transition-colors backdrop-blur-xl">
+                <button className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
                   <IoMdAdd size={20} />
                 </button>
                 <input 
                   type="text" 
                   placeholder="Transmit secure message..." 
-                  className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder-gray-600 font-medium px-2"
+                  className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder-gray-500 font-medium px-2"
                 />
                 <button className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,240,255,0.4)] shrink-0">
                   <svg className="w-4 h-4 translate-x-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
@@ -328,11 +328,8 @@ export default function Messages() {
             </div>
           </>
         ) : (
-          
-          /* EMPTY STATE (Words and Cards Removed! Just pure transparency) */
-          <div className="flex-1 flex flex-col items-center justify-center z-10 bg-transparent relative pointer-events-none">
-            {/* The global radar takes care of the visuals here seamlessly. */}
-          </div>
+          /* Empty Space for Desktop (Radar is already handling the background globally!) */
+          <div className="flex-1 flex flex-col items-center justify-center z-10 bg-transparent relative pointer-events-none"></div>
         )}
       </div>
 

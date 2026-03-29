@@ -9,7 +9,6 @@ export default function ScrollPage() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   
-  // 👇 NEW: State to trigger the grand entrance animation
   const [isRevealed, setIsRevealed] = useState(false);
 
   useEffect(() => {
@@ -27,7 +26,6 @@ export default function ScrollPage() {
     fetchPosts();
   }, []);
 
-  // 👇 NEW: Trigger the animation 100ms after the loading screen finishes
   useEffect(() => {
     if (!loading && posts.length > 0) {
       const timer = setTimeout(() => setIsRevealed(true), 100);
@@ -56,7 +54,7 @@ export default function ScrollPage() {
     return (
       <div className="h-[100dvh] w-full bg-black flex flex-col items-center justify-center text-white">
         <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4" />
-        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Establishing Uplink...</span>
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Loading Feed...</span>
       </div>
     );
   }
@@ -75,7 +73,7 @@ export default function ScrollPage() {
   return (
     <div className="h-[100dvh] w-full bg-black relative flex justify-center">
       
-      {/* ─── GLOBAL FLOATING BACK BUTTON (Animates in once) ─── */}
+      {/* ─── GLOBAL FLOATING BACK BUTTON ─── */}
       <button 
         onClick={() => navigate(-1)} 
         className={`absolute top-6 left-4 z-50 p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-white/10 transition-all duration-1000 ease-out shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}
@@ -95,13 +93,12 @@ export default function ScrollPage() {
           const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
           
-          // 👇 NEW: This controls the cinematic slide-in for EACH post when it comes on screen
           const showUI = isRevealed && isActive;
 
           return (
             <div key={post._id || index} className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden">
               
-              {/* ─── TRUE FULL SCREEN MEDIA (Smooth Zoom-in Effect) ─── */}
+              {/* ─── TRUE FULL SCREEN MEDIA ─── */}
               <div className={`absolute inset-0 w-full h-full transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-105'}`}>
                 {isVideo && mediaUrl ? (
                   <video 
@@ -119,13 +116,12 @@ export default function ScrollPage() {
                 )}
               </div>
 
-              {/* HEAVY GRADIENT */}
-              <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
+              {/* 👇 THE FIX: Lighter, shorter gradient! No more 100% black blocking the video */}
+              <div className={`absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10 pointer-events-none transition-opacity duration-1000 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
 
               {/* ─── BOTTOM LEFT: DYNAMIC SLIDE-IN HUD ─── */}
-              <div className={`absolute bottom-16 left-4 right-[70px] z-20 flex flex-col gap-1 transition-all duration-700 ease-out delay-100 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <div className={`absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 transition-all duration-700 ease-out delay-100 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                 
-                {/* Clean User Profile */}
                 <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
                   <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     <img 
@@ -145,17 +141,14 @@ export default function ScrollPage() {
                   </div>
                 </div>
 
-                {/* Property Title */}
                 <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Floating Price */}
                 <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
                 </p>
 
-                {/* Description */}
                 {post.description && (
                   <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">
                     {post.description}
@@ -164,7 +157,7 @@ export default function ScrollPage() {
               </div>
 
               {/* ─── RIGHT SIDE: STAGGERED SLIDE-IN ICONS ─── */}
-              <div className={`absolute bottom-16 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+              <div className={`absolute bottom-6 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                 
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
                   <IoMdHeart size={36} className="text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] group-hover:text-red-500 transition-colors" />

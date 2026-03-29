@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// 👇 Reverted back to IoMdText which we know 100% works on your build
-import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
+// 👇 Removed all risky icons. Only using the ones we 100% know work on your build.
+import { IoMdHeart, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
 import api from '../services/api';
 
 export default function ScrollPage() {
@@ -38,7 +38,9 @@ export default function ScrollPage() {
             if (!isNaN(index)) setActiveIndex(index);
             
             const video = entry.target.querySelector('video');
-            if (video) video.play().catch(e => console.log("Autoplay prevented:", e));
+            if (video) {
+              video.play().catch(e => console.log("Autoplay prevented:", e));
+            }
           } else {
             const video = entry.target.querySelector('video');
             if (video) video.pause();
@@ -135,12 +137,14 @@ export default function ScrollPage() {
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 ) : (
-                  mediaUrl && (
+                  mediaUrl ? (
                     <img 
                       src={mediaUrl} 
                       alt={post.title || "Post"} 
                       className="absolute inset-0 w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="absolute inset-0 bg-[#151A25] flex items-center justify-center text-gray-500">No Media</div>
                   )
                 )}
 
@@ -153,7 +157,6 @@ export default function ScrollPage() {
                 <div className="absolute bottom-6 md:bottom-10 left-4 md:left-8 right-[80px] z-20 pointer-events-auto">
                   <div className={`transition-all duration-700 delay-100 ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     
-                    {/* User ID Card */}
                     <div className="flex items-center gap-3 mb-4 group cursor-pointer w-max">
                       <div className="relative w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.3)] group-hover:shadow-[0_0_25px_rgba(0,240,255,0.6)] transition-all">
                         <img 
@@ -171,7 +174,6 @@ export default function ScrollPage() {
                       </div>
                     </div>
 
-                    {/* Property Data Plate */}
                     <div className="bg-[#151A25]/60 backdrop-blur-md border border-white/10 p-4 rounded-3xl rounded-tl-sm shadow-xl relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#0057FF] to-[#00F0FF]" />
                       
@@ -213,10 +215,12 @@ export default function ScrollPage() {
                       <span className="text-[10px] font-black text-white drop-shadow-md">{post.likesCount || '0'}</span>
                     </button>
 
-                    {/* 👇 THIS IS THE ICON THAT CRASHED EVERYTHING - NOW FIXED 👇 */}
+                    {/* 100% Safe Raw SVG Comment Icon */}
                     <button className="flex flex-col items-center gap-1 group active:scale-95 transition-all">
                       <div className="w-12 h-12 rounded-full bg-[#151A25]/80 border border-white/10 flex items-center justify-center group-hover:border-[#00F0FF]/50 group-hover:bg-[#00F0FF]/10 transition-colors shadow-inner">
-                        <IoMdText className="text-white group-hover:text-[#00F0FF] transition-colors drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]" size={22} />
+                        <svg className="w-6 h-6 text-white group-hover:text-[#00F0FF] transition-colors drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                        </svg>
                       </div>
                       <span className="text-[10px] font-black text-white drop-shadow-md">{post.comments?.length || '0'}</span>
                     </button>

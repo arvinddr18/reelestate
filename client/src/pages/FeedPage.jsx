@@ -171,6 +171,27 @@ export default function FeedPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
+  // ─── THE 2050 SMART SCROLL BRAIN ───
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      // If scrolling down and past 100px, hide the header. If scrolling up, show it!
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+ 
+
   useEffect(() => {
     fetchPosts();
   }, [activeCategory, activeSub]);
@@ -214,7 +235,7 @@ export default function FeedPage() {
       <ScrollTrigger />
       
       {/* ─── PREMIUM GLASS HEADER (100% BORDERLESS) ─── */}
-      <header className="sticky top-0 z-40 bg-[#0B0F19]/80 backdrop-blur-2xl">
+      <header className={`sticky z-40 bg-[#0B0F19]/90 backdrop-blur-2xl border-none shadow-none ring-0 outline-none transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${showHeader ? 'top-0' : '-top-40'}`}>
         
         {/* ─── ULTRA PREMIUM TOP NAVBAR ─── */}
         <div className="px-5 py-4 flex items-center justify-between">

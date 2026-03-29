@@ -595,9 +595,278 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 )}
-                
-                {/* ── FALLBACK ── */}
-                {settingsTab !== 'security' && settingsTab !== 'personal' && (
+
+                {/* ── TAB: PRIVACY ── */}
+                {settingsTab === 'privacy' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                     <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdLock size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Privacy</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Control who sees your content.</p>
+                      </div>
+                    </div>
+                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                        <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                          <div className="flex items-center gap-4">
+                            <IoMdLock size={22} className="text-gray-400" />
+                            <div>
+                              <p className="text-sm font-bold text-white">Private Account</p>
+                              <p className="text-xs text-gray-500 mt-0.5">Only approved followers can see your posts.</p>
+                            </div>
+                          </div>
+                          <button onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.isPrivate ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}>
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all ${formData.isPrivate ? 'right-[2px]' : 'left-[2px]'}`} />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between p-5 hover:bg-[#151A25] transition-colors">
+                          <div className="flex items-center gap-4">
+                            <IoMdStar size={22} className="text-gray-400" />
+                            <div>
+                              <p className="text-sm font-bold text-white">Hide Online Status</p>
+                              <p className="text-xs text-gray-500 mt-0.5">Turn off the green dot on your profile.</p>
+                            </div>
+                          </div>
+                          <button onClick={() => setFormData({...formData, hideActivity: !formData.hideActivity})} className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.hideActivity ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}>
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all ${formData.hideActivity ? 'right-[2px]' : 'left-[2px]'}`} />
+                          </button>
+                        </div>
+                     </div>
+                     <div className="mt-8 flex justify-end">
+                       <button onClick={handleUpdate} className="bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 px-8 py-3.5 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all">
+                         Apply Settings
+                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── TAB: NOTIFICATIONS ── */}
+                {settingsTab === 'notifications' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                     <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdNotifications size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Notifications</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Manage your alerts and emails.</p>
+                      </div>
+                    </div>
+                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                        <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                          <div className="flex items-center gap-4">
+                            <IoMdMail size={22} className="text-gray-400" />
+                            <div>
+                              <p className="text-sm font-bold text-white">Email Alerts</p>
+                              <p className="text-xs text-gray-500 mt-0.5">Get emails when someone messages you.</p>
+                            </div>
+                          </div>
+                          <button onClick={() => setFormData({...formData, emailAlerts: !formData.emailAlerts})} className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.emailAlerts ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}>
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all ${formData.emailAlerts ? 'right-[2px]' : 'left-[2px]'}`} />
+                          </button>
+                        </div>
+                     </div>
+                     <div className="mt-8 flex justify-end">
+                       <button onClick={handleUpdate} className="bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 px-8 py-3.5 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all">
+                         Apply Settings
+                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── TAB: PAYMENTS ── */}
+                {settingsTab === 'payments' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdCard size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Payments</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Manage your payment methods and transactions.</p>
+                      </div>
+                    </div>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdCard size={22} className="text-gray-400 group-hover:text-white transition-colors" />
+                          <p className="text-sm font-bold text-white">Saved Payment Methods</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500 font-bold">2 Cards, 1 UPI</span>
+                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdTime size={22} className="text-gray-400 group-hover:text-white transition-colors" />
+                          <p className="text-sm font-bold text-white">Transaction History</p>
+                        </div>
+                        <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                      </div>
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdStar size={22} className="text-gray-400 group-hover:text-white transition-colors" />
+                          <p className="text-sm font-bold text-white">Wallet & Credits</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-emerald-400 font-bold">₹1,250</span>
+                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdArrowBack size={22} className="text-gray-400 group-hover:text-white transition-colors rotate-[270deg]" />
+                          <p className="text-sm font-bold text-white">Refunds</p>
+                        </div>
+                        <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── TAB: PREFERENCES ── */}
+                {settingsTab === 'preferences' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdSettings size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Preferences</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Customize your experience across the app.</p>
+                      </div>
+                    </div>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdBookmark size={22} className="text-gray-400 group-hover:text-white transition-colors" />
+                          <p className="text-sm font-bold text-white">Interested Categories</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="flex gap-2 text-[14px]">🏠 🍔 💼 🎓</span>
+                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdCard size={22} className="text-gray-400 group-hover:text-white transition-colors" />
+                          <p className="text-sm font-bold text-white">Budget Range</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500 font-bold">₹0 - ₹50K</span>
+                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                          <IoMdPin size={22} className="text-gray-400 group-hover:text-white transition-colors" />
+                          <p className="text-sm font-bold text-white">Preferred Location</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500 font-bold">Bangalore, India</span>
+                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── TAB: APPEARANCE ── */}
+                {settingsTab === 'appearance' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdColorPalette size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Appearance</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Customize how the app looks and feels.</p>
+                      </div>
+                    </div>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm p-2">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between p-4 border-b border-[#1E2532] gap-4">
+                        <div className="flex items-center gap-4">
+                          <MdAutoAwesome size={22} className="text-gray-400" />
+                          <p className="text-sm font-bold text-white">Theme</p>
+                        </div>
+                        <div className="flex bg-[#151A25] border border-[#1E2532] rounded-full p-1">
+                          <button className="px-4 py-1.5 rounded-full bg-[#1E2532] text-xs font-bold text-white shadow-sm flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-white"></span> Dark</button>
+                          <button className="px-4 py-1.5 rounded-full text-xs font-bold text-gray-500 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-transparent border border-gray-500"></span> Light</button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-4 border-b border-[#1E2532]">
+                        <div className="flex items-center gap-4">
+                          <IoMdColorPalette size={22} className="text-gray-400" />
+                          <p className="text-sm font-bold text-white hidden md:block">Accent Color</p>
+                        </div>
+                        <div className="flex gap-3">
+                          <div className="w-6 h-6 rounded-full bg-[#0057FF] border-2 border-[#00F0FF] shadow-[0_0_8px_rgba(0,240,255,0.8)] cursor-pointer" />
+                          <div className="w-6 h-6 rounded-full bg-purple-500 opacity-50 cursor-pointer hover:opacity-100 transition-opacity" />
+                          <div className="w-6 h-6 rounded-full bg-emerald-500 opacity-50 cursor-pointer hover:opacity-100 transition-opacity" />
+                          <div className="w-6 h-6 rounded-full bg-red-500 opacity-50 cursor-pointer hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4">
+                        <div className="flex items-center gap-4">
+                          <span className="text-gray-400 font-serif font-bold text-lg px-1">AA</span>
+                          <p className="text-sm font-bold text-white">Text Size</p>
+                        </div>
+                        <div className="flex bg-[#151A25] border border-[#1E2532] rounded-full p-1">
+                          <button className="px-4 py-1.5 rounded-full text-xs font-bold text-gray-500">Small</button>
+                          <button className="px-4 py-1.5 rounded-full bg-[#1E2532] text-xs font-bold text-white shadow-sm">Medium</button>
+                          <button className="px-4 py-1.5 rounded-full text-xs font-bold text-gray-500">Large</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── TAB: AI SETTINGS ── */}
+                {settingsTab === 'ai' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <MdAutoAwesome size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">AI Settings</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Control your personalized experience.</p>
+                      </div>
+                    </div>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <IoMdGrid size={22} className="text-gray-400" />
+                          <div>
+                            <p className="text-sm font-bold text-white">Personalized Feed</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Show content tailored to your interests</p>
+                          </div>
+                        </div>
+                        <button className="w-12 h-6 rounded-full bg-[#0057FF] relative transition-colors shadow-inner border border-[#0057FF]">
+                          <div className="w-5 h-5 rounded-full bg-white absolute top-[1px] right-[2px] shadow-sm transition-all" />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between p-5 hover:bg-[#151A25] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <MdAutoAwesome size={22} className="text-gray-400" />
+                          <div>
+                            <p className="text-sm font-bold text-white">Smart Recommendations</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Get AI-powered suggestions</p>
+                          </div>
+                        </div>
+                        <button className="w-12 h-6 rounded-full bg-[#0057FF] relative transition-colors shadow-inner border border-[#0057FF]">
+                          <div className="w-5 h-5 rounded-full bg-white absolute top-[1px] right-[2px] shadow-sm transition-all" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── FALLBACK FOR REMAINING TABS ── */}
+                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && (
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in fade-in duration-500">
                     <IoMdSettings size={64} className="text-[#1E2532] mb-4 animate-[spin_10s_linear_infinite]" />
                     <h3 className="text-xl font-black text-white capitalize">{settingsTab.replace('-', ' ')}</h3>

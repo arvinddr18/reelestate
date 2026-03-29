@@ -93,9 +93,8 @@ export default function Messages() {
   return (
     <div className="h-[100dvh] w-full bg-[#05070A] text-white font-sans flex overflow-hidden relative">
       
-      {/* ─── PURE ANIMATED RADAR BACKGROUND (Now centered and highly visible!) ─── */}
+      {/* ─── PURE ANIMATED RADAR BACKGROUND ─── */}
       <div className="absolute inset-0 z-0 flex items-center justify-center md:justify-end overflow-hidden pointer-events-none opacity-60 md:opacity-40">
-        {/* Adjusted sizing and positioning so it fits beautifully on mobile screens behind the UI */}
         <div className="relative w-[600px] h-[600px] md:w-[1000px] md:h-[1000px] -mt-[20%] md:mt-0 md:-mr-[200px] flex items-center justify-center">
           
           {/* Concentric Rings */}
@@ -116,8 +115,7 @@ export default function Messages() {
         </div>
       </div>
 
-      {/* ─── LEFT PANE: COMMS HUB ─── */}
-      {/* 👇 FIX: Changed to bg-black/20 and backdrop-blur-md so the radar glows cleanly through it on mobile! */}
+      {/* ─── LEFT PANE: MESSAGES LIST ─── */}
       <div className={`w-full md:w-[400px] lg:w-[450px] h-full flex flex-col bg-black/20 backdrop-blur-md border-r border-[#1E2532] z-10 shrink-0 transition-transform duration-500 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
         
         <header className="px-6 py-5 shrink-0 relative z-10">
@@ -126,13 +124,19 @@ export default function Messages() {
               <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#00F0FF] transition-colors shadow-lg backdrop-blur-md">
                 <IoMdArrowBack size={20} />
               </button>
-              <div>
-                <h1 className="text-xl font-black tracking-tighter italic text-white flex items-center gap-2 drop-shadow-[0_0_8px_rgba(0,240,255,0.3)]">
-                  COMMS HUB <IoMdPulse className="text-[#00F0FF] animate-pulse" />
+              
+              {/* 👇 THE FIX: Professional & Attractive Header 👇 */}
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold tracking-wide text-white">
+                  Messages
                 </h1>
-                <p className="text-[9px] font-black text-[#00F0FF] uppercase tracking-[0.2em] opacity-80">Quantum Encrypted</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] shadow-[0_0_5px_#00F0FF] animate-pulse" />
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em]">Secure Network</span>
+                </div>
               </div>
             </div>
+
             <button className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-110 transition-transform">
               <IoMdAdd size={24} />
             </button>
@@ -202,7 +206,7 @@ export default function Messages() {
                 <div 
                   key={user._id || user.id} 
                   onClick={() => setActiveChat(user)} 
-                  className={`block p-4 rounded-[24px] backdrop-blur-xl transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/20 border-[#00F0FF]/50 shadow-[0_0_20px_rgba(0,240,255,0.2)]' : 'bg-black/40 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
+                  className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/20 border-[#00F0FF]/50 shadow-[0_0_20px_rgba(0,240,255,0.2)]' : 'bg-black/40 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
@@ -281,14 +285,14 @@ export default function Messages() {
               </button>
             </div>
 
-            {/* Messages Area */}
+            {/* Messages Area (Mocked) */}
             <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-[#05070A]/80 backdrop-blur-md">
               <div className="flex justify-center mb-4 mt-4">
-                <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
+                <span className="px-3 py-1 rounded-full bg-black/60 border border-[#1E2532] text-[9px] font-black text-gray-500 tracking-widest uppercase">Encryption Started • Today</span>
               </div>
 
               <div className="flex flex-col items-start w-full">
-                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
+                <div className="bg-black/60 backdrop-blur-md border border-[#1E2532] p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
                   <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 rounded-l-sm" />
                   <p className="text-gray-200 text-sm leading-relaxed mb-2 font-medium">Network established. Ready to securely exchange property assets.</p>
                   <span className="text-gray-500 text-[9px] font-bold font-mono">10:41 AM • DECRYPTED</span>

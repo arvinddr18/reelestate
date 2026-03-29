@@ -247,22 +247,32 @@ export default function FeedPage() {
             </h1>
           </Link>
 
-         {/* Right Side: Cyber-Pulse Notification Hub */}
-          <Link to="/notifications" className="relative w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] z-10 ml-auto group overflow-hidden">
+         {/* Right Side: The "Quantum Core" Notification Matrix */}
+          <Link to="/notifications" className="relative w-11 h-11 rounded-full flex items-center justify-center group z-10 ml-auto cursor-pointer">
             
-            {/* Ambient Glass Glow on Hover */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#0057FF]/10 to-[#00F0FF]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {/* 1. Outer Orbiting Energy Ring (Spins Forward) */}
+            <div className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-[#00F0FF]/30 group-hover:border-[#00F0FF]/80 animate-[spin_10s_linear_infinite] group-hover:animate-[spin_3s_linear_infinite] transition-all duration-500" />
             
-            {/* Notification Bell Icon (Interactive) */}
-            <svg className="w-5 h-5 relative z-10 transform group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_5px_rgba(0,240,255,0)] group-hover:drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            {/* 2. Inner Orbiting Ring (Spins Backward) */}
+            <div className="absolute inset-1 rounded-full border-[1.5px] border-dotted border-[#0057FF]/40 group-hover:border-[#0057FF] animate-[spin_8s_linear_infinite_reverse] group-hover:animate-[spin_2s_linear_infinite_reverse] transition-all duration-500" />
+            
+            {/* 3. Core Frosted Glass Background */}
+            <div className="absolute inset-[6px] bg-[#151A25]/90 backdrop-blur-xl rounded-full border border-white/5 group-hover:bg-gradient-to-tr group-hover:from-[#0057FF]/30 group-hover:to-[#00F0FF]/30 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-500" />
+            
+            {/* 4. The Bell Icon (Levitating & Glowing) */}
+            <svg className="w-4 h-4 text-gray-300 group-hover:text-white relative z-10 transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-[0_0_5px_rgba(0,240,255,0)] group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             
-            {/* The "Cyber-Pulse" Unread Indicator */}
-            <span className="absolute top-[8px] right-[10px] flex h-2.5 w-2.5 -mr-1 -mt-1 z-20">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-80"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00F0FF] border-[1.5px] border-[#151A25] shadow-[0_0_8px_#00F0FF]"></span>
-            </span>
+            {/* 5. Live Holographic Counter Badge */}
+            <div className="absolute -top-1 -right-1 flex items-center justify-center z-20">
+              {/* Ping Animation Behind the Number */}
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-60"></span>
+              {/* The Actual Number Badge */}
+              <span className="relative flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-full border-[1.5px] border-[#0B0F19] text-[9px] font-black text-white shadow-[0_0_12px_#00F0FF] transform group-hover:scale-110 transition-transform duration-300">
+                3
+              </span>
+            </div>
             
           </Link>
           

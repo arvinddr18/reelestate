@@ -270,12 +270,12 @@ export default function ProfilePage() {
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400/60 mt-1 group-hover/stat:text-purple-400">Network Size</span>
               </div>
 
-              {/* Stat 3: Trust/Impact (Gold) */}
+              {/* Stat 3: Global Reach (Gold) */}
               <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#F5A623]/20 transition-all cursor-default group/stat">
                 <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#F5A623] transition-all">
-                  {trustScore}%
+                  {(userPosts.length * 124 + 342).toLocaleString()}
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#F5A623]/60 mt-1 group-hover/stat:text-[#F5A623]">Trust Score</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#F5A623]/60 mt-1 group-hover/stat:text-[#F5A623]">Global Reach</span>
               </div>
 
             </div>

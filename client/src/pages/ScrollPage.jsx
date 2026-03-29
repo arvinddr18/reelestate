@@ -1,31 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack, IoMdPin } from 'react-icons/io';
 import api from '../services/api';
-
-const VideoNode = ({ src, isActive }) => {
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    if (!videoRef.current) return;
-    if (isActive) {
-      videoRef.current.play().catch(() => {}); 
-    } else {
-      videoRef.current.pause();
-    }
-  }, [isActive]);
-
-  return (
-    <video 
-      ref={videoRef} 
-      src={src} 
-      loop 
-      muted 
-      playsInline 
-      className="absolute inset-0 w-full h-full object-cover" 
-    />
-  );
-};
 
 export default function ScrollPage() {
   const navigate = useNavigate();
@@ -63,13 +39,18 @@ export default function ScrollPage() {
     }
   };
 
+  // 100% CRASH-PROOF URL RESOLVER
   const resolveMediaUrl = (source) => {
     if (!source) return '';
-    if (typeof source === 'object' && source.url) return source.url;
-    if (typeof source !== 'string') return '';
-    if (source.startsWith('http') || source.startsWith('data:')) return source;
+    let url = '';
+    if (typeof source === 'object' && source.url) url = source.url;
+    else if (typeof source === 'string') url = source;
+    
+    if (typeof url !== 'string' || !url) return '';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    
     const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || '';
-    return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   if (loading) {
@@ -95,12 +76,13 @@ export default function ScrollPage() {
 
   const activePost = posts[activeIndex] || posts[0];
   const activeMediaUrl = resolveMediaUrl(activePost?.images?.[0]?.url || activePost?.image);
-  const isBgVideo = activeMediaUrl.includes('.mp4') || activeMediaUrl.includes('.webm');
+  // Safely check string before includes
+  const isBgVideo = typeof activeMediaUrl === 'string' && (activeMediaUrl.includes('.mp4') || activeMediaUrl.includes('.webm'));
 
   return (
     <div className="h-screen w-full bg-black relative overflow-hidden flex justify-center">
       
-      {/* ─── DESKTOP AMBIENT BACKGROUND (Only visible on large screens) ─── */}
+      {/* ─── DESKTOP AMBIENT BACKGROUND ─── */}
       <div className="absolute inset-0 hidden md:block z-0 pointer-events-none overflow-hidden">
         {activeMediaUrl && !isBgVideo && (
           <img src={activeMediaUrl} alt="ambient" className="absolute inset-0 w-full h-full object-cover opacity-30 blur-[100px] scale-125 transition-opacity duration-1000" />
@@ -108,7 +90,7 @@ export default function ScrollPage() {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-3xl" />
       </div>
 
-      {/* ─── TOP BACK BUTTON (Floating over the video) ─── */}
+      {/* ─── TOP BACK BUTTON (Floating over video) ─── */}
       <div className="absolute top-0 left-0 right-0 z-50 p-4 md:p-8 flex items-center justify-between pointer-events-none">
         <button onClick={() => navigate(-1)} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-all pointer-events-auto shadow-lg">
           <IoMdArrowBack size={24} />
@@ -126,17 +108,26 @@ export default function ScrollPage() {
       >
         {posts.map((post, index) => {
           if (!post) return null;
+          
           const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
-          const isVideo = post.mediaType === 'video' || mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+          // Safely verify it's a string before calling .match() to prevent crash!
+          const isVideo = post.mediaType === 'video' || (typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
 
           return (
             <div key={post._id || index} className="w-full h-screen snap-start snap-always relative">
               
-              {/* TRUE FULL SCREEN MEDIA (No Borders, No Margin, No Rounding) */}
+              {/* TRUE FULL SCREEN MEDIA (Using the proven native video tag from your old code) */}
               <div className="w-full h-full relative overflow-hidden bg-black">
                 {isVideo && mediaUrl ? (
-                  <VideoNode src={mediaUrl} isActive={isActive} />
+                  <video 
+                    src={mediaUrl} 
+                    className="absolute inset-0 w-full h-full object-cover" 
+                    loop 
+                    muted={!isActive} 
+                    autoPlay={isActive} 
+                    playsInline 
+                  />
                 ) : (
                   mediaUrl ? (
                     <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover" />
@@ -145,12 +136,12 @@ export default function ScrollPage() {
                   )
                 )}
 
-                {/* HEAVY BOTTOM GRADIENT (Ensures text is always readable over bright videos) */}
+                {/* HEAVY BOTTOM GRADIENT FOR TEXT READABILITY */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none" />
               </div>
 
-              {/* ─── BOTTOM LEFT HUD (User Info & Property Details) ─── */}
-              <div className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-2">
+              {/* ─── BOTTOM LEFT HUD ─── */}
+              <div className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-2 pointer-events-auto">
                 
                 {/* Modern User Profile Row */}
                 <div className="flex items-center gap-3 mb-2 cursor-pointer w-max">
@@ -160,7 +151,6 @@ export default function ScrollPage() {
                   <div className="flex flex-col">
                     <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] flex items-center gap-2">
                       @{post.author?.username || 'user'}
-                      {/* Premium Follow Pill */}
                       <button className="px-2 py-0.5 border border-white/40 rounded-full text-[9px] font-black uppercase text-white backdrop-blur-sm hover:bg-white/20 transition-colors">
                         Follow
                       </button>
@@ -177,17 +167,14 @@ export default function ScrollPage() {
                   </div>
                 )}
 
-                {/* Title */}
                 <h3 className="text-white font-black text-xl leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] line-clamp-2">
                   {post.title || 'Exclusive Listing'}
                 </h3>
                 
-                {/* Glowing Futuristic Price */}
                 <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,240,255,0.5)] mb-1">
-                  {post.price ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Market Value'}
+                  {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Market Value'}
                 </p>
 
-                {/* Description */}
                 {post.description && (
                   <p className="text-gray-200 text-sm font-medium line-clamp-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     {post.description}
@@ -195,8 +182,8 @@ export default function ScrollPage() {
                 )}
               </div>
 
-              {/* ─── RIGHT ACTION ICONS (Floating, No Box) ─── */}
-              <div className="absolute bottom-6 right-2 z-20 flex flex-col gap-6 items-center">
+              {/* ─── RIGHT ACTION ICONS (Floating) ─── */}
+              <div className="absolute bottom-6 right-2 z-20 flex flex-col gap-6 items-center pointer-events-auto">
                 
                 <button className="flex flex-col items-center gap-1 group">
                   <IoMdHeart size={34} className="text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] group-hover:text-red-500 transition-colors group-active:scale-90" />

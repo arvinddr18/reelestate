@@ -96,19 +96,15 @@ export default function Messages() {
       {/* ─── PURE ANIMATED RADAR BACKGROUND ─── */}
       <div className="absolute inset-0 z-0 flex items-center justify-center md:justify-end overflow-hidden pointer-events-none opacity-60 md:opacity-40">
         <div className="relative w-[600px] h-[600px] md:w-[1000px] md:h-[1000px] -mt-[20%] md:mt-0 md:-mr-[200px] flex items-center justify-center">
-          
-          {/* Concentric Rings */}
           <div className="absolute w-full h-full rounded-full border border-[#00F0FF]/20" />
           <div className="absolute w-3/4 h-3/4 rounded-full border border-[#00F0FF]/30" />
           <div className="absolute w-1/2 h-1/2 rounded-full border border-[#00F0FF]/40" />
           <div className="absolute w-1/4 h-1/4 rounded-full border border-[#0057FF]/50" />
           
-          {/* Sweeping Scanner Line */}
           <div className="absolute w-1/2 h-1/2 top-0 right-1/2 origin-bottom-right animate-[spin_4s_linear_infinite]">
             <div className="w-full h-full border-r-2 border-b-2 border-[#00F0FF] rounded-br-full opacity-50 shadow-[10px_10px_30px_rgba(0,240,255,0.4)]" />
           </div>
 
-          {/* Random Pings */}
           <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-[#00F0FF] rounded-full animate-ping shadow-[0_0_15px_#00F0FF]" />
           <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-[#0057FF] rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] delay-75" />
           <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-white rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 shadow-[0_0_10px_white]" />
@@ -125,14 +121,14 @@ export default function Messages() {
                 <IoMdArrowBack size={20} />
               </button>
               
-              {/* 👇 THE FIX: Professional & Attractive Header 👇 */}
               <div className="flex flex-col">
                 <h1 className="text-xl font-bold tracking-wide text-white">
                   Messages
                 </h1>
+                {/* 👇 RESTORED: Heartbeat Pulse & Quantum Encrypted 👇 */}
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] shadow-[0_0_5px_#00F0FF] animate-pulse" />
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em]">Secure Network</span>
+                  <IoMdPulse className="text-[#00F0FF] animate-pulse" size={14} />
+                  <span className="text-[9px] font-bold text-[#00F0FF] uppercase tracking-[0.15em] opacity-80">Quantum Encrypted</span>
                 </div>
               </div>
             </div>
@@ -288,11 +284,11 @@ export default function Messages() {
             {/* Messages Area (Mocked) */}
             <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-[#05070A]/80 backdrop-blur-md">
               <div className="flex justify-center mb-4 mt-4">
-                <span className="px-3 py-1 rounded-full bg-black/60 border border-[#1E2532] text-[9px] font-black text-gray-500 tracking-widest uppercase">Encryption Started • Today</span>
+                <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
               <div className="flex flex-col items-start w-full">
-                <div className="bg-black/60 backdrop-blur-md border border-[#1E2532] p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
+                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
                   <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 rounded-l-sm" />
                   <p className="text-gray-200 text-sm leading-relaxed mb-2 font-medium">Network established. Ready to securely exchange property assets.</p>
                   <span className="text-gray-500 text-[9px] font-bold font-mono">10:41 AM • DECRYPTED</span>
@@ -332,7 +328,7 @@ export default function Messages() {
             </div>
           </>
         ) : (
-          /* Empty Space for Desktop (Radar is already handling the background globally!) */
+          /* Empty Space for Desktop */
           <div className="flex-1 flex flex-col items-center justify-center z-10 bg-transparent relative pointer-events-none"></div>
         )}
       </div>

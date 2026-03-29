@@ -10,7 +10,7 @@ import {
 } from 'react-icons/io';
 import { MdOutlineDoubleArrow, MdShield, MdBlock, MdAutoAwesome, MdLaptopMac, MdSmartphone } from 'react-icons/md';
 import PostCard from '../components/feed/PostCard'; 
-import { useAuth } from '../context/AuthContext'; // 👈 IMPORTED AUTH CONTEXT
+import { useAuth } from '../context/AuthContext'; 
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -39,7 +39,6 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  // ── GET REAL LOGGED IN USER FROM CONTEXT ──
   const { user: currentUser } = useAuth(); 
 
   const [user, setUser] = useState(null);
@@ -48,7 +47,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('grid'); 
   const [loading, setLoading] = useState(true);
 
-  // ── SETTINGS MODAL STATE ──
   const [isEditing, setIsEditing] = useState(false);
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -57,15 +55,13 @@ export default function ProfilePage() {
     isPrivate: false, hideActivity: false, emailAlerts: true
   });
 
-  // ── 100% BULLETPROOF OWNER CHECK ──
-  // If there is no userId in URL, OR the URL userId matches the Context user ID, you are the owner.
   const canEditProfile = !userId || String(userId) === String(currentUser?._id);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const id = userId || currentUser?._id; // Fallback to current user if no ID in URL
-        if (!id) return; // Prevent fetching if no ID is available yet
+        const id = userId || currentUser?._id; 
+        if (!id) return; 
 
         const res = await axios.get(getApiUrl(`/api/users/${id}`), getAuthConfig());
         
@@ -142,7 +138,6 @@ export default function ProfilePage() {
                  <IoMdShareAlt size={20} />
                </button>
             )}
-            {/* Top Right Gear Icon (Only shows if owner) */}
             {canEditProfile && (
               <button onClick={() => setIsEditing(true)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-[#00F0FF] hover:bg-[#00F0FF] hover:text-white transition-colors shadow-[0_0_15px_rgba(0,240,255,0.5)]">
                 <IoMdSettings size={20} />
@@ -175,9 +170,7 @@ export default function ProfilePage() {
             
             {/* The "Nexus Ring" Avatar */}
             <div className="relative shrink-0 w-36 h-36 md:w-40 md:h-40 flex items-center justify-center">
-              {/* Outer Scanning Ring (Forward) */}
               <div className="absolute inset-0 rounded-full border-[2px] border-dashed border-[#00F0FF]/40 animate-[spin_12s_linear_infinite] group-hover:border-[#00F0FF]/80 group-hover:animate-[spin_4s_linear_infinite] transition-all duration-500" />
-              {/* Inner Stabilization Ring (Reverse) */}
               <div className="absolute inset-2 rounded-full border-[2px] border-dotted border-[#0057FF]/50 animate-[spin_10s_linear_infinite_reverse] group-hover:border-[#0057FF] group-hover:animate-[spin_3s_linear_infinite_reverse] transition-all duration-500" />
               
               <div className="absolute inset-4 rounded-full bg-[#0B0F19] overflow-hidden border-[1.5px] border-[#00F0FF]/20 shadow-[0_0_30px_rgba(0,240,255,0.2)] flex items-center justify-center text-4xl font-black text-white group-hover:scale-105 transition-transform duration-500">
@@ -256,7 +249,6 @@ export default function ProfilePage() {
           <div className="mt-8 pt-6 relative border-t border-white/5">
             <div className="grid grid-cols-3 gap-2 md:gap-4">
               
-              {/* Stat 1: Activity (Cyan) */}
               <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#00F0FF]/20 transition-all cursor-default group/stat">
                 <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#00F0FF] transition-all">
                   {userPosts.length}
@@ -264,7 +256,6 @@ export default function ProfilePage() {
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#00F0FF]/60 mt-1 group-hover/stat:text-[#00F0FF]">Total Posts</span>
               </div>
 
-              {/* Stat 2: Network (Purple) */}
               <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-purple-500/20 transition-all cursor-default group/stat">
                 <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-purple-400 transition-all">
                   {user?.followersCount || 0}
@@ -272,7 +263,6 @@ export default function ProfilePage() {
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400/60 mt-1 group-hover/stat:text-purple-400">Network Size</span>
               </div>
 
-              {/* Stat 3: Global Reach (Gold) */}
               <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#F5A623]/20 transition-all cursor-default group/stat">
                 <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#F5A623] transition-all">
                   {(userPosts.length * 124 + 342).toLocaleString()}
@@ -288,7 +278,6 @@ export default function ProfilePage() {
         <div className="mb-8 relative z-20">
           <div className="flex bg-[#0B0F19]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-1.5 relative max-w-md mx-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
             
-            {/* The Glowing Neon Slider */}
             <div className={`absolute top-1.5 bottom-1.5 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-xl transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) shadow-[0_0_20px_rgba(0,240,255,0.4)] ${canEditProfile ? (activeTab === 'grid' ? 'left-1.5 w-[calc(33.33%-4px)]' : activeTab === 'list' ? 'left-[calc(33.33%+2px)] w-[calc(33.33%-4px)]' : 'left-[calc(66.66%+2px)] w-[calc(33.33%-4px)]') : (activeTab === 'grid' ? 'left-1.5 w-[calc(50%-4px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)]')}`} />
 
             <button onClick={() => setActiveTab('grid')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'grid' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
@@ -316,36 +305,28 @@ export default function ProfilePage() {
                 userPosts.map(post => (
                   <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] md:rounded-[32px] overflow-hidden group border border-white/5 hover:border-[#00F0FF]/40 transition-all duration-500 bg-[#0B0F19] shadow-[0_8px_25px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(0,240,255,0.2)]">
                     
-                    {/* Media Layer */}
                     {post.mediaType === 'video' ? (
                       <div className="w-full h-full flex items-center justify-center bg-[#151A25] text-4xl group-hover:scale-110 group-hover:opacity-50 transition-all duration-700">🎬</div>
                     ) : (
                       <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className={`w-full h-full object-cover group-hover:scale-110 group-hover:opacity-50 transition-all duration-700 ${post.mediaFilter || ''}`} />
                     )}
                     
-                    {/* Ambient Core Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent opacity-90" />
 
-                    {/* TOP HUD: Category Badge (Slides down on hover) */}
                     <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-[#0B0F19]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-xl translate-y-[-150%] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out z-10">
                        <span className="text-[8px] md:text-[9px] font-black text-[#00F0FF] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
                          {post.mainCategory || 'Intel'}
                        </span>
                     </div>
 
-                    {/* BOTTOM HUD: Glass Data Plate (Slides up on hover) */}
                     <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 translate-y-[120%] opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out">
                       <div className="bg-[#151A25]/90 backdrop-blur-xl border border-white/10 rounded-[18px] p-3 md:p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
-                        {/* Inner Neon Glow */}
                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/50 to-transparent" />
-                        
                         <p className="text-[11px] md:text-xs font-black text-white truncate mb-2">{post.title || 'Encrypted Node'}</p>
-                        
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] md:text-[11px] font-black tracking-widest text-[#00F0FF]">
                             {post.price ? `₹${post.price.toLocaleString('en-IN')}` : 'View Stream'}
                           </span>
-                          
                           <div className="flex items-center gap-2 text-gray-400">
                             <span className="flex items-center gap-1 text-[9px] font-bold">
                               <IoMdHeart className="text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]" size={14} /> 
@@ -363,16 +344,16 @@ export default function ProfilePage() {
           )}
           {activeTab === 'list' && (
             <div className="max-w-[470px] mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-              {userPosts.length === 0 ? <div className="text-center py-20 text-gray-500">No active listings.</div> : userPosts.map(post => <PostCard key={post._id} post={post} />)}
+              {userPosts.length === 0 ? <div className="text-center py-20 text-gray-500 font-bold uppercase tracking-widest text-xs">No active listings.</div> : userPosts.map(post => <PostCard key={post._id} post={post} />)}
             </div>
           )}
           {activeTab === 'saved' && canEditProfile && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-bottom-4 duration-500">
-              {savedPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500">Private Vault is Empty</div> : savedPosts.map(post => (
-                <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] overflow-hidden group border border-[#1E2532] bg-[#151A25]">
-                  {post.mediaType === 'video' ? <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110">🎬</div> : <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 animate-in slide-in-from-bottom-4 duration-500">
+              {savedPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500 font-bold uppercase tracking-widest text-xs">Private Vault is Empty</div> : savedPosts.map(post => (
+                <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] md:rounded-[32px] overflow-hidden group border border-[#1E2532] bg-[#151A25]">
+                  {post.mediaType === 'video' ? <div className="w-full h-full flex items-center justify-center bg-black text-3xl group-hover:scale-110 transition-transform duration-700">🎬</div> : <img src={post.images?.[0]?.url || resolveMediaUrl(post.image)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute top-3 right-3 text-yellow-400"><IoMdBookmark size={24} /></div>
+                  <div className="absolute top-4 right-4 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]"><IoMdBookmark size={24} /></div>
                 </Link>
               ))}
             </div>
@@ -386,18 +367,18 @@ export default function ProfilePage() {
           
           <div className="w-full h-full max-w-[1300px] bg-[#0B0F19] border border-[#1E2532] rounded-[32px] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
             
-            {/* ── SIDEBAR (Exact Match to Image) ── */}
+            {/* ── SIDEBAR ── */}
             <div className="w-full md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col">
               
-              {/* Logo Area */}
               <div className="p-8 flex items-center gap-3">
-                <img src={importedLogo} alt="Nodexa" className="w-7 h-7 drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                  <span className="font-black text-white text-sm">N</span>
+                </div>
                 <span className="text-xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF]">
                   NODEXA
                 </span>
               </div>
 
-              {/* Scrollable Menu */}
               <div className="flex-1 overflow-y-auto no-scrollbar px-4 flex flex-col gap-1 pb-8">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3 ml-4 mt-2">
                   Command Center
@@ -444,7 +425,6 @@ export default function ProfilePage() {
                 })}
               </div>
 
-              {/* Back Button Area */}
               <div className="p-6">
                 <button onClick={() => setIsEditing(false)} className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 text-gray-400 hover:text-white bg-[#151A25] hover:bg-[#1E2532] transition-all text-[12px] font-bold border border-[#1E2532] hover:border-gray-500 shadow-sm active:scale-95">
                   <IoMdArrowBack size={18} /> Back to App
@@ -454,14 +434,11 @@ export default function ProfilePage() {
 
             {/* ── CONTENT AREA ── */}
             <div className="flex-1 bg-[#05070A] overflow-y-auto no-scrollbar relative p-6 md:p-12">
-              
               <div className="max-w-3xl mx-auto">
                 
-                {/* ── TAB: SECURITY (EXACT REPLICA FROM IMAGE) ── */}
+                {/* ── TAB: SECURITY ── */}
                 {settingsTab === 'security' && (
                   <div className="animate-in fade-in duration-500">
-                    
-                    {/* Header */}
                     <div className="flex items-center gap-4 mb-10">
                       <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
                         <MdShield size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
@@ -472,11 +449,9 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* Card 1: Account Security */}
                     <div className="mb-8">
                       <h3 className="text-[15px] font-bold text-white mb-4">Account Security</h3>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                        
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdLock size={22} className="text-gray-400 group-hover:text-white transition-colors" />
@@ -487,7 +462,6 @@ export default function ProfilePage() {
                           </div>
                           <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                         </div>
-
                         <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <MdSmartphone size={22} className="text-gray-400 group-hover:text-white transition-colors" />
@@ -503,28 +477,22 @@ export default function ProfilePage() {
                             <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                           </div>
                         </div>
-
                       </div>
                     </div>
 
-                    {/* Card 2: Active Sessions */}
                     <div className="mb-8">
                       <div className="mb-4">
                         <h3 className="text-[15px] font-bold text-white">Active Sessions</h3>
                         <p className="text-xs text-gray-500 mt-1">You're logged in on 2 devices</p>
                       </div>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                        
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
                             <MdLaptopMac size={22} className="text-gray-400" />
                             <p className="text-sm font-medium text-gray-300">MacBook Pro <span className="text-gray-500 mx-1">•</span> Chrome <span className="text-gray-500 mx-1">•</span> Bangalore</p>
                           </div>
-                          <span className="text-[11px] font-bold text-[#0057FF] bg-[#0057FF]/10 px-3 py-1 rounded-full border border-[#0057FF]/20">
-                            Current
-                          </span>
+                          <span className="text-[11px] font-bold text-[#0057FF] bg-[#0057FF]/10 px-3 py-1 rounded-full border border-[#0057FF]/20">Current</span>
                         </div>
-
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
                             <MdSmartphone size={22} className="text-gray-400" />
@@ -532,19 +500,15 @@ export default function ProfilePage() {
                           </div>
                           <span className="text-xs text-gray-500">2 days ago</span>
                         </div>
-
                         <button className="w-full p-5 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold">
                           <IoMdArrowBack size={16} className="rotate-180" /> Logout from All Devices
                         </button>
-
                       </div>
                     </div>
 
-                    {/* Card 3: Data & Safety */}
                     <div className="mb-10">
                       <h3 className="text-[15px] font-bold text-white mb-4">Data & Safety</h3>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                        
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
                             <MdShield size={22} className="text-gray-400" />
@@ -553,12 +517,10 @@ export default function ProfilePage() {
                               <p className="text-xs text-gray-500 mt-0.5">Get notified of new sign-ins</p>
                             </div>
                           </div>
-                          {/* Toggle */}
                           <button className="w-12 h-6 rounded-full bg-[#0057FF] relative transition-colors shadow-inner border border-[#0057FF]">
                             <div className="w-5 h-5 rounded-full bg-white absolute top-[1px] right-[2px] shadow-sm transition-all" />
                           </button>
                         </div>
-
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdPerson size={22} className="text-gray-400 group-hover:text-white transition-colors" />
@@ -569,7 +531,6 @@ export default function ProfilePage() {
                           </div>
                           <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                         </div>
-
                         <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdTime size={22} className="text-gray-400 group-hover:text-white transition-colors" />
@@ -580,18 +541,14 @@ export default function ProfilePage() {
                           </div>
                           <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                         </div>
-
                       </div>
                     </div>
-
                   </div>
                 )}
 
-                {/* ── TAB: PERSONAL INFO (Restyled to match new layout) ── */}
+                {/* ── TAB: PERSONAL INFO ── */}
                 {settingsTab === 'personal' && (
                   <div className="animate-in fade-in duration-500 pb-20">
-                    
-                    {/* Header */}
                     <div className="flex items-center gap-4 mb-10">
                       <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
                         <IoMdPerson size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
@@ -602,7 +559,6 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* Avatar Upload Header */}
                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-8 flex items-center gap-6">
                       <div className="w-20 h-20 rounded-full border-2 border-[#1E2532] overflow-hidden relative group cursor-pointer shadow-[0_0_15px_rgba(0,240,255,0.2)]" onClick={() => fileInputRef.current.click()}>
                         <img src={resolveMediaUrl(avatarPreview) || 'https://via.placeholder.com/150'} alt="Avatar" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
@@ -632,17 +588,15 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* Bottom Save Action */}
                     <div className="mt-8 flex justify-end">
                        <button onClick={handleUpdate} className="bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white px-8 py-3.5 rounded-xl font-bold tracking-wide shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
                          Save Changes
                        </button>
                     </div>
-
                   </div>
                 )}
                 
-                {/* Fallback for other tabs */}
+                {/* ── FALLBACK ── */}
                 {settingsTab !== 'security' && settingsTab !== 'personal' && (
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in fade-in duration-500">
                     <IoMdSettings size={64} className="text-[#1E2532] mb-4 animate-[spin_10s_linear_infinite]" />
@@ -654,100 +608,6 @@ export default function ProfilePage() {
               </div>
             </div>
             
-          </div>
-        </div>
-      )}
-
-            {/* Modal Content Area */}
-            <div className="flex-1 p-6 md:p-8 overflow-y-auto no-scrollbar relative">
-              
-              {/* Avatar Upload Header */}
-              <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[#1E2532]">
-                <div className="w-20 h-20 rounded-full border-2 border-[#1E2532] overflow-hidden relative group cursor-pointer shadow-[0_0_15px_rgba(0,240,255,0.2)]" onClick={() => fileInputRef.current.click()}>
-                  <img src={resolveMediaUrl(avatarPreview) || 'https://via.placeholder.com/150'} alt="Avatar" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                    <IoMdCamera size={24} className="text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-black text-white">Profile Identity</h4>
-                  <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-widest">Tap the image to change your avatar.</p>
-                </div>
-              </div>
-
-              {/* TAB: Personal Info */}
-              {settingsTab === 'personal' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-in fade-in duration-300 pb-20">
-                  
-                  {/* Full Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Full Name</label>
-                    <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold shadow-inner" />
-                  </div>
-                  
-                  {/* Location (Moved up next to Full Name) */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Location</label>
-                    <input type="text" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold shadow-inner" />
-                  </div>
-                  
-                  {/* Bio (Spans across both columns) */}
-                  <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest ml-1">Bio</label>
-                    <textarea value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-[#0B0F19] text-white border border-[#1E2532] p-4 rounded-2xl h-24 outline-none focus:border-[#00F0FF]/50 transition-all text-sm font-bold resize-none shadow-inner" />
-                  </div>
-                  
-                </div>
-              )}
-              
-              {/* TAB: Privacy & Security */}
-              {settingsTab === 'privacy' && (
-                <div className="space-y-6 animate-in fade-in duration-300 pb-20">
-                  <div className="flex items-center justify-between p-5 bg-[#0B0F19] border border-[#1E2532] rounded-3xl shadow-inner">
-                    <div>
-                      <p className="text-sm font-black text-white flex items-center gap-2"><IoMdLock className="text-[#00F0FF]"/> Private Account</p>
-                      <p className="text-[10px] font-bold text-gray-500 mt-1">Only approved followers can see your posts and listings.</p>
-                    </div>
-                    <button onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.isPrivate ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}>
-                      <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.isPrivate ? 'right-1' : 'left-1'}`} />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between p-5 bg-[#0B0F19] border border-[#1E2532] rounded-3xl shadow-inner">
-                    <div>
-                      <p className="text-sm font-black text-white flex items-center gap-2"><IoMdStar className="text-yellow-500"/> Hide Online Status</p>
-                      <p className="text-[10px] font-bold text-gray-500 mt-1">Turn off the green dot on your profile and messages.</p>
-                    </div>
-                    <button onClick={() => setFormData({...formData, hideActivity: !formData.hideActivity})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.hideActivity ? 'bg-yellow-500' : 'bg-[#1E2532]'}`}>
-                      <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.hideActivity ? 'right-1' : 'left-1'}`} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB: Notifications */}
-              {settingsTab === 'notifications' && (
-                <div className="space-y-6 animate-in fade-in duration-300 pb-20">
-                  <div className="flex items-center justify-between p-5 bg-[#0B0F19] border border-[#1E2532] rounded-3xl shadow-inner">
-                    <div>
-                      <p className="text-sm font-black text-white flex items-center gap-2"><IoMdMail className="text-[#00F0FF]"/> Email Alerts</p>
-                      <p className="text-[10px] font-bold text-gray-500 mt-1">Get emails when someone messages you or saves your post.</p>
-                    </div>
-                    <button onClick={() => setFormData({...formData, emailAlerts: !formData.emailAlerts})} className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${formData.emailAlerts ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}>
-                      <div className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${formData.emailAlerts ? 'right-1' : 'left-1'}`} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Bottom Action Bar */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#151A25] via-[#151A25] to-transparent">
-                <button onClick={handleUpdate} className="w-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white py-4 rounded-2xl font-black tracking-widest uppercase shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-                  Save Changes
-                </button>
-              </div>
-
-            </div>
           </div>
         </div>
       )}

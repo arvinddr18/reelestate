@@ -343,7 +343,7 @@ export default function FeedPage() {
       </header>
 
       {/* ─── MAIN FEED CONTENT ─── */}
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-3xl lg:max-w-[900px] xl:max-w-[1100px] mx-auto px-4 md:px-8 py-8 space-y-12">
         
         {/* ─── ⚡ NEXT-GEN STORY PORTALS (Only on 'For You') ─── */}
         {activeCategory === 'All' && (

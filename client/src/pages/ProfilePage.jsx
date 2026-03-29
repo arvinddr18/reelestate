@@ -282,14 +282,27 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── SMART TABS ── */}
-        <div className="mb-6">
-          <div className="flex bg-[#151A25] border border-[#1E2532] rounded-2xl p-1 relative max-w-md mx-auto shadow-inner">
-            <button onClick={() => setActiveTab('grid')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'grid' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}><IoMdGrid size={16} /> Grid</button>
-            <button onClick={() => setActiveTab('list')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'list' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg> List</button>
-            {canEditProfile && <button onClick={() => setActiveTab('saved')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10 ${activeTab === 'saved' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}><IoMdBookmark size={16} /> Saved</button>}
+        {/* ── 2050 SMART TABS (LIQUID ENERGY SLIDER) ── */}
+        <div className="mb-8 relative z-20">
+          <div className="flex bg-[#0B0F19]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-1.5 relative max-w-md mx-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
             
-            <div className={`absolute top-1 bottom-1 bg-[#1E2532] border border-gray-600/30 rounded-xl transition-all duration-300 ease-out shadow-md ${canEditProfile ? (activeTab === 'grid' ? 'left-1 w-[calc(33.33%-4px)]' : activeTab === 'list' ? 'left-[calc(33.33%+2px)] w-[calc(33.33%-4px)]' : 'left-[calc(66.66%+2px)] w-[calc(33.33%-4px)]') : (activeTab === 'grid' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)]')}`} />
+            {/* The Glowing Neon Slider */}
+            <div className={`absolute top-1.5 bottom-1.5 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-xl transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) shadow-[0_0_20px_rgba(0,240,255,0.4)] ${canEditProfile ? (activeTab === 'grid' ? 'left-1.5 w-[calc(33.33%-4px)]' : activeTab === 'list' ? 'left-[calc(33.33%+2px)] w-[calc(33.33%-4px)]' : 'left-[calc(66.66%+2px)] w-[calc(33.33%-4px)]') : (activeTab === 'grid' ? 'left-1.5 w-[calc(50%-4px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)]')}`} />
+
+            <button onClick={() => setActiveTab('grid')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'grid' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
+              <IoMdGrid size={16} className={activeTab === 'grid' ? 'animate-pulse' : ''} /> Grid
+            </button>
+            
+            <button onClick={() => setActiveTab('list')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'list' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
+              <svg className={`w-4 h-4 ${activeTab === 'list' ? 'animate-pulse' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" /></svg> List
+            </button>
+            
+            {canEditProfile && (
+              <button onClick={() => setActiveTab('saved')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'saved' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
+                <IoMdBookmark size={16} className={activeTab === 'saved' ? 'animate-pulse' : ''} /> Vault
+              </button>
+            )}
+            
           </div>
         </div>
 

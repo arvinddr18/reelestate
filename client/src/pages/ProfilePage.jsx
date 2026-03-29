@@ -160,106 +160,124 @@ export default function ProfilePage() {
 
       <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-24 relative z-10">
         
-        {/* ── HOLOGRAPHIC PROFILE INFO CARD ── */}
-        <div className="bg-[#151A25]/80 backdrop-blur-2xl border border-[#1E2532] rounded-[32px] p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 relative overflow-hidden group">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 relative z-10">
+        {/* ── 2050 HOLOGRAPHIC ID CARD (MERGED PROFILE & STATS) ── */}
+        <div className="relative bg-[#151A25]/60 backdrop-blur-3xl border border-white/5 rounded-[40px] p-6 md:p-10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] mb-8 overflow-hidden group hover:border-white/10 transition-colors duration-500">
+          
+          {/* Ambient Glass Shimmers */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/40 to-transparent" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#0057FF]/40 to-transparent" />
+          <div className="absolute -left-20 -top-20 w-64 h-64 bg-[#00F0FF]/5 blur-[80px] rounded-full pointer-events-none group-hover:bg-[#00F0FF]/10 transition-colors duration-700" />
+
+          {/* ── TOP HALF: IDENTITY & ACTIONS ── */}
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
             
-            {/* Avatar Section */}
-            <div className="relative shrink-0">
-              <div className="w-36 h-36 rounded-full relative flex items-center justify-center shadow-[0_0_40px_rgba(0,240,255,0.2)]">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] animate-[spin_4s_linear_infinite]" />
-                <div className="absolute inset-[3px] rounded-full bg-[#0B0F19] overflow-hidden flex items-center justify-center text-4xl font-black text-white">
-                  {avatarPreview ? (
-                    <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="Profile" />
-                  ) : (
-                    <span>{user?.username?.[0].toUpperCase()}</span>
-                  )}
-                </div>
+            {/* The "Nexus Ring" Avatar */}
+            <div className="relative shrink-0 w-36 h-36 md:w-40 md:h-40 flex items-center justify-center">
+              {/* Outer Scanning Ring (Forward) */}
+              <div className="absolute inset-0 rounded-full border-[2px] border-dashed border-[#00F0FF]/40 animate-[spin_12s_linear_infinite] group-hover:border-[#00F0FF]/80 group-hover:animate-[spin_4s_linear_infinite] transition-all duration-500" />
+              {/* Inner Stabilization Ring (Reverse) */}
+              <div className="absolute inset-2 rounded-full border-[2px] border-dotted border-[#0057FF]/50 animate-[spin_10s_linear_infinite_reverse] group-hover:border-[#0057FF] group-hover:animate-[spin_3s_linear_infinite_reverse] transition-all duration-500" />
+              
+              <div className="absolute inset-4 rounded-full bg-[#0B0F19] overflow-hidden border-[1.5px] border-[#00F0FF]/20 shadow-[0_0_30px_rgba(0,240,255,0.2)] flex items-center justify-center text-4xl font-black text-white group-hover:scale-105 transition-transform duration-500">
+                {avatarPreview ? (
+                  <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="Profile" />
+                ) : (
+                  <span>{user?.username?.[0]?.toUpperCase()}</span>
+                )}
               </div>
             </div>
 
-            {/* Profile Details */}
-            <div className="flex-1 text-center md:text-left w-full mt-2">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Identity Details */}
+            <div className="flex-1 text-center md:text-left w-full mt-2 md:mt-4">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                
                 <div>
-                  <h2 className="text-3xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2">
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-3 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                     {user?.fullName || `@${user?.username}`}
-                    {user?.isVerified && <IoMdCheckmarkCircle className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" size={24} />}
-                    {user?.isPrivate && <IoMdLock className="text-gray-500 ml-1" size={18} title="Private Account"/>}
+                    {user?.isVerified && <IoMdCheckmarkCircle className="text-[#00F0FF] drop-shadow-[0_0_12px_rgba(0,240,255,0.8)]" size={28} />}
+                    {user?.isPrivate && <IoMdLock className="text-gray-500" size={20} title="Private Vault" />}
                   </h2>
-                  <p className="text-[#00F0FF] text-[11px] font-black tracking-[0.2em] uppercase mt-1">
-                    {user?.role || 'Verified Member'} • Joined 2026
-                  </p>
+                  
+                  {/* Digital Footprint Labels */}
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
+                    <span className="bg-[#1E2532]/80 backdrop-blur-md text-[#00F0FF] text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-lg border border-[#00F0FF]/20 uppercase">
+                      {user?.role || 'Verified Member'}
+                    </span>
+                    <span className="bg-gradient-to-r from-emerald-500/10 to-emerald-400/10 text-emerald-400 text-[10px] font-black tracking-widest px-3 py-1.5 rounded-lg border border-emerald-500/20 uppercase flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping absolute" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 relative" />
+                      Live Node
+                    </span>
+                  </div>
                 </div>
 
-                {/* ── ACTION BUTTONS ── */}
-                <div className="flex items-center justify-center gap-3">
+                {/* Cyber-Actions */}
+                <div className="flex items-center justify-center shrink-0">
                   {canEditProfile ? (
-                    // SETTINGS BUTTON (Only visible to the owner)
-                    <button 
-                      onClick={() => setIsEditing(true)} 
-                      className="px-6 py-3 rounded-2xl font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 bg-[#1E2532] text-white border border-[#2A3441] hover:bg-[#00F0FF] hover:text-[#0B0F19] hover:shadow-[0_0_20px_rgba(0,240,255,0.5)] active:scale-95"
-                    >
-                      <IoMdSettings size={18}/> Settings & Privacy
+                    <button onClick={() => setIsEditing(true)} className="px-6 py-3.5 rounded-2xl font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 bg-[#151A25] text-[#00F0FF] border border-[#00F0FF]/30 hover:bg-[#00F0FF]/10 hover:shadow-[0_0_25px_rgba(0,240,255,0.3)] active:scale-95">
+                      <IoMdSettings size={18} className="animate-[spin_4s_linear_infinite]"/> System Config
                     </button>
                   ) : (
-                    // CALL/CHAT BUTTONS (Visible to visitors)
-                    <>
-                      <button className="px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-105 active:scale-95 flex items-center gap-2">
-                        <IoMdCall size={16}/> Call
+                    <div className="flex gap-3">
+                      <button className="px-6 py-3.5 rounded-2xl font-black text-[10px] tracking-widest uppercase bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-105 active:scale-95 flex items-center gap-2">
+                        <IoMdCall size={16}/> Connect
                       </button>
-                      <button onClick={() => navigate(`/messages/${userId}`)} className="px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase bg-[#1E2532] text-white hover:text-[#00F0FF] border border-[#2A3441] transition-all hover:border-[#00F0FF]/50 active:scale-95 flex items-center gap-2">
-                        <IoMdMail size={16}/> Chat
+                      <button onClick={() => navigate(`/messages/${userId}`)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#151A25] text-white hover:text-[#00F0FF] border border-white/10 transition-all hover:border-[#00F0FF]/50 active:scale-95 shadow-lg">
+                        <IoMdMail size={20}/>
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Badges */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-4">
-                <span className="bg-[#00F0FF]/10 text-[#00F0FF] text-[10px] font-bold px-2.5 py-1 rounded-md border border-[#00F0FF]/30 flex items-center gap-1.5 shadow-inner">
-                  <IoMdStar size={12}/> {trustScore}% Trust Score
-                </span>
-                <span className="bg-purple-500/10 text-purple-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-purple-500/30 flex items-center gap-1.5 shadow-inner">
-                  <IoMdTime size={12}/> Responds in &lt;1hr
-                </span>
-              </div>
-
-              {/* Bio & Details */}
-              <div className="mt-5 max-w-2xl mx-auto md:mx-0">
-                {user?.bio && <p className="text-gray-300 text-sm leading-relaxed mb-4">{user.bio}</p>}
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs font-bold text-gray-400">
+              {/* Bio & Location HUD */}
+              <div className="mt-6">
+                {user?.bio && <p className="text-gray-300 text-sm leading-relaxed mb-4 max-w-2xl">{user.bio}</p>}
+                
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                   {user?.location && (
-                    <span className="flex items-center gap-1.5 bg-[#0B0F19] px-4 py-2 rounded-xl border border-[#1E2532]">
+                    <span className="flex items-center gap-1.5 bg-[#0B0F19]/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 text-[11px] font-bold text-gray-400 tracking-wide shadow-inner">
                       <IoMdPin className="text-[#F5A623]"/> {user.location}
                     </span>
                   )}
                   {user?.website && (
-                    <a href={user.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 bg-[#0B0F19] px-4 py-2 rounded-xl border border-[#1E2532] hover:text-[#00F0FF] hover:border-[#00F0FF]/30 transition-colors">
-                      🔗 Official Website
+                    <a href={user.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 bg-[#0B0F19]/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 text-[11px] font-bold text-gray-400 tracking-wide hover:text-[#00F0FF] hover:border-[#00F0FF]/30 transition-all shadow-inner">
+                      🔗 Neural Link
                     </a>
                   )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ── ADVANCED STATS ── */}
-        <div className="mb-8">
-          <div className="flex bg-[#151A25]/80 backdrop-blur-xl border border-[#1E2532] rounded-[24px] p-2 divide-x divide-[#1E2532] shadow-lg">
-            <div className="flex-1 flex flex-col items-center justify-center py-4 hover:bg-[#1E2532]/50 transition-colors rounded-l-[20px] cursor-pointer">
-              <span className="text-2xl font-black text-white drop-shadow-md">{userPosts.length}</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-[#00F0FF] mt-1">Total Posts</span>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center py-4 hover:bg-[#1E2532]/50 transition-colors cursor-pointer">
-              <span className="text-2xl font-black text-white drop-shadow-md">{user?.followersCount || 0}</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-1">Network Size</span>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center py-4 hover:bg-[#1E2532]/50 transition-colors rounded-r-[20px] cursor-pointer">
-              <span className="text-2xl font-black text-white drop-shadow-md">{(userPosts.length * 124).toLocaleString()}</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-1">Profile Views</span>
+          {/* ── BOTTOM HALF: NEON HUD STATS ── */}
+          <div className="mt-8 pt-6 relative border-t border-white/5">
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              
+              {/* Stat 1: Activity (Cyan) */}
+              <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#00F0FF]/20 transition-all cursor-default group/stat">
+                <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#00F0FF] transition-all">
+                  {userPosts.length}
+                </span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#00F0FF]/60 mt-1 group-hover/stat:text-[#00F0FF]">Total Posts</span>
+              </div>
+
+              {/* Stat 2: Network (Purple) */}
+              <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-purple-500/20 transition-all cursor-default group/stat">
+                <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-purple-400 transition-all">
+                  {user?.followersCount || 0}
+                </span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400/60 mt-1 group-hover/stat:text-purple-400">Network Size</span>
+              </div>
+
+              {/* Stat 3: Trust/Impact (Gold) */}
+              <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#F5A623]/20 transition-all cursor-default group/stat">
+                <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#F5A623] transition-all">
+                  {trustScore}%
+                </span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#F5A623]/60 mt-1 group-hover/stat:text-[#F5A623]">Trust Score</span>
+              </div>
+
             </div>
           </div>
         </div>

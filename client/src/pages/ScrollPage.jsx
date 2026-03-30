@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoMdArrowBack } from 'react-icons/io';
 import { FiHeart, FiMessageCircle, FiBookmark, FiShare2 } from 'react-icons/fi';
-// 👇 NEW: Importing Framer Motion for the 3D Cinematic Intro
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 
@@ -12,7 +11,6 @@ export default function ScrollPage() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   
-  // 👇 NEW: States for the Cinematic Intro Sequence
   const [showIntro, setShowIntro] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -31,13 +29,10 @@ export default function ScrollPage() {
     fetchPosts();
   }, []);
 
-  // 👇 NEW: The Intro Timing Logic
   useEffect(() => {
     if (!loading && posts.length > 0) {
-      // Let the 3D intro animation play for 2.5 seconds
       const introTimer = setTimeout(() => {
         setShowIntro(false);
-        // Delay the UI slide-in slightly so it overlaps perfectly with the intro fading out
         setTimeout(() => setIsRevealed(true), 400);
       }, 2500);
       
@@ -108,7 +103,6 @@ export default function ScrollPage() {
               transition={{ duration: 2.5, ease: "linear" }}
               className="absolute flex flex-col gap-10 preserve-3d"
             >
-              {/* Fake Wireframe Cards to simulate scrolling */}
               {[1, 2, 3, 4].map(i => (
                 <div key={i} className="w-[280px] h-[450px] rounded-3xl border border-[#00F0FF]/30 bg-gradient-to-b from-[#00F0FF]/10 to-transparent shadow-[0_0_40px_rgba(0,240,255,0.1)] relative">
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/10 blur-[1px]" />
@@ -126,7 +120,6 @@ export default function ScrollPage() {
                 transition={{ type: "spring", damping: 15, delay: 0.2 }}
                 className="w-20 h-20 rounded-full border-2 border-[#00F0FF] bg-black/60 backdrop-blur-xl flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(0,240,255,0.6)]"
               >
-                {/* Animated Scroll Arrow */}
                 <motion.div
                   animate={{ y: [-8, 8, -8] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
@@ -135,22 +128,15 @@ export default function ScrollPage() {
                 </motion.div>
               </motion.div>
 
+              {/* 👇 THE FIX: Changed to "Scrolls" and removed the extra text below it 👇 */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
                 className="text-3xl font-black text-white tracking-[0.3em] uppercase drop-shadow-[0_0_20px_rgba(0,240,255,0.6)] text-center"
               >
-                Immersive<br/><span className="text-[#00F0FF] text-xl">Reels</span>
+                Immersive<br/><span className="text-[#00F0FF] text-xl">Scrolls</span>
               </motion.h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="text-[#00F0FF] text-[10px] tracking-[0.3em] font-bold uppercase mt-4 animate-pulse"
-              >
-                Entering Feed...
-              </motion.p>
             </div>
           </motion.div>
         )}
@@ -164,7 +150,7 @@ export default function ScrollPage() {
         <IoMdArrowBack size={24} />
       </button>
 
-      {/* ─── MAIN SCROLL CONTAINER (Vertical) ─── */}
+      {/* ─── MAIN SCROLL CONTAINER ─── */}
       <div 
         onScroll={handleScroll}
         className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black sm:shadow-[0_0_50px_rgba(0,0,0,0.8)] sm:border-x border-white/10"
@@ -176,14 +162,12 @@ export default function ScrollPage() {
           const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
           
-          // Only show the UI elements once the intro screen has vanished
           const showUI = isRevealed && isActive;
 
           return (
             <div key={post._id || index} className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden">
               
               {/* ─── TRUE FULL SCREEN MEDIA ─── */}
-              {/* Note: The scale-105 to scale-100 creates a beautiful snap-in effect when the intro finishes! */}
               <div className={`absolute inset-0 w-full h-full transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-105'}`}>
                 {isVideo && mediaUrl ? (
                   <video 

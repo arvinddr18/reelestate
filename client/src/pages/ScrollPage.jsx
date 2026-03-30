@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IoMdHeart, IoMdText, IoMdBookmark, IoMdShareAlt, IoMdArrowBack } from 'react-icons/io';
+import { IoMdArrowBack } from 'react-icons/io';
+// 👇 NEW: Importing transparent outline icons!
+import { FiHeart, FiMessageCircle, FiBookmark, FiShare2 } from 'react-icons/fi';
 import api from '../services/api';
 
 export default function ScrollPage() {
@@ -156,31 +158,31 @@ export default function ScrollPage() {
                 )}
               </div>
 
-              {/* ─── RIGHT SIDE: PURE FLOATING ICONS ─── */}
-              {/* 👇 THE FIX: Removed all background boxes. Icons sit directly on the video 👇 */}
+              {/* ─── RIGHT SIDE: TRANSPARENT OUTLINE ICONS ─── */}
+              {/* 👇 THE FIX: Replaced solid icons with Feather Outlines! Video shows through them. 👇 */}
               <div className={`absolute top-1/2 -translate-y-1/2 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                 
                 {/* LIKE */}
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdHeart size={36} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-red-500 transition-colors" />
+                  <FiHeart size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
                   <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
                 </button>
 
                 {/* COMMENT */}
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdText size={34} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                  <FiMessageCircle size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
                   <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
                 </button>
 
                 {/* SAVE */}
                 <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                  <IoMdBookmark size={34} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-yellow-400 transition-colors" />
+                  <FiBookmark size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-yellow-400 group-hover:text-yellow-400 transition-all" />
                   <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Save</span>
                 </button>
 
                 {/* SHARE */}
                 <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
-                  <IoMdShareAlt size={36} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                  <FiShare2 size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
                   <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mt-1">Share</span>
                 </button>
 

@@ -156,39 +156,32 @@ export default function ScrollPage() {
                 )}
               </div>
 
-              {/* ─── RIGHT SIDE: SLIDE-IN "QUANTUM GLASS" ICONS ─── */}
-              {/* 👇 THE FIX: Semi-transparent glass pills 👇 */}
-              <div className={`absolute bottom-6 right-3 z-20 flex flex-col items-center gap-4 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+              {/* ─── RIGHT SIDE: PURE FLOATING ICONS ─── */}
+              {/* 👇 THE FIX: Removed all background boxes. Icons sit directly on the video 👇 */}
+              <div className={`absolute top-1/2 -translate-y-1/2 right-3 z-20 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                 
                 {/* LIKE */}
-                <button className="flex flex-col items-center gap-1.5 group active:scale-90 transition-transform">
-                  <div className="w-13 h-13 rounded-full bg-black/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:border-red-500/50 transition-colors">
-                    <IoMdHeart size={28} className="text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] group-hover:text-red-500 transition-colors" />
-                  </div>
-                  <span className="text-white text-[10px] font-black tracking-widest uppercase px-1 drop-shadow-lg">{post.likesCount || 0}</span>
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                  <IoMdHeart size={36} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-red-500 transition-colors" />
+                  <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
                 </button>
 
                 {/* COMMENT */}
-                <button className="flex flex-col items-center gap-1.5 group active:scale-90 transition-transform">
-                  <div className="w-13 h-13 rounded-full bg-black/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:border-[#00F0FF]/50 transition-colors">
-                    <IoMdText size={26} className="text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] group-hover:text-[#00F0FF] transition-colors" />
-                  </div>
-                  <span className="text-white text-[10px] font-black tracking-widest uppercase px-1 drop-shadow-lg">{post.comments?.length || 0}</span>
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                  <IoMdText size={34} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                  <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
                 </button>
 
                 {/* SAVE */}
-                <button className="flex flex-col items-center gap-1.5 group active:scale-90 transition-transform">
-                  <div className="w-13 h-13 rounded-full bg-black/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:border-yellow-400/50 transition-colors">
-                    <IoMdBookmark size={26} className="text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] group-hover:text-yellow-400 transition-colors" />
-                  </div>
-                  <span className="text-white text-[10px] font-black tracking-widest uppercase px-1 drop-shadow-lg">Save</span>
+                <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                  <IoMdBookmark size={34} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-yellow-400 transition-colors" />
+                  <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Save</span>
                 </button>
 
                 {/* SHARE */}
-                <button className="mt-2 group active:scale-90 transition-transform">
-                  <div className="w-13 h-13 rounded-full bg-black/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
-                    <IoMdShareAlt size={26} />
-                  </div>
+                <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
+                  <IoMdShareAlt size={36} className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                  <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mt-1">Share</span>
                 </button>
 
               </div>

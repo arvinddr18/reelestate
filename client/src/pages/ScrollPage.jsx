@@ -5,7 +5,7 @@ import { FiHeart, FiMessageCircle, FiBookmark, FiShare2 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 
-// ─── RADIAL MENU COMPONENT ───
+// ─── THE LONG-PRESS RADIAL MENU ───
 const RadialMenu = ({ isOpen, onClose, onAction }) => {
   const [hoveredAction, setHoveredAction] = useState(null);
 
@@ -132,9 +132,6 @@ export default function ScrollPage() {
 
   const [radialMenuOpen, setRadialMenuOpen] = useState(false);
   const pressTimer = useRef(null);
-  
-  // Custom Touch tracking for the Z-Axis Dive
-  const touchStartY = useRef(0);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -161,6 +158,14 @@ export default function ScrollPage() {
     }
   }, [loading, posts.length]);
 
+  const handleScroll = (e) => {
+    const container = e.target;
+    const index = Math.round(container.scrollTop / container.clientHeight);
+    if (index !== activeIndex) {
+      setActiveIndex(index);
+    }
+  };
+
   const resolveMediaUrl = (source) => {
     if (!source) return '';
     if (typeof source === 'object' && source.url) return source.url;
@@ -170,43 +175,16 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
-  // ─── THE Z-AXIS NAVIGATION ENGINE ───
-  // Swiping up = Dive Forward (Next post)
-  // Swiping down = Pull Back (Previous post)
-  const handleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY;
-    
-    // Radial Menu Long Press Logic
+  // ─── RADIAL MENU TRIGGERS ───
+  const handlePointerDown = () => {
     pressTimer.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(50);
       setRadialMenuOpen(true);
     }, 400); 
   };
 
-  const handleTouchMove = () => {
+  const handlePointerUpOrLeave = () => {
     if (pressTimer.current) clearTimeout(pressTimer.current);
-  };
-
-  const handleTouchEnd = (e) => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-    
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaY = touchStartY.current - touchEndY;
-
-    // Trigger the Z-Axis dive on swipe
-    if (deltaY > 50 && activeIndex < posts.length - 1) {
-      setActiveIndex(prev => prev + 1); // Dive Forward
-    } else if (deltaY < -50 && activeIndex > 0) {
-      setActiveIndex(prev => prev - 1); // Pull Back
-    }
-  };
-
-  const handleWheel = (e) => {
-    if (e.deltaY > 50 && activeIndex < posts.length - 1) {
-      setActiveIndex(prev => prev + 1);
-    } else if (e.deltaY < -50 && activeIndex > 0) {
-      setActiveIndex(prev => prev - 1);
-    }
   };
 
   const handleRadialAction = (action) => {
@@ -222,28 +200,12 @@ export default function ScrollPage() {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <div className="h-[100dvh] w-full bg-[#05070A] flex flex-col items-center justify-center text-center px-6 relative">
-        <button onClick={() => navigate(-1)} className="absolute top-8 left-8 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors z-50">
-          <IoMdArrowBack size={24} />
-        </button>
-        <h3 className="text-[#00F0FF] font-black text-xl tracking-widest uppercase drop-shadow-[0_0_10px_rgba(0,240,255,0.4)]">No Intel Found</h3>
-        <p className="text-gray-400 text-sm mt-2 font-medium">No properties uploaded yet.</p>
-      </div>
-    );
-  }
-
   return (
-    <div 
-      className="h-[100dvh] w-full bg-[#05070A] relative flex justify-center overflow-hidden touch-none select-none"
-      onWheel={handleWheel} // Desktop scroll support
-    >
+    <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden touch-none select-none">
       
-      {/* ─── RADIAL COMMAND MENU ─── */}
       <RadialMenu isOpen={radialMenuOpen} onClose={() => setRadialMenuOpen(false)} onAction={handleRadialAction} />
 
-      {/* ─── CINEMATIC 3D SCROLL INTRO ─── */}
+      {/* ─── THE CINEMATIC 3D INTRO ─── */}
       <AnimatePresence>
         {showIntro && (
           <motion.div
@@ -252,6 +214,7 @@ export default function ScrollPage() {
             exit={{ opacity: 0, scale: 1.3, filter: "blur(15px)" }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
           >
+            <style>{`.preserve-3d { transform-style: preserve-3d; }`}</style>
             <motion.div
               initial={{ rotateX: 45, y: 600, translateZ: -300 }} animate={{ y: -1200, translateZ: 200 }}
               transition={{ duration: 2.5, ease: "linear" }}
@@ -260,8 +223,6 @@ export default function ScrollPage() {
               {[1, 2, 3, 4].map(i => (
                 <div key={i} className="w-[280px] h-[450px] rounded-3xl border border-[#00F0FF]/30 bg-gradient-to-b from-[#00F0FF]/10 to-transparent shadow-[0_0_40px_rgba(0,240,255,0.1)] relative">
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/10 blur-[1px]" />
-                  <div className="absolute bottom-10 left-4 w-3/4 h-4 bg-white/10 blur-[1px] rounded-full" />
-                  <div className="absolute bottom-4 left-4 w-1/2 h-3 bg-white/10 blur-[1px] rounded-full" />
                 </div>
               ))}
             </motion.div>
@@ -287,109 +248,108 @@ export default function ScrollPage() {
         <IoMdArrowBack size={24} />
       </button>
 
-      {/* ─── THE Z-AXIS HOLOGRAPHIC TUNNEL ─── */}
+      {/* ─── THE SPATIAL AURA FEED (Vertical Scroll) ─── */}
       <div 
-        className="w-full max-w-[450px] h-[100dvh] relative z-10 perspective-[1000px] overflow-hidden bg-[#05070A]"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onScroll={handleScroll}
+        className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black"
       >
-        {/* Background Radar Effect */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-          <div className="w-[800px] h-[800px] rounded-full border border-[#00F0FF]/20 animate-[spin_20s_linear_infinite] border-t-[#00F0FF]/50" />
-        </div>
-
         {posts.map((post, index) => {
           if (!post) return null;
 
           const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
           const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
-          
-          // Z-AXIS MATH LOGIC
-          const offset = index - activeIndex; 
-          const isActive = offset === 0;
-          const isVisible = offset >= -1 && offset <= 3; // Only render a few at a time for performance
-
-          if (!isVisible) return null;
+          const isActive = index === activeIndex;
+          const showUI = isRevealed && isActive;
 
           return (
-            <motion.div 
+            <div 
               key={post._id || index} 
-              // The 2050 Z-Axis 3D Animation!
-              animate={{
-                // If it's active, it's normal. 
-                // If it's next, it's smaller and higher up in the distance.
-                // If it's past, it explodes past the camera to scale 1.5.
-                scale: isActive ? 1 : offset > 0 ? 1 - (offset * 0.2) : 1.5,
-                y: isActive ? 0 : offset > 0 ? offset * -80 : 200,
-                opacity: isActive ? 1 : offset > 0 ? 1 - (offset * 0.3) : 0,
-                filter: isActive ? 'blur(0px)' : `blur(${Math.abs(offset) * 4}px)`,
-                zIndex: posts.length - index // Future posts render behind current posts
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className={`absolute inset-0 w-full h-[100dvh] bg-black overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] origin-bottom ${!isActive && 'rounded-3xl border border-[#00F0FF]/30'}`}
+              className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center overflow-hidden"
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUpOrLeave}
+              onPointerLeave={handlePointerUpOrLeave}
+              onContextMenu={(e) => e.preventDefault()}
             >
               
-              {/* ─── MEDIA ─── */}
-              <div className="absolute inset-0 w-full h-full pointer-events-none">
+              {/* 1. THE AMBILIGHT AURA BACKGROUND */}
+              {/* This scales up the video, blurs it out, and drops opacity to make the whole phone glow with the video's colors! */}
+              <div className="absolute inset-0 w-full h-full z-0">
                 {isVideo && mediaUrl ? (
-                  <video src={mediaUrl} className="w-full h-full object-cover" loop muted={!isActive} autoPlay={isActive} playsInline />
+                  <video src={mediaUrl} className="w-full h-full object-cover scale-[1.3] blur-[60px] opacity-40" loop muted autoPlay playsInline />
                 ) : mediaUrl ? (
-                  <img src={mediaUrl} alt="Post" className="absolute inset-0 w-full h-full object-cover z-10" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
-                )}
+                  <img src={mediaUrl} alt="Aura" className="w-full h-full object-cover scale-[1.3] blur-[60px] opacity-40" />
+                ) : null}
               </div>
 
-              <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 pointer-events-none" />
-
-              {/* ─── UI (ONLY SHOWS ON THE ACTIVE VIDEO) ─── */}
-              <AnimatePresence>
-                {isActive && isRevealed && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 w-full h-full pointer-events-none">
-                    
-                    {/* Bottom Left Info */}
-                    <div className="absolute bottom-6 left-4 right-[70px] z-20 flex flex-col gap-1 pointer-events-auto">
-                      <div className="flex items-center gap-3 mb-1 cursor-pointer w-max">
-                        <div className="relative w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                          <img src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} alt="avatar" className="w-full h-full rounded-full object-cover border-2 border-black" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">@{post.author?.username || 'user'}</span>
-                          <span className="w-1 h-1 rounded-full bg-white/70 shadow-md mx-0.5"></span>
-                          <button className="text-[#00F0FF] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hover:text-white transition-colors">Follow</button>
-                        </div>
-                      </div>
-                      <h3 className="text-white font-bold text-[15px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2 mt-1">{post.title || 'Exclusive Listing'}</h3>
-                      <p className="text-[15px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">{post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}</p>
-                      {post.description && <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 leading-relaxed mt-0.5">{post.description}</p>}
-                    </div>
-
-                    {/* Center Right Icons */}
-                    <div className="absolute top-1/2 -translate-y-1/2 right-3 z-20 flex flex-col items-center gap-6 pointer-events-auto">
-                      <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                        <FiHeart size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
-                        <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
-                      </button>
-                      <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                        <FiMessageCircle size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
-                        <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
-                      </button>
-                      <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                        <FiBookmark size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-yellow-400 group-hover:text-yellow-400 transition-all" />
-                        <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Save</span>
-                      </button>
-                      <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
-                        <FiShare2 size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
-                        <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mt-1">Share</span>
-                      </button>
-                    </div>
-
-                  </motion.div>
+              {/* 2. THE FLOATING SPATIAL GLASS PANE */}
+              {/* This is the actual video, floating in the center of the screen with massive rounded corners and drop shadow */}
+              <div className={`relative z-10 w-[94%] h-[88%] rounded-[36px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/10 transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-95 opacity-50'}`}>
+                
+                {isVideo && mediaUrl ? (
+                  <video src={mediaUrl} className="w-full h-full object-cover pointer-events-none" loop muted={!isActive} autoPlay={isActive} playsInline />
+                ) : mediaUrl ? (
+                  <img src={mediaUrl} alt="Post" className="w-full h-full object-cover pointer-events-none" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 bg-[#0B0F19]">No Media</div>
                 )}
-              </AnimatePresence>
+                
+                <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
-            </motion.div>
+                {/* 3. THE FLOATING UI (Inside the Glass Pane) */}
+                <div className={`absolute bottom-6 left-5 right-[70px] flex flex-col gap-1 transition-all duration-700 ease-out delay-100 pointer-events-none ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                  
+                  <div className="flex items-center gap-3 mb-2 cursor-pointer w-max pointer-events-auto">
+                    <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                      <img src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} alt="avatar" className="w-full h-full rounded-full object-cover border-2 border-black" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">@{post.author?.username || 'user'}</span>
+                      <span className="text-[#00F0FF] font-black text-[9px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Verified Agent</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-white font-bold text-[16px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2">
+                    {post.title || 'Exclusive Listing'}
+                  </h3>
+                  
+                  <p className="text-[16px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                    {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
+                  </p>
+
+                  {post.description && (
+                    <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 mt-1 leading-snug">
+                      {post.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* THE TRANSPARENT OUTLINE ICONS */}
+                <div className={`absolute top-1/2 -translate-y-1/2 right-4 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 pointer-events-auto ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+                  
+                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <FiHeart size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+                    <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <FiMessageCircle size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                    <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
+                    <FiBookmark size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-yellow-400 group-hover:text-yellow-400 transition-all" />
+                    <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Save</span>
+                  </button>
+
+                  <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
+                    <FiShare2 size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                    <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mt-1">Share</span>
+                  </button>
+
+                </div>
+              </div>
+
+            </div>
           );
         })}
       </div>

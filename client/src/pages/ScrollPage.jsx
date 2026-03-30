@@ -1,125 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoMdArrowBack } from 'react-icons/io';
-import { FiHeart, FiMessageCircle, FiBookmark, FiShare2 } from 'react-icons/fi';
+import { FiHeart, FiMessageCircle, FiBookmark, FiShare2, FiMaximize } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
-
-// ─── THE LONG-PRESS RADIAL MENU ───
-const RadialMenu = ({ isOpen, onClose, onAction }) => {
-  const [hoveredAction, setHoveredAction] = useState(null);
-
-  const ACTIONS = [
-    { id: 'like', icon: <FiHeart size={28} />, label: 'Like', color: 'text-red-500', bg: 'bg-red-500/20', angle: 270 },
-    { id: 'share', icon: <FiShare2 size={28} />, label: 'Share', color: 'text-[#00F0FF]', bg: 'bg-[#00F0FF]/20', angle: 0 },
-    { id: 'save', icon: <FiBookmark size={28} />, label: 'Save', color: 'text-yellow-400', bg: 'bg-yellow-400/20', angle: 90 },
-    { id: 'hide', icon: <IoMdArrowBack size={28} className="rotate-180" />, label: 'Hide', color: 'text-gray-400', bg: 'bg-gray-400/20', angle: 180 },
-  ];
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleMove = (e) => {
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      const dx = clientX - cx;
-      const dy = clientY - cy;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance > 40) {
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        if (angle < 0) angle += 360;
-
-        let active = null;
-        if (angle >= 315 || angle < 45) active = 'share';
-        else if (angle >= 45 && angle < 135) active = 'save';
-        else if (angle >= 135 && angle < 225) active = 'hide';
-        else if (angle >= 225 && angle < 315) active = 'like';
-
-        setHoveredAction(active);
-        if (active !== hoveredAction && navigator.vibrate) navigator.vibrate(10);
-      } else {
-        setHoveredAction(null);
-      }
-    };
-
-    const handleUp = () => {
-      if (hoveredAction) onAction(hoveredAction);
-      onClose();
-    };
-
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
-    window.addEventListener('touchmove', handleMove, { passive: false });
-    window.addEventListener('touchend', handleUp);
-
-    return () => {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-      window.removeEventListener('touchmove', handleMove);
-      window.removeEventListener('touchend', handleUp);
-    };
-  }, [isOpen, hoveredAction, onAction, onClose]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
-        >
-          <div className="relative w-[280px] h-[280px] flex items-center justify-center">
-            <motion.div 
-              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="absolute w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.1)] z-10"
-            >
-              <div className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_10px_#00F0FF]" />
-            </motion.div>
-
-            {ACTIONS.map((action, index) => {
-              const isHovered = hoveredAction === action.id;
-              const RADIUS = 100;
-              const rad = (action.angle * Math.PI) / 180;
-              const x = Math.cos(rad) * RADIUS;
-              const y = Math.sin(rad) * RADIUS;
-
-              return (
-                <motion.div
-                  key={action.id}
-                  initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
-                  animate={{ scale: isHovered ? 1.2 : 1, x, y, opacity: 1 }}
-                  exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25, delay: index * 0.05 }}
-                  className="absolute flex flex-col items-center justify-center pointer-events-none"
-                >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border border-white/20 shadow-xl transition-all duration-200 ${isHovered ? `${action.bg} ${action.color} border-${action.color.split('-')[1]}/50 shadow-[0_0_20px_currentColor]` : 'bg-[#151A25]/90 text-white backdrop-blur-md'}`}>
-                    {action.icon}
-                  </div>
-                  <AnimatePresence>
-                    {isHovered && (
-                      <motion.span 
-                        initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                        className={`absolute -bottom-6 text-[11px] font-black uppercase tracking-widest drop-shadow-lg ${action.color}`}
-                      >
-                        {action.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </div>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-20 text-gray-400 text-xs font-bold tracking-widest uppercase">
-            Drag to select
-          </motion.p>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
 
 export default function ScrollPage() {
   const navigate = useNavigate();
@@ -127,11 +11,13 @@ export default function ScrollPage() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   
+  // State for the 3D Intro
   const [showIntro, setShowIntro] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  const [radialMenuOpen, setRadialMenuOpen] = useState(false);
-  const pressTimer = useRef(null);
+  // State for "Clear View" (Press & Hold to hide UI)
+  const [clearView, setClearView] = useState(false);
+  const holdTimer = useRef(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -152,7 +38,7 @@ export default function ScrollPage() {
     if (!loading && posts.length > 0) {
       const introTimer = setTimeout(() => {
         setShowIntro(false);
-        setTimeout(() => setIsRevealed(true), 400);
+        setTimeout(() => setIsRevealed(true), 100);
       }, 2500);
       return () => clearTimeout(introTimer);
     }
@@ -175,20 +61,20 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
-  // ─── RADIAL MENU TRIGGERS ───
+  // ─── CLEAR VIEW LOGIC (Press & Hold to hide UI) ───
   const handlePointerDown = () => {
-    pressTimer.current = setTimeout(() => {
-      if (navigator.vibrate) navigator.vibrate(50);
-      setRadialMenuOpen(true);
-    }, 400); 
+    holdTimer.current = setTimeout(() => {
+      if (navigator.vibrate) navigator.vibrate(50); // Haptic feedback
+      setClearView(true);
+    }, 300); // 300ms hold hides the UI
   };
 
   const handlePointerUpOrLeave = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-  };
-
-  const handleRadialAction = (action) => {
-    console.log(`Action triggered on Post ${activeIndex}:`, action);
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    if (clearView) {
+      if (navigator.vibrate) navigator.vibrate(20);
+      setClearView(false);
+    }
   };
 
   if (loading) {
@@ -201,18 +87,16 @@ export default function ScrollPage() {
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden touch-none select-none">
+    <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden select-none touch-none">
       
-      <RadialMenu isOpen={radialMenuOpen} onClose={() => setRadialMenuOpen(false)} onAction={handleRadialAction} />
-
-      {/* ─── THE CINEMATIC 3D INTRO ─── */}
+      {/* ─── CINEMATIC 3D SCROLL INTRO ─── */}
       <AnimatePresence>
         {showIntro && (
           <motion.div
             key="intro-screen"
             className="absolute inset-0 z-[100] bg-[#05070A] flex items-center justify-center overflow-hidden pointer-events-none perspective-[1200px]"
-            exit={{ opacity: 0, scale: 1.3, filter: "blur(15px)" }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            exit={{ opacity: 0, scale: 1.5, filter: "blur(20px)" }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           >
             <style>{`.preserve-3d { transform-style: preserve-3d; }`}</style>
             <motion.div
@@ -244,11 +128,20 @@ export default function ScrollPage() {
         )}
       </AnimatePresence>
 
-      <button onClick={() => navigate(-1)} className={`absolute top-6 left-4 z-50 p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-[#00F0FF] hover:border-transparent hover:text-black transition-all duration-1000 ease-out shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`}>
-        <IoMdArrowBack size={24} />
-      </button>
+      {/* ─── GLOBAL FLOATING BACK BUTTON ─── */}
+      <AnimatePresence>
+        {isRevealed && !clearView && (
+          <motion.button 
+            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
+            onClick={() => navigate(-1)} 
+            className="absolute top-6 left-4 z-50 p-3 bg-black/20 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-[#00F0FF] hover:border-transparent hover:text-black transition-colors shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
+          >
+            <IoMdArrowBack size={24} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-      {/* ─── THE SPATIAL AURA FEED (Vertical Scroll) ─── */}
+      {/* ─── MAIN SCROLL CONTAINER ─── */}
       <div 
         onScroll={handleScroll}
         className="w-full max-w-[450px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black"
@@ -259,95 +152,144 @@ export default function ScrollPage() {
           const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
           const isVideo = post.mediaType === 'video' || (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
           const isActive = index === activeIndex;
-          const showUI = isRevealed && isActive;
+          
+          const showUI = isRevealed && isActive && !clearView;
 
           return (
             <div 
               key={post._id || index} 
-              className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center overflow-hidden"
+              className="w-full h-[100dvh] snap-start snap-always relative bg-black overflow-hidden"
+              // The event listeners for the "Hold to Clear Screen" effect
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUpOrLeave}
               onPointerLeave={handlePointerUpOrLeave}
               onContextMenu={(e) => e.preventDefault()}
             >
               
-              {/* 1. THE AMBILIGHT AURA BACKGROUND */}
-              {/* This scales up the video, blurs it out, and drops opacity to make the whole phone glow with the video's colors! */}
-              <div className="absolute inset-0 w-full h-full z-0">
-                {isVideo && mediaUrl ? (
-                  <video src={mediaUrl} className="w-full h-full object-cover scale-[1.3] blur-[60px] opacity-40" loop muted autoPlay playsInline />
-                ) : mediaUrl ? (
-                  <img src={mediaUrl} alt="Aura" className="w-full h-full object-cover scale-[1.3] blur-[60px] opacity-40" />
-                ) : null}
-              </div>
-
-              {/* 2. THE FLOATING SPATIAL GLASS PANE */}
-              {/* This is the actual video, floating in the center of the screen with massive rounded corners and drop shadow */}
-              <div className={`relative z-10 w-[94%] h-[88%] rounded-[36px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/10 transition-transform duration-[1200ms] ease-out ${showUI ? 'scale-100' : 'scale-95 opacity-50'}`}>
-                
-                {isVideo && mediaUrl ? (
-                  <video src={mediaUrl} className="w-full h-full object-cover pointer-events-none" loop muted={!isActive} autoPlay={isActive} playsInline />
-                ) : mediaUrl ? (
-                  <img src={mediaUrl} alt="Post" className="w-full h-full object-cover pointer-events-none" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500 bg-[#0B0F19]">No Media</div>
-                )}
-                
-                <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-                {/* 3. THE FLOATING UI (Inside the Glass Pane) */}
-                <div className={`absolute bottom-6 left-5 right-[70px] flex flex-col gap-1 transition-all duration-700 ease-out delay-100 pointer-events-none ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                  
-                  <div className="flex items-center gap-3 mb-2 cursor-pointer w-max pointer-events-auto">
-                    <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                      <img src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} alt="avatar" className="w-full h-full rounded-full object-cover border-2 border-black" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-white font-bold text-[15px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">@{post.author?.username || 'user'}</span>
-                      <span className="text-[#00F0FF] font-black text-[9px] uppercase tracking-widest drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Verified Agent</span>
-                    </div>
-                  </div>
-
-                  <h3 className="text-white font-bold text-[16px] leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] line-clamp-2">
-                    {post.title || 'Exclusive Listing'}
-                  </h3>
-                  
-                  <p className="text-[16px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-                    {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
-                  </p>
-
-                  {post.description && (
-                    <p className="text-gray-200 text-[13px] font-medium line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] pr-2 mt-1 leading-snug">
-                      {post.description}
-                    </p>
+              {/* ─── THE CINEMATIC "BREATHING" MEDIA ─── */}
+              {/* If active, it slowly scales up over 15 seconds to create a living, breathing effect */}
+              <div className="absolute inset-0 w-full h-full pointer-events-none bg-black">
+                <motion.div
+                  initial={{ scale: 1.1 }}
+                  animate={{ scale: isActive ? 1.0 : 1.1 }}
+                  transition={{ duration: 15, ease: "easeOut" }}
+                  className="w-full h-full"
+                >
+                  {isVideo && mediaUrl ? (
+                    <video src={mediaUrl} className="w-full h-full object-cover" loop muted={!isActive} autoPlay={isActive} playsInline />
+                  ) : mediaUrl ? (
+                    <img src={mediaUrl} alt="Post" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">No Media</div>
                   )}
-                </div>
-
-                {/* THE TRANSPARENT OUTLINE ICONS */}
-                <div className={`absolute top-1/2 -translate-y-1/2 right-4 flex flex-col items-center gap-6 transition-all duration-700 ease-out delay-200 pointer-events-auto ${showUI ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-                  
-                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                    <FiHeart size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
-                    <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
-                  </button>
-
-                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                    <FiMessageCircle size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
-                    <span className="text-white text-[12px] font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
-                  </button>
-
-                  <button className="flex flex-col items-center gap-1 group active:scale-90 transition-transform">
-                    <FiBookmark size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:fill-yellow-400 group-hover:text-yellow-400 transition-all" />
-                    <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Save</span>
-                  </button>
-
-                  <button className="flex flex-col items-center mt-2 group active:scale-90 transition-transform">
-                    <FiShare2 size={32} className="text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
-                    <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mt-1">Share</span>
-                  </button>
-
-                </div>
+                </motion.div>
               </div>
+
+              {/* Seamless Vignette overlay for text readability */}
+              <div className={`absolute bottom-0 w-full h-3/4 bg-gradient-to-t from-[#05070A]/90 via-[#05070A]/30 to-transparent z-10 pointer-events-none transition-opacity duration-700 ${showUI ? 'opacity-100' : 'opacity-0'}`} />
+
+              {/* ─── ZERO-GRAVITY HOLOGRAPHIC HUD ─── */}
+              <AnimatePresence>
+                {showUI && (
+                  <motion.div className="absolute inset-0 z-20 w-full h-full pointer-events-none">
+                    
+                    {/* Bottom Info: The "Dynamic Island" Capsule */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 50, scale: 0.9 }} 
+                      animate={{ opacity: 1, y: 0, scale: 1 }} 
+                      exit={{ opacity: 0, y: 50, scale: 0.9 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }}
+                      className="absolute bottom-6 left-4 right-[75px] pointer-events-auto"
+                    >
+                      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-3.5 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                            <img src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username || 'U'}&background=0B0F19&color=fff`} alt="avatar" className="w-full h-full rounded-full object-cover border-2 border-black" />
+                          </div>
+                          <div className="flex flex-col flex-1">
+                            <span className="text-white font-bold text-[15px] drop-shadow-md tracking-wide">@{post.author?.username || 'user'}</span>
+                            <span className="text-[#00F0FF] font-black text-[9px] uppercase tracking-[0.2em] drop-shadow-md">Verified Listing</span>
+                          </div>
+                          <button className="px-3 py-1.5 bg-white/10 hover:bg-[#00F0FF] hover:text-black border border-white/20 hover:border-transparent rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all">
+                            Follow
+                          </button>
+                        </div>
+                        
+                        <h3 className="text-white font-bold text-[16px] leading-tight line-clamp-2 drop-shadow-md">
+                          {post.title || 'Exclusive Listing'}
+                        </h3>
+                        
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-[16px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF] drop-shadow-md">
+                            {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Contact for Price'}
+                          </p>
+                          {post.description && (
+                            <span className="text-gray-400 text-[10px] font-bold uppercase tracking-wider bg-black/40 px-2 py-1 rounded-md cursor-pointer hover:text-white transition-colors">
+                              More Info
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Right Side Icons: Staggered Spring Entrance */}
+                    <div className="absolute bottom-6 right-3 flex flex-col items-center gap-5 pointer-events-auto">
+                      
+                      {/* Like */}
+                      <motion.button 
+                        initial={{ opacity: 0, x: 50, rotate: -20 }} animate={{ opacity: 1, x: 0, rotate: 0 }} exit={{ opacity: 0, x: 50 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.15 }}
+                        className="flex flex-col items-center gap-1 group active:scale-90 transition-transform"
+                      >
+                        <FiHeart size={30} className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+                        <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.likesCount || 0}</span>
+                      </motion.button>
+
+                      {/* Comment */}
+                      <motion.button 
+                        initial={{ opacity: 0, x: 50, rotate: -20 }} animate={{ opacity: 1, x: 0, rotate: 0 }} exit={{ opacity: 0, x: 50 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.2 }}
+                        className="flex flex-col items-center gap-1 group active:scale-90 transition-transform"
+                      >
+                        <FiMessageCircle size={28} className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] group-hover:text-[#00F0FF] transition-colors" />
+                        <span className="text-white text-[11px] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{post.comments?.length || 0}</span>
+                      </motion.button>
+
+                      {/* Save */}
+                      <motion.button 
+                        initial={{ opacity: 0, x: 50, rotate: -20 }} animate={{ opacity: 1, x: 0, rotate: 0 }} exit={{ opacity: 0, x: 50 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.25 }}
+                        className="flex flex-col items-center gap-1 group active:scale-90 transition-transform"
+                      >
+                        <FiBookmark size={28} className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] group-hover:fill-yellow-400 group-hover:text-yellow-400 transition-all" />
+                        <span className="text-white text-[9px] font-bold uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Save</span>
+                      </motion.button>
+
+                      {/* Share */}
+                      <motion.button 
+                        initial={{ opacity: 0, x: 50, rotate: -20 }} animate={{ opacity: 1, x: 0, rotate: 0 }} exit={{ opacity: 0, x: 50 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.3 }}
+                        className="flex flex-col items-center group active:scale-90 transition-transform mt-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-[0_10px_20px_rgba(0,0,0,0.5)] group-hover:bg-[#00F0FF] group-hover:border-transparent group-hover:text-black transition-all">
+                          <FiShare2 size={24} />
+                        </div>
+                      </motion.button>
+
+                    </div>
+
+                    {/* Hint for "Clear View" */}
+                    <motion.div 
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ delay: 2 }}
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none opacity-40 mix-blend-overlay"
+                    >
+                      <FiMaximize size={32} className="text-white animate-pulse mb-2" />
+                      <p className="text-white text-[10px] font-black tracking-[0.2em] uppercase text-center drop-shadow-md">Press & Hold<br/>To Clear Screen</p>
+                    </motion.div>
+
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
             </div>
           );

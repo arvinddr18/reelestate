@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
-// Exact categories and emojis from your Home Page screenshots
+// FIX: Changed all `label` keys to `name` for consistency so they render properly
 const CATEGORIES = [
-  { id: 'ALL', label: 'ALL', icon: '🌟' },
+  { id: 'ALL', name: 'ALL', icon: '🌟' },
   { id: 'Social', name: 'Social', icon: '📸' },
   { id: 'Sale Hub', name: 'Sale Hub', icon: '🏠' },
   { id: 'Rents', name: 'Rents', icon: '🔑' },
@@ -27,7 +27,7 @@ const CATEGORIES = [
 
 export default function ExploreScreen() {
   const [showReels, setShowReels] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('ALL'); // Set default to ALL
+  const [selectedCategory, setSelectedCategory] = useState('ALL'); 
 
   const reelsData = [
     { id: 1, likes: '16.2K', img: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&h=1000&fit=crop" },
@@ -42,36 +42,55 @@ export default function ExploreScreen() {
       {/* DESKTOP SIDEBAR (Hidden on Mobile)        */}
       {/* ========================================= */}
       <div className="hidden md:flex flex-col w-64 bg-[#080B12] border-r border-white/5 fixed h-full z-10 py-10 px-6 shadow-sm">
-        <h1 className="text-2xl font-black mb-12 text-white tracking-tight">RealEstate.</h1>
         
-        <nav className="flex flex-col gap-6">
-          <button className="flex items-center gap-4 text-gray-500 hover:text-[#00F0FF] transition-colors font-semibold group">
-            <svg className="w-7 h-7 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            <span className="text-lg">Home</span>
+        {/* Nodexa Header */}
+        <div className="flex items-center gap-3 mb-10 pl-2">
+            <div className="w-8 h-8 rounded-full border border-blue-500/30 flex items-center justify-center bg-blue-900/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-pulse" />
+            </div>
+            <h1 className="text-2xl font-bold text-white tracking-widest italic">NODEXA</h1>
+        </div>
+        
+        <nav className="flex flex-col gap-3">
+          {/* Default Inactive Button */}
+          <button className="flex items-center gap-4 text-gray-500 hover:text-white hover:bg-white/5 px-4 py-3 rounded-2xl transition-all font-semibold group">
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span className="text-sm tracking-wide">Feed</span>
+          </button>
+
+          <button className="flex items-center gap-4 text-gray-500 hover:text-white hover:bg-white/5 px-4 py-3 rounded-2xl transition-all font-semibold group">
+            <FiSearch className="w-5 h-5" />
+            <span className="text-sm tracking-wide">Search</span>
           </button>
           
-          <button className="flex items-center gap-4 text-[#00F0FF] font-bold group">
-            <svg className="w-7 h-7 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg>
-            <span className="text-lg">Explore</span>
+          <button className="flex items-center gap-4 text-gray-500 hover:text-white hover:bg-white/5 px-4 py-3 rounded-2xl transition-all font-semibold group">
+            <FiMessageSquare className="w-5 h-5" />
+            <span className="text-sm tracking-wide">Messages</span>
           </button>
 
-          <button className="flex items-center gap-4 text-gray-500 hover:text-[#00F0FF] transition-colors font-semibold group mt-2">
-            <div className="w-8 h-8 bg-[#00F0FF]/10 group-hover:bg-[#00F0FF]/20 text-[#00F0FF] rounded-full flex items-center justify-center transition-colors">
-               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </div>
-            <span className="text-lg">Create</span>
+          <button className="flex items-center gap-4 text-gray-500 hover:text-white hover:bg-white/5 px-4 py-3 rounded-2xl transition-all font-semibold group">
+            <FiBookmark className="w-5 h-5" />
+            <span className="text-sm tracking-wide">Saved</span>
           </button>
 
-          <button className="flex items-center gap-4 text-gray-500 hover:text-[#00F0FF] transition-colors font-semibold group mt-2">
-            <svg className="w-7 h-7 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            <span className="text-lg">Messages</span>
+          {/* ACTIVE Button: Matches Home Page Post Property */}
+          <button className="mt-4 flex items-center justify-center gap-2 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-black px-4 py-3.5 rounded-2xl font-bold shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:scale-[1.02] transition-transform">
+             <FiPlus className="w-5 h-5" />
+             <span className="text-sm tracking-wider uppercase">Post Property</span>
           </button>
 
-          <button className="flex items-center gap-4 text-gray-500 hover:text-[#00F0FF] transition-colors font-semibold group">
-            <svg className="w-7 h-7 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            <span className="text-lg">Profile</span>
-          </button>
         </nav>
+
+        {/* Profile Footer */}
+        <div className="mt-auto pl-2 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gray-800 border-2 border-[#00F0FF] overflow-hidden">
+                <img src="https://ui-avatars.com/api/?name=arvind&background=0D8ABC&color=fff" className="w-full h-full object-cover" alt="profile"/>
+            </div>
+            <div className="flex flex-col">
+                <span className="text-white text-sm font-bold">@arvinddr</span>
+                <span className="text-[#00F0FF] text-[10px] font-bold uppercase tracking-wider">View Profile</span>
+            </div>
+        </div>
       </div>
 
       {/* ========================================= */}
@@ -89,20 +108,21 @@ export default function ExploreScreen() {
                     <span className="drop-shadow-[0_0_10px_rgba(255,100,0,0.8)]">🔥</span> Trending Today
                   </h1>
                   
-                  {/* 👇 UPDATED: CATEGORY PILLS FROM YOUR SCREENSHOTS 👇 */}
-                  <div className="flex gap-2 mt-4 md:mt-6 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-1">
+                  {/* Category Pills */}
+                  <div className="flex gap-3 mt-4 md:mt-6 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-2">
                     {CATEGORIES.map((cat) => (
                       <button 
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
-                        className={`flex items-center gap-2 px-5 py-2 md:py-2.5 md:px-6 rounded-full text-sm md:text-base font-semibold whitespace-nowrap transition-colors shadow-sm ${
+                        className={`flex items-center gap-2 px-5 py-2.5 md:py-3 md:px-6 rounded-full text-xs md:text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-all shadow-sm ${
                           selectedCategory === cat.id 
-                          ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]' 
-                          : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10'
+                          ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-black shadow-[0_0_15px_rgba(0,240,255,0.3)] scale-105' 
+                          : 'bg-[#121826]/80 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5'
                         }`}
                       >
-                        <span>{cat.icon}</span>
-                        {cat.label}
+                        <span className="text-base">{cat.icon}</span>
+                        {/* FIX: Referenced cat.name here */}
+                        {cat.name}
                       </button>
                     ))}
                   </div>

@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiSearch, FiHome, FiCompass, FiPlus, FiMail, FiUser, FiMessageCircle } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { 
+  FiHeart, FiMessageSquare, FiSearch, FiHome, 
+  FiPlus, FiMail, FiUser, FiZap 
+} from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
 import api from '../services/api';
+
+const TABS = ['All', 'Food', 'Fitness', 'Travel', 'Luxury'];
 
 export default function ScrollPage() {
   const navigate = useNavigate();
@@ -26,11 +32,11 @@ export default function ScrollPage() {
   }, []);
 
   const trendingPosts = useMemo(() => {
-    return [...posts].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0)).slice(0, 3);
+    return [...posts].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0)).slice(0, 5);
   }, [posts]);
 
   const forYouPosts = useMemo(() => {
-    return posts.slice(3);
+    return posts.slice(5);
   }, [posts]);
 
   const resolveMediaUrl = (source) => {
@@ -43,186 +49,173 @@ export default function ScrollPage() {
   if (loading) {
     return (
       <div className="h-[100dvh] w-full bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1C1C1E] rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-white flex flex-col font-sans text-[#1C1C1E] overflow-hidden relative">
+    <div className="h-[100dvh] w-full bg-[#FAFAFA] flex flex-col overflow-hidden font-sans text-black">
       
-      {/* ─── SCROLLABLE CONTENT AREA ─── */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-[90px]">
+      {/* ─── 1. TOP STATUS BAR AREA ─── */}
+      <div className="pt-12 px-6 pb-2 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🔥</span>
+          <h1 className="text-[22px] font-black tracking-tight text-gray-900">Trending Today</h1>
+        </div>
+      </div>
+
+      {/* ─── MAIN CONTENT SCROLL ─── */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
         
-        {/* ─── HEADER & TABS ─── */}
-        <div className="pt-12 px-5 bg-white">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">🔥</span>
-            <h1 className="text-[22px] font-bold tracking-tight text-black">Trending Today</h1>
-          </div>
-
-          {/* Exact Match Tabs */}
-          <div className="inline-flex items-center bg-[#F2F2F7] rounded-full p-1">
+        {/* ─── 2. CATEGORY PILLS ─── */}
+        <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {TABS.map(tab => (
             <button
-              onClick={() => setSelectedTab('All')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-colors ${selectedTab === 'All' ? 'bg-[#1C1C1E] text-white shadow-sm' : 'text-gray-500'}`}
+              key={tab}
+              onClick={() => setSelectedTab(tab)}
+              className={`px-5 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+                selectedTab === tab 
+                ? 'bg-[#1C1C1E] text-white shadow-md' 
+                : 'bg-white text-gray-400 border border-gray-200'
+              }`}
             >
-              All
+              {tab}
             </button>
-            <button
-              onClick={() => setSelectedTab('Food')}
-              className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${selectedTab === 'Food' ? 'bg-[#1C1C1E] text-white rounded-full shadow-sm' : 'text-gray-500'}`}
-            >
-              Food
-            </button>
-            <div className="w-[1px] h-3 bg-gray-300 mx-1" />
-            <button
-              onClick={() => setSelectedTab('Fitness')}
-              className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${selectedTab === 'Fitness' ? 'bg-[#1C1C1E] text-white rounded-full shadow-sm' : 'text-gray-500'}`}
-            >
-              Fitness
-            </button>
-            <div className="w-[1px] h-3 bg-gray-300 mx-1" />
-            <button
-              onClick={() => setSelectedTab('Travel')}
-              className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${selectedTab === 'Travel' ? 'bg-[#1C1C1E] text-white rounded-full shadow-sm' : 'text-gray-500'}`}
-            >
-              Travel
-            </button>
-          </div>
+          ))}
         </div>
 
-        {/* ─── HORIZONTAL TRENDING CAROUSEL ─── */}
-        <div className="pl-5 py-6">
-          <div className="flex items-start gap-4 overflow-x-auto no-scrollbar pr-5">
-            {/* FEATURED CARD (#1) */}
-            {trendingPosts[0] && (
-              <div 
-                onClick={() => navigate(`/posts/${trendingPosts[0]._id}`)}
-                className="shrink-0 w-[240px] h-[340px] rounded-[24px] overflow-hidden relative shadow-[0_15px_30px_rgba(0,0,0,0.15)] cursor-pointer"
-              >
-                <img 
-                  src={resolveMediaUrl(trendingPosts[0].images?.[0]?.url || trendingPosts[0].image)} 
-                  className="absolute inset-0 w-full h-full object-cover" 
-                  alt="Trending 1" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/20" />
-                
-                <div className="absolute top-4 left-4 flex flex-col items-start gap-1">
-                  <div className="bg-gradient-to-r from-[#FF3B30] to-[#FF9500] text-white px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide flex items-center gap-1 shadow-md">
-                    🔥 + 18% Trending
+        {/* ─── 3. TRENDING CAROUSEL (Aligned to TOP) ─── */}
+        <div className="pl-6 py-4">
+          {/* 👇 FIX: items-start keeps cards aligned perfectly at the top edge 👇 */}
+          <div className="flex items-start gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pr-6 pb-4">
+            {trendingPosts.map((post, index) => {
+              const isFirst = index === 0;
+              return (
+                <motion.div
+                  key={post._id || index}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative shrink-0 snap-center rounded-[28px] overflow-hidden shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all cursor-pointer ${
+                    isFirst ? 'w-[260px] h-[380px]' : 'w-[140px] h-[210px]' // Exact proportional sizing
+                  }`}
+                  onClick={() => navigate(`/posts/${post._id}`)}
+                >
+                  {/* # Rank Badge */}
+                  <div className={`absolute top-4 left-4 z-20 rounded-full font-black flex items-center justify-center ${isFirst ? 'text-white text-[32px] drop-shadow-md' : 'bg-black/60 text-white text-[16px] px-3 py-1 backdrop-blur-md'}`}>
+                    #{index + 1}
                   </div>
-                  <span className="text-white text-[56px] font-black leading-none drop-shadow-lg">#1</span>
-                </div>
 
-                <div className="absolute bottom-5 left-5 flex items-center gap-1.5 text-white">
-                  <FaHeart size={14} className="drop-shadow-md" />
-                  <span className="text-[13px] font-bold drop-shadow-md">{(trendingPosts[0].likesCount / 1000000).toFixed(1)}M Likes</span>
-                </div>
-              </div>
-            )}
+                  {/* Trending Percentage (Only on #1) */}
+                  {isFirst && (
+                    <div className="absolute top-4 right-4 z-20 px-2.5 py-1 bg-gradient-to-r from-[#FF3B30] to-[#FF9500] text-white rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-1 shadow-lg">
+                      🔥 +18% Trending
+                    </div>
+                  )}
 
-            {/* SMALLER CARDS (#2, #3) */}
-            {trendingPosts.slice(1).map((post, index) => (
-              <div 
-                key={post._id || index}
-                onClick={() => navigate(`/posts/${post._id}`)}
-                className="shrink-0 w-[130px] h-[190px] rounded-[20px] overflow-hidden relative shadow-lg cursor-pointer mt-4"
-              >
-                <img 
-                  src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
-                  className="absolute inset-0 w-full h-full object-cover" 
-                  alt={`Trending ${index + 2}`} 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-                
-                <span className="absolute top-3 left-3 text-white text-[22px] font-bold leading-none drop-shadow-md">
-                  #{index + 2}
-                </span>
+                  <img 
+                    src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
+                    className="absolute inset-0 w-full h-full object-cover"
+                    alt="trending"
+                  />
 
-                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white">
-                  <FaHeart size={10} className="drop-shadow-md" />
-                  <span className="text-[10px] font-bold drop-shadow-md">{(post.likesCount / 1000000).toFixed(1)}M Likes</span>
-                </div>
-              </div>
-            ))}
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
+                  
+                  {/* Likes Count (Bottom) */}
+                  <div className={`absolute bottom-4 left-4 z-20 flex items-center gap-1.5 text-white ${isFirst ? 'font-bold text-[14px]' : 'font-semibold text-[11px]'}`}>
+                    <FaHeart size={isFirst ? 16 : 12} />
+                    {(post.likesCount / 1000000).toFixed(1)}M Likes
+                  </div>
+
+                  {/* Neural Glow around #1 */}
+                  {isFirst && (
+                    <div className="absolute inset-0 border-[3px] border-[#00F0FF]/40 rounded-[28px] z-30 pointer-events-none shadow-[inset_0_0_20px_rgba(0,240,255,0.3)]" />
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ─── FOR YOU GRID ─── */}
-        <div className="px-5">
+        {/* ─── 4. FOR YOU GRID (Mockup Style Icons) ─── */}
+        <div className="px-6 mt-4">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xl">🎬</span>
-            <h2 className="text-[20px] font-bold tracking-tight text-black">For You</h2>
+             <span className="text-xl">🎬</span>
+             <h2 className="text-[20px] font-black tracking-tight text-gray-900">For You</h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {forYouPosts.map((post, index) => (
-              <div 
+              <motion.div
                 key={post._id || index}
                 onClick={() => navigate(`/posts/${post._id}`)}
-                className="w-full aspect-[3/4] rounded-[20px] overflow-hidden relative shadow-sm cursor-pointer"
+                className="relative aspect-[3/4] rounded-[24px] overflow-hidden shadow-md cursor-pointer active:scale-95 transition-transform"
               >
                 <img 
                   src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
-                  className="absolute inset-0 w-full h-full object-cover" 
-                  alt="For You" 
+                  className="w-full h-full object-cover"
+                  alt="feed"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 
-                {/* Stacked Icons on the Right */}
-                <div className="absolute right-3 bottom-3 flex flex-col items-center gap-3">
-                  <div className="flex flex-col items-center gap-0.5">
-                    <FaHeart size={20} className={index % 2 === 0 ? "text-[#FF3B30] drop-shadow-md" : "text-white drop-shadow-md"} />
+                {/* 👇 FIX: Exact Vertically Stacked Bubble Icons from Mockup 👇 */}
+                <div className="absolute right-3 bottom-4 flex flex-col items-center gap-3 z-20">
+                  
+                  {/* Heart Bubble */}
+                  <div className="flex flex-col items-center gap-1">
+                    {/* Pink/Red Circle with White Heart */}
+                    <div className="w-[34px] h-[34px] rounded-full bg-[#FF4D67] flex items-center justify-center shadow-lg border border-white/20">
+                      <FaHeart size={16} className="text-white" />
+                    </div>
                     <span className="text-white text-[11px] font-bold drop-shadow-md">
                       {post.likesCount > 1000 ? `${(post.likesCount / 1000).toFixed(1)}K` : post.likesCount || 0}
                     </span>
                   </div>
-                  <div className="flex flex-col items-center gap-0.5">
-                    <div className="w-[22px] h-[22px] bg-white rounded-full flex items-center justify-center shadow-md">
-                      <FiMessageCircle size={13} className="text-black fill-white" />
-                    </div>
+
+                  {/* Comment Bubble */}
+                  <div className="w-[34px] h-[34px] rounded-full bg-white flex items-center justify-center shadow-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.6127 20 9.29749 19.6841 8.13677 19.123L3.81802 20.203C3.50424 20.2815 3.2045 19.9818 3.28299 19.668L4.36302 15.3492C3.8019 14.1885 3.486 12.8733 3.486 11.5C3.486 6.80558 7.51543 3 12.486 3C17.4566 3 21 6.80558 21 11.5Z" />
+                      <circle cx="8" cy="11.5" r="1.5" fill="white" />
+                      <circle cx="12" cy="11.5" r="1.5" fill="white" />
+                      <circle cx="16" cy="11.5" r="1.5" fill="white" />
+                    </svg>
                   </div>
+
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
 
       </div>
 
-      {/* ─── EXACT BOTTOM NAVIGATION DOCK ─── */}
-      <div className="absolute bottom-0 w-full bg-white border-t border-gray-100 px-6 py-2 pb-6 flex justify-between items-center z-50">
+      {/* ─── 5. ELEVATED BOTTOM NAVIGATION DOCK ─── */}
+      <div className="fixed bottom-0 w-full bg-white border-t border-gray-100 px-6 py-2 pb-6 flex justify-between items-center z-[100]">
+        <NavIcon icon={<FiHome size={22} />} label="Home" active />
+        <NavIcon icon={<FiSearch size={22} />} label="Explore" />
         
-        <button className="flex flex-col items-center gap-1 text-black">
-          <FiHome size={22} className="fill-black" />
-          <span className="text-[10px] font-bold">Home</span>
-        </button>
-
-        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-black">
-          <FiCompass size={22} />
-          <span className="text-[10px] font-semibold">Explore</span>
-        </button>
-
-        {/* Center + Button */}
+        {/* Massive Elevated "+" Button */}
         <div className="relative -top-5 flex justify-center">
-          <button className="w-14 h-14 bg-[#1C1C1E] rounded-full flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform">
-            <FiPlus size={26} />
+          <button className="w-[56px] h-[56px] bg-[#1C1C1E] rounded-full flex items-center justify-center text-white shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:scale-90 transition-transform">
+            <FiPlus size={28} />
           </button>
         </div>
 
-        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-black">
-          <FiMail size={22} />
-          <span className="text-[10px] font-semibold">Messages</span>
-        </button>
-
-        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-black">
-          <FiUser size={22} />
-          <span className="text-[10px] font-semibold">Profile</span>
-        </button>
-
+        <NavIcon icon={<FiMail size={22} />} label="Messages" />
+        <NavIcon icon={<FiUser size={22} />} label="Profile" />
       </div>
 
     </div>
+  );
+}
+
+// Sub-component for exact Nav Icons
+function NavIcon({ icon, label, active = false }) {
+  return (
+    <button className={`flex flex-col items-center justify-center gap-1 transition-all ${active ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}>
+      {active ? React.cloneElement(icon, { fill: 'black' }) : icon}
+      <span className={`text-[10px] ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
+    </button>
   );
 }

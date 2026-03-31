@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiHeart, FiMessageSquare, FiSearch, FiHome, 
-  FiPlus, FiMail, FiUser, FiTrendingUp, FiZap 
-} from 'react-icons/fi';
+import { FiSearch, FiHome, FiCompass, FiPlus, FiMail, FiUser, FiMessageCircle } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import api from '../services/api';
-
-const TABS = ['All', 'Food', 'Fitness', 'Travel', 'Luxury'];
 
 export default function ScrollPage() {
   const navigate = useNavigate();
@@ -30,13 +25,12 @@ export default function ScrollPage() {
     fetchPosts();
   }, []);
 
-  // Sort by engagement for the Trending Section
   const trendingPosts = useMemo(() => {
-    return [...posts].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0)).slice(0, 5);
+    return [...posts].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0)).slice(0, 3);
   }, [posts]);
 
   const forYouPosts = useMemo(() => {
-    return posts.slice(5);
+    return posts.slice(3);
   }, [posts]);
 
   const resolveMediaUrl = (source) => {
@@ -49,165 +43,186 @@ export default function ScrollPage() {
   if (loading) {
     return (
       <div className="h-[100dvh] w-full bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1C1C1E] rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-[#FAFAFA] flex flex-col overflow-hidden font-sans text-black">
+    <div className="h-[100dvh] w-full bg-white flex flex-col font-sans text-[#1C1C1E] overflow-hidden relative">
       
-      {/* ─── 1. TOP STATUS BAR AREA ─── */}
-      <div className="pt-12 px-6 pb-2 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🔥</span>
-            <h1 className="text-2xl font-black tracking-tight">Trending Today</h1>
-          </div>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
-           <FiSearch size={20} className="text-gray-400" />
-        </div>
-      </div>
-
-      {/* ─── MAIN CONTENT SCROLL ─── */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
+      {/* ─── SCROLLABLE CONTENT AREA ─── */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-[90px]">
         
-        {/* ─── 2. CATEGORY PILLS ─── */}
-        <div className="px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {TABS.map(tab => (
+        {/* ─── HEADER & TABS ─── */}
+        <div className="pt-12 px-5 bg-white">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-2xl">🔥</span>
+            <h1 className="text-[22px] font-bold tracking-tight text-black">Trending Today</h1>
+          </div>
+
+          {/* Exact Match Tabs */}
+          <div className="inline-flex items-center bg-[#F2F2F7] rounded-full p-1">
             <button
-              key={tab}
-              onClick={() => setSelectedTab(tab)}
-              className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
-                selectedTab === tab 
-                ? 'bg-[#1C1C1E] text-white shadow-lg scale-105' 
-                : 'bg-white text-gray-400 border border-gray-100'
-              }`}
+              onClick={() => setSelectedTab('All')}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-semibold transition-colors ${selectedTab === 'All' ? 'bg-[#1C1C1E] text-white shadow-sm' : 'text-gray-500'}`}
             >
-              {tab}
+              All
             </button>
-          ))}
-        </div>
-
-        {/* ─── 3. TRENDING CAROUSEL (Horizontal) ─── */}
-        <div className="px-6 py-2">
-          <div className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4">
-            {trendingPosts.map((post, index) => {
-              const isFirst = index === 0;
-              return (
-                <motion.div
-                  key={post._id || index}
-                  whileTap={{ scale: 0.98 }}
-                  className={`relative shrink-0 snap-center rounded-[32px] overflow-hidden shadow-2xl transition-all duration-500 ${
-                    isFirst ? 'w-[280px] h-[420px]' : 'w-[220px] h-[330px] mt-[45px]'
-                  }`}
-                >
-                  {/* # Rank Badge */}
-                  <div className={`absolute top-4 left-4 z-20 px-3 py-1 rounded-full font-black text-sm ${isFirst ? 'bg-white text-black' : 'bg-black/50 text-white backdrop-blur-md'}`}>
-                    #{index + 1}
-                  </div>
-
-                  {/* Trending Percentage (Only on #1) */}
-                  {isFirst && (
-                    <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-[#FF3B30] text-white rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-red-500/40">
-                      <FiZap size={10} fill="white" /> +18% Trending
-                    </div>
-                  )}
-
-                  <img 
-                    src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
-                    className="absolute inset-0 w-full h-full object-cover"
-                    alt="trending"
-                  />
-
-                  {/* Content Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
-                  <div className="absolute bottom-5 left-5 right-5 z-20">
-                    <div className="flex items-center gap-2 text-white/90 text-[11px] font-bold mb-1">
-                      <FiHeart size={12} fill="white" className="text-white" />
-                      {(post.likesCount / 1000).toFixed(1)}K Likes
-                    </div>
-                    {isFirst && (
-                      <h3 className="text-white font-black text-lg leading-tight line-clamp-2">
-                        {post.title}
-                      </h3>
-                    )}
-                  </div>
-
-                  {/* Neural Glow (Only on #1) */}
-                  {isFirst && (
-                    <div className="absolute inset-0 border-4 border-white/20 rounded-[32px] z-30 pointer-events-none" />
-                  )}
-                </motion.div>
-              );
-            })}
+            <button
+              onClick={() => setSelectedTab('Food')}
+              className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${selectedTab === 'Food' ? 'bg-[#1C1C1E] text-white rounded-full shadow-sm' : 'text-gray-500'}`}
+            >
+              Food
+            </button>
+            <div className="w-[1px] h-3 bg-gray-300 mx-1" />
+            <button
+              onClick={() => setSelectedTab('Fitness')}
+              className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${selectedTab === 'Fitness' ? 'bg-[#1C1C1E] text-white rounded-full shadow-sm' : 'text-gray-500'}`}
+            >
+              Fitness
+            </button>
+            <div className="w-[1px] h-3 bg-gray-300 mx-1" />
+            <button
+              onClick={() => setSelectedTab('Travel')}
+              className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${selectedTab === 'Travel' ? 'bg-[#1C1C1E] text-white rounded-full shadow-sm' : 'text-gray-500'}`}
+            >
+              Travel
+            </button>
           </div>
         </div>
 
-        {/* ─── 4. FOR YOU GRID (Vertical 2-Column) ─── */}
-        <div className="px-6 mt-6">
-          <div className="flex items-center gap-2 mb-5">
-             <span className="text-lg">🎬</span>
-             <h2 className="text-xl font-black tracking-tight">For You</h2>
-          </div>
+        {/* ─── HORIZONTAL TRENDING CAROUSEL ─── */}
+        <div className="pl-5 py-6">
+          <div className="flex items-start gap-4 overflow-x-auto no-scrollbar pr-5">
+            {/* FEATURED CARD (#1) */}
+            {trendingPosts[0] && (
+              <div 
+                onClick={() => navigate(`/posts/${trendingPosts[0]._id}`)}
+                className="shrink-0 w-[240px] h-[340px] rounded-[24px] overflow-hidden relative shadow-[0_15px_30px_rgba(0,0,0,0.15)] cursor-pointer"
+              >
+                <img 
+                  src={resolveMediaUrl(trendingPosts[0].images?.[0]?.url || trendingPosts[0].image)} 
+                  className="absolute inset-0 w-full h-full object-cover" 
+                  alt="Trending 1" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/20" />
+                
+                <div className="absolute top-4 left-4 flex flex-col items-start gap-1">
+                  <div className="bg-gradient-to-r from-[#FF3B30] to-[#FF9500] text-white px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide flex items-center gap-1 shadow-md">
+                    🔥 + 18% Trending
+                  </div>
+                  <span className="text-white text-[56px] font-black leading-none drop-shadow-lg">#1</span>
+                </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {forYouPosts.map((post, index) => (
-              <motion.div
+                <div className="absolute bottom-5 left-5 flex items-center gap-1.5 text-white">
+                  <FaHeart size={14} className="drop-shadow-md" />
+                  <span className="text-[13px] font-bold drop-shadow-md">{(trendingPosts[0].likesCount / 1000000).toFixed(1)}M Likes</span>
+                </div>
+              </div>
+            )}
+
+            {/* SMALLER CARDS (#2, #3) */}
+            {trendingPosts.slice(1).map((post, index) => (
+              <div 
                 key={post._id || index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="relative aspect-[3/4] rounded-[24px] overflow-hidden shadow-sm bg-gray-100"
+                onClick={() => navigate(`/posts/${post._id}`)}
+                className="shrink-0 w-[130px] h-[190px] rounded-[20px] overflow-hidden relative shadow-lg cursor-pointer mt-4"
               >
                 <img 
                   src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
-                  className="w-full h-full object-cover"
-                  alt="feed"
+                  className="absolute inset-0 w-full h-full object-cover" 
+                  alt={`Trending ${index + 2}`} 
                 />
-                {/* Stats Overlay */}
-                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center z-10">
-                  <div className="flex items-center gap-1 text-white text-[10px] font-black drop-shadow-md">
-                    <FiHeart size={12} fill="white" /> {post.likesCount || 0}
-                  </div>
-                  <FiMessageSquare size={14} className="text-white drop-shadow-md" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+                
+                <span className="absolute top-3 left-3 text-white text-[22px] font-bold leading-none drop-shadow-md">
+                  #{index + 2}
+                </span>
+
+                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white">
+                  <FaHeart size={10} className="drop-shadow-md" />
+                  <span className="text-[10px] font-bold drop-shadow-md">{(post.likesCount / 1000000).toFixed(1)}M Likes</span>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-              </motion.div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ─── FOR YOU GRID ─── */}
+        <div className="px-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl">🎬</span>
+            <h2 className="text-[20px] font-bold tracking-tight text-black">For You</h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {forYouPosts.map((post, index) => (
+              <div 
+                key={post._id || index}
+                onClick={() => navigate(`/posts/${post._id}`)}
+                className="w-full aspect-[3/4] rounded-[20px] overflow-hidden relative shadow-sm cursor-pointer"
+              >
+                <img 
+                  src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
+                  className="absolute inset-0 w-full h-full object-cover" 
+                  alt="For You" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                
+                {/* Stacked Icons on the Right */}
+                <div className="absolute right-3 bottom-3 flex flex-col items-center gap-3">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <FaHeart size={20} className={index % 2 === 0 ? "text-[#FF3B30] drop-shadow-md" : "text-white drop-shadow-md"} />
+                    <span className="text-white text-[11px] font-bold drop-shadow-md">
+                      {post.likesCount > 1000 ? `${(post.likesCount / 1000).toFixed(1)}K` : post.likesCount || 0}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <div className="w-[22px] h-[22px] bg-white rounded-full flex items-center justify-center shadow-md">
+                      <FiMessageCircle size={13} className="text-black fill-white" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
       </div>
 
-      {/* ─── 5. FLOATING DOCK (Bottom Navigation) ─── */}
-      <div className="fixed bottom-8 left-6 right-6 h-[72px] bg-white/90 backdrop-blur-2xl rounded-[32px] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-[100] px-6 flex justify-between items-center">
-        <NavIcon icon={<FiHome size={22} />} active />
-        <NavIcon icon={<FiSearch size={22} />} />
+      {/* ─── EXACT BOTTOM NAVIGATION DOCK ─── */}
+      <div className="absolute bottom-0 w-full bg-white border-t border-gray-100 px-6 py-2 pb-6 flex justify-between items-center z-50">
         
-        {/* Elevation "+" Button */}
-        <div className="relative -top-6">
-          <div className="absolute inset-0 bg-black blur-2xl opacity-20 scale-75" />
-          <button className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center shadow-xl active:scale-90 transition-transform">
-            <FiPlus size={28} />
+        <button className="flex flex-col items-center gap-1 text-black">
+          <FiHome size={22} className="fill-black" />
+          <span className="text-[10px] font-bold">Home</span>
+        </button>
+
+        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-black">
+          <FiCompass size={22} />
+          <span className="text-[10px] font-semibold">Explore</span>
+        </button>
+
+        {/* Center + Button */}
+        <div className="relative -top-5 flex justify-center">
+          <button className="w-14 h-14 bg-[#1C1C1E] rounded-full flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform">
+            <FiPlus size={26} />
           </button>
         </div>
 
-        <NavIcon icon={<FiMail size={22} />} />
-        <NavIcon icon={<FiUser size={22} />} />
+        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-black">
+          <FiMail size={22} />
+          <span className="text-[10px] font-semibold">Messages</span>
+        </button>
+
+        <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-black">
+          <FiUser size={22} />
+          <span className="text-[10px] font-semibold">Profile</span>
+        </button>
+
       </div>
 
     </div>
-  );
-}
-
-// Sub-component for Nav Icons
-function NavIcon({ icon, active = false }) {
-  return (
-    <button className={`flex flex-col items-center justify-center transition-all ${active ? 'text-black' : 'text-gray-300 hover:text-gray-400'}`}>
-      {icon}
-      {active && <div className="w-1 h-1 rounded-full bg-black mt-1" />}
-    </button>
   );
 }

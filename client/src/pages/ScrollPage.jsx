@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  FiHeart, FiMessageSquare, FiSearch, FiHome, 
-  FiPlus, FiMail, FiUser, FiZap 
+  FiSearch, FiHome, FiCompass, FiPlus, FiMail, FiUser, FiZap 
 } from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
 import api from '../services/api';
@@ -35,8 +34,14 @@ export default function ScrollPage() {
     return [...posts].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0)).slice(0, 5);
   }, [posts]);
 
-  const forYouPosts = useMemo(() => {
-    return posts.slice(5);
+  // Split the remaining posts into pairs (chunks of 2) for the overlapping layout
+  const forYouPairs = useMemo(() => {
+    const remaining = posts.slice(5);
+    const pairs = [];
+    for (let i = 0; i < remaining.length; i += 2) {
+      pairs.push([remaining[i], remaining[i + 1]]);
+    }
+    return pairs;
   }, [posts]);
 
   const resolveMediaUrl = (source) => {
@@ -57,7 +62,7 @@ export default function ScrollPage() {
   return (
     <div className="h-[100dvh] w-full bg-[#FAFAFA] flex flex-col overflow-hidden font-sans text-black">
       
-      {/* ─── 1. TOP STATUS BAR AREA ─── */}
+      {/* ─── TOP STATUS BAR AREA ─── */}
       <div className="pt-12 px-6 pb-2 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🔥</span>
@@ -68,7 +73,7 @@ export default function ScrollPage() {
       {/* ─── MAIN CONTENT SCROLL ─── */}
       <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
         
-        {/* ─── 2. CATEGORY PILLS ─── */}
+        {/* ─── CATEGORY PILLS ─── */}
         <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
           {TABS.map(tab => (
             <button
@@ -85,9 +90,8 @@ export default function ScrollPage() {
           ))}
         </div>
 
-        {/* ─── 3. TRENDING CAROUSEL (Aligned to TOP) ─── */}
+        {/* ─── TRENDING CAROUSEL (Unchanged - Perfect) ─── */}
         <div className="pl-6 py-4">
-          {/* 👇 FIX: items-start keeps cards aligned perfectly at the top edge 👇 */}
           <div className="flex items-start gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pr-6 pb-4">
             {trendingPosts.map((post, index) => {
               const isFirst = index === 0;
@@ -96,16 +100,14 @@ export default function ScrollPage() {
                   key={post._id || index}
                   whileTap={{ scale: 0.98 }}
                   className={`relative shrink-0 snap-center rounded-[28px] overflow-hidden shadow-[0_15px_30px_rgba(0,0,0,0.15)] transition-all cursor-pointer ${
-                    isFirst ? 'w-[260px] h-[380px]' : 'w-[140px] h-[210px]' // Exact proportional sizing
+                    isFirst ? 'w-[260px] h-[380px]' : 'w-[140px] h-[210px]'
                   }`}
                   onClick={() => navigate(`/posts/${post._id}`)}
                 >
-                  {/* # Rank Badge */}
                   <div className={`absolute top-4 left-4 z-20 rounded-full font-black flex items-center justify-center ${isFirst ? 'text-white text-[32px] drop-shadow-md' : 'bg-black/60 text-white text-[16px] px-3 py-1 backdrop-blur-md'}`}>
                     #{index + 1}
                   </div>
 
-                  {/* Trending Percentage (Only on #1) */}
                   {isFirst && (
                     <div className="absolute top-4 right-4 z-20 px-2.5 py-1 bg-gradient-to-r from-[#FF3B30] to-[#FF9500] text-white rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-1 shadow-lg">
                       🔥 +18% Trending
@@ -118,16 +120,13 @@ export default function ScrollPage() {
                     alt="trending"
                   />
 
-                  {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
                   
-                  {/* Likes Count (Bottom) */}
                   <div className={`absolute bottom-4 left-4 z-20 flex items-center gap-1.5 text-white ${isFirst ? 'font-bold text-[14px]' : 'font-semibold text-[11px]'}`}>
                     <FaHeart size={isFirst ? 16 : 12} />
                     {(post.likesCount / 1000000).toFixed(1)}M Likes
                   </div>
 
-                  {/* Neural Glow around #1 */}
                   {isFirst && (
                     <div className="absolute inset-0 border-[3px] border-[#00F0FF]/40 rounded-[28px] z-30 pointer-events-none shadow-[inset_0_0_20px_rgba(0,240,255,0.3)]" />
                   )}
@@ -137,63 +136,105 @@ export default function ScrollPage() {
           </div>
         </div>
 
-        {/* ─── 4. FOR YOU GRID (Mockup Style Icons) ─── */}
+        {/* ─── FOR YOU: OVERLAPPING COLLAGE FEED ─── */}
         <div className="px-6 mt-4">
           <div className="flex items-center gap-2 mb-4">
              <span className="text-xl">🎬</span>
              <h2 className="text-[20px] font-black tracking-tight text-gray-900">For You</h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {forYouPosts.map((post, index) => (
-              <motion.div
-                key={post._id || index}
-                onClick={() => navigate(`/posts/${post._id}`)}
-                className="relative aspect-[3/4] rounded-[24px] overflow-hidden shadow-md cursor-pointer active:scale-95 transition-transform"
-              >
-                <img 
-                  src={resolveMediaUrl(post.images?.[0]?.url || post.image)} 
-                  className="w-full h-full object-cover"
-                  alt="feed"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                
-                {/* 👇 FIX: Exact Vertically Stacked Bubble Icons from Mockup 👇 */}
-                <div className="absolute right-3 bottom-4 flex flex-col items-center gap-3 z-20">
+          <div className="flex flex-col gap-5">
+            {forYouPairs.map((pair, index) => {
+              const [post1, post2] = pair;
+              
+              return (
+                <div key={index} className="relative w-full h-[280px]">
                   
-                  {/* Heart Bubble */}
-                  <div className="flex flex-col items-center gap-1">
-                    {/* Pink/Red Circle with White Heart */}
-                    <div className="w-[34px] h-[34px] rounded-full bg-[#FF4D67] flex items-center justify-center shadow-lg border border-white/20">
-                      <FaHeart size={16} className="text-white" />
-                    </div>
-                    <span className="text-white text-[11px] font-bold drop-shadow-md">
-                      {post.likesCount > 1000 ? `${(post.likesCount / 1000).toFixed(1)}K` : post.likesCount || 0}
-                    </span>
-                  </div>
+                  {/* 👇 THE BACK CARD (Right Side) 👇 */}
+                  {post2 && (
+                    <motion.div
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/posts/${post2._id}`)}
+                      className="absolute right-0 top-0 w-[52%] h-full rounded-[24px] overflow-hidden z-10 cursor-pointer shadow-md bg-gray-200"
+                    >
+                      <img 
+                        src={resolveMediaUrl(post2.images?.[0]?.url || post2.image)} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                        alt="feed-back"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                      
+                      {/* Icons for Back Card (Mockup Match: Plain white heart) */}
+                      <div className="absolute right-3 bottom-4 flex flex-col items-center gap-3 z-20">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <FaHeart size={18} className="text-white drop-shadow-md" />
+                          <span className="text-white text-[11px] font-bold drop-shadow-md">
+                            {post2.likesCount || 0}
+                          </span>
+                        </div>
+                        <div className="w-[30px] h-[30px] rounded-full bg-white flex items-center justify-center shadow-lg">
+                          {/* Exact Comment SVG */}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.6127 20 9.29749 19.6841 8.13677 19.123L3.81802 20.203C3.50424 20.2815 3.2045 19.9818 3.28299 19.668L4.36302 15.3492C3.8019 14.1885 3.486 12.8733 3.486 11.5C3.486 6.80558 7.51543 3 12.486 3C17.4566 3 21 6.80558 21 11.5Z" />
+                            <circle cx="8" cy="11.5" r="1.5" fill="white" />
+                            <circle cx="12" cy="11.5" r="1.5" fill="white" />
+                            <circle cx="16" cy="11.5" r="1.5" fill="white" />
+                          </svg>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
 
-                  {/* Comment Bubble */}
-                  <div className="w-[34px] h-[34px] rounded-full bg-white flex items-center justify-center shadow-lg">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.6127 20 9.29749 19.6841 8.13677 19.123L3.81802 20.203C3.50424 20.2815 3.2045 19.9818 3.28299 19.668L4.36302 15.3492C3.8019 14.1885 3.486 12.8733 3.486 11.5C3.486 6.80558 7.51543 3 12.486 3C17.4566 3 21 6.80558 21 11.5Z" />
-                      <circle cx="8" cy="11.5" r="1.5" fill="white" />
-                      <circle cx="12" cy="11.5" r="1.5" fill="white" />
-                      <circle cx="16" cy="11.5" r="1.5" fill="white" />
-                    </svg>
-                  </div>
+                  {/* 👇 THE FRONT CARD (Left Side, Overlaps Right Card) 👇 */}
+                  {post1 && (
+                    <motion.div
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/posts/${post1._id}`)}
+                      // Width is 55%, creating a seamless overlap over the right card!
+                      className="absolute left-0 top-0 w-[55%] h-full rounded-[24px] overflow-hidden z-20 cursor-pointer shadow-[15px_0_30px_rgba(0,0,0,0.3)] bg-gray-900"
+                    >
+                      <img 
+                        src={resolveMediaUrl(post1.images?.[0]?.url || post1.image)} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                        alt="feed-front"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                      
+                      {/* Icons for Front Card (Mockup Match: Pink Circle with White Heart) */}
+                      <div className="absolute right-3 bottom-4 flex flex-col items-center gap-3 z-20">
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="w-[30px] h-[30px] rounded-full bg-[#FF4D67] flex items-center justify-center shadow-lg border border-white/20">
+                            <FaHeart size={14} className="text-white" />
+                          </div>
+                          <span className="text-white text-[11px] font-bold drop-shadow-md">
+                            {post1.likesCount > 1000 ? `${(post1.likesCount / 1000).toFixed(1)}K` : post1.likesCount || 0}
+                          </span>
+                        </div>
+                        <div className="w-[30px] h-[30px] rounded-full bg-white flex items-center justify-center shadow-lg">
+                          {/* Exact Comment SVG */}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.6127 20 9.29749 19.6841 8.13677 19.123L3.81802 20.203C3.50424 20.2815 3.2045 19.9818 3.28299 19.668L4.36302 15.3492C3.8019 14.1885 3.486 12.8733 3.486 11.5C3.486 6.80558 7.51543 3 12.486 3C17.4566 3 21 6.80558 21 11.5Z" />
+                            <circle cx="8" cy="11.5" r="1.5" fill="white" />
+                            <circle cx="12" cy="11.5" r="1.5" fill="white" />
+                            <circle cx="16" cy="11.5" r="1.5" fill="white" />
+                          </svg>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
 
                 </div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
       </div>
 
-      {/* ─── 5. ELEVATED BOTTOM NAVIGATION DOCK ─── */}
+      {/* ─── BOTTOM NAVIGATION DOCK ─── */}
       <div className="fixed bottom-0 w-full bg-white border-t border-gray-100 px-6 py-2 pb-6 flex justify-between items-center z-[100]">
         <NavIcon icon={<FiHome size={22} />} label="Home" active />
-        <NavIcon icon={<FiSearch size={22} />} label="Explore" />
+        <NavIcon icon={<FiCompass size={22} />} label="Explore" />
         
         {/* Massive Elevated "+" Button */}
         <div className="relative -top-5 flex justify-center">

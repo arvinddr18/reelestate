@@ -1,23 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IoMdArrowBack, IoMdHeart } from 'react-icons/io';
-import { FiMessageCircle, FiBookmark, FiShare2, FiMoreHorizontal } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { IoMdArrowBack } from 'react-icons/io';
+import { FiHeart, FiSearch, FiVideo, FiMessageSquare, FiUser, FiPlusCircle } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 import api from '../services/api';
+
+const TABS = ['All', 'Food', 'Fitness', 'Travel', 'Tech'];
 
 export default function ScrollPage() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [likedPosts, setLikedPosts] = useState({});
+  const [selectedTab, setSelectedTab] = useState('All');
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await api.get('/posts');
         const data = res.data?.data || res.data || [];
-        setPosts(Array.isArray(data) ? data : []);
+        // Handle potentially non-array data gracefully
+        const postsArray = Array.isArray(data) ? data : (data.length > 0 ? Array.from(data) : []);
+        setPosts(postsArray);
       } catch (err) {
         console.error("Fetch Error:", err);
       } finally {
@@ -27,12 +30,14 @@ export default function ScrollPage() {
     fetchPosts();
   }, []);
 
-  const handleScroll = (e) => {
-    const container = e.target;
-    const index = Math.round(container.scrollTop / container.clientHeight);
-    if (index !== activeIndex) setActiveIndex(index);
-  };
+  // 👇 LOGIC: Sorting posts dynamically for the "Trending" section (Bonus) 👇
+  const sortedPosts = useMemo(() => {
+    if (!posts || posts.length === 0) return [];
+    // Sort by likes count (descending) as a proxy for trending
+    return [...posts].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
+  }, [posts]);
 
+  // Utility to resolve media URL
   const resolveMediaUrl = (source) => {
     if (!source) return '';
     if (typeof source === 'object' && source.url) return source.url;
@@ -41,156 +46,192 @@ export default function ScrollPage() {
     return `${base}${source.startsWith('/') ? '' : '/'}${source}`;
   };
 
-  const toggleLike = (index) => {
-    setLikedPosts(prev => ({ ...prev, [index]: !prev[index] }));
-    if (!likedPosts[index] && navigator.vibrate) navigator.vibrate([10, 30, 10]);
-  };
-
   if (loading) {
     return (
-      <div className="h-[100dvh] w-full bg-black flex items-center justify-center">
-        <div className="relative">
-          <div className="w-16 h-16 rounded-full border border-white/5 animate-ping absolute inset-0" />
-          <div className="w-16 h-16 rounded-full border-t-2 border-white animate-spin" />
-        </div>
+      <div className="h-[100dvh] w-full bg-[#05070A] flex flex-col items-center justify-center text-white">
+        <div className="w-12 h-12 border-4 border-[#0057FF] border-t-[#00F0FF] rounded-full animate-spin mb-4 shadow-[0_0_15px_#00F0FF]" />
+        <span className="text-[#00F0FF] text-[10px] font-black tracking-widest uppercase animate-pulse">Establishing Uplink...</span>
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-black relative flex justify-center overflow-hidden">
+    <div className="h-[100dvh] w-full bg-[#F5F7FA] relative flex flex-col overflow-hidden text-[#1C1C1E] font-sans">
       
-      {/* ─── NATIVE-FEEL TOP NAVIGATION ─── */}
-      <div className="absolute top-12 left-0 right-0 px-8 flex justify-between items-center z-[60] pointer-events-none">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="pointer-events-auto w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-white"
-        >
-          <IoMdArrowBack size={22} />
-        </button>
-        <div className="flex flex-col items-end">
-           <span className="text-white font-black text-[10px] uppercase tracking-[0.4em] drop-shadow-2xl">Neural Feed</span>
-           <div className="w-8 h-[2px] bg-[#00F0FF] mt-1 shadow-[0_0_10px_#00F0FF]" />
+      {/* ─── 1. DYNAMIC TOP NAVIGATION (iOS Mobile-First Style) ─── */}
+      <div className="bg-white/90 backdrop-blur-xl pt-14 pb-4 px-6 flex justify-between items-center border-b border-gray-100 z-50">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 active:scale-95 transition-transform"
+          >
+            <IoMdArrowBack size={22} />
+          </button>
+          <div className="flex flex-col">
+            <span className="text-gray-400 text-[11px] font-medium uppercase tracking-wider">Feed Explorer</span>
+            <h1 className="text-gray-950 font-black text-2xl tracking-tighter leading-none">🔥 Trending Today</h1>
+          </div>
         </div>
+        <button className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 active:scale-95 transition-transform">
+          <FiSearch size={22} />
+        </button>
       </div>
 
-      {/* ─── LIQUID SCROLL ENGINE ─── */}
-      <div 
-        onScroll={handleScroll}
-        className="w-full max-w-[500px] h-[100dvh] overflow-y-scroll snap-y snap-mandatory no-scrollbar relative z-10 bg-black"
-      >
-        {posts.map((post, index) => {
-          const isActive = index === activeIndex;
-          const isLiked = likedPosts[index];
-          const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
-          const isVideo = post.mediaType === 'video' || (mediaUrl && mediaUrl.match(/\.(mp4|webm|ogg)$/i));
+      {/* ─── MAIN VERTICAL SCROLL AREA (The Whole Dashboard) ─── */}
+      <div className="flex-1 overflow-y-scroll pb-[100px] no-scrollbar">
 
-          return (
-            <div key={post._id || index} className="w-full h-[100dvh] snap-start snap-always relative overflow-hidden bg-black flex items-center justify-center">
-              
-              {/* ─── VIDEO BACKGROUND WITH SPATIAL DEPTH ─── */}
-              <motion.div 
-                animate={{ 
-                  scale: isActive ? 1 : 0.8, 
-                  opacity: isActive ? 1 : 0,
-                  rotateY: isActive ? 0 : index < activeIndex ? -20 : 20,
-                  filter: isActive ? 'blur(0px)' : 'blur(40px)'
-                }}
-                transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
-                className="absolute inset-0 w-full h-full"
+        {/* ─── 2. CATEGORY TABS (Scrollable) ─── */}
+        <div className="sticky top-0 bg-white/90 backdrop-blur-xl py-4 border-b border-gray-100 z-40 px-6">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+            {TABS.map((tab) => (
+              <button 
+                key={tab}
+                onClick={() => setSelectedTab(tab)}
+                className={`snap-center shrink-0 px-5 py-2.5 rounded-full font-extrabold text-[12px] uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+                  selectedTab === tab 
+                    ? 'bg-gray-950 text-white scale-105 shadow-xl shadow-gray-950/20' 
+                    : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'
+                }`}
               >
-                {isVideo ? (
-                  <video src={mediaUrl} className="w-full h-full object-cover" loop muted={!isActive} autoPlay={isActive} playsInline />
-                ) : (
-                  <img src={mediaUrl} alt="prop" className="w-full h-full object-cover" />
-                )}
-                {/* Liquid Mist Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
-              </motion.div>
+                {selectedTab === tab && <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] shadow-[0_0_5px_#00F0FF]" />}
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
 
-              <AnimatePresence>
-                {isActive && (
-                  <motion.div 
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-20 pointer-events-none"
-                  >
-                    
-                    {/* ─── HOLOGRAPHIC ACTION STACK ─── */}
-                    <div className="absolute right-6 bottom-32 flex flex-col gap-8 items-center pointer-events-auto">
-                      <motion.div 
-                        initial={{ scale: 0 }} animate={{ scale: 1 }}
-                        className="w-14 h-14 rounded-2xl p-[1.5px] bg-gradient-to-tr from-white/40 to-transparent mb-2 shadow-2xl"
-                      >
-                         <img src={resolveMediaUrl(post.author?.profilePhoto) || `https://ui-avatars.com/api/?name=${post.author?.username}`} className="w-full h-full rounded-[14px] object-cover" alt="u" />
-                      </motion.div>
-                      
-                      <button onClick={() => toggleLike(index)} className="flex flex-col items-center group">
-                        <motion.div whileTap={{ scale: 1.5 }} className="relative">
-                          <IoMdHeart size={34} className={`transition-all duration-500 ${isLiked ? 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,1)]' : 'text-white/80'}`} />
-                        </motion.div>
-                        <span className="text-white/60 font-black text-[10px] mt-1">{post.likesCount || 0}</span>
-                      </button>
+        {/* ─── 3. HORIZONTAL TRENDING REELS CAROUSEL (Top Priority) ─── */}
+        <div className="py-6 px-6">
+          <div className="flex items-center gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory py-2 px-1">
+            {sortedPosts.slice(0, 5).map((post, index) => {
+              if (!post) return null;
+              const isFirst = index === 0;
+              const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
 
-                      <button className="flex flex-col items-center group">
-                        <FiMessageCircle size={30} className="text-white/80 hover:text-white transition-all" />
-                        <span className="text-white/60 font-black text-[10px] mt-1">{post.comments?.length || 0}</span>
-                      </button>
+              return (
+                /* 👇 FIX: Added shrink-0 and min-w to prevent flex squash and ensure snap scrolling 👇 */
+                <motion.div
+                  key={post._id || index}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  onClick={() => navigate(`/posts/${post._id}`)}
+                  className={`snap-center relative shrink-0 rounded-[28px] overflow-hidden cursor-pointer shadow-2xl transition-all duration-500 ease-out border-4 border-white ${
+                    isFirst 
+                      ? 'w-[320px] h-[480px] shadow-[#00F0FF]/20 border-[#00F0FF]/30' // The large featured card with glow
+                      : 'w-[260px] h-[390px] shadow-gray-300/30'
+                  }`}
+                >
+                  {/* Rank Badge (#1, #2, #3, etc.) */}
+                  <div className={`absolute top-5 left-5 z-20 px-4 py-1.5 rounded-full font-black text-xs uppercase tracking-widest flex items-center gap-1.5 ${isFirst ? 'bg-[#00F0FF] text-black shadow-lg shadow-[#00F0FF]/40' : 'bg-gray-950 text-white'}`}>
+                    {isFirst && <FiVideo size={14} />}
+                    #{index + 1}
+                  </div>
 
-                      <button>
-                        <FiBookmark size={30} className="text-white/80" />
-                      </button>
-
-                      <button>
-                        <FiShare2 size={30} className="text-white/80" />
-                      </button>
+                  {/* 🔥 +18% Trending label on Top Reel */}
+                  {isFirst && (
+                    <div className="absolute top-5 right-5 z-20 px-3 py-1 bg-white text-black rounded-full font-extrabold text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-1">
+                      <span>🔥</span> +18% Trending
                     </div>
+                  )}
+                  
+                  {/* Media Content */}
+                  <div className="absolute inset-0 w-full h-full pointer-events-none">
+                     <img src={mediaUrl} alt="prop" className="w-full h-full object-cover" />
+                  </div>
 
-                    {/* ─── SPATIAL PROPERTY INFO (NO BOXES) ─── */}
-                    <motion.div 
-                      initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="absolute bottom-12 left-8 right-24 pointer-events-auto"
-                    >
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 mb-2">
-                           <div className="h-[1px] w-8 bg-[#00F0FF]" />
-                           <span className="text-[#00F0FF] text-[10px] font-black uppercase tracking-[0.2em]">Live Listing</span>
-                        </div>
-                        
-                        <h2 className="text-white font-black text-4xl tracking-tighter leading-none mb-2 drop-shadow-2xl">
-                          {post.title}
-                        </h2>
-                        
-                        <div className="flex items-baseline gap-3 mb-6">
-                           <p className="text-white font-light text-2xl tracking-tight opacity-90">
-                              {post.price && !isNaN(Number(post.price)) ? `₹${Number(post.price).toLocaleString('en-IN')}` : 'Request Price'}
-                           </p>
-                           <span className="text-white/30 text-xs font-bold uppercase tracking-widest">@{post.author?.username}</span>
-                        </div>
+                  {/* Glassmorphism Info Overlay (Bottom) */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-6 z-10 pointer-events-none">
+                    <h3 className="text-white font-extrabold text-[16px] leading-tight line-clamp-2 drop-shadow-md mb-2">
+                       {post.title || 'Exclusive Modern Property'}
+                    </h3>
+                    
+                    <div className="flex justify-between items-center gap-2">
+                       <p className="text-[#00F0FF] font-black text-[11px] uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full drop-shadow-md">
+                           ₹{(post.price / 10000000).toFixed(1)} Cr
+                       </p>
+                       <div className="flex items-center gap-1.5 text-white/90 font-bold text-[12px] drop-shadow-md">
+                          <FiHeart className="fill-white" /> {(post.likesCount / 1000000).toFixed(1)}M
+                       </div>
+                    </div>
+                  </div>
+                  
+                  {/* 👇 GLOW & SHADOW EFFECTS (Only on featured #1 card) 👇 */}
+                  {isFirst && (
+                    <div className="absolute -inset-1 rounded-[32px] border-4 border-[#00F0FF]/30 shadow-[0_0_60px_rgba(0,240,255,0.25)] pointer-events-none z-0" />
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
 
-                        <div className="flex gap-3">
-                          <button className="h-14 px-8 bg-white text-black font-black text-[11px] uppercase tracking-[0.2em] rounded-full shadow-[0_15px_30px_rgba(255,255,255,0.2)] active:scale-95 transition-transform">
-                            Invest Now
-                          </button>
-                          <button className="w-14 h-14 flex items-center justify-center bg-white/10 backdrop-blur-3xl rounded-full border border-white/10 text-white">
-                            <FiMoreHorizontal size={22} />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
+        {/* ─── 4. "FOR YOU" SECTION (Below Trending Section) ─── */}
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between mb-4 mt-2">
+            <div className="flex items-center gap-3">
+                <FiVideo size={24} className="text-[#0057FF]" />
+                <h2 className="text-gray-950 font-black text-xl tracking-tight leading-none">🎬 For You</h2>
             </div>
-          );
-        })}
+            <button className="text-gray-500 font-bold text-[11px] uppercase tracking-widest hover:text-[#0057FF]">See More</button>
+          </div>
+          
+          {/* 👇 FIX: Vertical Scrolling 2-Column Grid 👇 */}
+          <div className="grid grid-cols-2 gap-4">
+            {posts.slice(5).map((post, index) => {
+              if (!post) return null;
+              const mediaUrl = resolveMediaUrl(post.images?.[0]?.url || post.image);
+              
+              return (
+                <motion.div 
+                  key={post._id || index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 + 0.5 }}
+                  onClick={() => navigate(`/posts/${post._id}`)}
+                  className="w-full h-[280px] rounded-[24px] overflow-hidden relative border border-gray-100 shadow-xl shadow-gray-200/50 cursor-pointer active:scale-95 transition-all"
+                >
+                  <img src={mediaUrl} alt="prop" className="w-full h-full object-cover" />
+                  
+                  {/* Floating Like Icon and Count */}
+                  <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between gap-1 pointer-events-none">
+                     <div className="flex items-center gap-1 text-white text-[11px] font-extrabold drop-shadow-md">
+                         <FiHeart className="fill-white" size={12}/> {post.likesCount || 0}
+                     </div>
+                     <div className="text-white drop-shadow-md">
+                        <FiMessageSquare size={14} />
+                     </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
 
-      {/* ─── BACKGROUND AMBIENCE (REALTIME GLOW) ─── */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[#00F0FF] blur-[180px] rounded-full animate-pulse" />
+      {/* ─── 5. ELEVATED BOTTOM NAVIGATION (iOS Native Style) ─── */}
+      <div className="absolute bottom-6 left-6 right-6 h-[80px] bg-white/80 backdrop-blur-2xl rounded-full shadow-[0_15px_60px_rgba(0,0,0,0.15)] border border-gray-100 z-50 px-5 flex justify-between items-center transition-all duration-1000 ease-out delay-500">
+        {[
+          { icon: <FiVideo />, label: 'Feed' },
+          { icon: <FiSearch />, label: 'Explore' },
+          { icon: <FiPlusCircle />, label: 'Create', center: true },
+          { icon: <FiMessageSquare />, label: 'Inbox' },
+          { icon: <FiUser />, label: 'Profile' },
+        ].map((item, index) => (
+          <button 
+            key={index} 
+            className={`flex flex-col items-center justify-center gap-1.5 transition-all ${
+              item.center 
+                ? 'w-16 h-16 rounded-full bg-gray-950 text-[#00F0FF] shadow-xl shadow-gray-950/20 active:scale-90 -translate-y-4' 
+                : 'text-gray-400 hover:text-gray-950'
+            }`}
+          >
+            {React.cloneElement(item.icon, { size: item.center ? 30 : 22 })}
+            {!item.center && <span className="text-[10px] font-bold tracking-wide">{item.label}</span>}
+          </button>
+        ))}
       </div>
 
     </div>

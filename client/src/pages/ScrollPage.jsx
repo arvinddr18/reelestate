@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 // Exact categories and emojis from your Home Page screenshots
 const CATEGORIES = [
-  { id: 'ALL', label: 'ALL', icon: '🌟' },
+  { id: 'ALL', name: 'ALL', icon: '🌟' },
   { id: 'Social', name: 'Social', icon: '📸' },
   { id: 'Sale Hub', name: 'Sale Hub', icon: '🏠' },
   { id: 'Rents', name: 'Rents', icon: '🔑' },
@@ -102,8 +102,9 @@ export default function ExploreScreen() {
                         }`}
                       >
                         <span>{cat.icon}</span>
-                        {cat.label}
-                      </button>
+                        {cat.name}
+                        </button>
+                        
                     ))}
                   </div>
                 </div>

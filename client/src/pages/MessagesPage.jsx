@@ -95,15 +95,9 @@ export default function Messages() {
       
       {/* ─── PREMIUM AMBIENT BACKGROUND ─── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#05070A]">
-        {/* Real Nebula Image Overlay */}
-       {/* Real Deep Space Nebula Overlay */}
         <div className="absolute inset-0 opacity-50 mix-blend-screen bg-[url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center"></div>
-        
-        {/* Soft, slow-breathing gradient orbs */}
         <div className="absolute top-[10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-[radial-gradient(circle,_rgba(193,31,112,0.15)_0%,_rgba(0,0,0,0)_70%)] blur-[80px] animate-[pulse_8s_ease-in-out_infinite]" />
         <div className="absolute bottom-[10%] left-[10%] w-[50vw] h-[50vw] rounded-full bg-[radial-gradient(circle,_rgba(0,140,255,0.1)_0%,_rgba(0,0,0,0)_70%)] blur-[100px] animate-[pulse_10s_ease-in-out_infinite_alternate]" />
-        
-        {/* Very subtle noise texture for a premium matte finish */}
         <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
       </div>
 
@@ -121,7 +115,6 @@ export default function Messages() {
                 <h1 className="text-xl font-bold tracking-wide text-white">
                   Messages
                 </h1>
-                {/* 👇 RESTORED: Heartbeat Pulse & Quantum Encrypted 👇 */}
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <IoMdPulse className="text-[#00F0FF] animate-pulse" size={14} />
                   <span className="text-[9px] font-bold text-[#00F0FF] uppercase tracking-[0.15em] opacity-80">Quantum Encrypted</span>
@@ -195,7 +188,7 @@ export default function Messages() {
               </div>
             ) : (
               filteredUsers.map(user => (
-             <div 
+                <div 
                   key={user._id || user.id} 
                   onClick={() => setActiveChat(user)} 
                   className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${
@@ -207,9 +200,7 @@ export default function Messages() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
                   <div className="flex items-center gap-4 relative z-10">
-                    {/* LIVE PRESENCE AURA */}
                     <div className="relative shrink-0">
-                      {/* Pulsing online ring */}
                       <div className={`absolute -inset-1 rounded-full border ${activeChat?._id === user._id ? 'border-[#00f0ff] animate-[pulse_2s_infinite]' : 'border-[#00ff9d] opacity-50'}`} />
                       <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#1E2532]/50 shadow-[0_0_15px_rgba(0,255,157,0.2)] overflow-hidden text-lg font-bold z-10">
                         {user.profilePhoto ? (
@@ -218,10 +209,7 @@ export default function Messages() {
                           (user.fullName || user.username || 'U')[0].toUpperCase()
                         )}
                       </div>
-                      {/* Status Dot */}
                       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00ff9d] rounded-full border-2 border-[#05070A] z-20 shadow-[0_0_8px_#00ff9d]" />
-                      
-                      {/* Unread Badge (Mocked on first user) */}
                       {user === dbUsers[0] && (
                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#ff007b] to-[#ff4d00] rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-[0_0_10px_rgba(255,0,123,0.6)] z-20 animate-bounce">
                            3
@@ -235,7 +223,6 @@ export default function Messages() {
                           {user.fullName || `@${user.username}`}
                         </h3>
                       </div>
-
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 truncate">
                           <span className="text-[11px] font-bold truncate text-gray-300">
@@ -258,16 +245,17 @@ export default function Messages() {
         </div>
       </div>
 
-     {/* ─── RIGHT PANE: THE DATA TERMINAL ─── */}
-      <div className={`flex-1 h-[100dvh] md:h-full flex flex-col relative bg-[#05070A] md:bg-transparent overflow-hidden ${!activeChat ? 'hidden md:flex' : 'flex fixed inset-0 z-[999] md:relative md:inset-auto md:z-0'}`}>
+      {/* ─── RIGHT PANE: THE ACTIVE CHAT ─── */}
+      {/* 🚨 THE MOBILE FIX: fixed inset-0 z-[9999] forces this to completely cover the app on phones! */}
+      <div className={`flex flex-col bg-[#05070A] overflow-hidden ${!activeChat ? 'hidden md:flex flex-1 relative md:bg-transparent' : 'flex fixed inset-0 z-[9999] md:relative md:flex-1 md:bg-transparent'}`}>
         
         {/* Holographic Blueprint Grid */}
-        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {activeChat ? (
           <>
-            {/* 1. FLEX HEADER - Locked to top */}
-            <div className="relative w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-[100] shadow-[0_10px_30px_rgba(0,0,0,0.8)] shrink-0">
+            {/* 1. HEADER (Locked to Top) */}
+            <div className="shrink-0 relative w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={18} />
@@ -326,8 +314,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 2. FLEX MESSAGES AREA - Absorbs all empty space */}
-            <div className="flex-1 w-full px-4 md:px-6 py-4 overflow-y-auto z-10 flex flex-col gap-6 no-scrollbar relative">
+            {/* 2. MESSAGES SCROLL AREA (Flex-1 stretches it, overflow-y-auto scrolls it) */}
+            <div className="flex-1 relative z-10 w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar">
               <div className="flex justify-center mb-2 mt-2">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
@@ -399,8 +387,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 3. FLEX BOTTOM INPUT AREA - Locked to bottom */}
-            <div className="relative w-full bg-[#05070A]/95 backdrop-blur-md border-t border-white/10 pt-3 pb-4 md:pb-8 px-2 md:px-8 z-[100] flex flex-col items-center gap-3 shrink-0">
+            {/* 3. INPUT FOOTER (Locked to Bottom) */}
+            <div className="shrink-0 relative w-full bg-[#05070A]/95 backdrop-blur-2xl border-t border-white/10 pt-3 pb-4 md:pb-6 px-2 md:px-8 z-20 flex flex-col items-center gap-3">
               
               {/* Smart AI Replies */}
               <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-1">

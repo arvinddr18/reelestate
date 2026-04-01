@@ -242,16 +242,17 @@ export default function Messages() {
         </div>
       </div>
 
-      {/* ─── RIGHT PANE: THE ACTIVE CHAT ─── */}
-      <div className={`${!activeChat ? 'hidden md:flex flex-1 relative items-center justify-center pointer-events-none' : 'fixed inset-0 z-[9999] bg-[#05070A] md:relative md:flex-1 md:bg-transparent'}`}>
+      {/* ─── RIGHT PANE: THE ACTIVE CHAT (THE HOLY GRAIL LAYOUT FIX) ─── */}
+      {/* 🚨 fixed inset-0 is used ONCE here. Inside is pure flex-col. */}
+      <div className={`${!activeChat ? 'hidden md:flex flex-1 relative items-center justify-center pointer-events-none' : 'fixed inset-0 z-[9999] flex flex-col bg-[#05070A] md:relative md:flex-1 md:bg-transparent'}`}>
         
         {/* Holographic Grid Background */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {activeChat && (
           <>
-            {/* 1. STRICT FIXED HEADER - Welded to the top pixel */}
-            <div className="fixed top-0 left-0 w-full md:absolute md:top-0 md:left-0 md:w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-[10000] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            {/* 1. FLEX HEADER - shrink-0 means it NEVER squishes. */}
+            <div className="shrink-0 relative w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={18} />
@@ -283,7 +284,6 @@ export default function Messages() {
               
               {/* 📞 HANGING UPLINK TAGS */}
               <div className="flex items-start h-full absolute top-0 right-2 md:right-8">
-                {/* Voice Call */}
                 <div className="group flex flex-col items-center mr-2 md:mr-4 mt-0 cursor-pointer">
                   <div className="w-[2px] h-3 md:h-6 bg-gradient-to-b from-transparent to-[#00f0ff]/50 group-hover:h-5 md:group-hover:h-8 transition-all duration-300"></div>
                   <button className="relative w-8 h-10 md:w-10 md:h-12 bg-[#05070A]/80 backdrop-blur-xl border border-[#00f0ff]/30 rounded-b-xl md:rounded-b-2xl rounded-t-sm shadow-[0_5px_15px_rgba(0,240,255,0.2)] flex items-center justify-center transition-all duration-300 group-hover:border-[#00f0ff]/70 group-hover:bg-[#00f0ff]/10" title="Secure Audio">
@@ -292,7 +292,6 @@ export default function Messages() {
                   </button>
                 </div>
 
-                {/* Video Call */}
                 <div className="group flex flex-col items-center mr-2 md:mr-8 mt-0 cursor-pointer">
                   <div className="w-[2px] h-1.5 md:h-4 bg-gradient-to-b from-transparent to-[#bc00dd]/50 group-hover:h-3 md:group-hover:h-6 transition-all duration-300"></div>
                   <button className="relative w-8 h-10 md:w-10 md:h-12 bg-[#05070A]/80 backdrop-blur-xl border border-[#bc00dd]/30 rounded-b-xl md:rounded-b-2xl rounded-t-sm shadow-[0_5px_15px_rgba(188,0,221,0.2)] flex items-center justify-center transition-all duration-300 group-hover:border-[#bc00dd]/70 group-hover:bg-[#bc00dd]/10" title="Holographic Video">
@@ -301,7 +300,6 @@ export default function Messages() {
                   </button>
                 </div>
 
-                {/* More Options */}
                 <div className="h-[70px] md:h-24 flex items-center">
                   <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white backdrop-blur-md group">
                     <IoMdMore size={18} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -310,12 +308,9 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 2. STRICT FIXED SCROLL AREA - Safely padded between top and bottom */}
-            <div className="fixed top-0 left-0 w-full h-[100dvh] md:absolute md:inset-0 pt-[76px] md:pt-[100px] pb-[120px] md:pb-[140px] px-4 md:px-6 overflow-y-auto z-[9998] flex flex-col gap-6 no-scrollbar">
+            {/* 2. FLEX MESSAGES - flex-1 means ONLY this area resizes when keyboard opens! */}
+            <div className="flex-1 relative z-10 w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar">
               
-              {/* Spacer to push content to bottom */}
-              <div className="flex-1 min-h-0"></div>
-
               <div className="flex justify-center mb-2 mt-2">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
@@ -387,10 +382,9 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 3. STRICT FIXED FOOTER - Welded to the bottom pixel above keyboard */}
-            <div className="fixed bottom-0 left-0 w-full md:absolute md:bottom-0 md:left-0 md:w-full bg-[#05070A]/98 backdrop-blur-2xl border-t border-white/10 pt-2 pb-3 md:pb-6 px-2 md:px-8 z-[10000] flex flex-col items-center gap-2">
+            {/* 3. FLEX FOOTER - shrink-0 prevents it from squishing */}
+            <div className="shrink-0 relative w-full bg-[#05070A]/98 backdrop-blur-2xl border-t border-white/10 pt-2 pb-3 md:pb-6 px-2 md:px-8 z-20 flex flex-col items-center gap-2">
               
-              {/* Smart AI Replies */}
               <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-1">
                 <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#00f0ff]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff]/20 hover:scale-105 transition-all backdrop-blur-md">
                   <span className="text-[#00f0ff]">✨</span> Sounds perfect!
@@ -403,7 +397,6 @@ export default function Messages() {
                 </button>
               </div>
 
-              {/* The Floating Input Capsule */}
               <div className="relative w-full max-w-3xl flex items-center gap-1 md:gap-2 bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
                 <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 group">
                   <IoMdAdd size={20} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -412,7 +405,7 @@ export default function Messages() {
                   <span className="text-[12px] md:text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                 </button>
                 
-                {/* 🚨 This prevents zooming on iOS/Android which can also push layouts up */}
+                {/* 🚨 text-[16px] is crucial to prevent iOS/Android zoom on click */}
                 <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[16px] md:text-[15px] placeholder-gray-400 font-medium px-1 md:px-2 min-w-0" />
                 
                 <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#ffbb00] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#ffbb00]/30 mr-0.5 md:mr-1">

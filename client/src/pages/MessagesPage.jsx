@@ -94,11 +94,13 @@ export default function Messages() {
     <div className="h-[100dvh] w-full bg-[#05070A] text-white font-sans flex overflow-hidden relative">
       
       {/* ─── PREMIUM AMBIENT BACKGROUND ─── */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#030407]">
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#05070A]">
+        {/* Real Nebula Image Overlay */}
+        <div className="absolute inset-0 opacity-40 mix-blend-screen bg-[url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center"></div>
+        
         {/* Soft, slow-breathing gradient orbs */}
-        <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] rounded-full bg-[radial-gradient(circle,_rgba(98,42,165,0.15)_0%,_rgba(0,0,0,0)_70%)] blur-[80px] animate-[pulse_8s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-[radial-gradient(circle,_rgba(0,140,255,0.1)_0%,_rgba(0,0,0,0)_70%)] blur-[100px] animate-[pulse_10s_ease-in-out_infinite_alternate]" />
-        <div className="absolute top-[40%] left-[20%] w-[30vw] h-[30vw] rounded-full bg-[radial-gradient(circle,_rgba(255,51,102,0.05)_0%,_rgba(0,0,0,0)_70%)] blur-[60px]" />
+        <div className="absolute top-[10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-[radial-gradient(circle,_rgba(193,31,112,0.15)_0%,_rgba(0,0,0,0)_70%)] blur-[80px] animate-[pulse_8s_ease-in-out_infinite]" />
+        <div className="absolute bottom-[10%] left-[10%] w-[50vw] h-[50vw] rounded-full bg-[radial-gradient(circle,_rgba(0,140,255,0.1)_0%,_rgba(0,0,0,0)_70%)] blur-[100px] animate-[pulse_10s_ease-in-out_infinite_alternate]" />
         
         {/* Very subtle noise texture for a premium matte finish */}
         <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
@@ -192,10 +194,14 @@ export default function Messages() {
               </div>
             ) : (
               filteredUsers.map(user => (
-                <div 
+               <div 
                   key={user._id || user.id} 
                   onClick={() => setActiveChat(user)} 
-                  className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-[#00F0FF]/20 border-[#00F0FF]/50 shadow-[0_0_20px_rgba(0,240,255,0.2)]' : 'bg-black/40 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'}`}
+                  className={`block p-4 rounded-[24px] transition-all duration-300 cursor-pointer group relative overflow-hidden border ${
+                    activeChat?._id === user._id 
+                      ? 'bg-gradient-to-r from-white/10 to-transparent backdrop-blur-xl border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)]' 
+                      : 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/10'
+                  }`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
@@ -247,7 +253,7 @@ export default function Messages() {
         {activeChat ? (
           <>
             {/* Active Chat Header */}
-            <div className="h-20 px-6 bg-black/60 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+            <div className="h-24 px-8 bg-gradient-to-b from-[#05070A]/90 to-transparent backdrop-blur-md border-b border-white/5 flex items-center justify-between z-20 shrink-0 pb-4">
               <div className="flex items-center gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={20} />

@@ -297,26 +297,31 @@ export default function Messages() {
                 </div>
               </div>
               
-              {/* 📞 SECURE UPLINK DOCK (Voice / Video / More) */}
-              <div className="flex items-center gap-2 md:gap-3">
+              {/* 📞 SECURE UPLINK DOCK (Unified Capsule) */}
+              <div className="flex items-center gap-3">
                 
-                {/* Voice Call - Quantum Audio */}
-                <button className="relative w-10 h-10 rounded-full bg-[#121826]/80 hover:bg-[#00f0ff]/10 border border-white/5 hover:border-[#00f0ff]/50 flex items-center justify-center transition-all duration-300 group shadow-[0_5px_15px_rgba(0,0,0,0.3)] backdrop-blur-md" title="Secure Audio Uplink">
-                  <div className="absolute inset-0 rounded-full bg-[#00f0ff]/0 group-hover:bg-[#00f0ff]/20 blur-md transition-all duration-300"></div>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:text-[#00f0ff] relative z-10 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
-                </button>
-                
-                {/* Video Call - Holographic Projection */}
-                <button className="relative w-10 h-10 rounded-full bg-[#121826]/80 hover:bg-[#bc00dd]/10 border border-white/5 hover:border-[#bc00dd]/50 flex items-center justify-center transition-all duration-300 group shadow-[0_5px_15px_rgba(0,0,0,0.3)] backdrop-blur-md" title="Holographic Video">
-                  <div className="absolute inset-0 rounded-full bg-[#bc00dd]/0 group-hover:bg-[#bc00dd]/30 blur-md transition-all duration-300 group-hover:animate-pulse"></div>
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#bc00dd] relative z-10 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-                </button>
-
-                {/* Subtle Divider */}
-                <div className="w-[1px] h-5 bg-white/10 mx-1 rounded-full"></div>
+                {/* Unified Communication Pill */}
+                <div className="flex items-center bg-[#121826]/80 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-[0_5px_20px_rgba(0,0,0,0.5)] relative group overflow-hidden">
+                  
+                  {/* Subtle inner ambient glow */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#00f0ff]/0 via-transparent to-[#bc00dd]/0 group-hover:from-[#00f0ff]/10 group-hover:to-[#bc00dd]/10 transition-colors duration-500"></div>
+                  
+                  {/* Voice Segment */}
+                  <button className="relative w-10 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-[#00f0ff] hover:bg-[#00f0ff]/20 transition-all duration-300 z-10" title="Secure Audio">
+                    <svg className="w-4 h-4 hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                  </button>
+                  
+                  {/* Divider inside the pill */}
+                  <div className="w-[1px] h-4 bg-white/20 mx-0.5 z-10"></div>
+                  
+                  {/* Video Segment */}
+                  <button className="relative w-10 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-[#bc00dd] hover:bg-[#bc00dd]/20 transition-all duration-300 z-10" title="Holographic Video">
+                    <svg className="w-5 h-5 hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                  </button>
+                </div>
 
                 {/* More Options */}
-                <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 border border-transparent hover:border-white/10 flex items-center justify-center transition-colors text-gray-400 hover:text-white backdrop-blur-md group" title="More Options">
+                <button className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 flex items-center justify-center transition-all duration-300 text-gray-400 hover:text-white backdrop-blur-md group shadow-[0_5px_15px_rgba(0,0,0,0.2)]" title="More Options">
                   <IoMdMore size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                 </button>
 

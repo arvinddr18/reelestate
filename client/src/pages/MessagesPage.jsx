@@ -275,17 +275,24 @@ export default function Messages() {
                 <div className="w-12 h-12 rounded-full p-[1.5px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
                    <div className="w-full h-full rounded-full bg-[#1E2532] border-2 border-[#0B0F19] overflow-hidden flex items-center justify-center text-white font-bold">
                      {activeChat.profilePhoto ? (
-                        <img src={activeChat.profilePhoto} className="w-full h-full object-cover" alt="avatar" />
+                       <img src={activeChat.profilePhoto} className="w-full h-full object-cover" alt="avatar" />
                      ) : (
-                        (activeChat.fullName || activeChat.username || 'U')[0].toUpperCase()
+                       (activeChat.fullName || activeChat.username || 'U')[0].toUpperCase()
                      )}
                    </div>
                 </div>
                 <div className="flex flex-col">
                   <h2 className="text-white font-black text-[16px]">{activeChat.fullName || `@${activeChat.username}`}</h2>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_5px_#00F0FF]" />
-                    <span className="text-[#00F0FF] text-[10px] font-bold tracking-widest uppercase">Secure Channel Sync</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#00ff9d] shadow-[0_0_8px_#00ff9d] animate-pulse" />
+                    <span className="text-[#00ff9d] text-[10px] font-bold tracking-widest uppercase flex items-center">
+                      Typing
+                      <span className="flex ml-0.5">
+                        <span className="animate-[bounce_1s_infinite_0ms]">.</span>
+                        <span className="animate-[bounce_1s_infinite_100ms]">.</span>
+                        <span className="animate-[bounce_1s_infinite_200ms]">.</span>
+                      </span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -294,15 +301,15 @@ export default function Messages() {
               </button>
             </div>
 
-            {/* Messages Area (Mocked) */}
-           <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-transparent">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-transparent">
               <div className="flex justify-center mb-4 mt-4">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
-              {/* RECEIVED MESSAGE - Soft Dark Glass with Reaction */}
-              <div className="flex flex-col items-start w-full group">
-                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.1)] transition-shadow duration-300 cursor-pointer">
+              {/* RECEIVED MESSAGE */}
+              <div className="flex flex-col items-start w-full group transform transition-all duration-300 hover:translate-x-1">
+                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.2)] hover:border-[#00f0ff]/30 transition-all duration-300 cursor-pointer">
                   <div className="absolute inset-0 rounded-3xl rounded-tl-xl bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
                   <p className="text-gray-100 text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide">Network established. Ready to securely exchange property assets.</p>
                   <span className="text-gray-500 text-[10px] font-semibold tracking-wider">10:41 AM</span>
@@ -315,9 +322,9 @@ export default function Messages() {
                 </div>
               </div>
 
-              {/* SENT MESSAGE - Premium Purple/Pink Gradient Glow */}
-              <div className="flex flex-col items-end w-full group mt-2">
-                <div className="bg-gradient-to-br from-[#801fd6]/80 to-[#c11f70]/80 backdrop-blur-xl border border-white/10 px-5 py-3.5 rounded-3xl rounded-tr-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_25px_rgba(193,31,112,0.25)] hover:shadow-[0_12px_35px_rgba(193,31,112,0.35)] transition-shadow duration-300">
+              {/* SENT MESSAGE */}
+              <div className="flex flex-col items-end w-full group mt-2 transform transition-all duration-300 hover:-translate-x-1">
+                <div className="bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 backdrop-blur-xl border border-white/20 px-5 py-3.5 rounded-3xl rounded-tr-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_25px_rgba(193,31,112,0.3)] hover:shadow-[0_15px_40px_rgba(193,31,112,0.5)] hover:border-white/40 transition-all duration-300 cursor-pointer">
                   <div className="absolute inset-0 rounded-3xl rounded-tr-xl bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
                   <p className="text-white text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide drop-shadow-sm">Confirmed. Standing by for data transmission. 🚀</p>
                   <div className="flex justify-end items-center gap-1.5">
@@ -329,15 +336,14 @@ export default function Messages() {
                   </div>
                 </div>
               </div>
-            </div> {/* <-- THIS IS THE MISSING DIV THAT FIXES THE ERROR */}
+            </div>
 
-         {/* SMART REPLY SUGGESTIONS & INPUT AREA */}
+            {/* SMART REPLY SUGGESTIONS & INPUT AREA */}
             <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex flex-col items-center gap-3">
-              
               {/* Soft shadow below the bar */}
               <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-[#030407] via-[#05070A]/80 to-transparent pointer-events-none" />
               
-              {/* 🧠 Smart AI Replies */}
+              {/* Smart AI Replies */}
               <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar pl-2 pr-2 pb-1">
                 <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#00f0ff]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff]/20 hover:scale-105 transition-all backdrop-blur-md">
                   <span className="text-[#00f0ff]">✨</span> Sounds perfect!
@@ -350,27 +356,23 @@ export default function Messages() {
                 </button>
               </div>
 
-              {/* 💬 The Floating Input Capsule */}
-              <div className="relative w-full max-w-3xl flex items-center gap-2 bg-[#1A1F2E]/60 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.5)] focus-within:border-white/20 focus-within:bg-[#1A1F2E]/80 transition-all duration-300">
-                <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 ml-1 group">
+              {/* The Floating Input Capsule */}
+              <div className="relative w-full max-w-3xl flex items-center gap-2 bg-[#1A1F2E]/80 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.6)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.15)] transition-all duration-300">
+                <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 ml-1 group" title="Attach">
                   <IoMdAdd size={22} className="group-hover:rotate-90 transition-transform duration-300" />
                 </button>
-                
-                <input 
-                  type="text" 
-                  placeholder="Message..." 
-                  className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder-gray-500 font-medium px-2"
-                />
-                
-                <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0">
-                  <IoMdMic size={22} />
+                <button className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#00f0ff]/30" title="Share Reel">
+                  <span className="text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                 </button>
-                
-                <button className="w-10 h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-105 transition-transform shadow-[0_4px_15px_rgba(193,31,112,0.4)] shrink-0 mr-1">
-                  <svg className="w-4 h-4 translate-x-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder-gray-400 font-medium px-2" />
+                <button className="relative w-10 h-10 rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all shrink-0 group">
+                  <div className="absolute inset-0 rounded-full border border-[#ff3366]/0 group-hover:border-[#ff3366]/50 group-hover:animate-ping opacity-50"></div>
+                  <IoMdMic size={22} className="relative z-10 group-hover:scale-110 transition-transform" />
+                </button>
+                <button className="w-10 h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-[0_0_15px_rgba(193,31,112,0.5)] shrink-0 mr-1 group">
+                  <svg className="w-4 h-4 translate-x-[1px] group-hover:translate-x-[3px] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
               </div>
-
             </div>
           </>
         ) : (
@@ -378,7 +380,6 @@ export default function Messages() {
           <div className="flex-1 flex flex-col items-center justify-center z-10 bg-transparent relative pointer-events-none"></div>
         )}
       </div>
-
     </div>
   );
 }

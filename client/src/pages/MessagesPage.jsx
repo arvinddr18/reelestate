@@ -195,13 +195,13 @@ export default function Messages() {
               </div>
             ) : (
               filteredUsers.map(user => (
-              <div 
+             <div 
                   key={user._id || user.id} 
                   onClick={() => setActiveChat(user)} 
                   className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${
                     activeChat?._id === user._id 
-                      ? 'bg-gradient-to-r from-white/10 to-transparent border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)]' 
-                      : 'bg-black/40 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'
+                      ? 'bg-white/10 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] scale-[1.02]' 
+                      : 'bg-[#121826]/40 border-transparent hover:bg-white/5 hover:border-white/10 hover:-translate-y-1'
                   }`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
@@ -307,15 +307,23 @@ export default function Messages() {
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
-              {/* RECEIVED MESSAGE */}
+              {/* RECEIVED MESSAGE - Quantum Encrypted Blur */}
               <div className="flex flex-col items-start w-full group transform transition-all duration-300 hover:translate-x-1">
-                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.2)] hover:border-[#00f0ff]/30 transition-all duration-300 cursor-pointer">
+                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.2)] hover:border-[#00f0ff]/30 transition-all duration-300 cursor-pointer overflow-hidden">
+                  
+                  {/* The Blur Overlay (Disappears on hover) */}
+                  <div className="absolute inset-0 bg-[#05070A]/80 backdrop-blur-md z-10 flex items-center justify-center transition-opacity duration-500 group-hover:opacity-0 rounded-3xl rounded-tl-xl">
+                    <span className="text-[#00f0ff] text-[10px] font-bold tracking-widest uppercase animate-pulse flex items-center gap-2 drop-shadow-[0_0_8px_#00f0ff]">
+                      <IoMdPulse size={14} /> Tap to Decrypt
+                    </span>
+                  </div>
+
                   <div className="absolute inset-0 rounded-3xl rounded-tl-xl bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
-                  <p className="text-gray-100 text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide">Network established. Ready to securely exchange property assets.</p>
-                  <span className="text-gray-500 text-[10px] font-semibold tracking-wider">10:41 AM</span>
+                  <p className="text-gray-100 text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide filter blur-[2px] group-hover:blur-none transition-all duration-500">Network established. Ready to securely exchange property assets.</p>
+                  <span className="text-gray-500 text-[10px] font-semibold tracking-wider filter blur-[2px] group-hover:blur-none transition-all duration-500">10:41 AM</span>
                   
                   {/* FLOATING REACTION BADGE */}
-                  <div className="absolute -bottom-3 -right-2 bg-[#1A1F2E] border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform">
+                  <div className="absolute -bottom-3 -right-2 bg-[#1A1F2E] border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform z-20">
                     <span className="text-[12px] drop-shadow-[0_0_5px_rgba(255,51,102,0.8)]">❤️</span>
                     <span className="text-[10px] font-bold text-white">1</span>
                   </div>
@@ -337,6 +345,47 @@ export default function Messages() {
                 </div>
               </div>
             </div>
+
+            {/* SENT MESSAGE - Mini Reel / Property Card */}
+              <div className="flex flex-col items-end w-full group mt-4 transform transition-all duration-300 hover:-translate-x-1">
+                <div className="bg-[#1A1F2E]/80 backdrop-blur-xl border border-[#bc00dd]/30 p-2 rounded-3xl rounded-tr-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_25px_rgba(188,0,221,0.15)] hover:shadow-[0_15px_40px_rgba(188,0,221,0.3)] hover:border-[#bc00dd]/50 transition-all duration-300 cursor-pointer">
+                  
+                  {/* Image/Reel Thumbnail */}
+                  <div className="relative w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-2 shadow-inner">
+                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                    
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-[0_0_20px_rgba(0,0,0,0.5)] group-hover:bg-[#ff3366]/80 transition-colors duration-300">
+                        <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      </div>
+                    </div>
+                    
+                    {/* Property Tags */}
+                    <div className="absolute bottom-2 left-3 right-3 flex justify-between items-end">
+                      <div>
+                        <p className="text-white text-[13px] font-black drop-shadow-md tracking-wide">Luxury Villa</p>
+                        <p className="text-gray-300 text-[10px] font-bold drop-shadow-md flex items-center gap-1">
+                          <span className="text-[#00f0ff]">$2.5M</span> • Beverly Hills
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Text Below Reel */}
+                  <div className="px-2 pb-1">
+                    <p className="text-white text-[14px] leading-relaxed mb-1 font-medium drop-shadow-sm">Check out this new listing I just found! 😍</p>
+                    <div className="flex justify-end items-center gap-1.5">
+                      <span className="text-gray-400 text-[10px] font-semibold tracking-wider">10:45 AM</span>
+                      <div className="flex -space-x-1">
+                        <IoMdCheckmark className="text-[#00f0ff]" size={14} />
+                        <IoMdCheckmark className="text-[#00f0ff]" size={14} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             {/* SMART REPLY SUGGESTIONS & INPUT AREA */}
             <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex flex-col items-center gap-3">

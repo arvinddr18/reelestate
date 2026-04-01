@@ -266,8 +266,8 @@ export default function Messages() {
 
         {activeChat ? (
           <>
-            {/* ABSOLUTE HEADER - Locked to top */}
-            <div className="absolute top-0 left-0 w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-[100] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            {/* 1. FLEX HEADER - Locked to top */}
+            <div className="relative w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-[100] shadow-[0_10px_30px_rgba(0,0,0,0.8)] shrink-0">
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={18} />
@@ -297,9 +297,8 @@ export default function Messages() {
                 </div>
               </div>
               
-              {/* 📞 HANGING UPLINK TAGS (Mobile Optimized) */}
+              {/* 📞 HANGING UPLINK TAGS */}
               <div className="flex items-start h-full absolute top-0 right-2 md:right-8">
-                
                 {/* Voice Call */}
                 <div className="group flex flex-col items-center mr-2 md:mr-4 mt-0 cursor-pointer">
                   <div className="w-[2px] h-3 md:h-6 bg-gradient-to-b from-transparent to-[#00f0ff]/50 group-hover:h-5 md:group-hover:h-8 transition-all duration-300"></div>
@@ -324,13 +323,12 @@ export default function Messages() {
                     <IoMdMore size={18} className="group-hover:rotate-90 transition-transform duration-300" />
                   </button>
                 </div>
-
               </div>
             </div>
 
-            {/* MESSAGES SCROLL AREA - Spaced to avoid header/footer overlap */}
-            <div className="absolute inset-0 pt-[90px] md:pt-[110px] pb-[160px] md:pb-[140px] px-4 md:px-6 overflow-y-auto z-10 flex flex-col gap-6 no-scrollbar">
-              <div className="flex justify-center mb-4 mt-4">
+            {/* 2. FLEX MESSAGES AREA - Absorbs all empty space */}
+            <div className="flex-1 w-full px-4 md:px-6 py-4 overflow-y-auto z-10 flex flex-col gap-6 no-scrollbar relative">
+              <div className="flex justify-center mb-2 mt-2">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
@@ -401,8 +399,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* ABSOLUTE BOTTOM INPUT AREA */}
-            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#05070A] via-[#05070A]/90 to-transparent pt-10 pb-4 md:pb-8 px-2 md:px-8 z-[100] flex flex-col items-center gap-3">
+            {/* 3. FLEX BOTTOM INPUT AREA - Locked to bottom */}
+            <div className="relative w-full bg-[#05070A]/95 backdrop-blur-md border-t border-white/10 pt-3 pb-4 md:pb-8 px-2 md:px-8 z-[100] flex flex-col items-center gap-3 shrink-0">
               
               {/* Smart AI Replies */}
               <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-1">

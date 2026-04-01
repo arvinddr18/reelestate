@@ -207,13 +207,26 @@ export default function Messages() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
                   <div className="flex items-center gap-4 relative z-10">
-                    <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-transparent bg-[#1E2532]/50 shadow-lg overflow-hidden text-lg font-bold">
-                      {user.profilePhoto ? (
-                        <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
-                      ) : (
-                        (user.fullName || user.username || 'U')[0].toUpperCase()
+                    {/* LIVE PRESENCE AURA */}
+                    <div className="relative shrink-0">
+                      {/* Pulsing online ring */}
+                      <div className={`absolute -inset-1 rounded-full border ${activeChat?._id === user._id ? 'border-[#00f0ff] animate-[pulse_2s_infinite]' : 'border-[#00ff9d] opacity-50'}`} />
+                      <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#1E2532]/50 shadow-[0_0_15px_rgba(0,255,157,0.2)] overflow-hidden text-lg font-bold z-10">
+                        {user.profilePhoto ? (
+                          <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
+                        ) : (
+                          (user.fullName || user.username || 'U')[0].toUpperCase()
+                        )}
+                      </div>
+                      {/* Status Dot */}
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00ff9d] rounded-full border-2 border-[#05070A] z-20 shadow-[0_0_8px_#00ff9d]" />
+                      
+                      {/* Unread Badge (Mocked on first user) */}
+                      {user === dbUsers[0] && (
+                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#ff007b] to-[#ff4d00] rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-[0_0_10px_rgba(255,0,123,0.6)] z-20 animate-bounce">
+                           3
+                         </div>
                       )}
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#00F0FF] rounded-full border-2 border-[#151A25]" />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -287,12 +300,18 @@ export default function Messages() {
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
-              {/* RECEIVED MESSAGE - Soft Dark Glass */}
+              {/* RECEIVED MESSAGE - Soft Dark Glass with Reaction */}
               <div className="flex flex-col items-start w-full group">
-                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.1)] transition-shadow duration-300">
+                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.1)] transition-shadow duration-300 cursor-pointer">
                   <div className="absolute inset-0 rounded-3xl rounded-tl-xl bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
                   <p className="text-gray-100 text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide">Network established. Ready to securely exchange property assets.</p>
                   <span className="text-gray-500 text-[10px] font-semibold tracking-wider">10:41 AM</span>
+                  
+                  {/* FLOATING REACTION BADGE */}
+                  <div className="absolute -bottom-3 -right-2 bg-[#1A1F2E] border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform">
+                    <span className="text-[12px] drop-shadow-[0_0_5px_rgba(255,51,102,0.8)]">❤️</span>
+                    <span className="text-[10px] font-bold text-white">1</span>
+                  </div>
                 </div>
               </div>
 
@@ -312,13 +331,27 @@ export default function Messages() {
               </div>
             </div> {/* <-- THIS IS THE MISSING DIV THAT FIXES THE ERROR */}
 
-            {/* FLOATING CAPSULE INPUT */}
-            <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex justify-center">
-              {/* Soft shadow below the bar */}
-              <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-[#030407] to-transparent pointer-events-none" />
+         {/* SMART REPLY SUGGESTIONS & INPUT AREA */}
+            <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex flex-col items-center gap-3">
               
+              {/* Soft shadow below the bar */}
+              <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-[#030407] via-[#05070A]/80 to-transparent pointer-events-none" />
+              
+              {/* 🧠 Smart AI Replies */}
+              <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar pl-2 pr-2 pb-1">
+                <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#00f0ff]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff]/20 hover:scale-105 transition-all backdrop-blur-md">
+                  <span className="text-[#00f0ff]">✨</span> Sounds perfect!
+                </button>
+                <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#ff3366]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(255,51,102,0.1)] hover:bg-[#ff3366]/20 hover:scale-105 transition-all backdrop-blur-md">
+                  <span className="text-[#ff3366]">🔥</span> Send me the contract
+                </button>
+                <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-[12px] font-bold hover:bg-white/10 hover:scale-105 transition-all backdrop-blur-md">
+                  Let's schedule a call 📞
+                </button>
+              </div>
+
+              {/* 💬 The Floating Input Capsule */}
               <div className="relative w-full max-w-3xl flex items-center gap-2 bg-[#1A1F2E]/60 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.5)] focus-within:border-white/20 focus-within:bg-[#1A1F2E]/80 transition-all duration-300">
-                
                 <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 ml-1 group">
                   <IoMdAdd size={22} className="group-hover:rotate-90 transition-transform duration-300" />
                 </button>
@@ -337,6 +370,7 @@ export default function Messages() {
                   <svg className="w-4 h-4 translate-x-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
               </div>
+
             </div>
           </>
         ) : (

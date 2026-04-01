@@ -93,22 +93,15 @@ export default function Messages() {
   return (
     <div className="h-[100dvh] w-full bg-[#05070A] text-white font-sans flex overflow-hidden relative">
       
-      {/* ─── PURE ANIMATED RADAR BACKGROUND ─── */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center md:justify-end overflow-hidden pointer-events-none opacity-60 md:opacity-40">
-        <div className="relative w-[600px] h-[600px] md:w-[1000px] md:h-[1000px] -mt-[20%] md:mt-0 md:-mr-[200px] flex items-center justify-center">
-          <div className="absolute w-full h-full rounded-full border border-[#00F0FF]/20" />
-          <div className="absolute w-3/4 h-3/4 rounded-full border border-[#00F0FF]/30" />
-          <div className="absolute w-1/2 h-1/2 rounded-full border border-[#00F0FF]/40" />
-          <div className="absolute w-1/4 h-1/4 rounded-full border border-[#0057FF]/50" />
-          
-          <div className="absolute w-1/2 h-1/2 top-0 right-1/2 origin-bottom-right animate-[spin_4s_linear_infinite]">
-            <div className="w-full h-full border-r-2 border-b-2 border-[#00F0FF] rounded-br-full opacity-50 shadow-[10px_10px_30px_rgba(0,240,255,0.4)]" />
-          </div>
-
-          <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-[#00F0FF] rounded-full animate-ping shadow-[0_0_15px_#00F0FF]" />
-          <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-[#0057FF] rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] delay-75" />
-          <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-white rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 shadow-[0_0_10px_white]" />
-        </div>
+      {/* ─── PREMIUM AMBIENT BACKGROUND ─── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#030407]">
+        {/* Soft, slow-breathing gradient orbs */}
+        <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] rounded-full bg-[radial-gradient(circle,_rgba(98,42,165,0.15)_0%,_rgba(0,0,0,0)_70%)] blur-[80px] animate-[pulse_8s_ease-in-out_infinite]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-[radial-gradient(circle,_rgba(0,140,255,0.1)_0%,_rgba(0,0,0,0)_70%)] blur-[100px] animate-[pulse_10s_ease-in-out_infinite_alternate]" />
+        <div className="absolute top-[40%] left-[20%] w-[30vw] h-[30vw] rounded-full bg-[radial-gradient(circle,_rgba(255,51,102,0.05)_0%,_rgba(0,0,0,0)_70%)] blur-[60px]" />
+        
+        {/* Very subtle noise texture for a premium matte finish */}
+        <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
       </div>
 
       {/* ─── LEFT PANE: MESSAGES LIST ─── */}
@@ -287,41 +280,53 @@ export default function Messages() {
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
-              <div className="flex flex-col items-start w-full">
-                <div className="bg-black/60 backdrop-blur-md border border-white/10 p-4 rounded-2xl rounded-tl-sm max-w-[80%] md:max-w-[60%] relative group shadow-lg">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gray-600 rounded-l-sm" />
-                  <p className="text-gray-200 text-sm leading-relaxed mb-2 font-medium">Network established. Ready to securely exchange property assets.</p>
-                  <span className="text-gray-500 text-[9px] font-bold font-mono">10:41 AM • DECRYPTED</span>
+              {/* RECEIVED MESSAGE - Soft Dark Glass */}
+              <div className="flex flex-col items-start w-full group">
+                <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.1)] transition-shadow duration-300">
+                  <div className="absolute inset-0 rounded-3xl rounded-tl-xl bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
+                  <p className="text-gray-100 text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide">Network established. Ready to securely exchange property assets.</p>
+                  <span className="text-gray-500 text-[10px] font-semibold tracking-wider">10:41 AM</span>
                 </div>
               </div>
 
-              <div className="flex flex-col items-end w-full">
-                <div className="bg-[#00F0FF]/10 backdrop-blur-md border border-[#00F0FF]/30 p-4 rounded-2xl rounded-tr-sm max-w-[80%] md:max-w-[60%] relative shadow-[0_5px_20px_rgba(0,240,255,0.05)]">
-                  <div className="absolute top-0 right-0 w-1 h-full bg-[#00F0FF] rounded-r-sm shadow-[0_0_8px_#00F0FF]" />
-                  <p className="text-white text-sm leading-relaxed mb-2 font-medium">Confirmed. Standing by for data transmission.</p>
+              {/* SENT MESSAGE - Premium Purple/Pink Gradient Glow */}
+              <div className="flex flex-col items-end w-full group mt-2">
+                <div className="bg-gradient-to-br from-[#801fd6]/80 to-[#c11f70]/80 backdrop-blur-xl border border-white/10 px-5 py-3.5 rounded-3xl rounded-tr-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_25px_rgba(193,31,112,0.25)] hover:shadow-[0_12px_35px_rgba(193,31,112,0.35)] transition-shadow duration-300">
+                  <div className="absolute inset-0 rounded-3xl rounded-tr-xl bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
+                  <p className="text-white text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide drop-shadow-sm">Confirmed. Standing by for data transmission. 🚀</p>
                   <div className="flex justify-end items-center gap-1.5">
-                    <span className="text-[#00F0FF]/70 text-[9px] font-bold font-mono">10:42 AM • UPLINKED</span>
+                    <span className="text-white/70 text-[10px] font-semibold tracking-wider drop-shadow-sm">10:42 AM</span>
                     <div className="flex -space-x-1">
-                      <IoMdCheckmark className="text-[#00F0FF]" size={12} />
-                      <IoMdCheckmark className="text-[#00F0FF]" size={12} />
+                      <IoMdCheckmark className="text-white" size={14} />
+                      <IoMdCheckmark className="text-white" size={14} />
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </div> {/* <-- THIS IS THE MISSING DIV THAT FIXES THE ERROR */}
 
-            {/* Input Terminal */}
-            <div className="p-4 md:p-6 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20 shrink-0 pb-8 md:pb-6">
-              <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] focus-within:border-[#00F0FF]/50 transition-colors backdrop-blur-xl">
-                <button className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
-                  <IoMdAdd size={20} />
+            {/* FLOATING CAPSULE INPUT */}
+            <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex justify-center">
+              {/* Soft shadow below the bar */}
+              <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-[#030407] to-transparent pointer-events-none" />
+              
+              <div className="relative w-full max-w-3xl flex items-center gap-2 bg-[#1A1F2E]/60 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.5)] focus-within:border-white/20 focus-within:bg-[#1A1F2E]/80 transition-all duration-300">
+                
+                <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 ml-1 group">
+                  <IoMdAdd size={22} className="group-hover:rotate-90 transition-transform duration-300" />
                 </button>
+                
                 <input 
                   type="text" 
-                  placeholder="Transmit secure message..." 
-                  className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder-gray-500 font-medium px-2"
+                  placeholder="Message..." 
+                  className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder-gray-500 font-medium px-2"
                 />
-                <button className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,240,255,0.4)] shrink-0">
+                
+                <button className="w-10 h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0">
+                  <IoMdMic size={22} />
+                </button>
+                
+                <button className="w-10 h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-105 transition-transform shadow-[0_4px_15px_rgba(193,31,112,0.4)] shrink-0 mr-1">
                   <svg className="w-4 h-4 translate-x-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
               </div>

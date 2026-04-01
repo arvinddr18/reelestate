@@ -450,16 +450,16 @@ export default function Messages() {
                 <button className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#00f0ff]/30" title="Share Reel">
                   <span className="text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                 </button>
+                
+                {/* Text Input */}
+                <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder-gray-400 font-medium px-2" />
 
-                {/* ✨ Stickers / Emojis Button */}
-                <button className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#ffbb00] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#ffbb00]/30" title="Stickers & Emojis">
+                {/* ✨ Stickers / Emojis Button (MOVED TO RIGHT) */}
+                <button className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#ffbb00] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#ffbb00]/30 mr-1" title="Stickers & Emojis">
                   <svg className="w-4 h-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_5px_rgba(255,187,0,0.5)]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 8c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-7 0c.83 0 1.5.67 1.5 1.5S9.33 13 8.5 13 7 12.33 7 11.5 7.67 10 8.5 10zm3.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/>
                   </svg>
                 </button>
-                
-                {/* Text Input */}
-                <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder-gray-400 font-medium px-2" />
                 
                 {/* Interactive Mic Button */}
                 <button className="relative w-10 h-10 rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all shrink-0 group">

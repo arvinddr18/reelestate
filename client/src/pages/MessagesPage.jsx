@@ -96,7 +96,8 @@ export default function Messages() {
       {/* ─── PREMIUM AMBIENT BACKGROUND ─── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#05070A]">
         {/* Real Nebula Image Overlay */}
-        <div className="absolute inset-0 opacity-40 mix-blend-screen bg-[url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center"></div>
+       {/* Real Deep Space Nebula Overlay */}
+        <div className="absolute inset-0 opacity-50 mix-blend-screen bg-[url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center"></div>
         
         {/* Soft, slow-breathing gradient orbs */}
         <div className="absolute top-[10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-[radial-gradient(circle,_rgba(193,31,112,0.15)_0%,_rgba(0,0,0,0)_70%)] blur-[80px] animate-[pulse_8s_ease-in-out_infinite]" />
@@ -194,13 +195,13 @@ export default function Messages() {
               </div>
             ) : (
               filteredUsers.map(user => (
-               <div 
+              <div 
                   key={user._id || user.id} 
                   onClick={() => setActiveChat(user)} 
-                  className={`block p-4 rounded-[24px] transition-all duration-300 cursor-pointer group relative overflow-hidden border ${
+                  className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${
                     activeChat?._id === user._id 
-                      ? 'bg-gradient-to-r from-white/10 to-transparent backdrop-blur-xl border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)]' 
-                      : 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/10'
+                      ? 'bg-gradient-to-r from-white/10 to-transparent border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)]' 
+                      : 'bg-black/40 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]'
                   }`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00F0FF]/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
@@ -281,7 +282,7 @@ export default function Messages() {
             </div>
 
             {/* Messages Area (Mocked) */}
-            <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-[#05070A]/80 backdrop-blur-md">
+           <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-transparent">
               <div className="flex justify-center mb-4 mt-4">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>

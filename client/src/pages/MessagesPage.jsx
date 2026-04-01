@@ -79,14 +79,11 @@ export default function Messages() {
     fetchNetwork();
   }, [currentUser]);
 
-  // ─── BULLETPROOF SEARCH FILTER ───
   const filteredUsers = dbUsers.filter(u => {
     if (!searchQuery) return true; 
-    
     const query = searchQuery.toLowerCase().trim();
     const fullName = (u.fullName || '').toLowerCase();
     const username = (u.username || '').toLowerCase();
-    
     return fullName.includes(query) || username.includes(query);
   });
 
@@ -246,16 +243,15 @@ export default function Messages() {
       </div>
 
       {/* ─── RIGHT PANE: THE ACTIVE CHAT ─── */}
-      {/* 🚨 THE MOBILE FIX: fixed inset-0 z-[9999] forces this to completely cover the app on phones! */}
-      <div className={`flex flex-col bg-[#05070A] overflow-hidden ${!activeChat ? 'hidden md:flex flex-1 relative md:bg-transparent' : 'flex fixed inset-0 z-[9999] md:relative md:flex-1 md:bg-transparent'}`}>
+      <div className={`${!activeChat ? 'hidden md:flex flex-1 relative items-center justify-center pointer-events-none' : 'fixed inset-0 z-[9999] bg-[#05070A] md:relative md:flex-1 md:bg-transparent'}`}>
         
-        {/* Holographic Blueprint Grid */}
+        {/* Holographic Grid Background */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-        {activeChat ? (
+        {activeChat && (
           <>
-            {/* 1. HEADER (Locked to Top) */}
-            <div className="shrink-0 relative w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            {/* 1. STRICT FIXED HEADER - Welded to the top pixel */}
+            <div className="fixed top-0 left-0 w-full md:absolute md:top-0 md:left-0 md:w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-[10000] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={18} />
@@ -306,7 +302,7 @@ export default function Messages() {
                 </div>
 
                 {/* More Options */}
-                <div className="h-20 md:h-24 flex items-center">
+                <div className="h-[70px] md:h-24 flex items-center">
                   <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white backdrop-blur-md group">
                     <IoMdMore size={18} className="group-hover:rotate-90 transition-transform duration-300" />
                   </button>
@@ -314,8 +310,12 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 2. MESSAGES SCROLL AREA (Flex-1 stretches it, overflow-y-auto scrolls it) */}
-            <div className="flex-1 relative z-10 w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar">
+            {/* 2. STRICT FIXED SCROLL AREA - Safely padded between top and bottom */}
+            <div className="fixed top-0 left-0 w-full h-[100dvh] md:absolute md:inset-0 pt-[76px] md:pt-[100px] pb-[120px] md:pb-[140px] px-4 md:px-6 overflow-y-auto z-[9998] flex flex-col gap-6 no-scrollbar">
+              
+              {/* Spacer to push content to bottom */}
+              <div className="flex-1 min-h-0"></div>
+
               <div className="flex justify-center mb-2 mt-2">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
@@ -353,7 +353,7 @@ export default function Messages() {
                 </div>
               </div>
 
-              {/* SENT MESSAGE - Mini Reel / Property Card */}
+              {/* SENT MESSAGE - Mini Reel */}
               <div className="flex flex-col items-end w-full group mt-4 transform transition-all duration-300 hover:-translate-x-1">
                 <div className="bg-[#1A1F2E]/80 backdrop-blur-xl border border-[#bc00dd]/30 p-2 rounded-3xl rounded-tr-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_25px_rgba(188,0,221,0.15)] hover:shadow-[0_15px_40px_rgba(188,0,221,0.3)] hover:border-[#bc00dd]/50 transition-all duration-300 cursor-pointer">
                   <div className="relative w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-2 shadow-inner">
@@ -387,8 +387,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 3. INPUT FOOTER (Locked to Bottom) */}
-            <div className="shrink-0 relative w-full bg-[#05070A]/95 backdrop-blur-2xl border-t border-white/10 pt-3 pb-4 md:pb-6 px-2 md:px-8 z-20 flex flex-col items-center gap-3">
+            {/* 3. STRICT FIXED FOOTER - Welded to the bottom pixel above keyboard */}
+            <div className="fixed bottom-0 left-0 w-full md:absolute md:bottom-0 md:left-0 md:w-full bg-[#05070A]/98 backdrop-blur-2xl border-t border-white/10 pt-2 pb-3 md:pb-6 px-2 md:px-8 z-[10000] flex flex-col items-center gap-2">
               
               {/* Smart AI Replies */}
               <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-1">
@@ -411,7 +411,10 @@ export default function Messages() {
                 <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#00f0ff]/30">
                   <span className="text-[12px] md:text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                 </button>
-                <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[13px] md:text-[15px] placeholder-gray-400 font-medium px-1 md:px-2 min-w-0" />
+                
+                {/* 🚨 This prevents zooming on iOS/Android which can also push layouts up */}
+                <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[16px] md:text-[15px] placeholder-gray-400 font-medium px-1 md:px-2 min-w-0" />
+                
                 <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#ffbb00] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#ffbb00]/30 mr-0.5 md:mr-1">
                   <svg className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_5px_rgba(255,187,0,0.5)]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 8c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-7 0c.83 0 1.5.67 1.5 1.5S9.33 13 8.5 13 7 12.33 7 11.5 7.67 10 8.5 10zm3.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/>
@@ -427,9 +430,6 @@ export default function Messages() {
               </div>
             </div>
           </>
-        ) : (
-          /* Empty Space for Desktop */
-          <div className="flex-1 flex flex-col items-center justify-center z-10 bg-transparent relative pointer-events-none"></div>
         )}
       </div>
     </div>

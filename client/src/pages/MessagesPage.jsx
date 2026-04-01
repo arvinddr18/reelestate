@@ -266,8 +266,8 @@ export default function Messages() {
 
         {activeChat ? (
           <>
-            {/* Active Chat Header */}
-            <div className="relative h-20 md:h-24 px-4 md:px-8 bg-gradient-to-b from-[#05070A]/90 to-transparent backdrop-blur-md border-b border-white/5 flex items-center justify-between z-20 shrink-0 pb-2 md:pb-4">
+            {/* Active Chat Header (Strictly Locked to Top) */}
+            <div className="absolute top-0 left-0 w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-3xl border-b border-white/10 flex items-center justify-between z-[100] pb-2 md:pb-4 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
               
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
@@ -329,8 +329,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 z-10 flex flex-col gap-6 no-scrollbar bg-transparent">
+            {/* Messages Area (Mocked) */}
+            <div className="flex-1 overflow-y-auto p-6 pt-[90px] md:pt-[110px] z-10 flex flex-col gap-6 no-scrollbar bg-transparent w-full">
               <div className="flex justify-center mb-4 mt-4">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>

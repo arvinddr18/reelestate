@@ -386,7 +386,6 @@ export default function Messages() {
                   </div>
                 </div>
               </div>
-
             {/* SMART REPLY SUGGESTIONS & INPUT AREA */}
             <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex flex-col items-center gap-3">
               {/* Soft shadow below the bar */}

@@ -259,16 +259,15 @@ export default function Messages() {
       </div>
 
      {/* ─── RIGHT PANE: THE DATA TERMINAL ─── */}
-      <div className={`flex-1 h-full flex flex-col bg-[#05070A] md:bg-transparent ${!activeChat ? 'hidden md:flex' : 'flex fixed inset-0 z-[999] md:relative md:inset-auto md:z-0'}`}>
+      <div className={`flex-1 h-[100dvh] md:h-full flex flex-col relative bg-[#05070A] md:bg-transparent overflow-hidden ${!activeChat ? 'hidden md:flex' : 'flex fixed inset-0 z-[999] md:relative md:inset-auto md:z-0'}`}>
         
         {/* Holographic Blueprint Grid */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {activeChat ? (
           <>
-           {/* Active Chat Header (Locked Solid) */}
-            <div className="relative w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/98 backdrop-blur-3xl border-b border-white/10 flex items-center justify-between z-[50] shrink-0 pb-2 md:pb-4 shadow-[0_15px_40px_rgba(0,0,0,0.9)]">
-              
+            {/* ABSOLUTE HEADER - Locked to top */}
+            <div className="absolute top-0 left-0 w-full h-20 md:h-24 px-4 md:px-8 bg-[#05070A]/95 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-[100] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={18} />
@@ -329,28 +328,23 @@ export default function Messages() {
               </div>
             </div>
 
-           {/* Messages Area (Mocked) */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 z-10 flex flex-col gap-6 no-scrollbar bg-transparent w-full">
+            {/* MESSAGES SCROLL AREA - Spaced to avoid header/footer overlap */}
+            <div className="absolute inset-0 pt-[90px] md:pt-[110px] pb-[160px] md:pb-[140px] px-4 md:px-6 overflow-y-auto z-10 flex flex-col gap-6 no-scrollbar">
               <div className="flex justify-center mb-4 mt-4">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
               </div>
 
-              {/* RECEIVED MESSAGE - Quantum Encrypted Blur */}
-              <div className="flex flex-col items-start w-full group transform transition-all duration-300 hover:translate-x-1">
+              {/* RECEIVED MESSAGE */}
+              <div className="flex flex-col items-start w-full group transform transition-all duration-300 hover:translate-x-1 mt-auto">
                 <div className="bg-[#121826]/80 backdrop-blur-xl border border-white/5 px-5 py-3.5 rounded-3xl rounded-tl-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,140,255,0.2)] hover:border-[#00f0ff]/30 transition-all duration-300 cursor-pointer overflow-hidden">
-                  
-                  {/* The Blur Overlay (Disappears on hover) */}
                   <div className="absolute inset-0 bg-[#05070A]/80 backdrop-blur-md z-10 flex items-center justify-center transition-opacity duration-500 group-hover:opacity-0 rounded-3xl rounded-tl-xl">
                     <span className="text-[#00f0ff] text-[10px] font-bold tracking-widest uppercase animate-pulse flex items-center gap-2 drop-shadow-[0_0_8px_#00f0ff]">
                       <IoMdPulse size={14} /> Tap to Decrypt
                     </span>
                   </div>
-
                   <div className="absolute inset-0 rounded-3xl rounded-tl-xl bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
                   <p className="text-gray-100 text-[15px] leading-relaxed mb-1.5 font-medium tracking-wide filter blur-[2px] group-hover:blur-none transition-all duration-500">Network established. Ready to securely exchange property assets.</p>
                   <span className="text-gray-500 text-[10px] font-semibold tracking-wider filter blur-[2px] group-hover:blur-none transition-all duration-500">10:41 AM</span>
-                  
-                  {/* FLOATING REACTION BADGE */}
                   <div className="absolute -bottom-3 -right-2 bg-[#1A1F2E] border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform z-20">
                     <span className="text-[12px] drop-shadow-[0_0_5px_rgba(255,51,102,0.8)]">❤️</span>
                     <span className="text-[10px] font-bold text-white">1</span>
@@ -372,25 +366,18 @@ export default function Messages() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* SENT MESSAGE - Mini Reel / Property Card */}
+              {/* SENT MESSAGE - Mini Reel / Property Card */}
               <div className="flex flex-col items-end w-full group mt-4 transform transition-all duration-300 hover:-translate-x-1">
                 <div className="bg-[#1A1F2E]/80 backdrop-blur-xl border border-[#bc00dd]/30 p-2 rounded-3xl rounded-tr-xl max-w-[85%] md:max-w-[65%] relative shadow-[0_8px_25px_rgba(188,0,221,0.15)] hover:shadow-[0_15px_40px_rgba(188,0,221,0.3)] hover:border-[#bc00dd]/50 transition-all duration-300 cursor-pointer">
-                  
-                  {/* Image/Reel Thumbnail */}
                   <div className="relative w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-2 shadow-inner">
                     <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop" alt="Property" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                    
-                    {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-[0_0_20px_rgba(0,0,0,0.5)] group-hover:bg-[#ff3366]/80 transition-colors duration-300">
                         <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                       </div>
                     </div>
-                    
-                    {/* Property Tags */}
                     <div className="absolute bottom-2 left-3 right-3 flex justify-between items-end">
                       <div>
                         <p className="text-white text-[13px] font-black drop-shadow-md tracking-wide">Luxury Villa</p>
@@ -400,8 +387,6 @@ export default function Messages() {
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Text Below Reel */}
                   <div className="px-2 pb-1">
                     <p className="text-white text-[14px] leading-relaxed mb-1 font-medium drop-shadow-sm">Check out this new listing I just found! 😍</p>
                     <div className="flex justify-end items-center gap-1.5">
@@ -414,13 +399,13 @@ export default function Messages() {
                   </div>
                 </div>
               </div>
-            {/* SMART REPLY SUGGESTIONS & INPUT AREA */}
-            <div className="p-4 md:p-8 bg-transparent z-20 shrink-0 pb-8 md:pb-8 relative flex flex-col items-center gap-3">
-              {/* Soft shadow below the bar */}
-              <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-[#030407] via-[#05070A]/80 to-transparent pointer-events-none" />
+            </div>
+
+            {/* ABSOLUTE BOTTOM INPUT AREA */}
+            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#05070A] via-[#05070A]/90 to-transparent pt-10 pb-4 md:pb-8 px-2 md:px-8 z-[100] flex flex-col items-center gap-3">
               
               {/* Smart AI Replies */}
-              <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar pl-2 pr-2 pb-1">
+              <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-1">
                 <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#00f0ff]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff]/20 hover:scale-105 transition-all backdrop-blur-md">
                   <span className="text-[#00f0ff]">✨</span> Sounds perfect!
                 </button>
@@ -432,36 +417,24 @@ export default function Messages() {
                 </button>
               </div>
 
-             {/* The Floating Input Capsule (Mobile Optimized) */}
-              <div className="relative w-full max-w-3xl flex items-center gap-1 md:gap-2 bg-[#1A1F2E]/80 backdrop-blur-2xl border border-white/10 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.6)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.15)] transition-all duration-300">
-                
-                {/* Attach Button */}
+              {/* The Floating Input Capsule */}
+              <div className="relative w-full max-w-3xl flex items-center gap-1 md:gap-2 bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
                 <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 group">
                   <IoMdAdd size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                 </button>
-                
-                {/* Mini Reel Button */}
                 <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#00f0ff]/30">
                   <span className="text-[12px] md:text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                 </button>
-                
-                {/* Text Input (Added min-w-0 so it shrinks on mobile) */}
                 <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[13px] md:text-[15px] placeholder-gray-400 font-medium px-1 md:px-2 min-w-0" />
-
-                {/* ✨ Stickers / Emojis Button */}
                 <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#ffbb00] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#ffbb00]/30 mr-0.5 md:mr-1">
                   <svg className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_5px_rgba(255,187,0,0.5)]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 8c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-7 0c.83 0 1.5.67 1.5 1.5S9.33 13 8.5 13 7 12.33 7 11.5 7.67 10 8.5 10zm3.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/>
                   </svg>
                 </button>
-                
-                {/* Interactive Mic Button */}
                 <button className="relative w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all shrink-0 group">
                   <div className="absolute inset-0 rounded-full border border-[#ff3366]/0 group-hover:border-[#ff3366]/50 group-hover:animate-ping opacity-50"></div>
                   <IoMdMic size={18} className="relative z-10 group-hover:scale-110 transition-transform md:text-[22px]" />
                 </button>
-                
-                {/* Send Button */}
                 <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-[0_0_15px_rgba(193,31,112,0.5)] shrink-0 mr-0.5 md:mr-1 group">
                   <svg className="w-3.5 h-3.5 md:w-4 md:h-4 translate-x-[1px] group-hover:translate-x-[3px] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>

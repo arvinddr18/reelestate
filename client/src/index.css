@@ -1,3 +1,14 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+#root {
+  height: 100%;
+}
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdHappy, IoMdImage, IoMdMic, IoMdClose } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdPulse } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -98,29 +98,29 @@ export default function ChatRoom() {
   };
 
   return (
-    /* 🚨 ROOT CONTAINER: Pure flex layout with 100dvh */
-    <div 
-      className="fixed inset-0 flex flex-col bg-[#0B0F19] text-white font-sans z-[99999]"
-      style={{ height: '100dvh' }}
-    >
+    /* 🚨 PURE CSS LAYOUT: fixed inset-0 + flex-col + 100dvh ensures browser handles keyboard perfectly */
+    <div className="fixed inset-0 flex flex-col h-[100dvh] w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]">
+      
       {/* BACKGROUND AMBIENCE */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none z-0" />
 
-      {/* HEADER: shrink-0 + sticky top-0 ensures it never moves */}
-      <header className="shrink-0 sticky top-0 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between z-20 shadow-md">
+      {/* 1. HEADER: flex-none makes it a rigid block that cannot move or shrink */}
+      <header className="flex-none relative z-20 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between shadow-md">
          <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-white transition-colors">
               <IoMdArrowBack size={20} />
             </button>
             <div className="flex flex-col">
                 <span className="text-sm font-black">{chatUser?.fullName || '...'}</span>
-                <span className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest">{isTyping ? 'Syncing...' : 'Active'}</span>
+                <span className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest flex items-center gap-1">
+                  {isTyping ? 'Syncing...' : 'Active'}
+                </span>
             </div>
          </div>
       </header>
 
-      {/* MESSAGES: flex-1 allows ONLY this area to shrink when keyboard opens */}
-      <main className="flex-1 w-full overflow-y-auto px-4 pt-6 pb-4 flex flex-col gap-6 relative z-10 no-scrollbar">
+      {/* 2. MESSAGES: flex-1 overflow-y-auto is the ONLY part that scrolls or resizes */}
+      <main className="flex-1 overflow-y-auto relative w-full px-4 pt-6 pb-2 flex flex-col gap-6 z-10 no-scrollbar">
         {messages.map((msg, index) => {
           const isMe = msg.senderId === myId;
           return (
@@ -160,8 +160,8 @@ export default function ChatRoom() {
         </div>
       )}
 
-      {/* INPUT FOOTER: shrink-0 + sticky bottom-0 ensures it stays above keyboard */}
-      <div className="shrink-0 sticky bottom-0 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 z-20">
+      {/* 3. INPUT: flex-none ensures it stays a rigid block right above the keyboard */}
+      <footer className="flex-none relative z-20 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 pb-safe">
         <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg">
           
           <button type="button" onClick={() => fileInputRef.current.click()} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
@@ -169,7 +169,7 @@ export default function ChatRoom() {
           </button>
           <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleImageSelect} />
 
-          {/* text-[16px] prevents zoom */}
+          {/* 🚨 text-[16px] prevents iOS/Android from zooming in on input focus */}
           <input 
             type="text" 
             value={message}
@@ -182,7 +182,7 @@ export default function ChatRoom() {
             <IoMdSend size={18} className="translate-x-[1px]" />
           </button>
         </form>
-      </div>
+      </footer>
     </div>
   );
 }

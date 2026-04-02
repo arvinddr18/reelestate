@@ -88,7 +88,8 @@ export default function Messages() {
   });
 
   return (
-    <div className="h-[100dvh] w-full bg-[#05070A] text-white font-sans flex overflow-hidden relative">
+    /* 🚨 ROOT FIX: Locked to all 4 edges of the screen, overflow hidden */
+    <div className="fixed top-0 left-0 right-0 bottom-0 w-full bg-[#05070A] text-white font-sans flex overflow-hidden">
       
       {/* ─── PREMIUM AMBIENT BACKGROUND ─── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#05070A]">
@@ -243,16 +244,16 @@ export default function Messages() {
       </div>
 
       {/* ─── RIGHT PANE: THE ACTIVE CHAT (THE HOLY GRAIL LAYOUT FIX) ─── */}
-      {/* 🚨 fixed inset-0 is used ONCE here. Inside is pure flex-col. */}
-      <div className={`${!activeChat ? 'hidden md:flex flex-1 relative items-center justify-center pointer-events-none' : 'fixed inset-0 z-[9999] flex flex-col bg-[#05070A] md:relative md:flex-1 md:bg-transparent'}`}>
+      {/* 🚨 PURE FIXED + FLEXBOX OVERLAY: fixed top-0 left-0 right-0 bottom-0 forces mobile browser to play nice */}
+      <div className={`${!activeChat ? 'hidden md:flex flex-1 relative items-center justify-center pointer-events-none' : 'fixed top-0 left-0 right-0 bottom-0 z-[9999] flex flex-col bg-[#05070A] md:relative md:flex-1 md:bg-transparent'}`}>
         
         {/* Holographic Grid Background */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {activeChat && (
           <>
-            {/* 1. FLEX HEADER - shrink-0 means it NEVER squishes. */}
-            <div className="shrink-0 relative w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            {/* 1. FLEX-NONE HEADER - It acts as a rigid block that cannot be compressed */}
+            <div className="flex-none relative w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
               <div className="flex items-center gap-3 md:gap-4">
                 <button onClick={() => setActiveChat(null)} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
                   <IoMdArrowBack size={18} />
@@ -308,8 +309,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 2. FLEX MESSAGES - flex-1 means ONLY this area resizes when keyboard opens! */}
-            <div className="flex-1 relative z-10 w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar">
+            {/* 2. PURE FLEX MESSAGES - flex-1 min-h-0 allows ONLY this area to squish like a spring! */}
+            <div className="flex-1 min-h-0 relative z-10 w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar">
               
               <div className="flex justify-center mb-2 mt-2">
                 <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
@@ -382,8 +383,8 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* 3. FLEX FOOTER - shrink-0 prevents it from squishing */}
-            <div className="shrink-0 relative w-full bg-[#05070A]/98 backdrop-blur-2xl border-t border-white/10 pt-2 pb-3 md:pb-6 px-2 md:px-8 z-20 flex flex-col items-center gap-2">
+            {/* 3. FLEX-NONE FOOTER - It rests directly on top of the mobile keyboard */}
+            <div className="flex-none relative w-full bg-[#05070A] border-t border-white/10 pt-2 pb-2 md:pb-6 px-2 md:px-8 z-20 flex flex-col items-center gap-2">
               
               <div className="relative w-full max-w-3xl flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-1">
                 <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#00f0ff]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff]/20 hover:scale-105 transition-all backdrop-blur-md">
@@ -405,7 +406,7 @@ export default function Messages() {
                   <span className="text-[12px] md:text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                 </button>
                 
-                {/* 🚨 text-[16px] is crucial to prevent iOS/Android zoom on click */}
+                {/* 🚨 text-[16px] prevents iOS/Android auto-zoom */}
                 <input type="text" placeholder="Message..." className="flex-1 bg-transparent border-none outline-none text-white text-[16px] md:text-[15px] placeholder-gray-400 font-medium px-1 md:px-2 min-w-0" />
                 
                 <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#ffbb00] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#ffbb00]/30 mr-0.5 md:mr-1">

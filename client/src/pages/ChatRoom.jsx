@@ -22,56 +22,6 @@ export default function ChatRoom() {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null); 
 
-  // 🚨 THE ULTIMATE MOBILE FIX: Track exact screen space
-  const [vpHeight, setVpHeight] = useState(window.innerHeight);
-
-  useEffect(() => {
-    // 1. Physically lock the browser body so it CANNOT be shoved upward
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalBodyPosition = document.body.style.position;
-
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
-
-    // 2. Track the exact pixel height of the screen above the keyboard
-    const handleResize = () => {
-      if (window.visualViewport) {
-        setVpHeight(window.visualViewport.height);
-        window.scrollTo(0, 0); // Force scroll to top
-      } else {
-        setVpHeight(window.innerHeight);
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
-      handleResize();
-    } else {
-      window.addEventListener('resize', handleResize);
-    }
-
-    // Cleanup when leaving the chat
-    return () => {
-      document.documentElement.style.overflow = originalHtmlOverflow;
-      document.body.style.overflow = originalBodyOverflow;
-      document.body.style.position = originalBodyPosition;
-      document.body.style.width = '';
-      document.body.style.height = '';
-
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-        window.visualViewport.removeEventListener('scroll', handleResize);
-      } else {
-        window.removeEventListener('resize', handleResize);
-      }
-    };
-  }, []);
-
   const myId = currentUser?._id || currentUser?.id;
   const room = myId && userId ? [myId, userId].sort().join('_') : null;
 
@@ -148,16 +98,16 @@ export default function ChatRoom() {
   };
 
   return (
-    /* 🚨 FIXED WRAPPER: Glued to the screen bounds, dynamic height handles keyboard */
+    /* 🚨 ROOT CONTAINER: Pure flex layout with 100dvh */
     <div 
-      className="fixed top-0 left-0 w-full flex flex-col bg-[#0B0F19] text-white font-sans z-[99999]"
-      style={{ height: `${vpHeight}px`, touchAction: 'none' }}
+      className="fixed inset-0 flex flex-col bg-[#0B0F19] text-white font-sans z-[99999]"
+      style={{ height: '100dvh' }}
     >
       {/* BACKGROUND AMBIENCE */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none z-0" />
 
-      {/* HEADER: shrink-0 makes it impossible to squash */}
-      <header className="shrink-0 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between z-20 shadow-md">
+      {/* HEADER: shrink-0 + sticky top-0 ensures it never moves */}
+      <header className="shrink-0 sticky top-0 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between z-20 shadow-md">
          <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-white transition-colors">
               <IoMdArrowBack size={20} />
@@ -169,8 +119,8 @@ export default function ChatRoom() {
          </div>
       </header>
 
-      {/* MESSAGES: flex-1 makes it stretch and compress like a spring */}
-      <main className="flex-1 w-full overflow-y-auto px-4 pt-6 pb-4 flex flex-col gap-6 relative z-10 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* MESSAGES: flex-1 allows ONLY this area to shrink when keyboard opens */}
+      <main className="flex-1 w-full overflow-y-auto px-4 pt-6 pb-4 flex flex-col gap-6 relative z-10 no-scrollbar">
         {messages.map((msg, index) => {
           const isMe = msg.senderId === myId;
           return (
@@ -210,8 +160,8 @@ export default function ChatRoom() {
         </div>
       )}
 
-      {/* INPUT: shrink-0 sits firmly at the bottom of the exact viewport height */}
-      <div className="shrink-0 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 z-20">
+      {/* INPUT FOOTER: shrink-0 + sticky bottom-0 ensures it stays above keyboard */}
+      <div className="shrink-0 sticky bottom-0 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 z-20">
         <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg">
           
           <button type="button" onClick={() => fileInputRef.current.click()} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
@@ -219,7 +169,7 @@ export default function ChatRoom() {
           </button>
           <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleImageSelect} />
 
-          {/* 🚨 text-[16px] is REQUIRED here so iOS/Android do not auto-zoom the page */}
+          {/* text-[16px] prevents zoom */}
           <input 
             type="text" 
             value={message}

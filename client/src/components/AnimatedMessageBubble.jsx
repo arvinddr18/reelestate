@@ -43,7 +43,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
       
       {/* Container for event tracking */}
       <div 
-        className="relative max-w-[85%] md:max-w-[65%]"
+       className={`relative max-w-[85%] md:max-w-[65%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
         onDoubleClick={handleDoubleClick}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
@@ -57,10 +57,10 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
           className={`absolute -inset-2 rounded-3xl blur-xl z-0 ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
         />
 
-        {/* The Actual Message Bubble */}
+       {/* The Actual Message Bubble */}
         <motion.div 
           whileTap={{ scale: 0.95 }}
-          className={`relative px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
+          className={`relative w-fit px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
             isMe 
             ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white' 
             : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100'

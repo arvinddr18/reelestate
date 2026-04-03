@@ -18,11 +18,57 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null); 
+  // 🌟 NEW: DRAG & CALL STATES 🌟
+  const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
+  const [startY, setStartY] = useState(0);
+  const [audioDrag, setAudioDrag] = useState(0);
+  const [videoDrag, setVideoDrag] = useState(0);
+  const [activeCall, setActiveCall] = useState(null); // 'audio' | 'video' | null
 
   const myId = currentUser?._id || currentUser?.id;
   const friendId = chatUser?._id || chatUser?.id;
   
   const room = myId && friendId ? [myId, friendId].sort().join('_') : null;
+
+  // 🌟 DRAG LOGIC: Tracks finger/mouse movement to stretch the string 🌟
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMove = (e) => {
+      const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+      let deltaY = currentY - startY;
+      
+      // Stop pushing up, and limit max pull down to 80px
+      if (deltaY < 0) deltaY = 0;
+      if (deltaY > 80) deltaY = 80; 
+
+      if (isDragging === 'audio') setAudioDrag(deltaY);
+      if (isDragging === 'video') setVideoDrag(deltaY);
+    };
+
+    const handleEnd = () => {
+      // If pulled down more than 50px, start the call!
+      if (isDragging === 'audio' && audioDrag > 50) setActiveCall('audio');
+      if (isDragging === 'video' && videoDrag > 50) setActiveCall('video');
+      
+      // Snap buttons back to top
+      setIsDragging(null);
+      setAudioDrag(0);
+      setVideoDrag(0);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchend', handleEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging, startY, audioDrag, videoDrag]);
 
   // Socket & History Fetching
   useEffect(() => {
@@ -116,22 +162,44 @@ export default function ChatRoom({ chatUser, onBack }) {
           </div>
         </div>
         
-        {/* 🌟 RESTORED: HANGING UPLINK TAGS (Audio / Video / More) */}
+        {/* 🌟 HANGING UPLINK TAGS (DRAGGABLE) 🌟 */}
         <div className="flex items-start h-full absolute top-0 right-2 md:right-8">
-          <div className="group flex flex-col items-center mr-2 md:mr-4 mt-0 cursor-pointer">
-            <div className="w-[2px] h-3 md:h-6 bg-gradient-to-b from-transparent to-[#00f0ff]/50 group-hover:h-5 md:group-hover:h-8 transition-all duration-300"></div>
-            <button className="relative w-8 h-10 md:w-10 md:h-12 bg-[#05070A]/80 backdrop-blur-xl border border-[#00f0ff]/30 rounded-b-xl md:rounded-b-2xl rounded-t-sm shadow-[0_5px_15px_rgba(0,240,255,0.2)] flex items-center justify-center transition-all duration-300 group-hover:border-[#00f0ff]/70 group-hover:bg-[#00f0ff]/10">
+          
+          {/* AUDIO CALL PULL-STRING */}
+          <div 
+            className="group flex flex-col items-center mr-2 md:mr-4 mt-0 cursor-grab active:cursor-grabbing"
+            onMouseDown={(e) => { setIsDragging('audio'); setStartY(e.clientY); }}
+            onTouchStart={(e) => { setIsDragging('audio'); setStartY(e.touches[0].clientY); }}
+            style={{ touchAction: 'none' }} // Prevents mobile browser from scrolling while pulling
+          >
+            {/* This string stretches dynamically when you pull! */}
+            <div 
+              className={`w-[2px] bg-gradient-to-b from-transparent to-[#00f0ff]/50 ${isDragging === 'audio' ? '' : 'transition-all duration-300'}`}
+              style={{ height: `${24 + (isDragging === 'audio' ? audioDrag : 0)}px` }}
+            />
+            <button className={`relative w-8 h-10 md:w-10 md:h-12 backdrop-blur-xl border rounded-b-xl md:rounded-b-2xl rounded-t-sm shadow-[0_5px_15px_rgba(0,240,255,0.2)] flex items-center justify-center ${isDragging === 'audio' ? 'border-[#00f0ff] bg-[#00f0ff]/20 shadow-[0_0_20px_rgba(0,240,255,0.6)] scale-110' : 'bg-[#05070A]/80 border-[#00f0ff]/30 group-hover:border-[#00f0ff]/70 group-hover:bg-[#00f0ff]/10 transition-all duration-300'}`}>
               <div className="absolute top-1 w-1.5 md:w-2 h-[2px] bg-[#00f0ff]/40 rounded-full"></div>
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-[#00f0ff] relative z-10 transition-colors mt-1" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+              <svg className={`w-4 h-4 md:w-5 md:h-5 relative z-10 transition-colors mt-1 ${isDragging === 'audio' ? 'text-white' : 'text-gray-400 group-hover:text-[#00f0ff]'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
             </button>
           </div>
-          <div className="group flex flex-col items-center mr-2 md:mr-8 mt-0 cursor-pointer">
-            <div className="w-[2px] h-1.5 md:h-4 bg-gradient-to-b from-transparent to-[#bc00dd]/50 group-hover:h-3 md:group-hover:h-6 transition-all duration-300"></div>
-            <button className="relative w-8 h-10 md:w-10 md:h-12 bg-[#05070A]/80 backdrop-blur-xl border border-[#bc00dd]/30 rounded-b-xl md:rounded-b-2xl rounded-t-sm shadow-[0_5px_15px_rgba(188,0,221,0.2)] flex items-center justify-center transition-all duration-300 group-hover:border-[#bc00dd]/70 group-hover:bg-[#bc00dd]/10">
+
+          {/* VIDEO CALL PULL-STRING */}
+          <div 
+            className="group flex flex-col items-center mr-2 md:mr-8 mt-0 cursor-grab active:cursor-grabbing"
+            onMouseDown={(e) => { setIsDragging('video'); setStartY(e.clientY); }}
+            onTouchStart={(e) => { setIsDragging('video'); setStartY(e.touches[0].clientY); }}
+            style={{ touchAction: 'none' }}
+          >
+            <div 
+              className={`w-[2px] bg-gradient-to-b from-transparent to-[#bc00dd]/50 ${isDragging === 'video' ? '' : 'transition-all duration-300'}`}
+              style={{ height: `${16 + (isDragging === 'video' ? videoDrag : 0)}px` }}
+            />
+            <button className={`relative w-8 h-10 md:w-10 md:h-12 backdrop-blur-xl border rounded-b-xl md:rounded-b-2xl rounded-t-sm shadow-[0_5px_15px_rgba(188,0,221,0.2)] flex items-center justify-center ${isDragging === 'video' ? 'border-[#bc00dd] bg-[#bc00dd]/20 shadow-[0_0_20px_rgba(188,0,221,0.6)] scale-110' : 'bg-[#05070A]/80 border-[#bc00dd]/30 group-hover:border-[#bc00dd]/70 group-hover:bg-[#bc00dd]/10 transition-all duration-300'}`}>
               <div className="absolute top-1 w-1.5 md:w-2 h-[2px] bg-[#bc00dd]/40 rounded-full"></div>
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-[#bc00dd] relative z-10 transition-colors mt-1" fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+              <svg className={`w-4 h-4 md:w-5 md:h-5 relative z-10 transition-colors mt-1 ${isDragging === 'video' ? 'text-white' : 'text-gray-400 group-hover:text-[#bc00dd]'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
             </button>
           </div>
+
           <div className="h-[70px] md:h-24 flex items-center">
             <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white backdrop-blur-md group">
               <IoMdMore size={18} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -268,6 +336,36 @@ export default function ChatRoom({ chatUser, onBack }) {
           </button>
         </form>
       </div>
+      {/* 🌟 CALLING OVERLAY UI (Appears when button is dragged down) 🌟 */}
+      {activeCall && (
+        <div className="absolute inset-0 z-[99999] bg-[#05070A]/95 backdrop-blur-3xl flex flex-col items-center justify-center text-white transition-opacity duration-300">
+           <div className={`absolute inset-0 bg-[radial-gradient(circle,_rgba(0,240,255,0.15)_0%,_rgba(0,0,0,0)_70%)] animate-pulse ${activeCall === 'video' ? 'bg-[radial-gradient(circle,_rgba(188,0,221,0.15)_0%,_rgba(0,0,0,0)_70%)]' : ''}`} />
+           
+           <div className="relative z-10 flex flex-col items-center">
+              <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full border-4 p-2 mb-6 shadow-2xl ${activeCall === 'video' ? 'border-[#bc00dd]/30 shadow-[#bc00dd]/20' : 'border-[#00f0ff]/30 shadow-[#00f0ff]/20'}`}>
+                  <img src={chatUser.profilePhoto || "default"} className="w-full h-full rounded-full object-cover" alt="Profile" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-wide mb-2 drop-shadow-lg">{chatUser.fullName}</h2>
+              <p className={`animate-pulse tracking-widest text-sm font-bold uppercase drop-shadow-md ${activeCall === 'video' ? 'text-[#bc00dd]' : 'text-[#00f0ff]'}`}>
+                 {activeCall === 'video' ? 'Requesting Video...' : 'Calling...'}
+              </p>
+           </div>
+
+           {/* FAKE LOCAL VIDEO FEED FOR VIDEO CALLS */}
+           {activeCall === 'video' && (
+               <div className="absolute bottom-32 right-6 w-24 h-36 md:w-32 md:h-48 bg-[#121826] border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex items-center justify-center">
+                   <IoMdCamera size={30} className="text-white/20" />
+                   <span className="absolute bottom-2 text-[10px] text-white/50 font-bold uppercase tracking-widest">You</span>
+               </div>
+           )}
+
+           <div className="absolute bottom-12 flex gap-6 z-10">
+              <button onClick={() => setActiveCall(null)} className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-transform hover:scale-110 active:scale-95">
+                 <IoMdClose size={30} className="text-white" />
+              </button>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -109,13 +109,13 @@ export default function ChatRoom() {
 
   return (
     /* 🚨 PURE CSS LAYOUT: fixed inset-0 + flex-col + 100dvh ensures browser handles keyboard perfectly */
-   <div className="fixed inset-0 flex flex-col w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]" style={{height: 'var(--app-height, 100vh)'}}>
+   <div className="fixed top-0 left-0 right-0 bottom-0 flex flex-col w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]">
       
       {/* BACKGROUND AMBIENCE */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none z-0" />
 
       {/* 1. HEADER: flex-none makes it a rigid block that cannot move or shrink */}
-      <header className="flex-none relative z-20 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between shadow-md">
+      <header style={{position: 'sticky', top: 0}} className="flex-none relative z-20 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between shadow-md">
          <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-white transition-colors">
               <IoMdArrowBack size={20} />
@@ -171,7 +171,7 @@ export default function ChatRoom() {
       )}
 
       {/* 3. INPUT: flex-none ensures it stays a rigid block right above the keyboard */}
-      <footer className="flex-none relative z-20 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 pb-safe">
+      <footer style={{position: 'sticky', bottom: 0}} className="flex-none relative z-20 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 pb-safe">
         <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg">
           
           <button type="button" onClick={() => fileInputRef.current.click()} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">

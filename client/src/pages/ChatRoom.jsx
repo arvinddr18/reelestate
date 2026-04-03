@@ -1,6 +1,6 @@
 import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin, IoMdFolder } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const { user: currentUser } = useAuth(); 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const galleryInputRef = useRef(null); // 🌟 NEW: Strictly for the Gallery app
   const cameraInputRef = useRef(null); 
 
   const [message, setMessage] = useState('');
@@ -438,12 +439,12 @@ export default function ChatRoom({ chatUser, onBack }) {
         {/* 🌟 RESTORED: PREMIUM ANIMATED INPUT BAR WITH ALL ICONS */}
         <form onSubmit={handleSend} className="relative w-full max-w-3xl mx-auto flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
           
-         {/* 🌟 CUSTOM FLOATING ATTACHMENT MENU 🌟 */}
+        {/* 🌟 CUSTOM FLOATING ATTACHMENT MENU 🌟 */}
           {showAttachMenu && (
             <div className="absolute bottom-[120%] left-0 md:left-4 p-5 bg-[#1A1F2E]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-wrap gap-6 w-[280px] z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200">
                
-               {/* Gallery */}
-               <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+               {/* Gallery (Now forces the phone's Native Photo Gallery) */}
+               <button type="button" onClick={() => { galleryInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdImage size={26} /></div>
                  <span className="text-[11px] text-gray-300 font-bold tracking-wider">Gallery</span>
                </button>
@@ -459,6 +460,12 @@ export default function ChatRoom({ chatUser, onBack }) {
                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ffbb00] to-[#ff3366] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdDocument size={26} /></div>
                  <span className="text-[11px] text-gray-300 font-bold tracking-wider">Document</span>
                </button>
+
+               {/* 🌟 NEW: All Files */}
+               <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdFolder size={26} /></div>
+                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Files</span>
+               </button>
                
                {/* Location */}
                <button type="button" onClick={() => { alert("Location sharing coming soon!"); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
@@ -471,20 +478,22 @@ export default function ChatRoom({ chatUser, onBack }) {
           {/* Input Bar Left Side */}
           <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-0.5 pl-1'}`}>
             
-            {/* The + Button (Now toggles the menu and spins!) */}
             <button type="button" onClick={() => setShowAttachMenu(!showAttachMenu)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${showAttachMenu ? 'bg-white/20 text-white rotate-45' : 'bg-transparent hover:bg-white/10 text-gray-400 hover:text-white'}`}>
                <IoMdAdd size={20} />
             </button>
             
-            {/* Allows selecting documents alongside images/videos now */}
-            <input type="file" ref={fileInputRef} hidden accept="image/*,video/*,.pdf,.doc,.docx" onChange={handleImageSelect} />
+            {/* 🚨 THE FIX: TWO SEPARATE HIDDEN INPUTS 🚨 */}
+            {/* 1. Gallery Only: Forces phone to open the Native Gallery App */}
+            <input type="file" ref={galleryInputRef} hidden accept="image/*,video/*" onChange={handleImageSelect} />
             
-            {/* Direct Camera Trigger (Kept for speed) */}
+            {/* 2. Documents & All Files: Opens the File Explorer */}
+            <input type="file" ref={fileInputRef} hidden accept="*" onChange={handleImageSelect} />
+            
+            {/* Direct Camera Trigger */}
             <button type="button" onClick={() => openCamera(facingMode)} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
               <IoMdCamera size={18} />
             </button>
           </div>
-
           {/* Text Input */}
           <input 
             type="text" 

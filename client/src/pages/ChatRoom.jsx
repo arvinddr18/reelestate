@@ -109,7 +109,7 @@ export default function ChatRoom() {
 
   return (
     /* 🚨 PURE CSS LAYOUT: fixed inset-0 + flex-col + 100dvh ensures browser handles keyboard perfectly */
-   <div className="fixed inset-0 flex flex-col w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]" style={{height: '100%'}}>
+   <div className="fixed inset-0 flex flex-col w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]" style={{height: 'var(--app-height, 100vh)'}}>
       
       {/* BACKGROUND AMBIENCE */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none z-0" />

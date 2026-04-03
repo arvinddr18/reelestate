@@ -40,7 +40,6 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   return (
     <div className={`flex w-full group transform transition-all duration-300 my-2 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
       
-      {/* 🚨 THE FIX: flex-col with items-end/start ensures perfect horizontal stretching! */}
       <div 
         className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}
         onDoubleClick={handleDoubleClick}
@@ -59,7 +58,8 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
         {/* The Actual Message Bubble */}
         <motion.div 
           whileTap={{ scale: 0.95 }}
-          className={`relative px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
+          // 🚨 THE FIX: "w-max max-w-full" prevents the min-content collapse bug!
+          className={`relative w-max max-w-full px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
             isMe 
             ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
             : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
@@ -69,7 +69,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
         </motion.div>
 
         {/* Timestamp */}
-        <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
+        <div className={`flex items-center gap-1.5 mt-1.5 w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
            <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70' : 'text-gray-500'}`}>{msg.time}</span>
         </div>
 

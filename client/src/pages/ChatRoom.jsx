@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdHappy, IoMdImage, IoMdMic, IoMdClose, IoMdPulse, IoMdAdd, IoMdCamera } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -9,38 +8,27 @@ const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 const socket = io(API_URL);
 
-export default function ChatRoom() {
-  const { userId } = useParams(); 
+// 🚨 This is now a perfectly sized child component!
+export default function ChatRoom({ chatUser, onBack }) {
   const { user: currentUser } = useAuth(); 
-  const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null); // 🚨 New Ref for the direct camera
+  const cameraInputRef = useRef(null); 
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [chatUser, setChatUser] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null); 
 
   const myId = currentUser?._id || currentUser?.id;
-  const room = myId && userId ? [myId, userId].sort().join('_') : null;
+  const friendId = chatUser?._id || chatUser?.id;
+  
+  const room = myId && friendId ? [myId, friendId].sort().join('_') : null;
 
-  // Fetch Profile
+  // Socket & History Fetching
   useEffect(() => {
-    const fetchFriendProfile = async () => {
-      if (!userId) return;
-      try {
-        const res = await axios.get(`${API_URL}/api/users/${userId}`);
-        if (res.data.success) setChatUser(res.data.data.user); 
-      } catch (err) { console.error(err); }
-    };
-    fetchFriendProfile();
-  }, [userId]);
-
-  // Socket & History
-  useEffect(() => {
-    if (!myId || !userId || !room) return;
+    if (!myId || !friendId || !room) return;
+    
     const fetchChatHistory = async () => {
       try {
         const token = localStorage.getItem('reelestate_token');
@@ -50,38 +38,22 @@ export default function ChatRoom() {
         setMessages(res.data);
       } catch (err) { console.error(err); }
     };
+    
     fetchChatHistory();
+    
     socket.emit('join_room', room);
     socket.on('receive_message', (data) => setMessages((prev) => [...prev, data]));
     socket.on('display_typing', () => setIsTyping(true));
     socket.on('hide_typing', () => setIsTyping(false));
+    
     return () => {
       socket.off('receive_message'); socket.off('display_typing'); socket.off('hide_typing');
     };
-  }, [room, myId, userId]);
+  }, [room, myId, friendId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
-
-  // DEFINITIVE mobile keyboard fix
-  useEffect(() => {
-    const el = document.getElementById('chat-container');
-    const lock = () => { if (el) el.style.height = window.innerHeight + 'px'; };
-    lock();
-    window.addEventListener('resize', lock);
-    return () => window.removeEventListener('resize', lock);
-  }, []);
-
-  // Fix mobile keyboard pushing header
-  useEffect(() => {
-    const setHeight = () => {
-      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-    };
-    setHeight();
-    window.addEventListener('resize', setHeight);
-    return () => window.removeEventListener('resize', setHeight);
-  }, []);
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -117,60 +89,81 @@ export default function ChatRoom() {
     } catch (err) { console.error(err); }
   };
 
+  if (!chatUser) return null;
+
   return (
-    /* 🚨 PURE CSS LAYOUT: fixed inset-0 + flex-col + 100dvh ensures browser handles keyboard perfectly */
-   <div id="chat-container" className="fixed top-0 left-0 right-0 flex flex-col w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]">
+    <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
       
-      {/* BACKGROUND AMBIENCE */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none z-0" />
-
-      {/* 1. HEADER: flex-none makes it a rigid block that cannot move or shrink */}
-      <header style={{position: 'sticky', top: 0}} className="flex-none relative z-20 w-full bg-[#0B0F19]/95 backdrop-blur-2xl border-b border-[#1E2532] px-4 py-3 flex items-center justify-between shadow-md">
-         <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center text-gray-400 hover:text-white transition-colors">
-              <IoMdArrowBack size={20} />
-            </button>
-            <div className="flex flex-col">
-                <span className="text-sm font-black">{chatUser?.fullName || '...'}</span>
-                <span className="text-[9px] font-black text-[#00F0FF] uppercase tracking-widest flex items-center gap-1">
-                  {isTyping ? 'Syncing...' : 'Active'}
-                </span>
+      {/* 1. FLEX-NONE HEADER (Will never squish) */}
+      <div className="shrink-0 flex-none relative w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+        <div className="flex items-center gap-3 md:gap-4">
+          {/* BACK BUTTON for mobile view */}
+          <button onClick={onBack} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
+            <IoMdArrowBack size={18} />
+          </button>
+          
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full p-[1.5px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+             <div className="w-full h-full rounded-full bg-[#1E2532] border-2 border-[#0B0F19] overflow-hidden flex items-center justify-center text-white font-bold">
+               {chatUser.profilePhoto ? <img src={chatUser.profilePhoto} className="w-full h-full object-cover" alt="avatar" /> : (chatUser.fullName || chatUser.username || 'U')[0].toUpperCase()}
+             </div>
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-white font-black text-[14px] md:text-[16px]">{chatUser.fullName || `@${chatUser.username}`}</h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${isTyping ? 'bg-[#00ff9d] animate-pulse shadow-[0_0_8px_#00ff9d]' : 'bg-[#00F0FF] shadow-[0_0_8px_#00F0FF]'}`} />
+              <span className={`text-[9px] md:text-[10px] font-bold tracking-widest uppercase flex items-center ${isTyping ? 'text-[#00ff9d]' : 'text-[#00F0FF]'}`}>
+                {isTyping ? 'Typing...' : 'Secure Connection'}
+              </span>
             </div>
-         </div>
-      </header>
+          </div>
+        </div>
+        <div className="flex items-center h-full absolute top-0 right-2 md:right-8">
+          <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white backdrop-blur-md">
+            <IoMdMore size={18} />
+          </button>
+        </div>
+      </div>
 
-      {/* 2. MESSAGES: flex-1 overflow-y-auto is the ONLY part that scrolls or resizes */}
-      <main className="flex-1 overflow-y-auto relative w-full px-4 pt-6 pb-2 flex flex-col gap-6 z-10 no-scrollbar">
+      {/* 2. FLEX-1 MESSAGES (The only part that compresses and scrolls) */}
+      <div className="flex-1 min-h-0 relative w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar z-10">
         {messages.map((msg, index) => {
           const isMe = msg.senderId === myId;
           return (
-            <div key={index} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+            <div key={index} className={`flex w-full group transform transition-all duration-300 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
+              <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}>
                 
                 {msg.image && (
-                  <div className="relative mb-2 group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                  <div className="relative mb-2 group/img">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
                     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
-                      <img src={msg.image} alt="Hologram" className="w-full max-h-[300px] object-cover opacity-90 brightness-110" />
-                      <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%]" />
+                      <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
                     </div>
                   </div>
                 )}
 
                 {msg.text && (
-                  <div className={`px-5 py-3 text-[15px] font-medium rounded-3xl ${isMe ? 'bg-[#0057FF] rounded-tr-none' : 'bg-[#151A25] border border-[#1E2532] rounded-tl-none'}`}>
+                  <div className={`px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl ${isMe ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white' : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100'}`}>
                     {msg.text}
                   </div>
                 )}
-                <span className="text-[10px] text-gray-500 mt-1.5 uppercase tracking-widest font-bold">{msg.time}</span>
+                
+                <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  <span className="text-[10px] text-gray-500 font-semibold tracking-wider">{msg.time}</span>
+                  {isMe && (
+                    <div className="flex -space-x-1">
+                      <IoMdCheckmark className="text-gray-500" size={14} />
+                      <IoMdCheckmark className="text-gray-500" size={14} />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
         <div ref={messagesEndRef} />
-      </main>
+      </div>
 
-      {/* IMAGE PREVIEW PILL */}
+      {/* IMAGE PREVIEW */}
       {selectedImage && (
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-bottom-5">
            <div className="relative p-1 bg-[#151A25] border border-[#00F0FF] rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">
@@ -180,40 +173,39 @@ export default function ChatRoom() {
         </div>
       )}
 
-      {/* 3. INPUT FOOTER: shrink-0 + sticky bottom-0 ensures it stays above keyboard */}
-      <div className="shrink-0 sticky bottom-0 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 z-20">
-        <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg transition-all duration-300">
+      {/* 3. FLEX-NONE FOOTER (Sits safely above the keyboard) */}
+      <div className="shrink-0 flex-none relative w-full bg-[#05070A]/98 border-t border-white/10 pt-2 pb-2 md:pb-6 px-2 md:px-8 z-20">
+        <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full flex items-center shadow-lg transition-all duration-300">
           
-          {/* Left Buttons (Hide when typing) */}
+          {/* Animated Left Buttons (Camera & Gallery) */}
           <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[90px] opacity-100 scale-100 gap-1 pl-1'}`}>
             
-            {/* Gallery Upload Button */}
+            {/* Gallery Button */}
             <button type="button" onClick={() => fileInputRef.current.click()} className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0">
               <IoMdAdd size={22} />
             </button>
-            {/* Accepts photos and videos from gallery */}
             <input type="file" ref={fileInputRef} hidden accept="image/*,video/*" onChange={handleImageSelect} />
 
-            {/* 📷 Direct Camera Button */}
+            {/* Direct Camera Button */}
             <button type="button" onClick={() => cameraInputRef.current.click()} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
               <IoMdCamera size={20} />
             </button>
-            {/* capture="environment" tells mobile phones to open the camera immediately! */}
             <input type="file" ref={cameraInputRef} hidden accept="image/*,video/*" capture="environment" onChange={handleImageSelect} />
-          
           </div>
 
-          {/* text-[16px] prevents zoom */}
           <input 
             type="text" 
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              socket.emit('typing', room); 
+            }}
+            onBlur={() => socket.emit('stop_typing', room)}
             placeholder="Neural transmission..."
-            className={`flex-1 bg-transparent text-[16px] outline-none placeholder-gray-500 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-4' : 'pl-2'}`}
+            className={`flex-1 bg-transparent text-white text-[16px] outline-none placeholder-gray-500 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-4' : 'pl-2'}`}
           />
 
-          {/* Send Button (Always Visible) */}
-          <button type="submit" className="w-10 h-10 rounded-full bg-[#0057FF] flex items-center justify-center text-white active:scale-95 transition-transform shrink-0 shadow-[0_0_15px_rgba(0,87,255,0.4)] ml-1">
+          <button type="submit" className="w-10 h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white active:scale-95 transition-transform shrink-0 shadow-[0_0_15px_rgba(193,31,112,0.5)] ml-1">
             <IoMdSend size={18} className="translate-x-[1px]" />
           </button>
         </form>

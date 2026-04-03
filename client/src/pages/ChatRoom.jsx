@@ -181,23 +181,27 @@ export default function ChatRoom() {
 
       {/* 3. INPUT: flex-none ensures it stays a rigid block right above the keyboard */}
       <footer style={{position: 'sticky', bottom: 0}} className="flex-none relative z-20 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 pb-safe">
-        <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg">
+       <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg transition-all duration-300">
           
-          <button type="button" onClick={() => fileInputRef.current.click()} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
-            <IoMdImage size={22} />
-          </button>
+          {/* Image Upload Button (Hides when typing) */}
+          <div className={`transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-10 opacity-100 scale-100'}`}>
+            <button type="button" onClick={() => fileInputRef.current.click()} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
+              <IoMdImage size={22} />
+            </button>
+          </div>
           <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleImageSelect} />
 
-          {/* 🚨 text-[16px] prevents iOS/Android from zooming in on input focus */}
+          {/* Text Input */}
           <input 
             type="text" 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Neural transmission..."
-            className="flex-1 bg-transparent text-[16px] px-3 outline-none placeholder-gray-500 font-medium min-w-0"
+            className={`flex-1 bg-transparent text-[16px] outline-none placeholder-gray-500 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-4' : 'pl-1'}`}
           />
 
-          <button type="submit" className="w-10 h-10 rounded-full bg-[#0057FF] flex items-center justify-center text-white active:scale-95 transition-transform shrink-0 shadow-[0_0_15px_rgba(0,87,255,0.4)]">
+          {/* Send Button (Always Visible) */}
+          <button type="submit" className="w-10 h-10 rounded-full bg-[#0057FF] flex items-center justify-center text-white active:scale-95 transition-transform shrink-0 shadow-[0_0_15px_rgba(0,87,255,0.4)] ml-2">
             <IoMdSend size={18} className="translate-x-[1px]" />
           </button>
         </form>

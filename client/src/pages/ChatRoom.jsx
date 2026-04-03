@@ -1,4 +1,4 @@
-import AnimatedMessageBubble from './AnimatedMessageBubble';
+import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
 import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdPulse } from 'react-icons/io';
 import io from 'socket.io-client';

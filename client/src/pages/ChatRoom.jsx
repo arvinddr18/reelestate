@@ -1,6 +1,6 @@
 import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdPulse } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +25,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [audioDrag, setAudioDrag] = useState(0);
   const [videoDrag, setVideoDrag] = useState(0);
   const [activeCall, setActiveCall] = useState(null); // 'audio' | 'video' | null
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
 
   // 🌟 NEW: IN-APP CAMERA & FILTER STATES 🌟
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -437,21 +438,50 @@ export default function ChatRoom({ chatUser, onBack }) {
         {/* 🌟 RESTORED: PREMIUM ANIMATED INPUT BAR WITH ALL ICONS */}
         <form onSubmit={handleSend} className="relative w-full max-w-3xl mx-auto flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
           
-          {/* Animated Left Buttons (Gallery, Camera, Reel) */}
-          <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[110px] md:w-[130px] opacity-100 scale-100 gap-0.5 md:gap-1 pl-1'}`}>
+         {/* 🌟 CUSTOM FLOATING ATTACHMENT MENU 🌟 */}
+          {showAttachMenu && (
+            <div className="absolute bottom-[120%] left-0 md:left-4 p-5 bg-[#1A1F2E]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-wrap gap-6 w-[280px] z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200">
+               
+               {/* Gallery */}
+               <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdImage size={26} /></div>
+                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Gallery</span>
+               </button>
+               
+               {/* Camera */}
+               <button type="button" onClick={() => { openCamera(facingMode); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdCamera size={26} /></div>
+                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Camera</span>
+               </button>
+               
+               {/* Document */}
+               <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ffbb00] to-[#ff3366] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdDocument size={26} /></div>
+                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Document</span>
+               </button>
+               
+               {/* Location */}
+               <button type="button" onClick={() => { alert("Location sharing coming soon!"); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00ff9d] to-[#00b8ff] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdPin size={26} /></div>
+                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Location</span>
+               </button>
+            </div>
+          )}
+
+          {/* Input Bar Left Side */}
+          <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-0.5 pl-1'}`}>
             
-            <button type="button" onClick={() => fileInputRef.current.click()} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0">
-              <IoMdAdd size={20} />
+            {/* The + Button (Now toggles the menu and spins!) */}
+            <button type="button" onClick={() => setShowAttachMenu(!showAttachMenu)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${showAttachMenu ? 'bg-white/20 text-white rotate-45' : 'bg-transparent hover:bg-white/10 text-gray-400 hover:text-white'}`}>
+               <IoMdAdd size={20} />
             </button>
-            <input type="file" ref={fileInputRef} hidden accept="image/*,video/*" onChange={handleImageSelect} />
-
-           {/* 🌟 TRIGGERS OUR IN-APP CAMERA OVERLAY */}
-            <button type="button" onClick={openCamera} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
+            
+            {/* Allows selecting documents alongside images/videos now */}
+            <input type="file" ref={fileInputRef} hidden accept="image/*,video/*,.pdf,.doc,.docx" onChange={handleImageSelect} />
+            
+            {/* Direct Camera Trigger (Kept for speed) */}
+            <button type="button" onClick={() => openCamera(facingMode)} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
               <IoMdCamera size={18} />
-            </button>
-
-            <button type="button" className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 border border-transparent hover:border-[#00f0ff]/30">
-              <span className="text-[12px] md:text-[14px]">🎥</span>
             </button>
           </div>
 

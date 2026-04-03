@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   IoMdArrowBack, IoMdSearch, IoMdMic, IoMdImage, 
-  IoMdCheckmark, IoMdAdd, IoMdMore, IoMdPulse 
+  IoMdCheckmark, IoMdAdd, IoMdMore, IoMdPulse, IoMdCamera 
 } from 'react-icons/io';
 import { useAuth } from '../context/AuthContext';
 
@@ -400,11 +400,17 @@ export default function Messages() {
 
               <div className="relative w-full max-w-3xl flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
                 
-                {/* Left Buttons (Hide when typing) */}
-                <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${messageText.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-1 md:gap-2 pl-1'}`}>
-                  <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 group">
+               {/* Left Buttons (Hide when typing) */}
+                <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${messageText.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[110px] md:w-[130px] opacity-100 scale-100 gap-0.5 md:gap-1 pl-1'}`}>
+                  {/* Plus / Attach */}
+                  <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-transparent hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0 group">
                     <IoMdAdd size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                   </button>
+                  {/* 📷 Direct Camera Button */}
+                  <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0 group">
+                    <IoMdCamera size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                  </button>
+                  {/* Reel Button */}
                   <button className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 group border border-transparent hover:border-[#00f0ff]/30">
                     <span className="text-[12px] md:text-[14px] group-hover:scale-110 transition-transform">🎥</span>
                   </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdPulse } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdHappy, IoMdImage, IoMdMic, IoMdClose, IoMdPulse, IoMdAdd, IoMdCamera } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,7 @@ export default function ChatRoom() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null); // 🚨 New Ref for the direct camera
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
@@ -179,33 +180,44 @@ export default function ChatRoom() {
         </div>
       )}
 
-      {/* 3. INPUT: flex-none ensures it stays a rigid block right above the keyboard */}
-      <footer style={{position: 'sticky', bottom: 0}} className="flex-none relative z-20 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 pb-safe">
-       <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg transition-all duration-300">
+      {/* 3. INPUT FOOTER: shrink-0 + sticky bottom-0 ensures it stays above keyboard */}
+      <div className="shrink-0 sticky bottom-0 w-full bg-[#0B0F19] border-t border-[#1E2532] px-4 py-3 z-20">
+        <form onSubmit={handleSend} className="max-w-2xl mx-auto bg-[#151A25] border border-[#1E2532] p-1.5 rounded-full flex items-center shadow-lg transition-all duration-300">
           
-          {/* Image Upload Button (Hides when typing) */}
-          <div className={`transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-10 opacity-100 scale-100'}`}>
-            <button type="button" onClick={() => fileInputRef.current.click()} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-[#00F0FF] transition-colors shrink-0">
-              <IoMdImage size={22} />
+          {/* Left Buttons (Hide when typing) */}
+          <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[90px] opacity-100 scale-100 gap-1 pl-1'}`}>
+            
+            {/* Gallery Upload Button */}
+            <button type="button" onClick={() => fileInputRef.current.click()} className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-gray-400 hover:text-white transition-colors shrink-0">
+              <IoMdAdd size={22} />
             </button>
-          </div>
-          <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleImageSelect} />
+            {/* Accepts photos and videos from gallery */}
+            <input type="file" ref={fileInputRef} hidden accept="image/*,video/*" onChange={handleImageSelect} />
 
-          {/* Text Input */}
+            {/* 📷 Direct Camera Button */}
+            <button type="button" onClick={() => cameraInputRef.current.click()} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
+              <IoMdCamera size={20} />
+            </button>
+            {/* capture="environment" tells mobile phones to open the camera immediately! */}
+            <input type="file" ref={cameraInputRef} hidden accept="image/*,video/*" capture="environment" onChange={handleImageSelect} />
+          
+          </div>
+
+          {/* text-[16px] prevents zoom */}
           <input 
             type="text" 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Neural transmission..."
-            className={`flex-1 bg-transparent text-[16px] outline-none placeholder-gray-500 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-4' : 'pl-1'}`}
+            className={`flex-1 bg-transparent text-[16px] outline-none placeholder-gray-500 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-4' : 'pl-2'}`}
           />
 
           {/* Send Button (Always Visible) */}
-          <button type="submit" className="w-10 h-10 rounded-full bg-[#0057FF] flex items-center justify-center text-white active:scale-95 transition-transform shrink-0 shadow-[0_0_15px_rgba(0,87,255,0.4)] ml-2">
+          <button type="submit" className="w-10 h-10 rounded-full bg-[#0057FF] flex items-center justify-center text-white active:scale-95 transition-transform shrink-0 shadow-[0_0_15px_rgba(0,87,255,0.4)] ml-1">
             <IoMdSend size={18} className="translate-x-[1px]" />
           </button>
         </form>
-      </footer>
+      </div>
     </div>
   );
 }

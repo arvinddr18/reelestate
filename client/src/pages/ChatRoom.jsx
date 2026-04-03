@@ -63,6 +63,16 @@ export default function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  // Fix mobile keyboard pushing header
+  useEffect(() => {
+    const setHeight = () => {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    setHeight();
+    window.addEventListener('resize', setHeight);
+    return () => window.removeEventListener('resize', setHeight);
+  }, []);
+
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -99,7 +109,7 @@ export default function ChatRoom() {
 
   return (
     /* 🚨 PURE CSS LAYOUT: fixed inset-0 + flex-col + 100dvh ensures browser handles keyboard perfectly */
-    <div className="fixed inset-0 flex flex-col h-[100svh] w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]">
+   <div className="fixed inset-0 flex flex-col w-full bg-[#0B0F19] text-white font-sans overflow-hidden z-[99999]" style={{height: '100%'}}>
       
       {/* BACKGROUND AMBIENCE */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0057FF] opacity-10 blur-[120px] rounded-full pointer-events-none z-0" />

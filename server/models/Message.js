@@ -9,15 +9,24 @@ const messageSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  // 🚨 CHANGED: text is no longer "required: true", so you can send JUST a photo/video without typing!
   text: { 
     type: String, 
-    required: true 
+    default: "" 
   },
   time: { 
     type: String 
+  },
+  // 🚨 ADDED THESE TWO LINES SO MONGOOSE SAVES YOUR MEDIA!
+  image: { 
+    type: String, 
+    default: "" 
+  },
+  video: { 
+    type: String, 
+    default: "" 
   }
 }, { timestamps: true });
 
-// THE FIX: We added 'holographic_messages' at the end. 
-// This forces MongoDB to ignore old rules and create a fresh, clean table!
+// We are keeping your 'holographic_messages' fix here so your database stays perfectly connected!
 module.exports = mongoose.models.Message || mongoose.model('Message', messageSchema, 'holographic_messages');

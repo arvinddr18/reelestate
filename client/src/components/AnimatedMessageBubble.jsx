@@ -58,9 +58,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
        {/* The Actual Message Bubble */}
         <motion.div 
           whileTap={{ scale: 0.95 }}
-          // 🚨 THE FIX: Force width directly in the style tag so Framer Motion can't ignore it!
-          style={{ width: "fit-content", wordBreak: "break-word" }}
-          className={`relative max-w-full px-5 py-3.5 text-[15px] font-medium leading-relaxed rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
+          className={`relative px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
             isMe 
             ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
             : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'

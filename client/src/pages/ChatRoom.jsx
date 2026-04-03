@@ -1,3 +1,4 @@
+import AnimatedMessageBubble from './AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
 import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdPulse } from 'react-icons/io';
 import io from 'socket.io-client';
@@ -387,13 +388,7 @@ export default function ChatRoom({ chatUser, onBack }) {
 
                 {/* 🌟 RESTORED: BEAUTIFUL GRADIENT BUBBLES */}
                 {msg.text && (
-                  <div className={`px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl ${
-                    isMe 
-                    ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
-                    : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
-                  }`}>
-                    {msg.text}
-                  </div>
+                  <AnimatedMessageBubble msg={msg} isMe={isMe} />
                 )}
                 
                 <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>

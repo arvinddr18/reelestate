@@ -139,17 +139,17 @@ export default function ChatRoom({ chatUser, onBack }) {
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
 
-{/* 🌟 NEW: DYNAMIC USER BACKGROUND 🌟 */}
+{/* 🌟 NEW: DYNAMIC USER BACKGROUND (Perfectly Balanced Dim) 🌟 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
         {chatUser.profilePhoto ? (
           <>
-            {/* 🚨 CHANGED: Lowered opacity drastically (10%) and added brightness-50 to dim it */}
+            {/* Boosted opacity back up to 40% so it's actually visible! */}
             <div 
-              className="absolute inset-0 bg-cover bg-center opacity-10 brightness-50 blur-[8px] scale-110" 
+              className="absolute inset-0 bg-cover bg-center opacity-40 blur-[10px] scale-110" 
               style={{ backgroundImage: `url(${chatUser.profilePhoto})` }}
             />
-            {/* 🚨 CHANGED: Made the dark overlay stronger so it sits deep in the background */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#05070A]/70 to-[#05070A]/98" />
+            {/* Added a smooth 75% dark tint over it so text stays readable */}
+            <div className="absolute inset-0 bg-[#05070A]/75" />
           </>
         ) : (
           <>

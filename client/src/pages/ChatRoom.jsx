@@ -25,6 +25,22 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [videoDrag, setVideoDrag] = useState(0);
   const [activeCall, setActiveCall] = useState(null); // 'audio' | 'video' | null
 
+  // 🌟 NEW: IN-APP CAMERA & FILTER STATES 🌟
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(0);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  // Custom Snapchat-style filters
+  const filters = [
+    { name: 'Normal', css: 'none' },
+    { name: 'Cyberpunk', css: 'hue-rotate(90deg) saturate(200%)' },
+    { name: 'Noir', css: 'grayscale(100%) contrast(150%)' },
+    { name: 'Sepia', css: 'sepia(100%) contrast(110%)' },
+    { name: 'Matrix', css: 'invert(100%) hue-rotate(180deg)' },
+    { name: 'Dream', css: 'brightness(120%) contrast(90%) saturate(150%)' }
+  ];
+
   const myId = currentUser?._id || currentUser?.id;
   const friendId = chatUser?._id || chatUser?.id;
   
@@ -69,6 +85,62 @@ export default function ChatRoom({ chatUser, onBack }) {
       window.removeEventListener('touchend', handleEnd);
     };
   }, [isDragging, startY, audioDrag, videoDrag]);
+
+  // 🌟 IN-APP CAMERA ENGINE 🌟
+  const openCamera = async () => {
+    try {
+      // Requests the front-facing camera
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      streamRef.current = stream;
+      setIsCameraOpen(true);
+    } catch (err) {
+      console.error("Camera access denied:", err);
+      alert("Please allow camera access to use this feature.");
+    }
+  };
+
+  const closeCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraOpen(false);
+    setActiveFilter(0);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    // Apply the active filter to the captured image!
+    ctx.filter = filters[activeFilter].css;
+    // Flips the image so it acts like a mirror (selfie mode)
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/jpeg');
+    
+    setSelectedImage(imageData); // Puts the image in your chat preview
+    closeCamera();
+  };
+
+  // Connects the video feed when the camera opens
+  useEffect(() => {
+    if (isCameraOpen && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraOpen]);
+  
+  // Cleans up the camera if the user leaves the page
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    };
+  }, []);
 
   // Socket & History Fetching
   useEffect(() => {
@@ -318,10 +390,10 @@ export default function ChatRoom({ chatUser, onBack }) {
             </button>
             <input type="file" ref={fileInputRef} hidden accept="image/*,video/*" onChange={handleImageSelect} />
 
-            <button type="button" onClick={() => cameraInputRef.current.click()} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
+           {/* 🌟 TRIGGERS OUR IN-APP CAMERA OVERLAY */}
+            <button type="button" onClick={openCamera} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
               <IoMdCamera size={18} />
             </button>
-            <input type="file" ref={cameraInputRef} hidden accept="image/*,video/*" capture="environment" onChange={handleImageSelect} />
 
             <button type="button" className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#00f0ff] hover:text-white transition-all shrink-0 border border-transparent hover:border-[#00f0ff]/30">
               <span className="text-[12px] md:text-[14px]">🎥</span>
@@ -387,6 +459,61 @@ export default function ChatRoom({ chatUser, onBack }) {
                  <IoMdClose size={30} className="text-white" />
               </button>
            </div>
+        </div>
+      )}
+
+      {/* 🌟 IN-APP CAMERA & FILTER OVERLAY 🌟 */}
+      {isCameraOpen && (
+        <div className="absolute inset-0 z-[999999] bg-[#05070A] flex flex-col overflow-hidden">
+          
+          {/* Top Bar */}
+          <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/60 to-transparent">
+            <button onClick={closeCamera} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-red-500 transition-colors">
+              <IoMdClose size={24} />
+            </button>
+            <div className="flex items-center gap-2">
+               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+               <span className="text-white font-bold tracking-widest text-xs uppercase shadow-black drop-shadow-md">Live Lens</span>
+            </div>
+            <div className="w-10"></div> {/* Spacer to keep title centered */}
+          </div>
+
+          {/* Live Video Feed (Acts as a mirror and applies CSS filter live) */}
+          <div className="relative flex-1 w-full h-full bg-black">
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted
+              className="w-full h-full object-cover -scale-x-100" 
+              style={{ filter: filters[activeFilter].css }}
+            />
+          </div>
+
+          {/* Bottom Controls: Filters & Capture */}
+          <div className="absolute bottom-0 w-full flex flex-col items-center pb-8 pt-16 bg-gradient-to-t from-black via-black/80 to-transparent z-20">
+            
+            {/* Filter Swiper */}
+            <div className="w-full overflow-x-auto no-scrollbar flex gap-4 px-6 mb-6 snap-x">
+              {filters.map((f, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => setActiveFilter(i)}
+                  className={`snap-center shrink-0 w-16 h-16 rounded-full flex flex-col items-center justify-center border-2 transition-all duration-300 ${activeFilter === i ? 'border-[#00F0FF] bg-[#00F0FF]/20 text-[#00F0FF] scale-110 shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'border-white/20 bg-black/50 text-gray-300 hover:border-white/50 backdrop-blur-md'}`}
+                >
+                  <span className="text-[10px] font-black tracking-wider uppercase">{f.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Huge Capture Button */}
+            <button 
+              onClick={capturePhoto} 
+              className="w-20 h-20 rounded-full border-[5px] border-white/50 flex items-center justify-center p-1 active:scale-95 transition-transform"
+            >
+              <div className="w-full h-full bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.8)]"></div>
+            </button>
+          </div>
         </div>
       )}
     </div>

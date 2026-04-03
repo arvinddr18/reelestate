@@ -139,22 +139,22 @@ export default function ChatRoom({ chatUser, onBack }) {
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
 
-      {/* 🌟 NEW: DYNAMIC USER BACKGROUND 🌟 */}
+{/* 🌟 NEW: DYNAMIC USER BACKGROUND 🌟 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
         {chatUser.profilePhoto ? (
           <>
-            {/* Blurry, low-opacity profile image background */}
+            {/* 🚨 CHANGED: Lowered opacity drastically (10%) and added brightness-50 to dim it */}
             <div 
-              className="absolute inset-0 bg-cover bg-center opacity-30 blur-[8px] scale-110" 
+              className="absolute inset-0 bg-cover bg-center opacity-10 brightness-50 blur-[8px] scale-110" 
               style={{ backgroundImage: `url(${chatUser.profilePhoto})` }}
             />
-            {/* Dark overlay to keep chat bubbles easy to read */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#05070A]/40 to-[#05070A]/90" />
+            {/* 🚨 CHANGED: Made the dark overlay stronger so it sits deep in the background */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#05070A]/70 to-[#05070A]/98" />
           </>
         ) : (
           <>
-            {/* Fallback if no photo: Giant transparent first letter */}
-            <div className="absolute inset-0 bg-[#05070A]/60" />
+            {/* Fallback if no photo */}
+            <div className="absolute inset-0 bg-[#05070A]/80" />
             <span className="text-[50vw] md:text-[30vw] font-black text-white/5 select-none drop-shadow-2xl">
               {(chatUser.fullName || chatUser.username || 'U')[0].toUpperCase()}
             </span>

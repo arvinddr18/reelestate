@@ -3,13 +3,18 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const { protect } = require('../middleware/auth'); 
 
-// ─── THE FIX: DEFINE A BRAND NEW MODEL HERE ───
-// By calling it 'HoloMessage', we guarantee it will NEVER collide with your old 'Message' code!
+// ─── THE FIX: UPDATED HOLOMESSAGE MODEL ───
 const holoMessageSchema = new mongoose.Schema({
   room: { type: String, required: true },
   senderId: { type: String, required: true },
-  text: { type: String, required: true },
-  image: { type: String }, // Stores the Base64 Hologram string
+  
+  // 🚨 FIX 1: Changed to "default: ''" so you can send photos/videos WITHOUT typing text!
+  text: { type: String, default: "" }, 
+  
+  // 🚨 FIX 2: Added image and video fields so MongoDB saves them!
+  image: { type: String, default: "" }, 
+  video: { type: String, default: "" }, 
+  
   time: { type: String }
 }, { timestamps: true });
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const EMOJIS = ['❤️', '😍', '🔥', '🚀', '👍', '💸'];
@@ -13,10 +13,9 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   // --- SCENE 2 & 3: Double Tap Burst ---
   const handleDoubleClick = () => {
     setShowBurst(true);
-    // Burst lasts 1.4s, then transitions to Scene 4 (Settle)
     setTimeout(() => {
       setShowBurst(false);
-      if (!reaction) setReaction('❤️'); // Default settle
+      if (!reaction) setReaction('❤️'); 
     }, 1400);
   };
 
@@ -24,8 +23,8 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   const handlePointerDown = () => {
     holdTimer.current = setTimeout(() => {
       setShowRadial(true);
-      window.navigator.vibrate?.(50); // Optional subtle haptic click
-    }, 500); // 500ms hold triggers the radial menu
+      window.navigator.vibrate?.(50); 
+    }, 500); 
   };
 
   const handlePointerUp = () => {
@@ -39,11 +38,11 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   };
 
   return (
-    <div className={`relative flex w-full my-4 ${isMe ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex w-full group transform transition-all duration-300 my-2 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
       
-      {/* Container for event tracking */}
+      {/* 🚨 THE FIX: flex-col with items-end/start ensures perfect horizontal stretching! */}
       <div 
-       className={`relative max-w-[85%] md:max-w-[65%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+        className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}
         onDoubleClick={handleDoubleClick}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
@@ -54,20 +53,25 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
         <motion.div
           animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute -inset-2 rounded-3xl blur-xl z-0 ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
+          className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
         />
 
-       {/* The Actual Message Bubble */}
+        {/* The Actual Message Bubble */}
         <motion.div 
           whileTap={{ scale: 0.95 }}
-          className={`relative w-fit px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
+          className={`relative px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 ${
             isMe 
-            ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white' 
-            : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100'
+            ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
+            : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
           }`}
         >
           {msg.text}
         </motion.div>
+
+        {/* Timestamp */}
+        <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
+           <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70' : 'text-gray-500'}`}>{msg.time}</span>
+        </div>
 
         {/* SCENE 4 & 7: Settled Reaction Badge */}
         <AnimatePresence>
@@ -115,13 +119,13 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-              onClick={() => setShowRadial(false)} // Click outside to close
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              onClick={() => setShowRadial(false)} 
             >
               <div className="relative" onClick={e => e.stopPropagation()}>
                 {EMOJIS.map((emoji, i) => {
                   const angle = (i / EMOJIS.length) * Math.PI * 2;
-                  const radius = 80; // Distance from center
+                  const radius = 80; 
                   const x = Math.cos(angle) * radius;
                   const y = Math.sin(angle) * radius;
 

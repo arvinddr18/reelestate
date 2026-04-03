@@ -28,8 +28,17 @@ export default function ChatRoom({ chatUser, onBack }) {
   // 🌟 NEW: IN-APP CAMERA & FILTER STATES 🌟
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState(0);
+  const [selectedVideo, setSelectedVideo] = useState(null); // For chat preview
+  
+  // Video Recording States
+  const [cameraMode, setCameraMode] = useState('photo'); // 'photo' | 'video'
+  const [isRecording, setIsRecording] = useState(false);
+  const [facingMode, setFacingMode] = useState('user'); // front | back camera
+  
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
 
   // Custom Snapchat-style filters
   const filters = [
@@ -87,24 +96,38 @@ export default function ChatRoom({ chatUser, onBack }) {
   }, [isDragging, startY, audioDrag, videoDrag]);
 
   // 🌟 IN-APP CAMERA ENGINE 🌟
-  const openCamera = async () => {
+  const openCamera = async (mode = facingMode) => {
     try {
-      // Requests the front-facing camera
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+      // Request mic ONLY if we are in video mode!
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: mode }, 
+        audio: cameraMode === 'video' 
+      });
       streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
       setIsCameraOpen(true);
     } catch (err) {
       console.error("Camera access denied:", err);
-      alert("Please allow camera access to use this feature.");
+      alert("Please allow camera/microphone access to use this feature.");
     }
   };
 
+  const toggleCameraFacing = () => {
+    const newMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newMode);
+    openCamera(newMode);
+  };
+
+  // Reconnect if user switches between Photo/Video to grab/drop Mic
+  useEffect(() => {
+    if (isCameraOpen) openCamera(facingMode);
+  }, [cameraMode]);
+
   const closeCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
+    if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
     setIsCameraOpen(false);
+    setIsRecording(false);
     setActiveFilter(0);
   };
 
@@ -114,19 +137,44 @@ export default function ChatRoom({ chatUser, onBack }) {
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     const ctx = canvas.getContext('2d');
-    
-    // Apply the active filter to the captured image!
     ctx.filter = filters[activeFilter].css;
-    // Flips the image so it acts like a mirror (selfie mode)
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    
+    if (facingMode === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const imageData = canvas.toDataURL('image/jpeg');
-    
-    setSelectedImage(imageData); // Puts the image in your chat preview
+    setSelectedImage(canvas.toDataURL('image/jpeg'));
     closeCamera();
   };
+
+  const startRecording = () => {
+    recordedChunksRef.current = [];
+    const stream = videoRef.current.srcObject;
+    const options = { mimeType: MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4' };
+    const mediaRecorder = new MediaRecorder(stream, options);
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunksRef.current.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: options.mimeType });
+      const reader = new FileReader();
+      reader.onloadend = () => { setSelectedVideo(reader.result); closeCamera(); };
+      reader.readAsDataURL(blob);
+    };
+    mediaRecorder.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) mediaRecorderRef.current.stop();
+    setIsRecording(false);
+  };
+
+  const handleCaptureClick = () => {
+    if (cameraMode === 'photo') capturePhoto();
+    else isRecording ? stopRecording() : startRecording();
+  };
+
+  useEffect(() => {
+    return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+  }, []);
 
   // Connects the video feed when the camera opens
   useEffect(() => {
@@ -181,14 +229,15 @@ export default function ChatRoom({ chatUser, onBack }) {
     }
   };
 
-  const handleSend = async (e) => {
+ const handleSend = async (e) => {
     e.preventDefault();
-    if ((!message.trim() && !selectedImage) || !room || !myId) return;
+    if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
 
     const messageData = {
       room,
       text: message,
       image: selectedImage, 
+      video: selectedVideo, // Added video payload!
       senderId: myId, 
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
@@ -196,6 +245,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     setMessages((prev) => [...prev, messageData]);
     setMessage('');
     setSelectedImage(null); 
+    setSelectedVideo(null);
     socket.emit('send_message', messageData);
 
     try {
@@ -326,6 +376,15 @@ export default function ChatRoom({ chatUser, onBack }) {
                   </div>
                 )}
 
+                {/* Render Recorded Videos */}
+                {msg.video && (
+                  <div className="relative mb-2">
+                    <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
+                      <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
+                    </div>
+                  </div>
+                )}
+
                 {/* 🌟 RESTORED: BEAUTIFUL GRADIENT BUBBLES */}
                 {msg.text && (
                   <div className={`px-5 py-3.5 text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl ${
@@ -353,12 +412,13 @@ export default function ChatRoom({ chatUser, onBack }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* IMAGE PREVIEW */}
-      {selectedImage && (
+      {/* MEDIA PREVIEW */}
+      {(selectedImage || selectedVideo) && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-bottom-5">
            <div className="relative p-1 bg-[#151A25] border border-[#00F0FF] rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">
-              <img src={selectedImage} className="w-20 h-20 object-cover rounded-lg" alt="Preview"/>
-              <button onClick={() => setSelectedImage(null)} className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 shadow-lg text-white"><IoMdClose size={14}/></button>
+              {selectedImage && <img src={selectedImage} className="w-20 h-20 object-cover rounded-lg" alt="Preview"/>}
+              {selectedVideo && <video src={selectedVideo} autoPlay muted loop className="w-20 h-20 object-cover rounded-lg"/>}
+              <button onClick={() => { setSelectedImage(null); setSelectedVideo(null); }} className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 shadow-lg text-white"><IoMdClose size={14}/></button>
            </div>
         </div>
       )}
@@ -462,7 +522,7 @@ export default function ChatRoom({ chatUser, onBack }) {
         </div>
       )}
 
-      {/* 🌟 IN-APP CAMERA & FILTER OVERLAY 🌟 */}
+     {/* 🌟 IN-APP CAMERA & FILTER OVERLAY 🌟 */}
       {isCameraOpen && (
         <div className="absolute inset-0 z-[999999] bg-[#05070A] flex flex-col overflow-hidden">
           
@@ -472,46 +532,48 @@ export default function ChatRoom({ chatUser, onBack }) {
               <IoMdClose size={24} />
             </button>
             <div className="flex items-center gap-2">
-               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-               <span className="text-white font-bold tracking-widest text-xs uppercase shadow-black drop-shadow-md">Live Lens</span>
+               {isRecording && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>}
+               <span className="text-white font-bold tracking-widest text-xs uppercase shadow-black drop-shadow-md">
+                 {isRecording ? 'Recording...' : 'Live Lens'}
+               </span>
             </div>
-            <div className="w-10"></div> {/* Spacer to keep title centered */}
+            {/* Flip Camera Button */}
+            <button onClick={toggleCameraFacing} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
           </div>
 
-          {/* Live Video Feed (Acts as a mirror and applies CSS filter live) */}
+          {/* Live Video Feed */}
           <div className="relative flex-1 w-full h-full bg-black">
             <video 
               ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted
-              className="w-full h-full object-cover -scale-x-100" 
-              style={{ filter: filters[activeFilter].css }}
+              autoPlay playsInline muted 
+              className={`w-full h-full object-cover ${facingMode === 'user' ? '-scale-x-100' : ''}`} 
+              style={{ filter: filters[activeFilter].css }} 
             />
           </div>
 
-          {/* Bottom Controls: Filters & Capture */}
+          {/* Bottom Controls */}
           <div className="absolute bottom-0 w-full flex flex-col items-center pb-8 pt-16 bg-gradient-to-t from-black via-black/80 to-transparent z-20">
             
-            {/* Filter Swiper */}
+            {/* 🌟 PHOTO / VIDEO MODE TOGGLE */}
+            <div className="flex gap-6 mb-4 text-[11px] font-black tracking-widest text-white drop-shadow-md">
+              <button onClick={() => setCameraMode('photo')} className={`transition-all duration-300 ${cameraMode === 'photo' ? 'text-[#00F0FF] scale-125' : 'text-gray-400'}`}>PHOTO</button>
+              <button onClick={() => setCameraMode('video')} className={`transition-all duration-300 ${cameraMode === 'video' ? 'text-[#ff3366] scale-125' : 'text-gray-400'}`}>VIDEO</button>
+            </div>
+
+            {/* Filters */}
             <div className="w-full overflow-x-auto no-scrollbar flex gap-4 px-6 mb-6 snap-x">
               {filters.map((f, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setActiveFilter(i)}
-                  className={`snap-center shrink-0 w-16 h-16 rounded-full flex flex-col items-center justify-center border-2 transition-all duration-300 ${activeFilter === i ? 'border-[#00F0FF] bg-[#00F0FF]/20 text-[#00F0FF] scale-110 shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'border-white/20 bg-black/50 text-gray-300 hover:border-white/50 backdrop-blur-md'}`}
-                >
+                <button key={i} onClick={() => setActiveFilter(i)} className={`snap-center shrink-0 w-16 h-16 rounded-full flex flex-col items-center justify-center border-2 transition-all duration-300 ${activeFilter === i ? 'border-[#00F0FF] bg-[#00F0FF]/20 text-[#00F0FF] scale-110 shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'border-white/20 bg-black/50 text-gray-300 hover:border-white/50 backdrop-blur-md'}`}>
                   <span className="text-[10px] font-black tracking-wider uppercase">{f.name}</span>
                 </button>
               ))}
             </div>
 
-            {/* Huge Capture Button */}
-            <button 
-              onClick={capturePhoto} 
-              className="w-20 h-20 rounded-full border-[5px] border-white/50 flex items-center justify-center p-1 active:scale-95 transition-transform"
-            >
-              <div className="w-full h-full bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.8)]"></div>
+            {/* Smart Capture Button (Changes if recording) */}
+            <button onClick={handleCaptureClick} className={`w-20 h-20 rounded-full border-[5px] flex items-center justify-center p-1 transition-all ${isRecording ? 'border-red-500 scale-110' : 'border-white/50 active:scale-95'}`}>
+              <div className={`w-full h-full transition-all ${cameraMode === 'video' ? (isRecording ? 'bg-red-500 rounded-lg scale-50' : 'bg-red-500 rounded-full') : 'bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.8)]'}`}></div>
             </button>
           </div>
         </div>

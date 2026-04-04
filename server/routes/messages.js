@@ -14,6 +14,7 @@ const holoMessageSchema = new mongoose.Schema({
   // 🚨 FIX 2: Added image and video fields so MongoDB saves them!
   image: { type: String, default: "" }, 
   video: { type: String, default: "" }, 
+  audio: { type: String, default: "" },
   
   time: { type: String }
 }, { timestamps: true });

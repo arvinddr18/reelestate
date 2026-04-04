@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
 // 🌟 FUTURISTIC RADAR MENU ACTIONS (Reply Removed!) 🌟
@@ -113,6 +114,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
           {/* The Message Bubble */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
+            onTap={() => setShowRadial(true)} // 🚨 THIS ENABLES 1-TAP!
             className={`relative px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
@@ -168,7 +170,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
 
           {/* 🌟 RADIAL MENU (Now missing Reply!) 🌟 */}
           <AnimatePresence>
-            {showRadial && (
+            {showRadial && typeof document !== 'undefined' && createPortal(
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -206,7 +208,8 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
                     );
                   })}
                 </div>
-              </motion.div>
+              </motion.div>,
+              document.body // 🚨 THIS TELEPORTS IT ABOVE THE SIDEBAR!
             )}
           </AnimatePresence>
 

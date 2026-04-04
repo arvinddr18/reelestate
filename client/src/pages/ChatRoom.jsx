@@ -1,7 +1,7 @@
 import EmojiPicker from 'emoji-picker-react';
 import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin, IoMdFolder } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin, IoMdFolder, IoMdTrash } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -14,14 +14,15 @@ export default function ChatRoom({ chatUser, onBack }) {
   const { user: currentUser } = useAuth(); 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
-  const galleryInputRef = useRef(null); // 🌟 NEW: Strictly for the Gallery app
+  const galleryInputRef = useRef(null); // 🌟 Strictly for the Gallery app
   const cameraInputRef = useRef(null); 
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null); 
-  // 🌟 NEW: DRAG & CALL STATES 🌟
+  
+  // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
   const [startY, setStartY] = useState(0);
   const [audioDrag, setAudioDrag] = useState(0);
@@ -30,17 +31,17 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  // Function to add the clicked emoji to your message box
-  const handleEmojiClick = (emojiObject) => {
-    setMessage((prevMsg) => prevMsg + emojiObject.emoji);
-  };
+  // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  const [recordTime, setRecordTime] = useState(0);
+  const audioRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const timerRef = useRef(null);
 
-  // 🌟 NEW: IN-APP CAMERA & FILTER STATES 🌟
+  // 🌟 IN-APP CAMERA & FILTER STATES 🌟
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState(null); // For chat preview
-  
-  // Video Recording States
   const [cameraMode, setCameraMode] = useState('photo'); // 'photo' | 'video'
   const [isRecording, setIsRecording] = useState(false);
   const [facingMode, setFacingMode] = useState('user'); // front | back camera
@@ -62,10 +63,89 @@ export default function ChatRoom({ chatUser, onBack }) {
 
   const myId = currentUser?._id || currentUser?.id;
   const friendId = chatUser?._id || chatUser?.id;
-  
   const room = myId && friendId ? [myId, friendId].sort().join('_') : null;
 
-  // 🌟 DRAG LOGIC: Tracks finger/mouse movement to stretch the string 🌟
+  // Function to add the clicked emoji to your message box
+  const handleEmojiClick = (emojiObject) => {
+    setMessage((prevMsg) => prevMsg + emojiObject.emoji);
+  };
+
+  // ==========================================
+  // 🌟 AUDIO RECORDING ENGINE (PROPERLY PLACED) 🌟
+  // ==========================================
+  const startRecordingAudio = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      audioRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          sendAudioMessage(reader.result); // Auto-sends when recording stops!
+        };
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecordingAudio(true);
+      setRecordTime(0);
+      timerRef.current = setInterval(() => { setRecordTime((prev) => prev + 1); }, 1000);
+    } catch (err) {
+      console.error("Mic access denied", err);
+      alert("Please allow microphone access to send voice notes.");
+    }
+  };
+
+  const cancelAudioRecording = () => {
+    if (audioRecorderRef.current) {
+      audioRecorderRef.current.onstop = null; // Kills the save logic
+      audioRecorderRef.current.stop();
+      audioRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+    }
+    clearInterval(timerRef.current);
+    setIsRecordingAudio(false);
+    setRecordTime(0);
+  };
+
+  const stopAndSendAudio = () => {
+    if (audioRecorderRef.current) audioRecorderRef.current.stop(); // Triggers the send function
+    clearInterval(timerRef.current);
+    setIsRecordingAudio(false);
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const sendAudioMessage = async (audioBase64) => {
+    if (!room || !myId) return;
+    const messageData = {
+      room, text: "", image: null, video: null,
+      audio: audioBase64, // 🌟 The new audio payload
+      senderId: myId,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    setMessages((prev) => [...prev, messageData]);
+    socket.emit('send_message', messageData);
+    try {
+      const token = localStorage.getItem('reelestate_token');
+      await axios.post(`${API_URL}/api/messages`, messageData, { headers: { Authorization: `Bearer ${token}` } });
+    } catch (err) { console.error(err); }
+  };
+
+  // ==========================================
+  // 🌟 DRAG LOGIC: Tracks finger/mouse movement 🌟
+  // ==========================================
   useEffect(() => {
     if (!isDragging) return;
 
@@ -105,11 +185,12 @@ export default function ChatRoom({ chatUser, onBack }) {
     };
   }, [isDragging, startY, audioDrag, videoDrag]);
 
+  // ==========================================
   // 🌟 IN-APP CAMERA ENGINE 🌟
+  // ==========================================
   const openCamera = async (mode = facingMode) => {
     try {
       if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-      // Request mic ONLY if we are in video mode!
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: mode }, 
         audio: cameraMode === 'video' 
@@ -129,7 +210,6 @@ export default function ChatRoom({ chatUser, onBack }) {
     openCamera(newMode);
   };
 
-  // Reconnect if user switches between Photo/Video to grab/drop Mic
   useEffect(() => {
     if (isCameraOpen) openCamera(facingMode);
   }, [cameraMode]);
@@ -186,21 +266,21 @@ export default function ChatRoom({ chatUser, onBack }) {
     return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
   }, []);
 
-  // Connects the video feed when the camera opens
   useEffect(() => {
     if (isCameraOpen && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
     }
   }, [isCameraOpen]);
   
-  // Cleans up the camera if the user leaves the page
   useEffect(() => {
     return () => {
       if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
     };
   }, []);
 
-  // Socket & History Fetching
+  // ==========================================
+  // 🌟 SOCKET & HISTORY FETCHING 🌟
+  // ==========================================
   useEffect(() => {
     if (!myId || !friendId || !room) return;
     
@@ -247,7 +327,7 @@ export default function ChatRoom({ chatUser, onBack }) {
       room,
       text: message,
       image: selectedImage, 
-      video: selectedVideo, // Added video payload!
+      video: selectedVideo, 
       senderId: myId, 
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
@@ -256,6 +336,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     setMessage('');
     setSelectedImage(null); 
     setSelectedVideo(null);
+    setShowEmojiPicker(false);
     socket.emit('send_message', messageData);
 
     try {
@@ -271,21 +352,18 @@ export default function ChatRoom({ chatUser, onBack }) {
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
 
-{/* 🌟 NEW: DYNAMIC USER BACKGROUND (Perfectly Balanced Dim) 🌟 */}
+      {/* 🌟 DYNAMIC USER BACKGROUND 🌟 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
         {chatUser.profilePhoto ? (
           <>
-            {/* Boosted opacity back up to 40% so it's actually visible! */}
             <div 
               className="absolute inset-0 bg-cover bg-center opacity-40 blur-[10px] scale-110" 
               style={{ backgroundImage: `url(${chatUser.profilePhoto})` }}
             />
-            {/* Added a smooth 75% dark tint over it so text stays readable */}
             <div className="absolute inset-0 bg-[#05070A]/75" />
           </>
         ) : (
           <>
-            {/* Fallback if no photo */}
             <div className="absolute inset-0 bg-[#05070A]/80" />
             <span className="text-[50vw] md:text-[30vw] font-black text-white/5 select-none drop-shadow-2xl">
               {(chatUser.fullName || chatUser.username || 'U')[0].toUpperCase()}
@@ -319,15 +397,13 @@ export default function ChatRoom({ chatUser, onBack }) {
         
         {/* 🌟 HANGING UPLINK TAGS (DRAGGABLE) 🌟 */}
         <div className="flex items-start h-full absolute top-0 right-2 md:right-8">
-          
           {/* AUDIO CALL PULL-STRING */}
           <div 
             className="group flex flex-col items-center mr-2 md:mr-4 mt-0 cursor-grab active:cursor-grabbing"
             onMouseDown={(e) => { setIsDragging('audio'); setStartY(e.clientY); }}
             onTouchStart={(e) => { setIsDragging('audio'); setStartY(e.touches[0].clientY); }}
-            style={{ touchAction: 'none' }} // Prevents mobile browser from scrolling while pulling
+            style={{ touchAction: 'none' }}
           >
-            {/* This string stretches dynamically when you pull! */}
             <div 
               className={`w-[2px] bg-gradient-to-b from-transparent to-[#00f0ff]/50 ${isDragging === 'audio' ? '' : 'transition-all duration-300'}`}
               style={{ height: `${24 + (isDragging === 'audio' ? audioDrag : 0)}px` }}
@@ -365,8 +441,6 @@ export default function ChatRoom({ chatUser, onBack }) {
 
       {/* 2. FLEX-1 MESSAGES */}
       <div className="flex-1 min-h-0 relative w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar z-10">
-        
-        {/* 🌟 RESTORED: ENCRYPTION BADGE */}
         <div className="flex justify-center mb-2 mt-2">
           <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
         </div>
@@ -386,7 +460,6 @@ export default function ChatRoom({ chatUser, onBack }) {
                   </div>
                 )}
 
-                {/* Render Recorded Videos */}
                 {msg.video && (
                   <div className="relative mb-2">
                     <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
@@ -395,7 +468,12 @@ export default function ChatRoom({ chatUser, onBack }) {
                   </div>
                 )}
 
-                {/* 🌟 RESTORED: BEAUTIFUL GRADIENT BUBBLES */}
+                {msg.audio && (
+                  <div className="relative mt-1 mb-2">
+                    <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
+                  </div>
+                )}
+
                 {msg.text && (
                   <AnimatedMessageBubble msg={msg} isMe={isMe} />
                 )}
@@ -430,7 +508,7 @@ export default function ChatRoom({ chatUser, onBack }) {
       {/* 3. FLEX-NONE FOOTER */}
       <div className="shrink-0 flex-none relative w-full bg-[#05070A]/98 border-t border-white/10 pt-2 pb-2 md:pb-6 px-2 md:px-8 z-20">
         
-        {/* 🌟 RESTORED: SMART AI REPLIES ROW */}
+        {/* SMART AI REPLIES ROW */}
         <div className="relative w-full max-w-3xl mx-auto flex items-center justify-start gap-2 overflow-x-auto no-scrollbar px-2 pb-2">
           <button className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/5 border border-[#00f0ff]/30 text-white text-[12px] font-bold shadow-[0_0_10px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff]/20 hover:scale-105 transition-all backdrop-blur-md">
             <span className="text-[#00f0ff]">✨</span> Sounds perfect!
@@ -443,121 +521,119 @@ export default function ChatRoom({ chatUser, onBack }) {
           </button>
         </div>
 
-        {/* 🌟 RESTORED: PREMIUM ANIMATED INPUT BAR WITH ALL ICONS */}
-        <form onSubmit={handleSend} className="relative w-full max-w-3xl mx-auto flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
-          
-        {/* 🌟 CUSTOM FLOATING ATTACHMENT MENU 🌟 */}
-          {showAttachMenu && (
-            <div className="absolute bottom-[120%] left-0 md:left-4 p-5 bg-[#1A1F2E]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-wrap gap-6 w-[280px] z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200">
-               
-               {/* Gallery (Now forces the phone's Native Photo Gallery) */}
-               <button type="button" onClick={() => { galleryInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
-                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdImage size={26} /></div>
-                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Gallery</span>
-               </button>
-               
-               {/* Camera */}
-               <button type="button" onClick={() => { openCamera(facingMode); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
-                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdCamera size={26} /></div>
-                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Camera</span>
-               </button>
-               
-               {/* Document */}
-               <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
-                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ffbb00] to-[#ff3366] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdDocument size={26} /></div>
-                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Document</span>
-               </button>
-
-               {/* 🌟 NEW: All Files */}
-               <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
-                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdFolder size={26} /></div>
-                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Files</span>
-               </button>
-               
-               {/* Location */}
-               <button type="button" onClick={() => { alert("Location sharing coming soon!"); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
-                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00ff9d] to-[#00b8ff] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdPin size={26} /></div>
-                 <span className="text-[11px] text-gray-300 font-bold tracking-wider">Location</span>
-               </button>
-            </div>
-          )}
-
-          {/* Input Bar Left Side */}
-          <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-0.5 pl-1'}`}>
-            
-            <button type="button" onClick={() => setShowAttachMenu(!showAttachMenu)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${showAttachMenu ? 'bg-white/20 text-white rotate-45' : 'bg-transparent hover:bg-white/10 text-gray-400 hover:text-white'}`}>
-               <IoMdAdd size={20} />
+        {/* 🌟 DYNAMIC INPUT BAR / RECORDING DASHBOARD 🌟 */}
+        {isRecordingAudio ? (
+          <div className="relative w-full max-w-3xl mx-auto flex items-center justify-between bg-[#ff3366]/10 backdrop-blur-2xl border border-[#ff3366]/30 p-1 md:p-1.5 rounded-full shadow-[0_0_40px_rgba(255,51,102,0.2)] animate-in slide-in-from-right-10 duration-300">
+            <button type="button" onClick={cancelAudioRecording} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-500 transition-all hover:scale-110 ml-1">
+              <IoMdTrash size={20} />
             </button>
-            
-            {/* 🚨 THE FIX: TWO SEPARATE HIDDEN INPUTS 🚨 */}
-            {/* 1. Gallery Only: Forces phone to open the Native Gallery App */}
-           {/* 1. Gallery Only: Forces phone to open the Native Gallery App */}
-            <input type="file" ref={galleryInputRef} hidden accept="image/*, video/*, .mp4, .mov, .avi" onChange={handleImageSelect} />
-            
-            {/* 2. Documents & All Files: Opens the File Explorer */}
-            <input type="file" ref={fileInputRef} hidden accept="*" onChange={handleImageSelect} />
-            
-            {/* Direct Camera Trigger */}
-            <button type="button" onClick={() => openCamera(facingMode)} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
-              <IoMdCamera size={18} />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1 h-6">
+                 <span className="w-1 h-3 bg-[#ff3366] rounded-full animate-[bounce_1s_infinite]"></span>
+                 <span className="w-1 h-5 bg-[#ff3366] rounded-full animate-[bounce_1s_infinite_0.2s]"></span>
+                 <span className="w-1 h-4 bg-[#ff3366] rounded-full animate-[bounce_1s_infinite_0.4s]"></span>
+                 <span className="w-1 h-6 bg-[#ff3366] rounded-full animate-[bounce_1s_infinite_0.1s]"></span>
+                 <span className="w-1 h-3 bg-[#ff3366] rounded-full animate-[bounce_1s_infinite_0.5s]"></span>
+              </div>
+              <span className="text-[#ff3366] font-mono font-bold tracking-widest text-sm animate-pulse">
+                {formatTime(recordTime)}
+              </span>
+            </div>
+            <button type="button" onClick={stopAndSendAudio} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-[#ffbb00] to-[#ff3366] flex items-center justify-center text-white shadow-[0_0_15px_rgba(255,51,102,0.5)] hover:scale-110 transition-transform mr-0.5">
+              <IoMdSend size={18} className="translate-x-[1px]" />
             </button>
           </div>
-          {/* Text Input */}
-          <input 
-            type="text" 
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              socket.emit('typing', room); 
-            }}
-            onBlur={() => socket.emit('stop_typing', room)}
-            placeholder="Message..."
-            className={`flex-1 bg-transparent text-white text-[16px] md:text-[15px] outline-none placeholder-gray-400 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-3' : 'pl-0'}`}
-          />
+        ) : (
+          <form onSubmit={handleSend} className="relative w-full max-w-3xl mx-auto flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
+            
+            {showAttachMenu && (
+              <div className="absolute bottom-[120%] left-0 md:left-4 p-5 bg-[#1A1F2E]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-wrap gap-6 w-[280px] z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200">
+                 <button type="button" onClick={() => { galleryInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdImage size={26} /></div>
+                   <span className="text-[11px] text-gray-300 font-bold tracking-wider">Gallery</span>
+                 </button>
+                 <button type="button" onClick={() => { openCamera(facingMode); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdCamera size={26} /></div>
+                   <span className="text-[11px] text-gray-300 font-bold tracking-wider">Camera</span>
+                 </button>
+                 <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#ffbb00] to-[#ff3366] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdDocument size={26} /></div>
+                   <span className="text-[11px] text-gray-300 font-bold tracking-wider">Document</span>
+                 </button>
+                 <button type="button" onClick={() => { fileInputRef.current.click(); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdFolder size={26} /></div>
+                   <span className="text-[11px] text-gray-300 font-bold tracking-wider">Files</span>
+                 </button>
+                 <button type="button" onClick={() => { alert("Location sharing coming soon!"); setShowAttachMenu(false); }} className="flex flex-col items-center gap-2 w-16 group">
+                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00ff9d] to-[#00b8ff] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><IoMdPin size={26} /></div>
+                   <span className="text-[11px] text-gray-300 font-bold tracking-wider">Location</span>
+                 </button>
+              </div>
+            )}
 
-          {/* 🌟 EMOJI PICKER POPUP 🌟 */}
-          {showEmojiPicker && (
-            <div className="absolute bottom-[120%] right-0 md:right-10 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden border border-white/10">
-              <EmojiPicker 
-                theme="dark" 
-                onEmojiClick={handleEmojiClick}
-                autoFocusSearch={false}
-                width={300}
-                height={400}
-                // Customizing it so it matches your dark theme perfectly
-                style={{ backgroundColor: '#1A1F2E', borderColor: 'rgba(255,255,255,0.1)' }}
-              />
+            <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-0.5 pl-1'}`}>
+              <button type="button" onClick={() => setShowAttachMenu(!showAttachMenu)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${showAttachMenu ? 'bg-white/20 text-white rotate-45' : 'bg-transparent hover:bg-white/10 text-gray-400 hover:text-white'}`}>
+                 <IoMdAdd size={20} />
+              </button>
+              <input type="file" ref={galleryInputRef} hidden accept="image/*, video/*, .mp4, .mov, .avi" onChange={handleImageSelect} />
+              <input type="file" ref={fileInputRef} hidden accept="*" onChange={handleImageSelect} />
+              <button type="button" onClick={() => openCamera(facingMode)} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#0057FF]/10 hover:bg-[#0057FF]/20 flex items-center justify-center text-[#00F0FF] transition-colors shrink-0">
+                <IoMdCamera size={18} />
+              </button>
             </div>
-          )}
+            
+            <input 
+              type="text" 
+              value={message}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                socket.emit('typing', room); 
+              }}
+              onBlur={() => socket.emit('stop_typing', room)}
+              placeholder="Message..."
+              className={`flex-1 bg-transparent text-white text-[16px] md:text-[15px] outline-none placeholder-gray-400 font-medium min-w-0 transition-all duration-300 ${message.length > 0 ? 'pl-3' : 'pl-0'}`}
+            />
 
-          <div className={`flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-1 md:gap-2 mr-1 md:mr-2'}`}>
-            
-            {/* 🚨 THE FIX: Added onClick to toggle the Emoji Menu */}
-            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all shrink-0 border border-transparent ${showEmojiPicker ? 'bg-white/20 text-white' : 'bg-white/5 hover:bg-white/15 text-[#ffbb00] hover:text-white hover:border-[#ffbb00]/30'}`}>
-              <svg className="w-3.5 h-3.5 md:w-4 md:h-4 drop-shadow-[0_0_5px_rgba(255,187,0,0.5)]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 8c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-7 0c.83 0 1.5.67 1.5 1.5S9.33 13 8.5 13 7 12.33 7 11.5 7.67 10 8.5 10zm3.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/>
-              </svg>
+            {showEmojiPicker && (
+              <div className="absolute bottom-[120%] right-0 md:right-10 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden border border-white/10">
+                <EmojiPicker 
+                  theme="dark" 
+                  onEmojiClick={handleEmojiClick}
+                  autoFocusSearch={false}
+                  width={300}
+                  height={400}
+                  style={{ backgroundColor: '#1A1F2E', borderColor: 'rgba(255,255,255,0.1)' }}
+                />
+              </div>
+            )}
+
+            <div className={`flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-1 md:gap-2 mr-1 md:mr-2'}`}>
+              <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all shrink-0 border border-transparent ${showEmojiPicker ? 'bg-white/20 text-white' : 'bg-white/5 hover:bg-white/15 text-[#ffbb00] hover:text-white hover:border-[#ffbb00]/30'}`}>
+                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 drop-shadow-[0_0_5px_rgba(255,187,0,0.5)]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 8c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-7 0c.83 0 1.5.67 1.5 1.5S9.33 13 8.5 13 7 12.33 7 11.5 7.67 10 8.5 10zm3.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/>
+                </svg>
+              </button>
+              
+              <button type="button" onClick={startRecordingAudio} className="relative w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all shrink-0">
+                <IoMdMic size={18} className="relative z-10 md:text-[22px]" />
+              </button>
+            </div>
+
+            <button type="submit" className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-[0_0_15px_rgba(193,31,112,0.5)] shrink-0 mr-0.5 md:mr-1">
+              <IoMdSend size={18} className="translate-x-[1px]" />
             </button>
-            
-            <button type="button" className="relative w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all shrink-0">
-              <IoMdMic size={18} className="relative z-10 md:text-[22px]" />
-            </button>
-          </div>
-          
-          {/* Send Button (Always Visible) */}
-          <button type="submit" className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-[0_0_15px_rgba(193,31,112,0.5)] shrink-0 mr-0.5 md:mr-1">
-            <IoMdSend size={18} className="translate-x-[1px]" />
-          </button>
-        </form>
+          </form>
+        )}
       </div>
-      {/* 🌟 CALLING OVERLAY UI (Appears when button is dragged down) 🌟 */}
+
+      {/* 🌟 CALLING OVERLAY UI 🌟 */}
       {activeCall && (
         <div className="absolute inset-0 z-[99999] bg-[#05070A]/95 backdrop-blur-3xl flex flex-col items-center justify-center text-white transition-opacity duration-300">
            <div className={`absolute inset-0 bg-[radial-gradient(circle,_rgba(0,240,255,0.15)_0%,_rgba(0,0,0,0)_70%)] animate-pulse ${activeCall === 'video' ? 'bg-[radial-gradient(circle,_rgba(188,0,221,0.15)_0%,_rgba(0,0,0,0)_70%)]' : ''}`} />
            
            <div className="relative z-10 flex flex-col items-center">
               <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full border-4 p-2 mb-6 shadow-2xl ${activeCall === 'video' ? 'border-[#bc00dd]/30 shadow-[#bc00dd]/20' : 'border-[#00f0ff]/30 shadow-[#00f0ff]/20'}`}>
-                  <img src={chatUser.profilePhoto || "default"} className="w-full h-full rounded-full object-cover" alt="Profile" />
+                 <img src={chatUser.profilePhoto || "default"} className="w-full h-full rounded-full object-cover" alt="Profile" />
               </div>
               <h2 className="text-2xl md:text-3xl font-black tracking-wide mb-2 drop-shadow-lg">{chatUser.fullName}</h2>
               <p className={`animate-pulse tracking-widest text-sm font-bold uppercase drop-shadow-md ${activeCall === 'video' ? 'text-[#bc00dd]' : 'text-[#00f0ff]'}`}>
@@ -565,7 +641,6 @@ export default function ChatRoom({ chatUser, onBack }) {
               </p>
            </div>
 
-           {/* FAKE LOCAL VIDEO FEED FOR VIDEO CALLS */}
            {activeCall === 'video' && (
                <div className="absolute bottom-32 right-6 w-24 h-36 md:w-32 md:h-48 bg-[#121826] border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] flex items-center justify-center">
                    <IoMdCamera size={30} className="text-white/20" />
@@ -581,11 +656,9 @@ export default function ChatRoom({ chatUser, onBack }) {
         </div>
       )}
 
-     {/* 🌟 IN-APP CAMERA & FILTER OVERLAY 🌟 */}
+      {/* 🌟 IN-APP CAMERA & FILTER OVERLAY 🌟 */}
       {isCameraOpen && (
         <div className="absolute inset-0 z-[999999] bg-[#05070A] flex flex-col overflow-hidden">
-          
-          {/* Top Bar */}
           <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/60 to-transparent">
             <button onClick={closeCamera} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-red-500 transition-colors">
               <IoMdClose size={24} />
@@ -596,13 +669,11 @@ export default function ChatRoom({ chatUser, onBack }) {
                  {isRecording ? 'Recording...' : 'Live Lens'}
                </span>
             </div>
-            {/* Flip Camera Button */}
             <button onClick={toggleCameraFacing} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
 
-          {/* Live Video Feed */}
           <div className="relative flex-1 w-full h-full bg-black">
             <video 
               ref={videoRef} 
@@ -612,16 +683,12 @@ export default function ChatRoom({ chatUser, onBack }) {
             />
           </div>
 
-          {/* Bottom Controls */}
           <div className="absolute bottom-0 w-full flex flex-col items-center pb-8 pt-16 bg-gradient-to-t from-black via-black/80 to-transparent z-20">
-            
-            {/* 🌟 PHOTO / VIDEO MODE TOGGLE */}
             <div className="flex gap-6 mb-4 text-[11px] font-black tracking-widest text-white drop-shadow-md">
               <button onClick={() => setCameraMode('photo')} className={`transition-all duration-300 ${cameraMode === 'photo' ? 'text-[#00F0FF] scale-125' : 'text-gray-400'}`}>PHOTO</button>
               <button onClick={() => setCameraMode('video')} className={`transition-all duration-300 ${cameraMode === 'video' ? 'text-[#ff3366] scale-125' : 'text-gray-400'}`}>VIDEO</button>
             </div>
 
-            {/* Filters */}
             <div className="w-full overflow-x-auto no-scrollbar flex gap-4 px-6 mb-6 snap-x">
               {filters.map((f, i) => (
                 <button key={i} onClick={() => setActiveFilter(i)} className={`snap-center shrink-0 w-16 h-16 rounded-full flex flex-col items-center justify-center border-2 transition-all duration-300 ${activeFilter === i ? 'border-[#00F0FF] bg-[#00F0FF]/20 text-[#00F0FF] scale-110 shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'border-white/20 bg-black/50 text-gray-300 hover:border-white/50 backdrop-blur-md'}`}>
@@ -630,7 +697,6 @@ export default function ChatRoom({ chatUser, onBack }) {
               ))}
             </div>
 
-            {/* Smart Capture Button (Changes if recording) */}
             <button onClick={handleCaptureClick} className={`w-20 h-20 rounded-full border-[5px] flex items-center justify-center p-1 transition-all ${isRecording ? 'border-red-500 scale-110' : 'border-white/50 active:scale-95'}`}>
               <div className={`w-full h-full transition-all ${cameraMode === 'video' ? (isRecording ? 'bg-red-500 rounded-lg scale-50' : 'bg-red-500 rounded-full') : 'bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.8)]'}`}></div>
             </button>

@@ -75,7 +75,14 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   const startRecordingAudio = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+     // 🚨 THE FIX: Added professional audio filters to remove static and echo!
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       const mediaRecorder = new MediaRecorder(stream);
       audioRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];

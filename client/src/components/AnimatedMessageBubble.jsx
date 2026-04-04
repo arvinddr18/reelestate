@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
-// 🌟 FUTURISTIC RADAR MENU ACTIONS (Reply Removed!) 🌟
+// 🌟 FUTURISTIC RADAR MENU ACTIONS (Reply is removed for swipe feature!) 🌟
 const MENU_ACTIONS = [
   { id: 'react', icon: '❤️', label: 'React', color: 'text-[#ff3366]', shadow: 'rgba(255,51,102,0.5)' },
   { id: 'save', icon: '⭐', label: 'Save', color: 'text-[#ffbb00]', shadow: 'rgba(255,187,0,0.5)' },
@@ -17,17 +18,15 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   const holdTimer = useRef(null);
 
   // ==========================================
-  // 🌟 NEW: PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
+  // 🌟 PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
   // ==========================================
   const x = useMotionValue(0);
   
-  // If my message, pull left (-). If their message, pull right (+).
-  // This calculates how bright and big the Reply icon gets as you pull!
   const replyOpacity = useTransform(x, isMe ? [0, -60] : [0, 60], [0, 1]);
   const replyScale = useTransform(x, isMe ? [0, -60] : [0, 60], [0.5, 1.1]);
 
   const handleDragEnd = (e, info) => {
-    const threshold = 60; // How far you have to swipe to trigger it
+    const threshold = 60; 
     if (isMe && info.offset.x < -threshold) {
       triggerReply();
     } else if (!isMe && info.offset.x > threshold) {
@@ -36,7 +35,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   };
 
   const triggerReply = () => {
-    window.navigator.vibrate?.(50); // Little haptic bump on mobile
+    window.navigator.vibrate?.(50); 
     alert("Swiped to Reply! ↩️ (Will connect to the input bar next!)");
   };
 
@@ -81,7 +80,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
       {/* 🌟 SWIPE-TO-REPLY CONTAINER 🌟 */}
       <div className="relative max-w-full flex items-center">
         
-        {/* THE GLOWING REPLY ICON (Reveals behind the bubble as you swipe) */}
+        {/* THE GLOWING REPLY ICON */}
         <motion.div 
           style={{ opacity: replyOpacity, scale: replyScale }}
           className={`absolute ${isMe ? '-right-10' : '-left-10'} w-8 h-8 rounded-full bg-[#1A1F2E]/90 border border-[#00f0ff]/50 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center text-[#00f0ff] z-0`}
@@ -92,10 +91,10 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
         {/* 🌟 DRAGGABLE MESSAGE WRAPPER 🌟 */}
         <motion.div 
           drag="x"
-          dragConstraints={{ left: 0, right: 0 }} // Forces it to rubber-band back to center
-          dragElastic={0.15} // Gives it that heavy, premium pulling feel
+          dragConstraints={{ left: 0, right: 0 }} 
+          dragElastic={0.15} 
           onDragEnd={handleDragEnd}
-          style={{ x }} // Connects the bubble's movement to our icon math above
+          style={{ x }} 
           className={`max-w-full flex flex-col relative z-10 cursor-grab active:cursor-grabbing ${isMe ? 'items-end' : 'items-start'}`}
           onDoubleClick={handleDoubleClick}
           onPointerDown={handlePointerDown}
@@ -166,16 +165,16 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
             )}
           </AnimatePresence>
 
-          {/* 🌟 RADIAL MENU (Now missing Reply!) 🌟 */}
+          {/* 🌟 RADIAL MENU (Now Centered Perfectly on Screen using Portals!) 🌟 */}
           <AnimatePresence>
-            {showRadial && (
+            {showRadial && typeof document !== 'undefined' && createPortal(
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-default"
+                className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-default"
                 onClick={(e) => { e.stopPropagation(); setShowRadial(false); }} 
-                onPointerDown={(e) => e.stopPropagation()} // Prevents the drag from fighting the menu
+                onPointerDown={(e) => e.stopPropagation()} 
               >
                 <div className="relative" onClick={e => e.stopPropagation()}>
                   {MENU_ACTIONS.map((action, i) => {
@@ -206,7 +205,8 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
                     );
                   })}
                 </div>
-              </motion.div>
+              </motion.div>,
+              document.body // <-- This tells React to render it outside the message!
             )}
           </AnimatePresence>
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
@@ -14,8 +14,6 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
-  
-  const holdTimer = useRef(null);
 
   // ==========================================
   // 🌟 PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
@@ -48,18 +46,6 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
       setShowBurst(false);
       if (!reaction) setReaction('❤️'); 
     }, 1400);
-  };
-
-  const handlePointerDown = () => {
-    holdTimer.current = setTimeout(() => {
-      setShowRadial(true);
-      window.navigator.vibrate?.(50); 
-    }, 500); 
-  };
-
-  // 🚨 NEW: Clears the timer if you let go OR if you start dragging!
-  const clearHoldTimer = () => {
-    if (holdTimer.current) clearTimeout(holdTimer.current);
   };
 
   const handleAction = (actionId) => {
@@ -95,7 +81,6 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
           dragConstraints={{ left: 0, right: 0 }} 
           dragElastic={0.15} 
           onDragEnd={handleDragEnd}
-          onDragStart={clearHoldTimer} // 🚨 FIX: Cancel long-press if you start swiping!
           style={{ x }} 
           className={`max-w-full flex flex-col relative z-10 cursor-grab active:cursor-grabbing ${isMe ? 'items-end' : 'items-start'}`}
         >
@@ -107,14 +92,11 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE (Clicks and Holds are now attached directly here!) */}
+          {/* 🚨 THE MESSAGE BUBBLE (Now uses onTap for instant 1-tap menu!) */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
             onDoubleClick={handleDoubleClick}
-            onPointerDown={handlePointerDown}
-            onPointerUp={clearHoldTimer}
-            onPointerLeave={clearHoldTimer}
-            // 🚨 FIX: Added select-none so text highlighting doesn't block the touch!
+            onTap={() => setShowRadial(true)} // 🚨 FIX: Instant 1-tap menu trigger!
             className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 

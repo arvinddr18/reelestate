@@ -15,6 +15,7 @@ const holoMessageSchema = new mongoose.Schema({
   image: { type: String, default: "" }, 
   video: { type: String, default: "" }, 
   audio: { type: String, default: "" },
+  replyTo: { type: Object, default: null }, // 🚨 ADD THIS LINE!
   
   time: { type: String }
 }, { timestamps: true });

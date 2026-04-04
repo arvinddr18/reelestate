@@ -9,7 +9,7 @@ const MENU_ACTIONS = [
   { id: 'delete', icon: '🗑️', label: 'Delete', color: 'text-red-500', shadow: 'rgba(239,68,68,0.5)' }
 ];
 
-export default function AnimatedMessageBubble({ msg, isMe }) {
+export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
@@ -36,8 +36,8 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   };
 
   const triggerReply = () => {
-    window.navigator.vibrate?.(50); // Little haptic bump on mobile
-    alert("Swiped to Reply! ↩️ (Will connect to the input bar next!)");
+    window.navigator.vibrate?.(50); 
+    if (onReply) onReply(); // 🚨 This sends the message back to ChatRoom!
   };
 
   // ==========================================
@@ -81,15 +81,15 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
       {/* 🌟 SWIPE-TO-REPLY CONTAINER 🌟 */}
       <div className="relative max-w-full flex items-center">
         
-        {/* THE GLOWING REPLY ICON (Reveals behind the bubble as you swipe) */}
+      {/* THE GLOWING REPLY ICON (Reveals behind the bubble as you swipe) */}
         <motion.div 
           style={{ opacity: replyOpacity, scale: replyScale }}
-          className={`absolute ${isMe ? '-right-10' : '-left-10'} w-8 h-8 rounded-full bg-[#1A1F2E]/90 border border-[#00f0ff]/50 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center text-[#00f0ff] z-0`}
+          className={`absolute ${isMe ? '-right-10' : '-left-10'} w-8 h-8 rounded-full bg-[#1A1F2E]/90 border border-[#00f0ff]/50 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center text-[#00f0ff] z-0 pointer-events-none`}
         >
           ↩️
         </motion.div>
-
-        {/* 🌟 DRAGGABLE MESSAGE WRAPPER 🌟 */}
+        
+       {/* 🌟 DRAGGABLE MESSAGE WRAPPER 🌟 */}
         <motion.div 
           drag="x"
           dragConstraints={{ left: 0, right: 0 }} // Forces it to rubber-band back to center
@@ -101,7 +101,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
-        >
+        ></motion.div>
           
           {/* Breathing Background Glow */}
           <motion.div
@@ -120,8 +120,18 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
               : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
             }`}
           >
-            {msg.text}
-          </motion.div>
+           {/* 🌟 REPLIED MESSAGE PREVIEW INSIDE BUBBLE 🌟 */}
+          {msg.replyTo && (
+            <div className={`mb-1.5 p-2 rounded-lg border-l-[3px] text-xs opacity-90 backdrop-blur-md ${isMe ? 'bg-black/20 border-white/50 text-white' : 'bg-white/10 border-[#00f0ff] text-white'}`}>
+              <div className="font-black text-[9px] uppercase mb-0.5 opacity-70 tracking-widest">
+                Replying to
+              </div>
+              <div className="truncate max-w-[200px] md:max-w-[300px]">
+                {msg.replyTo.text || "Attachment"}
+              </div>
+            </div>
+          )}
+          <span className="relative z-10">{msg.text}</span>
 
           {/* Timestamp */}
           <div className={`flex items-center gap-1.5 mt-1.5 w-full ${isMe ? 'justify-end' : 'justify-start'}`}>

@@ -21,6 +21,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null); 
+  const [replyingTo, setReplyingTo] = useState(null);
   
   // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
@@ -337,9 +338,11 @@ export default function ChatRoom({ chatUser, onBack }) {
     const messageData = {
       room,
       text: message,
-      image: selectedImage, 
-      video: selectedVideo, 
-      senderId: myId, 
+      image: selectedImage,
+      video: selectedVideo,
+      audio: null,
+      replyTo: replyingTo ? { text: replyingTo.text, senderId: replyingTo.senderId } : null,
+      senderId: myId,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -348,6 +351,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     setSelectedImage(null); 
     setSelectedVideo(null);
     setShowEmojiPicker(false);
+    setReplyingTo(null); // 🚨 This clears the reply popup after you hit send!
     socket.emit('send_message', messageData);
 
     try {
@@ -486,8 +490,12 @@ export default function ChatRoom({ chatUser, onBack }) {
                 )}
 
                 {msg.text && (
-                  <AnimatedMessageBubble msg={msg} isMe={isMe} />
-                )}
+  <AnimatedMessageBubble 
+    msg={msg} 
+    isMe={isMe} 
+    onReply={() => setReplyingTo(msg)} // 🚨 Catches the swipe!
+  />
+)}
                 
                 <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70 drop-shadow-sm' : 'text-gray-500'}`}>{msg.time}</span>
@@ -555,6 +563,26 @@ export default function ChatRoom({ chatUser, onBack }) {
             </button>
           </div>
         ) : (
+        <>
+        {/* 🌟 REPLYING TO POPUP UI 🌟 */}
+        {replyingTo && (
+          <div className="w-full max-w-3xl mx-auto mb-2 flex items-center justify-between bg-[#1A1F2E]/95 backdrop-blur-2xl border-l-[3px] border-[#00f0ff] p-2 md:p-3 rounded-r-xl rounded-l-sm shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-2">
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[#00f0ff] text-[10px] font-black uppercase tracking-widest mb-0.5">
+                Replying to {replyingTo.senderId === myId ? 'Yourself' : chatUser.fullName}
+              </span>
+              <span className="text-gray-300 text-xs md:text-sm truncate max-w-[200px] md:max-w-[400px]">
+                {replyingTo.text || 'Attachment'}
+              </span>
+            </div>
+            <button onClick={() => setReplyingTo(null)} className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+              <IoMdClose size={16} />
+            </button>
+          </div>
+        )}
+
+        
+
           <form onSubmit={handleSend} className="relative w-full max-w-3xl mx-auto flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
             
             {showAttachMenu && (
@@ -634,6 +662,7 @@ export default function ChatRoom({ chatUser, onBack }) {
               <IoMdSend size={18} className="translate-x-[1px]" />
             </button>
           </form>
+          </>
         )}
       </div>
 

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
-// 🌟 FUTURISTIC RADAR MENU ACTIONS 🌟
+// 🌟 FUTURISTIC RADAR MENU ACTIONS (Reply Removed!) 🌟
 const MENU_ACTIONS = [
   { id: 'react', icon: '❤️', label: 'React', color: 'text-[#ff3366]', shadow: 'rgba(255,51,102,0.5)' },
   { id: 'save', icon: '⭐', label: 'Save', color: 'text-[#ffbb00]', shadow: 'rgba(255,187,0,0.5)' },
@@ -14,17 +13,21 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
+  
+  const holdTimer = useRef(null);
 
   // ==========================================
-  // 🌟 PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
+  // 🌟 NEW: PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
   // ==========================================
   const x = useMotionValue(0);
   
+  // If my message, pull left (-). If their message, pull right (+).
+  // This calculates how bright and big the Reply icon gets as you pull!
   const replyOpacity = useTransform(x, isMe ? [0, -60] : [0, 60], [0, 1]);
   const replyScale = useTransform(x, isMe ? [0, -60] : [0, 60], [0.5, 1.1]);
 
   const handleDragEnd = (e, info) => {
-    const threshold = 60; 
+    const threshold = 60; // How far you have to swipe to trigger it
     if (isMe && info.offset.x < -threshold) {
       triggerReply();
     } else if (!isMe && info.offset.x > threshold) {
@@ -33,7 +36,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   };
 
   const triggerReply = () => {
-    window.navigator.vibrate?.(50); 
+    window.navigator.vibrate?.(50); // Little haptic bump on mobile
     alert("Swiped to Reply! ↩️ (Will connect to the input bar next!)");
   };
 
@@ -46,6 +49,17 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
       setShowBurst(false);
       if (!reaction) setReaction('❤️'); 
     }, 1400);
+  };
+
+  const handlePointerDown = () => {
+    holdTimer.current = setTimeout(() => {
+      setShowRadial(true);
+      window.navigator.vibrate?.(50); 
+    }, 500); 
+  };
+
+  const handlePointerUp = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
   };
 
   const handleAction = (actionId) => {
@@ -67,10 +81,10 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
       {/* 🌟 SWIPE-TO-REPLY CONTAINER 🌟 */}
       <div className="relative max-w-full flex items-center">
         
-        {/* THE GLOWING REPLY ICON */}
+        {/* THE GLOWING REPLY ICON (Reveals behind the bubble as you swipe) */}
         <motion.div 
           style={{ opacity: replyOpacity, scale: replyScale }}
-          className={`absolute ${isMe ? '-right-10' : '-left-10'} w-8 h-8 rounded-full bg-[#1A1F2E]/90 border border-[#00f0ff]/50 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center text-[#00f0ff] z-0 pointer-events-none`}
+          className={`absolute ${isMe ? '-right-10' : '-left-10'} w-8 h-8 rounded-full bg-[#1A1F2E]/90 border border-[#00f0ff]/50 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center text-[#00f0ff] z-0`}
         >
           ↩️
         </motion.div>
@@ -78,11 +92,15 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
         {/* 🌟 DRAGGABLE MESSAGE WRAPPER 🌟 */}
         <motion.div 
           drag="x"
-          dragConstraints={{ left: 0, right: 0 }} 
-          dragElastic={0.15} 
+          dragConstraints={{ left: 0, right: 0 }} // Forces it to rubber-band back to center
+          dragElastic={0.15} // Gives it that heavy, premium pulling feel
           onDragEnd={handleDragEnd}
-          style={{ x }} 
+          style={{ x }} // Connects the bubble's movement to our icon math above
           className={`max-w-full flex flex-col relative z-10 cursor-grab active:cursor-grabbing ${isMe ? 'items-end' : 'items-start'}`}
+          onDoubleClick={handleDoubleClick}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         >
           
           {/* Breathing Background Glow */}
@@ -92,12 +110,10 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE (Now uses onTap for instant 1-tap menu!) */}
+          {/* The Message Bubble */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
-            onDoubleClick={handleDoubleClick}
-            onTap={() => setShowRadial(true)} // 🚨 FIX: Instant 1-tap menu trigger!
-            className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words ${
+            className={`relative px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
               : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
@@ -150,54 +166,52 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
             )}
           </AnimatePresence>
 
+          {/* 🌟 RADIAL MENU (Now missing Reply!) 🌟 */}
+          <AnimatePresence>
+            {showRadial && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-default"
+                onClick={(e) => { e.stopPropagation(); setShowRadial(false); }} 
+                onPointerDown={(e) => e.stopPropagation()} // Prevents the drag from fighting the menu
+              >
+                <div className="relative" onClick={e => e.stopPropagation()}>
+                  {MENU_ACTIONS.map((action, i) => {
+                    const angle = (i / MENU_ACTIONS.length) * Math.PI * 2 - Math.PI / 2;
+                    const radius = 85; 
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+
+                    return (
+                      <motion.button
+                        key={action.id}
+                        initial={{ scale: 0, x: 0, y: 0 }}
+                        animate={{ scale: 1, x, y }}
+                        exit={{ scale: 0, x: 0, y: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25, delay: i * 0.04 }}
+                        whileHover={{ scale: 1.2, boxShadow: `0px 0px 25px ${action.shadow}` }}
+                        onClick={() => handleAction(action.id)}
+                        className="absolute w-14 h-14 flex flex-col items-center justify-center -ml-7 -mt-7 bg-[#1A1F2E]/90 border border-white/10 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.6)] backdrop-blur-xl group hover:border-white/40 transition-colors"
+                      >
+                        <span className={`text-[22px] drop-shadow-md ${action.color}`}>
+                          {action.icon}
+                        </span>
+                        
+                        <span className={`absolute -bottom-6 text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${action.color} bg-black/80 border border-white/10 shadow-xl`}>
+                          {action.label}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </motion.div>
       </div>
-
-      {/* 🌟 RADIAL MENU (Perfectly Centered via Portal) 🌟 */}
-      <AnimatePresence>
-        {showRadial && typeof document !== 'undefined' && createPortal(
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-default"
-            onClick={(e) => { e.stopPropagation(); setShowRadial(false); }} 
-            onPointerDown={(e) => e.stopPropagation()} 
-          >
-            <div className="relative" onClick={e => e.stopPropagation()}>
-              {MENU_ACTIONS.map((action, i) => {
-                const angle = (i / MENU_ACTIONS.length) * Math.PI * 2 - Math.PI / 2;
-                const radius = 85; 
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
-
-                return (
-                  <motion.button
-                    key={action.id}
-                    initial={{ scale: 0, x: 0, y: 0 }}
-                    animate={{ scale: 1, x, y }}
-                    exit={{ scale: 0, x: 0, y: 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25, delay: i * 0.04 }}
-                    whileHover={{ scale: 1.2, boxShadow: `0px 0px 25px ${action.shadow}` }}
-                    onClick={() => handleAction(action.id)}
-                    className="absolute w-14 h-14 flex flex-col items-center justify-center -ml-7 -mt-7 bg-[#1A1F2E]/90 border border-white/10 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.6)] backdrop-blur-xl group hover:border-white/40 transition-colors"
-                  >
-                    <span className={`text-[22px] drop-shadow-md ${action.color}`}>
-                      {action.icon}
-                    </span>
-                    
-                    <span className={`absolute -bottom-6 text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${action.color} bg-black/80 border border-white/10 shadow-xl`}>
-                      {action.label}
-                    </span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>,
-          document.body
-        )}
-      </AnimatePresence>
-
     </div>
   );
 }

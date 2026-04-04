@@ -484,7 +484,8 @@ export default function ChatRoom({ chatUser, onBack }) {
             
             {/* 🚨 THE FIX: TWO SEPARATE HIDDEN INPUTS 🚨 */}
             {/* 1. Gallery Only: Forces phone to open the Native Gallery App */}
-            <input type="file" ref={galleryInputRef} hidden accept="image/*,video/*" onChange={handleImageSelect} />
+           {/* 1. Gallery Only: Forces phone to open the Native Gallery App */}
+            <input type="file" ref={galleryInputRef} hidden accept="image/*, video/*, .mp4, .mov, .avi" onChange={handleImageSelect} />
             
             {/* 2. Documents & All Files: Opens the File Explorer */}
             <input type="file" ref={fileInputRef} hidden accept="*" onChange={handleImageSelect} />

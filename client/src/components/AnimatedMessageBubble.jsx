@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
@@ -15,6 +15,9 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
 
+  // 🚨 THE FIX: This tracks if you are swiping or tapping!
+  const isDragging = useRef(false);
+
   // ==========================================
   // 🌟 PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
   // ==========================================
@@ -23,7 +26,16 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   const replyOpacity = useTransform(x, isMe ? [0, -60] : [0, 60], [0, 1]);
   const replyScale = useTransform(x, isMe ? [0, -60] : [0, 60], [0.5, 1.1]);
 
+  const handleDragStart = () => {
+    isDragging.current = true; // Lock the tap feature!
+  };
+
   const handleDragEnd = (e, info) => {
+    // Unlock the tap feature after a tiny delay so the browser doesn't confuse them
+    setTimeout(() => {
+      isDragging.current = false;
+    }, 150);
+
     const threshold = 60; 
     if (isMe && info.offset.x < -threshold) {
       triggerReply();
@@ -40,8 +52,18 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
   // ==========================================
   // SCENE TIMERS & CLICKS
   // ==========================================
+  const handleBubbleClick = (e) => {
+    e.stopPropagation();
+    // 🚨 THE FIX: Only open the menu if we DID NOT just swipe!
+    if (!isDragging.current) {
+      setShowRadial(true);
+    }
+  };
+
   const handleDoubleClick = (e) => {
-    e.stopPropagation(); // Prevents click from opening menu
+    e.stopPropagation(); 
+    if (isDragging.current) return;
+    
     setShowBurst(true);
     setTimeout(() => {
       setShowBurst(false);
@@ -81,7 +103,8 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
           drag="x"
           dragConstraints={{ left: 0, right: 0 }} 
           dragElastic={0.15} 
-          onDragEnd={handleDragEnd}
+          onDragStart={handleDragStart} // 🚨 Locks the tap
+          onDragEnd={handleDragEnd}     // 🚨 Unlocks the tap
           style={{ x }} 
           className={`max-w-full flex flex-col relative z-10 cursor-grab active:cursor-grabbing ${isMe ? 'items-end' : 'items-start'}`}
         >
@@ -93,15 +116,12 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE (FIXED: Using onClick to force the 1-tap!) */}
+          {/* 🚨 THE MESSAGE BUBBLE */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
+            onClick={handleBubbleClick} // 🚨 Fires our bulletproof custom click handler!
             onDoubleClick={handleDoubleClick}
-            onClick={(e) => {
-              e.stopPropagation(); // Forces the browser to ignore the drag container!
-              setShowRadial(true);
-            }}
-            className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words ${
+            className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
               : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
@@ -164,7 +184,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-default"
+            className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-default"
             onClick={(e) => { e.stopPropagation(); setShowRadial(false); }} 
             onPointerDown={(e) => e.stopPropagation()} 
           >

@@ -113,6 +113,7 @@ export default function AnimatedMessageBubble({ msg, isMe }) {
           {/* The Message Bubble */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
+            onTap={() => setShowRadial(true)}
             className={`relative px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-10 w-fit max-w-full whitespace-pre-wrap break-words ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 

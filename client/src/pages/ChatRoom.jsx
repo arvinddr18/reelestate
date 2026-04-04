@@ -75,17 +75,16 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   const startRecordingAudio = async () => {
     try {
-      // 🚨 FIX 1: Force CD-Quality Audio (44.1kHz) & disable Auto-Muting (AutoGain)
+      // 🚨 THE FIX: Re-enable AutoGain for Laptops, but keep Noise Suppression!
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: false, // <-- Turning this off stops the mic from getting too quiet
-          sampleRate: 44100 // <-- Forces high-definition audio
+          autoGainControl: true // <-- Turn this back to TRUE so your laptop mic can hear you!
         } 
       });
 
-      // 🚨 FIX 2: Force a high Bitrate (128kbps) so it doesn't sound compressed
+      // Keep the high-quality bitrate for crisp audio
       const options = { audioBitsPerSecond: 128000 };
       const mediaRecorder = new MediaRecorder(stream, options);
       

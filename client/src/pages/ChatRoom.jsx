@@ -75,15 +75,20 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   const startRecordingAudio = async () => {
     try {
-     // 🚨 THE FIX: Added professional audio filters to remove static and echo!
+      // 🚨 FIX 1: Force CD-Quality Audio (44.1kHz) & disable Auto-Muting (AutoGain)
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          autoGainControl: false, // <-- Turning this off stops the mic from getting too quiet
+          sampleRate: 44100 // <-- Forces high-definition audio
         } 
       });
-      const mediaRecorder = new MediaRecorder(stream);
+
+      // 🚨 FIX 2: Force a high Bitrate (128kbps) so it doesn't sound compressed
+      const options = { audioBitsPerSecond: 128000 };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      
       audioRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -96,7 +101,7 @@ export default function ChatRoom({ chatUser, onBack }) {
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = () => {
-          sendAudioMessage(reader.result); // Auto-sends when recording stops!
+          sendAudioMessage(reader.result); 
         };
         stream.getTracks().forEach(track => track.stop());
       };

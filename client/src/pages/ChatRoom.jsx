@@ -25,6 +25,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [editingMessage, setEditingMessage] = useState(null);
   const [toast, setToast] = useState(null); 
   const [forwardMsg, setForwardMsg] = useState(null);
+  const [deleteMenuMsg, setDeleteMenuMsg] = useState(null); // 🚨 ADD THIS NEW STATE!
   
   // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
@@ -353,12 +354,29 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   // 🌟 MESSAGE ACTION FUNCTIONS 🌟
   // ==========================================
-  const handleDeleteMessage = async (msgToDelete) => {
-    // 1. Remove it from the screen instantly for a snappy UI
-    setMessages((prev) => prev.filter((m) => m !== msgToDelete));
-    
-    // 2. Tell the backend to delete it (You will need to build this route later!)
-    // try { await axios.delete(`${API_URL}/api/messages/${msgToDelete._id}`); } catch(err){ console.error(err); }
+  const handleDeleteMessage = (msgToDelete) => {
+    // Opens the new Smart Delete Menu!
+    setDeleteMenuMsg(msgToDelete);
+  };
+
+  const executeSmartDelete = (action) => {
+    if (!deleteMenuMsg) return;
+
+    if (action === 'for_me') {
+      // Completely removes it from your screen
+      setMessages((prev) => prev.filter((m) => m !== deleteMenuMsg));
+    } else {
+      // Modifies the message live in the chat!
+      setMessages((prev) => prev.map((m) => {
+        if (m === deleteMenuMsg) {
+          if (action === 'for_everyone') return { ...m, isDeleted: true, text: "⚠️ Message removed by sender" };
+          if (action === 'replace') return { ...m, isReplaced: true, text: "Sorry, wrong message!" };
+          if (action === 'blur') return { ...m, isBlurred: true };
+        }
+        return m;
+      }));
+    }
+    setDeleteMenuMsg(null); // Close the modal
   };
 
   const handleEditMessage = (msgToEdit) => {
@@ -848,6 +866,57 @@ export default function ChatRoom({ chatUser, onBack }) {
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#801fd6] to-[#ff3366] flex items-center justify-center text-white font-bold shadow-lg">AS</div>
                   <span className="text-white flex-1 font-medium group-hover:text-[#ff3366] transition-colors">Alice Smith</span>
                   <IoMdSend className="text-gray-500 group-hover:text-[#ff3366] transition-colors" />
+               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+      {/* 🌟 SMART DELETE MODAL 🌟 */}
+      {deleteMenuMsg && (
+        <div className="absolute inset-0 z-[99999] bg-[#05070A]/80 backdrop-blur-sm flex items-end md:items-center justify-center animate-in fade-in duration-200">
+          <div className="w-full md:w-[400px] bg-[#121826] border border-red-500/30 rounded-t-3xl md:rounded-3xl shadow-[0_0_40px_rgba(239,68,68,0.2)] p-6 flex flex-col animate-in slide-in-from-bottom-10 duration-300">
+            
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white font-black tracking-wide text-lg flex items-center gap-2">
+                <span className="text-red-500">🗑️</span> Smart Delete
+              </h3>
+              <button onClick={() => setDeleteMenuMsg(null)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
+                <IoMdClose size={18} />
+              </button>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+               <button onClick={() => executeSmartDelete('for_me')} className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-left group border border-transparent hover:border-white/20">
+                  <span className="text-xl">👤</span>
+                  <div className="flex flex-col">
+                    <span className="text-white font-bold group-hover:text-gray-200 transition-colors">Remove for me</span>
+                    <span className="text-xs text-gray-500">Delete only from your device</span>
+                  </div>
+               </button>
+
+               <button onClick={() => executeSmartDelete('for_everyone')} className="flex items-center gap-3 p-3 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-colors text-left group border border-transparent hover:border-red-500/40">
+                  <span className="text-xl">🌍</span>
+                  <div className="flex flex-col">
+                    <span className="text-red-400 font-bold group-hover:text-red-300 transition-colors">Delete for everyone</span>
+                    <span className="text-xs text-red-500/70">Replaces text with a warning</span>
+                  </div>
+               </button>
+
+               <button onClick={() => executeSmartDelete('replace')} className="flex items-center gap-3 p-3 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-colors text-left group border border-transparent hover:border-[#00f0ff]/40">
+                  <span className="text-xl">📝</span>
+                  <div className="flex flex-col">
+                    <span className="text-[#00f0ff] font-bold group-hover:text-[#80ffff] transition-colors">Replace with message</span>
+                    <span className="text-xs text-[#00f0ff]/70">Changes to "Sorry, wrong message!"</span>
+                  </div>
+               </button>
+
+               <button onClick={() => executeSmartDelete('blur')} className="flex items-center gap-3 p-3 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-colors text-left group border border-transparent hover:border-[#bc00dd]/40">
+                  <span className="text-xl">🌫️</span>
+                  <div className="flex flex-col">
+                    <span className="text-[#bc00dd] font-bold group-hover:text-[#da80ff] transition-colors">Blur message</span>
+                    <span className="text-xs text-[#bc00dd]/70">Hides content visually</span>
+                  </div>
                </button>
             </div>
 

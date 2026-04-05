@@ -10,10 +10,8 @@ const MENU_ACTIONS = [
   { id: 'delete', icon: '🗑️', label: 'Delete', color: 'text-red-500', shadow: 'rgba(239,68,68,0.5)' }
 ];
 
-// Modern Quick Reactions List!
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
 
-// 🚨 ADDED THE NEW PROPS HERE!
 export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
@@ -22,7 +20,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
   
   const isDragging = useRef(false);
 
-  // AUTO-CLOSE! Closes both menus if you click away
   useEffect(() => {
     if (!showRadial && !showReactionMenu) return;
     const closeMenu = () => {
@@ -41,9 +38,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     };
   }, [showRadial, showReactionMenu]);
 
-  // ==========================================
-  // 🌟 PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
-  // ==========================================
   const x = useMotionValue(0);
   const replyOpacity = useTransform(x, isMe ? [0, -50] : [0, 50], [0, 1]);
   const replyScale = useTransform(x, isMe ? [0, -50] : [0, 50], [0.5, 1.1]);
@@ -68,9 +62,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     if (onReply) onReply(); 
   };
 
-  // ==========================================
-  // CLICK & DOUBLE-TAP SCENES
-  // ==========================================
   const handleBubbleClick = (e) => {
     e.stopPropagation(); 
     if (!isDragging.current && !showReactionMenu) {
@@ -79,7 +70,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     }
   };
 
-  // INSTANT HEART: Double tap bypasses the menu entirely!
   const handleDoubleClick = (e) => {
     e.stopPropagation(); 
     if (isDragging.current) return;
@@ -94,7 +84,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     }, 1400);
   };
 
-  // 🚨 UPDATED: Now calls the specific functions passed from ChatRoom!
   const handleAction = (actionId, e) => {
     e.stopPropagation();
     setShowRadial(false); 
@@ -117,7 +106,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     setReaction(emoji);
     setShowReactionMenu(false);
     
-    // If they picked the heart from the list, still give them the burst!
     if (emoji === '❤️') {
       setShowBurst(true);
       setTimeout(() => setShowBurst(false), 1400);
@@ -131,7 +119,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
       
       <div className="relative max-w-full flex items-center">
         
-        {/* THE GLOWING REPLY ICON */}
         <motion.div 
           style={{ opacity: replyOpacity, scale: replyScale }}
           className={`absolute ${isMe ? '-right-10' : '-left-10'} w-8 h-8 rounded-full bg-[#1A1F2E]/90 border border-[#00f0ff]/50 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center text-[#00f0ff] z-0 pointer-events-none`}
@@ -139,7 +126,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
           ↩️
         </motion.div>
 
-        {/* 🌟 DRAGGABLE MESSAGE WRAPPER 🌟 */}
         <motion.div 
           drag="x"
           dragConstraints={{ left: 0, right: 0 }} 
@@ -156,7 +142,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
             onClick={handleBubbleClick} 
@@ -179,7 +164,10 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
               </div>
             )}
             
-            <span className="relative z-10 pointer-events-none">{msg.text}</span>
+            {/* 🚨 UPDATED TEXT SPAN: Handles the visual Blur and Warning text! */}
+            <span className={`relative z-10 pointer-events-none transition-all duration-500 ${msg.isBlurred ? 'blur-md opacity-60 select-none' : ''} ${(msg.isDeleted || msg.isReplaced) ? 'italic opacity-80' : ''}`}>
+              {msg.text}
+            </span>
           </motion.div>
 
           {/* Timestamp */}
@@ -220,14 +208,12 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             )}
           </AnimatePresence>
 
-          {/* 🌟 NEW: THE QUICK EMOJI REACTION BAR 🌟 */}
           <AnimatePresence>
             {showReactionMenu && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.5, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.5, y: 20 }}
-                // Floats right above the message!
                 className={`absolute -top-14 ${isMe ? 'right-0' : 'left-0'} z-[99999] flex items-center gap-2 md:gap-3 bg-[#1A1F2E]/95 backdrop-blur-2xl px-3 md:px-4 py-2 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] border border-white/20`}
                 onClick={(e) => e.stopPropagation()} 
               >
@@ -246,7 +232,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             )}
           </AnimatePresence>
 
-          {/* 🌟 THE RADIAL MENU 🌟 */}
           <AnimatePresence>
             {showRadial && (
               <motion.div

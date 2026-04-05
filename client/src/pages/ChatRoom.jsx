@@ -664,18 +664,30 @@ export default function ChatRoom({ chatUser, onBack }) {
               </div>
             )}
 
-            <div className={`flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden ${message.length > 0 ? 'w-0 opacity-0 scale-50' : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-1 md:gap-2 mr-1 md:mr-2'}`}>
+           {/* 🌟 EMOJI AND MIC BUTTONS 🌟 */}
+            <div className={`flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden ${
+              message.length > 0 
+                ? 'w-0 opacity-0 scale-50 md:w-auto md:opacity-100 md:scale-100 md:mr-2' 
+                : 'w-[80px] md:w-[100px] opacity-100 scale-100 gap-1 md:gap-2 mr-1 md:mr-2'
+            }`}>
+              {/* EMOJI BUTTON (Always visible on Desktop) */}
               <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all shrink-0 border border-transparent ${showEmojiPicker ? 'bg-white/20 text-white' : 'bg-white/5 hover:bg-white/15 text-[#ffbb00] hover:text-white hover:border-[#ffbb00]/30'}`}>
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4 drop-shadow-[0_0_5px_rgba(255,187,0,0.5)]" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 8c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-7 0c.83 0 1.5.67 1.5 1.5S9.33 13 8.5 13 7 12.33 7 11.5 7.67 10 8.5 10zm3.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/>
                 </svg>
               </button>
               
-              <button type="button" onClick={startRecordingAudio} className="relative w-8 h-8 md:w-10 md:h-10 rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all shrink-0">
+              {/* MIC BUTTON (Hides everywhere when typing) */}
+              <button type="button" onClick={startRecordingAudio} className={`relative rounded-full bg-transparent hover:bg-[#ff3366]/10 flex items-center justify-center text-gray-400 hover:text-[#ff3366] transition-all overflow-hidden shrink-0 ${
+                message.length > 0 
+                  ? 'w-0 opacity-0 scale-0 ml-0' 
+                  : 'w-8 h-8 md:w-10 md:h-10 opacity-100 scale-100'
+              }`}>
                 <IoMdMic size={18} className="relative z-10 md:text-[22px]" />
               </button>
             </div>
 
+            {/* SEND BUTTON */}
             <button type="submit" className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-[#801fd6] to-[#c11f70] flex items-center justify-center text-white hover:scale-110 transition-transform shadow-[0_0_15px_rgba(193,31,112,0.5)] shrink-0 mr-0.5 md:mr-1">
               <IoMdSend size={18} className="translate-x-[1px]" />
             </button>

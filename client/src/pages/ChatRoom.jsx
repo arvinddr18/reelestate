@@ -330,14 +330,24 @@ export default function ChatRoom({ chatUser, onBack }) {
     socket.on('display_typing', () => setIsTyping(true));
     socket.on('hide_typing', () => setIsTyping(false));
     
+    // 🚨 NEW: THIS CATCHES THE SMART DELETE/EDIT FROM THE OTHER PERSON!
+    socket.on('message_updated', (data) => {
+      setMessages((prev) => prev.map((m) => 
+        (m._id === data.modifiedMsg._id) || (m.time === data.modifiedMsg.time && m.senderId === data.modifiedMsg.senderId) 
+          ? data.modifiedMsg 
+          : m
+      ));
+    });
+    
     return () => {
       socket.off('connect', onConnect);
       socket.off('receive_message'); 
       socket.off('display_typing'); 
       socket.off('hide_typing');
+      socket.off('message_updated'); // 🚨 Cleanup the new listener
     };
   }, [room, myId, friendId]);
-
+  
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
@@ -359,24 +369,31 @@ export default function ChatRoom({ chatUser, onBack }) {
     setDeleteMenuMsg(msgToDelete);
   };
 
-  const executeSmartDelete = (action) => {
+const executeSmartDelete = (action) => {
     if (!deleteMenuMsg) return;
 
     if (action === 'for_me') {
-      // Completely removes it from your screen
       setMessages((prev) => prev.filter((m) => m !== deleteMenuMsg));
     } else {
-      // Modifies the message live in the chat!
-      setMessages((prev) => prev.map((m) => {
-        if (m === deleteMenuMsg) {
-          if (action === 'for_everyone') return { ...m, isDeleted: true, text: "⚠️ Message removed by sender" };
-          if (action === 'replace') return { ...m, isReplaced: true, text: "Sorry, wrong message!" };
-          if (action === 'blur') return { ...m, isBlurred: true };
-        }
-        return m;
-      }));
+      // 1. Create the modified version of the message
+      let modifiedMsg = { ...deleteMenuMsg };
+      if (action === 'for_everyone') {
+        modifiedMsg.isDeleted = true;
+        modifiedMsg.text = "⚠️ Message removed by sender";
+      } else if (action === 'replace') {
+        modifiedMsg.isReplaced = true;
+        modifiedMsg.text = "Sorry, wrong message!";
+      } else if (action === 'blur') {
+        modifiedMsg.isBlurred = true;
+      }
+
+      // 2. Update it on YOUR screen instantly
+      setMessages((prev) => prev.map((m) => m === deleteMenuMsg ? modifiedMsg : m));
+
+      // 3. 🚨 NEW: Emit the live change to your friend's screen!
+      socket.emit('update_message', { room, modifiedMsg });
     }
-    setDeleteMenuMsg(null); // Close the modal
+    setDeleteMenuMsg(null); 
   };
 
   const handleEditMessage = (msgToEdit) => {

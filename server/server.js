@@ -46,6 +46,12 @@ io.on('connection', (socket) => {
     socket.to(data.room).emit('receive_message', data); 
   });
 
+  // 👇 1. ADD THIS NEW BLOCK RIGHT HERE 👇
+  socket.on('update_message', (data) => {
+    // This catches the Smart Delete / Edit and bounces it to the other person!
+    socket.to(data.room).emit('message_updated', data);
+  });
+
  // ─── NEW: TYPING INDICATOR RADAR ───
   socket.on('typing', (room) => {
     socket.to(room).emit('display_typing'); // 🚨 Changed data.room to just room

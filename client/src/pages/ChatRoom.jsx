@@ -291,14 +291,14 @@ export default function ChatRoom({ chatUser, onBack }) {
     };
   }, []);
 
-  // ==========================================
+ // ==========================================
   // 🌟 SOCKET & HISTORY FETCHING 🌟
   // ==========================================
   useEffect(() => {
     if (!myId || !friendId || !room) return;
     
     const fetchChatHistory = async () => {
-      setIsLoading(true); // 🚨 Start spinning!
+      setIsLoading(true); 
       try {
         const token = localStorage.getItem('reelestate_token');
         const res = await axios.get(`${API_URL}/api/messages/${room}`, {
@@ -308,20 +308,29 @@ export default function ChatRoom({ chatUser, onBack }) {
       } catch (err) { 
         console.error(err); 
       } finally {
-        setIsLoading(false); // 🚨 Stop spinning!
+        setIsLoading(false); 
       }
     };
     
     fetchChatHistory();
   
-    
+    // 🚨 THE FIX: Join room immediately, AND auto-rejoin if the phone goes to sleep!
     socket.emit('join_room', room);
+    
+    const onConnect = () => {
+      socket.emit('join_room', room);
+    };
+
+    socket.on('connect', onConnect);
     socket.on('receive_message', (data) => setMessages((prev) => [...prev, data]));
     socket.on('display_typing', () => setIsTyping(true));
     socket.on('hide_typing', () => setIsTyping(false));
     
     return () => {
-      socket.off('receive_message'); socket.off('display_typing'); socket.off('hide_typing');
+      socket.off('connect', onConnect);
+      socket.off('receive_message'); 
+      socket.off('display_typing'); 
+      socket.off('hide_typing');
     };
   }, [room, myId, friendId]);
 

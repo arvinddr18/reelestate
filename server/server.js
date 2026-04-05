@@ -46,13 +46,13 @@ io.on('connection', (socket) => {
     socket.to(data.room).emit('receive_message', data); 
   });
 
-  // ─── NEW: TYPING INDICATOR RADAR ───
-  socket.on('typing', (data) => {
-    socket.to(data.room).emit('display_typing', data);
+ // ─── NEW: TYPING INDICATOR RADAR ───
+  socket.on('typing', (room) => {
+    socket.to(room).emit('display_typing'); // 🚨 Changed data.room to just room
   });
 
-  socket.on('stop_typing', (data) => {
-    socket.to(data.room).emit('hide_typing', data);
+  socket.on('stop_typing', (room) => {
+    socket.to(room).emit('hide_typing');    // 🚨 Changed data.room to just room
   });
 
   socket.on('disconnect', () => {

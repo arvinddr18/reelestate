@@ -170,11 +170,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             </span>
           </motion.div>
 
-          {/* Timestamp */}
-          <div className={`flex items-center gap-1.5 mt-1.5 w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-            <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70' : 'text-gray-500'}`}>{msg.time}</span>
-          </div>
-
           <AnimatePresence>
             {reaction && (
               <motion.div

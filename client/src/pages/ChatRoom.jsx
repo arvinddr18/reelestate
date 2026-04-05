@@ -376,8 +376,8 @@ export default function ChatRoom({ chatUser, onBack }) {
     const token = localStorage.getItem('reelestate_token');
 
     if (action === 'for_me') {
-      // 1. Remove from screen instantly
-      setMessages((prev) => prev.filter((m) => m !== deleteMenuMsg));
+      // 1. Remove from screen instantly (Using ID for safety!)
+      setMessages((prev) => prev.filter((m) => m._id !== deleteMenuMsg._id && m.time !== deleteMenuMsg.time));
       
       // 2. Delete from Database permanently
       if (deleteMenuMsg._id) {
@@ -398,16 +398,20 @@ export default function ChatRoom({ chatUser, onBack }) {
         modifiedMsg.isReplaced = true;
         modifiedMsg.text = "Sorry, wrong message!";
       } else if (action === 'blur') {
-        modifiedMsg.isBlurred = true;
+        modifiedMsg.isBlurred = !modifiedMsg.isBlurred; 
       }
 
-      // 2. Update it on YOUR screen instantly
-      setMessages((prev) => prev.map((m) => m === deleteMenuMsg ? modifiedMsg : m));
+      // 2. 🚨 THE FIX: Map using the _id to guarantee React finds and updates it!
+      setMessages((prev) => prev.map((m) => 
+        (m._id === deleteMenuMsg._id) || (m.time === deleteMenuMsg.time && m.senderId === deleteMenuMsg.senderId) 
+          ? modifiedMsg 
+          : m
+      ));
 
       // 3. Emit the live change to your friend's screen
       socket.emit('update_message', { room, modifiedMsg });
 
-      // 4. 🚨 SAVE TO DATABASE SO IT SURVIVES A REFRESH! 🚨
+      // 4. Save to Database
       if (modifiedMsg._id) {
         try {
           await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, modifiedMsg, {

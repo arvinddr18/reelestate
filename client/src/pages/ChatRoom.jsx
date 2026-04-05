@@ -22,6 +22,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null); 
   const [replyingTo, setReplyingTo] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
   
   // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
@@ -347,6 +348,30 @@ export default function ChatRoom({ chatUser, onBack }) {
     }
   };
 
+  // ==========================================
+  // 🌟 MESSAGE ACTION FUNCTIONS 🌟
+  // ==========================================
+  const handleDeleteMessage = async (msgToDelete) => {
+    // 1. Remove it from the screen instantly for a snappy UI
+    setMessages((prev) => prev.filter((m) => m !== msgToDelete));
+    
+    // 2. Tell the backend to delete it (You will need to build this route later!)
+    // try { await axios.delete(`${API_URL}/api/messages/${msgToDelete._id}`); } catch(err){ console.error(err); }
+  };
+
+  const handleEditMessage = (msgToEdit) => {
+    setEditingMessage(msgToEdit);
+    setMessage(msgToEdit.text); // Puts the old text right into your typing box!
+  };
+
+  const handleSaveMessage = (msgToSave) => {
+    alert("Message saved! (Database hook coming soon)");
+  };
+
+  const handleForwardMessage = (msgToForward) => {
+    alert("Forward Menu opening... (UI Modal coming soon)");
+  };
+
  const handleSend = async (e) => {
     e.preventDefault();
     if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
@@ -520,6 +545,10 @@ export default function ChatRoom({ chatUser, onBack }) {
                       msg={msg} 
                       isMe={isMe} 
                       onReply={() => setReplyingTo(msg)}
+                      onDelete={handleDeleteMessage}
+                      onEdit={handleEditMessage}
+                      onSave={handleSaveMessage}
+                      onForward={handleForwardMessage}
                     />
                   )}
                   

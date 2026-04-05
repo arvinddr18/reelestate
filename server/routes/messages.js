@@ -20,7 +20,10 @@ const holoMessageSchema = new mongoose.Schema({
   // 👇 1. ADD THESE 3 LINES 👇
   isDeleted: { type: Boolean, default: false },
   isReplaced: { type: Boolean, default: false },
-  isBlurred: { type: Boolean, default: false }
+  isBlurred: { type: Boolean, default: false },
+  isEdited: { type: Boolean, default: false },
+  timestamp: { type: Number }
+
 }, { timestamps: true });
 
 const HoloMessage = mongoose.models.HoloMessage || mongoose.model('HoloMessage', holoMessageSchema);

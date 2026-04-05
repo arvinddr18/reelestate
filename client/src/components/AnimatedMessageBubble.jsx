@@ -112,8 +112,15 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     }
   };
 
-  const activeActions = isMe ? MENU_ACTIONS : MENU_ACTIONS.filter(a => a.id !== 'edit');
-
+  // 🚨 5-MINUTE TIME LIMIT LOGIC 🚨
+  const activeActions = isMe ? MENU_ACTIONS.filter(a => {
+    if (a.id === 'edit') {
+      const msgTime = new Date(msg.createdAt || msg.timestamp || Date.now()).getTime();
+      return (Date.now() - msgTime) < 5 * 60 * 1000; // 5 mins in milliseconds
+    }
+    return true;
+  }) : MENU_ACTIONS.filter(a => a.id !== 'edit');
+  
   return (
     <div className={`flex w-full group transform transition-all duration-300 my-2 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
       

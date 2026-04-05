@@ -426,8 +426,14 @@ export default function ChatRoom({ chatUser, onBack }) {
   };
 
   const handleEditMessage = (msgToEdit) => {
+    // Double check the 5-minute limit just in case!
+    const msgTime = new Date(msgToEdit.createdAt || msgToEdit.timestamp || Date.now()).getTime();
+    if (Date.now() - msgTime > 5 * 60 * 1000) {
+      alert("Messages can only be edited within 5 minutes of sending.");
+      return;
+    }
     setEditingMessage(msgToEdit);
-    setMessage(msgToEdit.text); // Puts the old text right into your typing box!
+    setMessage(msgToEdit.text); // Puts old text in the box
   };
 
   const handleSaveMessage = (msgToSave) => {
@@ -441,11 +447,37 @@ export default function ChatRoom({ chatUser, onBack }) {
     setForwardMsg(msgToForward);
   };
 
-
- const handleSend = async (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
 
+    const token = localStorage.getItem('reelestate_token');
+
+    // 🚨 IF WE ARE EDITING AN EXISTING MESSAGE 🚨
+    if (editingMessage) {
+      let modifiedMsg = { ...editingMessage, text: message, isEdited: true };
+
+      // 1. Update your screen IN PLACE instantly
+      setMessages((prev) => prev.map((m) => m._id === editingMessage._id || m === editingMessage ? modifiedMsg : m));
+      
+      // 2. Tell friend's screen to update IN PLACE instantly
+      socket.emit('update_message', { room, modifiedMsg });
+
+      // 3. Save edit to Database
+      if (modifiedMsg._id) {
+        try {
+          await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, { text: message, isEdited: true }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (err) { console.error("Edit failed", err); }
+      }
+
+      setEditingMessage(null);
+      setMessage('');
+      return; // Stop here so it doesn't send a new message!
+    }
+
+    // 🚨 IF NORMAL SEND (NEW MESSAGE) 🚨
     const messageData = {
       room,
       text: message,
@@ -455,6 +487,7 @@ export default function ChatRoom({ chatUser, onBack }) {
       replyTo: replyingTo ? { text: replyingTo.text, senderId: replyingTo.senderId } : null,
       senderId: myId,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now(), // <-- Added to track the 5 mins!
     };
 
     setMessages((prev) => [...prev, messageData]);
@@ -462,11 +495,10 @@ export default function ChatRoom({ chatUser, onBack }) {
     setSelectedImage(null); 
     setSelectedVideo(null);
     setShowEmojiPicker(false);
-    setReplyingTo(null); // 🚨 This clears the reply popup after you hit send!
+    setReplyingTo(null); 
     socket.emit('send_message', messageData);
 
     try {
-      const token = localStorage.getItem('reelestate_token');
       await axios.post(`${API_URL}/api/messages`, messageData, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -622,8 +654,15 @@ export default function ChatRoom({ chatUser, onBack }) {
                     />
                   )}
 
+                  {/* Timestamp & Checkmarks */}
                   <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70 drop-shadow-sm' : 'text-gray-500'}`}>{msg.time}</span>
+                    
+                    {/* 🚨 THE UPDATED TIME SPAN WITH THE (edited) TAG 🚨 */}
+                    <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70 drop-shadow-sm' : 'text-gray-500'}`}>
+                      {msg.time} {msg.isEdited && <span className="italic opacity-60 ml-1 text-[9px]">(edited)</span>}
+                    </span>
+
+                    {/* Checkmarks */}
                     {isMe && (
                       <div className="flex -space-x-1">
                         <IoMdCheckmark className="text-gray-400" size={14} />
@@ -705,7 +744,25 @@ export default function ChatRoom({ chatUser, onBack }) {
               <IoMdClose size={16} />
             </button>
           </div>
+          )}
+          
+          {/* 🌟 EDITING POPUP UI 🌟 */}
+        {editingMessage && (
+          <div className="w-full max-w-3xl mx-auto mb-2 flex items-center justify-between bg-[#1A1F2E]/95 backdrop-blur-2xl border-l-[3px] border-[#ffbb00] p-2 md:p-3 rounded-r-xl rounded-l-sm shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-2">
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[#ffbb00] text-[10px] font-black uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                ✏️ Editing Message
+              </span>
+              <span className="text-gray-300 text-xs md:text-sm truncate max-w-[200px] md:max-w-[400px]">
+                {editingMessage.text}
+              </span>
+            </div>
+            <button onClick={() => { setEditingMessage(null); setMessage(''); }} className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/5 hover:bg-red-500/20 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+              <IoMdClose size={16} />
+            </button>
+          </div>
         )}
+        
 
         
 

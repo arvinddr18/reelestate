@@ -13,11 +13,12 @@ const MENU_ACTIONS = [
 // Modern Quick Reactions List!
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
 
-export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
+// 🚨 ADDED THE NEW PROPS HERE!
+export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
-  const [showReactionMenu, setShowReactionMenu] = useState(false); // 🚨 NEW: State for the emoji list!
+  const [showReactionMenu, setShowReactionMenu] = useState(false); 
   
   const isDragging = useRef(false);
 
@@ -78,7 +79,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
     }
   };
 
-  // 🚨 INSTANT HEART: Double tap bypasses the menu entirely!
+  // INSTANT HEART: Double tap bypasses the menu entirely!
   const handleDoubleClick = (e) => {
     e.stopPropagation(); 
     if (isDragging.current) return;
@@ -93,19 +94,21 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
     }, 1400);
   };
 
+  // 🚨 UPDATED: Now calls the specific functions passed from ChatRoom!
   const handleAction = (actionId, e) => {
     e.stopPropagation();
     setShowRadial(false); 
     
     if (actionId === 'react') {
-      // 🚨 OPENS THE EMOJI LIST INSTEAD OF INSTANTLY REACTING!
       setShowReactionMenu(true); 
     } else if (actionId === 'delete') {
-      alert("Message deleted! (Backend hook coming soon)");
+      if (onDelete) onDelete(msg);
     } else if (actionId === 'edit') {
-      alert("Edit mode activated! (UI hook coming soon)");
-    } else {
-      alert(`${actionId.toUpperCase()} activated! (UI hook coming soon)`);
+      if (onEdit) onEdit(msg);
+    } else if (actionId === 'save') {
+      if (onSave) onSave(msg);
+    } else if (actionId === 'forward') {
+      if (onForward) onForward(msg);
     }
   };
 

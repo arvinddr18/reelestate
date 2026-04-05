@@ -16,7 +16,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const [showRadial, setShowRadial] = useState(false);
   
   const isDragging = useRef(false);
-  const holdTimer = useRef(null); // 🚨 WE BROUGHT THE HOLD TIMER BACK!
 
   // AUTO-CLOSE! If you click ANYWHERE else on the screen, the menu closes!
   useEffect(() => {
@@ -25,7 +24,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
     
     setTimeout(() => {
       document.addEventListener('click', closeMenu);
-      document.addEventListener('touchstart', closeMenu); // Added for mobile!
+      document.addEventListener('touchstart', closeMenu); // Works on mobile too!
     }, 10);
     
     return () => {
@@ -42,8 +41,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const replyScale = useTransform(x, isMe ? [0, -50] : [0, 50], [0.5, 1.1]);
 
   const handleDragStart = () => {
-    isDragging.current = true;
-    if (holdTimer.current) clearTimeout(holdTimer.current); // Cancel hold if swiping!
+    isDragging.current = true; // Locks the tap feature while swiping
   };
 
   const handleDragEnd = (e, info) => {
@@ -63,23 +61,14 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   };
 
   // ==========================================
-  // 🚨 RESTORED: SCENE TIMERS & LONG PRESS (HOLD)
+  // 🚨 RESTORED: INSTANT SINGLE TAP!
   // ==========================================
-  const handlePointerDown = (e) => {
-    if (e.button === 2) return; // Ignore desktop right-clicks
-    
-    // Start the timer when you press down
-    holdTimer.current = setTimeout(() => {
-      if (!isDragging.current) {
-        setShowRadial(true);
-        window.navigator.vibrate?.(50); // Little buzz when the menu opens!
-      }
-    }, 400); // 400ms hold required
-  };
-
-  const handlePointerUp = () => {
-    // If you let go before 400ms, cancel the menu!
-    if (holdTimer.current) clearTimeout(holdTimer.current);
+  const handleBubbleClick = (e) => {
+    e.stopPropagation(); 
+    if (!isDragging.current) {
+      setShowRadial(true);
+      window.navigator.vibrate?.(50); // Optional tiny buzz when it opens
+    }
   };
 
   const handleDoubleClick = (e) => {
@@ -140,13 +129,11 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE WITH LONG PRESS LOGIC */}
+          {/* 🚨 THE MESSAGE BUBBLE - CLICK RESTORED! */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
-            onPointerDown={handlePointerDown} 
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} // 🚨 Blocks phone's default text selector!
+            onClick={handleBubbleClick} // Instant open is back!
+            onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} 
             onDoubleClick={handleDoubleClick}
             className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-20 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
               isMe 

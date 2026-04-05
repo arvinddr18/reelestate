@@ -10,28 +10,35 @@ const MENU_ACTIONS = [
   { id: 'delete', icon: '🗑️', label: 'Delete', color: 'text-red-500', shadow: 'rgba(239,68,68,0.5)' }
 ];
 
+// Modern Quick Reactions List!
+const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
+
 export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
+  const [showReactionMenu, setShowReactionMenu] = useState(false); // 🚨 NEW: State for the emoji list!
   
   const isDragging = useRef(false);
 
-  // AUTO-CLOSE! If you click ANYWHERE else on the screen, the menu closes!
+  // AUTO-CLOSE! Closes both menus if you click away
   useEffect(() => {
-    if (!showRadial) return;
-    const closeMenu = () => setShowRadial(false);
+    if (!showRadial && !showReactionMenu) return;
+    const closeMenu = () => {
+      setShowRadial(false);
+      setShowReactionMenu(false);
+    };
     
     setTimeout(() => {
       document.addEventListener('click', closeMenu);
-      document.addEventListener('touchstart', closeMenu); // Works on mobile too!
+      document.addEventListener('touchstart', closeMenu);
     }, 10);
     
     return () => {
       document.removeEventListener('click', closeMenu);
       document.removeEventListener('touchstart', closeMenu);
     };
-  }, [showRadial]);
+  }, [showRadial, showReactionMenu]);
 
   // ==========================================
   // 🌟 PREMIUM SWIPE-TO-REPLY PHYSICS 🌟
@@ -41,7 +48,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const replyScale = useTransform(x, isMe ? [0, -50] : [0, 50], [0.5, 1.1]);
 
   const handleDragStart = () => {
-    isDragging.current = true; // Locks the tap feature while swiping
+    isDragging.current = true; 
   };
 
   const handleDragEnd = (e, info) => {
@@ -61,39 +68,56 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   };
 
   // ==========================================
-  // 🚨 RESTORED: INSTANT SINGLE TAP!
+  // CLICK & DOUBLE-TAP SCENES
   // ==========================================
   const handleBubbleClick = (e) => {
     e.stopPropagation(); 
-    if (!isDragging.current) {
+    if (!isDragging.current && !showReactionMenu) {
       setShowRadial(true);
-      window.navigator.vibrate?.(50); // Optional tiny buzz when it opens
+      window.navigator.vibrate?.(50); 
     }
   };
 
+  // 🚨 INSTANT HEART: Double tap bypasses the menu entirely!
   const handleDoubleClick = (e) => {
     e.stopPropagation(); 
     if (isDragging.current) return;
+    
+    setReaction('❤️'); 
     setShowBurst(true);
+    setShowRadial(false);
+    setShowReactionMenu(false);
+    
     setTimeout(() => {
       setShowBurst(false);
-      if (!reaction) setReaction('❤️'); 
     }, 1400);
   };
 
   const handleAction = (actionId, e) => {
     e.stopPropagation();
     setShowRadial(false); 
+    
     if (actionId === 'react') {
-      setReaction('❤️');
-      setShowBurst(true);
-      setTimeout(() => setShowBurst(false), 1400);
+      // 🚨 OPENS THE EMOJI LIST INSTEAD OF INSTANTLY REACTING!
+      setShowReactionMenu(true); 
     } else if (actionId === 'delete') {
       alert("Message deleted! (Backend hook coming soon)");
     } else if (actionId === 'edit') {
       alert("Edit mode activated! (UI hook coming soon)");
     } else {
       alert(`${actionId.toUpperCase()} activated! (UI hook coming soon)`);
+    }
+  };
+
+  const handleEmojiSelect = (emoji, e) => {
+    e.stopPropagation();
+    setReaction(emoji);
+    setShowReactionMenu(false);
+    
+    // If they picked the heart from the list, still give them the burst!
+    if (emoji === '❤️') {
+      setShowBurst(true);
+      setTimeout(() => setShowBurst(false), 1400);
     }
   };
 
@@ -129,10 +153,10 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE - CLICK RESTORED! */}
+          {/* 🚨 THE MESSAGE BUBBLE */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
-            onClick={handleBubbleClick} // Instant open is back!
+            onClick={handleBubbleClick} 
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} 
             onDoubleClick={handleDoubleClick}
             className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-20 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
@@ -193,6 +217,32 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             )}
           </AnimatePresence>
 
+          {/* 🌟 NEW: THE QUICK EMOJI REACTION BAR 🌟 */}
+          <AnimatePresence>
+            {showReactionMenu && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.5, y: 20 }}
+                // Floats right above the message!
+                className={`absolute -top-14 ${isMe ? 'right-0' : 'left-0'} z-[99999] flex items-center gap-2 md:gap-3 bg-[#1A1F2E]/95 backdrop-blur-2xl px-3 md:px-4 py-2 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] border border-white/20`}
+                onClick={(e) => e.stopPropagation()} 
+              >
+                {QUICK_REACTIONS.map((emoji) => (
+                  <motion.button
+                    key={emoji}
+                    whileHover={{ scale: 1.4, y: -5 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => handleEmojiSelect(emoji, e)}
+                    className="text-2xl md:text-3xl hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] transition-all"
+                  >
+                    {emoji}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* 🌟 THE RADIAL MENU 🌟 */}
           <AnimatePresence>
             {showRadial && (
@@ -205,7 +255,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
               >
                 <div className="relative">
                   
-                  {/* CENTER HUB BUTTON */}
                   <motion.button
                     initial={{ scale: 0, rotate: -90 }}
                     animate={{ scale: 1, rotate: 45 }}
@@ -219,7 +268,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
                     </svg>
                   </motion.button>
 
-                  {/* SURROUNDING ACTION BUTTONS */}
                   {activeActions.map((action, i) => {
                     const angle = (i / activeActions.length) * Math.PI * 2 - Math.PI / 2;
                     const radius = 80; 

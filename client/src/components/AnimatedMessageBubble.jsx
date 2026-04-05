@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-mo
 // 🌟 FUTURISTIC RADAR MENU ACTIONS 🌟
 const MENU_ACTIONS = [
   { id: 'react', icon: '❤️', label: 'React', color: 'text-[#ff3366]', shadow: 'rgba(255,51,102,0.5)' },
+  { id: 'edit', icon: '✏️', label: 'Edit', color: 'text-[#00f0ff]', shadow: 'rgba(0,240,255,0.5)' }, // 🚨 NEW EDIT BUTTON
   { id: 'save', icon: '⭐', label: 'Save', color: 'text-[#ffbb00]', shadow: 'rgba(255,187,0,0.5)' },
   { id: 'forward', icon: '🔁', label: 'Forward', color: 'text-[#00ff9d]', shadow: 'rgba(0,255,157,0.5)' },
   { id: 'delete', icon: '🗑️', label: 'Delete', color: 'text-red-500', shadow: 'rgba(239,68,68,0.5)' }
@@ -85,10 +86,15 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
       setTimeout(() => setShowBurst(false), 1400);
     } else if (actionId === 'delete') {
       alert("Message deleted! (Backend hook coming soon)");
+    } else if (actionId === 'edit') {
+      alert("Edit mode activated! (UI hook coming soon)");
     } else {
       alert(`${actionId.toUpperCase()} activated! (UI hook coming soon)`);
     }
   };
+
+  // 🚨 SMART FILTER: You can only 'Edit' your own messages!
+  const activeActions = isMe ? MENU_ACTIONS : MENU_ACTIONS.filter(a => a.id !== 'edit');
 
   return (
     <div className={`flex w-full group transform transition-all duration-300 my-2 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
@@ -192,7 +198,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             )}
           </AnimatePresence>
 
-          {/* 🌟 FIX 3: THE RADIAL MENU (Now centered exactly on the message, not the screen!) 🌟 */}
+          {/* 🌟 THE RADIAL MENU (Now centered with + Hub and Edit feature!) 🌟 */}
           <AnimatePresence>
             {showRadial && (
               <motion.div
@@ -204,8 +210,25 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
                 onClick={(e) => e.stopPropagation()} 
               >
                 <div className="relative">
-                  {MENU_ACTIONS.map((action, i) => {
-                    const angle = (i / MENU_ACTIONS.length) * Math.PI * 2 - Math.PI / 2;
+                  
+                  {/* 🌟 NEW: CENTER HUB BUTTON (Rotates + into an X) 🌟 */}
+                  <motion.button
+                    initial={{ scale: 0, rotate: -90 }}
+                    animate={{ scale: 1, rotate: 45 }}
+                    exit={{ scale: 0, rotate: -90 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    onClick={(e) => { e.stopPropagation(); setShowRadial(false); }}
+                    className="absolute w-12 h-12 flex items-center justify-center -ml-6 -mt-6 bg-[#1A1F2E]/95 border border-white/20 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-2xl text-gray-400 hover:text-white hover:border-white/40 transition-all z-10 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/50"
+                  >
+                    <svg className="w-6 h-6 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </motion.button>
+
+                  {/* SURROUNDING ACTION BUTTONS */}
+                  {activeActions.map((action, i) => {
+                    // Spreads icons out perfectly whether there are 4 or 5!
+                    const angle = (i / activeActions.length) * Math.PI * 2 - Math.PI / 2;
                     const radius = 80; // Distance of icons from center
                     const x = Math.cos(angle) * radius;
                     const y = Math.sin(angle) * radius;

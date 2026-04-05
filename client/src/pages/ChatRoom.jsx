@@ -364,16 +364,25 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   // 🌟 MESSAGE ACTION FUNCTIONS 🌟
   // ==========================================
-  const handleDeleteMessage = (msgToDelete) => {
-    // Opens the new Smart Delete Menu!
-    setDeleteMenuMsg(msgToDelete);
-  };
-
-const executeSmartDelete = (action) => {
+ const executeSmartDelete = async (action) => {
     if (!deleteMenuMsg) return;
 
+    // Grab the token for security
+    const token = localStorage.getItem('reelestate_token');
+
     if (action === 'for_me') {
+      // 1. Remove from screen instantly
       setMessages((prev) => prev.filter((m) => m !== deleteMenuMsg));
+      
+      // 2. Delete from Database permanently
+      if (deleteMenuMsg._id) {
+        try {
+          await axios.delete(`${API_URL}/api/messages/${deleteMenuMsg._id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (err) { console.error("Failed to delete from DB", err); }
+      }
+
     } else {
       // 1. Create the modified version of the message
       let modifiedMsg = { ...deleteMenuMsg };
@@ -390,11 +399,23 @@ const executeSmartDelete = (action) => {
       // 2. Update it on YOUR screen instantly
       setMessages((prev) => prev.map((m) => m === deleteMenuMsg ? modifiedMsg : m));
 
-      // 3. 🚨 NEW: Emit the live change to your friend's screen!
+      // 3. Emit the live change to your friend's screen
       socket.emit('update_message', { room, modifiedMsg });
+
+      // 4. 🚨 SAVE TO DATABASE SO IT SURVIVES A REFRESH! 🚨
+      if (modifiedMsg._id) {
+        try {
+          await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, modifiedMsg, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (err) { console.error("Failed to update DB", err); }
+      }
     }
+    
+    // Close the menu
     setDeleteMenuMsg(null); 
   };
+    
 
   const handleEditMessage = (msgToEdit) => {
     setEditingMessage(msgToEdit);

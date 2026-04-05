@@ -364,7 +364,12 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   // 🌟 MESSAGE ACTION FUNCTIONS 🌟
   // ==========================================
- const executeSmartDelete = async (action) => {
+  const handleDeleteMessage = (msgToDelete) => {
+    // Opens the new Smart Delete Menu!
+    setDeleteMenuMsg(msgToDelete);
+  };
+
+  const executeSmartDelete = async (action) => {
     if (!deleteMenuMsg) return;
 
     // Grab the token for security
@@ -415,24 +420,23 @@ export default function ChatRoom({ chatUser, onBack }) {
     // Close the menu
     setDeleteMenuMsg(null); 
   };
-    
 
   const handleEditMessage = (msgToEdit) => {
     setEditingMessage(msgToEdit);
     setMessage(msgToEdit.text); // Puts the old text right into your typing box!
   };
 
- const handleSaveMessage = (msgToSave) => {
+  const handleSaveMessage = (msgToSave) => {
     // Show a sleek toast notification for 3 seconds instead of an alert!
     setToast("⭐ Message saved securely!");
     setTimeout(() => setToast(null), 3000);
-    // (Later you can add axios.post here to save to your database)
   };
 
- const handleForwardMessage = (msgToForward) => {
+  const handleForwardMessage = (msgToForward) => {
     // Opens the new Forward Modal UI!
     setForwardMsg(msgToForward);
   };
+
 
  const handleSend = async (e) => {
     e.preventDefault();

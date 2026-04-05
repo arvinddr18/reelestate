@@ -23,6 +23,8 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [selectedImage, setSelectedImage] = useState(null); 
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
+  const [toast, setToast] = useState(null); 
+  const [forwardMsg, setForwardMsg] = useState(null);
   
   // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
@@ -364,12 +366,16 @@ export default function ChatRoom({ chatUser, onBack }) {
     setMessage(msgToEdit.text); // Puts the old text right into your typing box!
   };
 
-  const handleSaveMessage = (msgToSave) => {
-    alert("Message saved! (Database hook coming soon)");
+ const handleSaveMessage = (msgToSave) => {
+    // Show a sleek toast notification for 3 seconds instead of an alert!
+    setToast("⭐ Message saved securely!");
+    setTimeout(() => setToast(null), 3000);
+    // (Later you can add axios.post here to save to your database)
   };
 
-  const handleForwardMessage = (msgToForward) => {
-    alert("Forward Menu opening... (UI Modal coming soon)");
+ const handleForwardMessage = (msgToForward) => {
+    // Opens the new Forward Modal UI!
+    setForwardMsg(msgToForward);
   };
 
  const handleSend = async (e) => {
@@ -551,7 +557,7 @@ export default function ChatRoom({ chatUser, onBack }) {
                       onForward={handleForwardMessage}
                     />
                   )}
-                  
+
                   <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70 drop-shadow-sm' : 'text-gray-500'}`}>{msg.time}</span>
                     {isMe && (
@@ -802,6 +808,49 @@ export default function ChatRoom({ chatUser, onBack }) {
             <button onClick={handleCaptureClick} className={`w-20 h-20 rounded-full border-[5px] flex items-center justify-center p-1 transition-all ${isRecording ? 'border-red-500 scale-110' : 'border-white/50 active:scale-95'}`}>
               <div className={`w-full h-full transition-all ${cameraMode === 'video' ? (isRecording ? 'bg-red-500 rounded-lg scale-50' : 'bg-red-500 rounded-full') : 'bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.8)]'}`}></div>
             </button>
+          </div>
+        </div>
+      )}
+      {/* 🌟 CUSTOM TOAST NOTIFICATION 🌟 */}
+      {toast && (
+        <div className="absolute top-24 md:top-32 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 bg-[#1A1F2E]/95 border border-[#00f0ff]/50 rounded-full shadow-[0_0_20px_rgba(0,240,255,0.4)] backdrop-blur-xl text-white text-sm font-bold tracking-wide flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300">
+          {toast}
+        </div>
+      )}
+
+      {/* 🌟 FORWARD MESSAGE MODAL 🌟 */}
+      {forwardMsg && (
+        <div className="absolute inset-0 z-[99999] bg-[#05070A]/80 backdrop-blur-sm flex items-end md:items-center justify-center animate-in fade-in duration-200">
+          <div className="w-full md:w-[400px] bg-[#121826] border border-white/10 rounded-t-3xl md:rounded-3xl shadow-2xl p-6 flex flex-col animate-in slide-in-from-bottom-10 duration-300">
+            
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white font-black tracking-wide text-lg">Forward Message</h3>
+              <button onClick={() => setForwardMsg(null)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
+                <IoMdClose size={18} />
+              </button>
+            </div>
+            
+            {/* Message Preview */}
+            <div className="bg-[#1A1F2E] p-3 rounded-xl border border-white/5 mb-4 text-gray-300 text-sm truncate shadow-inner">
+              {forwardMsg.text || "📸 Media Attachment"}
+            </div>
+
+            <p className="text-xs text-[#00f0ff] font-bold tracking-widest uppercase mb-2">Select Contact</p>
+
+            {/* Placeholder Contact List (You can connect this to your friends array later!) */}
+            <div className="flex flex-col gap-2 mb-2 max-h-[250px] overflow-y-auto no-scrollbar">
+               <button onClick={() => { alert("Forwarded!"); setForwardMsg(null); }} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors text-left group border border-transparent hover:border-[#00f0ff]/30">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white font-bold shadow-lg">JD</div>
+                  <span className="text-white flex-1 font-medium group-hover:text-[#00f0ff] transition-colors">John Doe</span>
+                  <IoMdSend className="text-gray-500 group-hover:text-[#00f0ff] transition-colors" />
+               </button>
+               <button onClick={() => { alert("Forwarded!"); setForwardMsg(null); }} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors text-left group border border-transparent hover:border-[#ff3366]/30">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#801fd6] to-[#ff3366] flex items-center justify-center text-white font-bold shadow-lg">AS</div>
+                  <span className="text-white flex-1 font-medium group-hover:text-[#ff3366] transition-colors">Alice Smith</span>
+                  <IoMdSend className="text-gray-500 group-hover:text-[#ff3366] transition-colors" />
+               </button>
+            </div>
+
           </div>
         </div>
       )}

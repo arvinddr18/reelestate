@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-mo
 // 🌟 FUTURISTIC RADAR MENU ACTIONS 🌟
 const MENU_ACTIONS = [
   { id: 'react', icon: '❤️', label: 'React', color: 'text-[#ff3366]', shadow: 'rgba(255,51,102,0.5)' },
-  { id: 'edit', icon: '✏️', label: 'Edit', color: 'text-[#00f0ff]', shadow: 'rgba(0,240,255,0.5)' }, // 🚨 NEW EDIT BUTTON
+  { id: 'edit', icon: '✏️', label: 'Edit', color: 'text-[#00f0ff]', shadow: 'rgba(0,240,255,0.5)' },
   { id: 'save', icon: '⭐', label: 'Save', color: 'text-[#ffbb00]', shadow: 'rgba(255,187,0,0.5)' },
   { id: 'forward', icon: '🔁', label: 'Forward', color: 'text-[#00ff9d]', shadow: 'rgba(0,255,157,0.5)' },
   { id: 'delete', icon: '🗑️', label: 'Delete', color: 'text-red-500', shadow: 'rgba(239,68,68,0.5)' }
@@ -16,18 +16,22 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const [showRadial, setShowRadial] = useState(false);
   
   const isDragging = useRef(false);
+  const holdTimer = useRef(null); // 🚨 WE BROUGHT THE HOLD TIMER BACK!
 
-  // 🚨 FIX 1: AUTO-CLOSE! If you click ANYWHERE else on the screen, the menu closes!
+  // AUTO-CLOSE! If you click ANYWHERE else on the screen, the menu closes!
   useEffect(() => {
     if (!showRadial) return;
     const closeMenu = () => setShowRadial(false);
     
-    // Add a tiny delay so the click that opens it doesn't instantly close it
     setTimeout(() => {
       document.addEventListener('click', closeMenu);
+      document.addEventListener('touchstart', closeMenu); // Added for mobile!
     }, 10);
     
-    return () => document.removeEventListener('click', closeMenu);
+    return () => {
+      document.removeEventListener('click', closeMenu);
+      document.removeEventListener('touchstart', closeMenu);
+    };
   }, [showRadial]);
 
   // ==========================================
@@ -38,12 +42,13 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
   const replyScale = useTransform(x, isMe ? [0, -50] : [0, 50], [0.5, 1.1]);
 
   const handleDragStart = () => {
-    isDragging.current = true; // Locks the tap feature while swiping
+    isDragging.current = true;
+    if (holdTimer.current) clearTimeout(holdTimer.current); // Cancel hold if swiping!
   };
 
   const handleDragEnd = (e, info) => {
     setTimeout(() => { isDragging.current = false; }, 150);
-    const threshold = 45; // 🚨 FIX 2: Lowered from 60 to 45 to make swiping much easier!
+    const threshold = 45; 
     
     if (isMe && info.offset.x < -threshold) {
       triggerReply();
@@ -54,17 +59,27 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
 
   const triggerReply = () => {
     window.navigator.vibrate?.(50); 
-    if (onReply) onReply(); // 🚨 Sends data back to ChatRoom to open the popup!
+    if (onReply) onReply(); 
   };
 
   // ==========================================
-  // SCENE TIMERS & CLICKS
+  // 🚨 RESTORED: SCENE TIMERS & LONG PRESS (HOLD)
   // ==========================================
-  const handleBubbleClick = (e) => {
-    e.stopPropagation(); 
-    if (!isDragging.current) {
-      setShowRadial(true);
-    }
+  const handlePointerDown = (e) => {
+    if (e.button === 2) return; // Ignore desktop right-clicks
+    
+    // Start the timer when you press down
+    holdTimer.current = setTimeout(() => {
+      if (!isDragging.current) {
+        setShowRadial(true);
+        window.navigator.vibrate?.(50); // Little buzz when the menu opens!
+      }
+    }, 400); // 400ms hold required
+  };
+
+  const handlePointerUp = () => {
+    // If you let go before 400ms, cancel the menu!
+    if (holdTimer.current) clearTimeout(holdTimer.current);
   };
 
   const handleDoubleClick = (e) => {
@@ -79,7 +94,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
 
   const handleAction = (actionId, e) => {
     e.stopPropagation();
-    setShowRadial(false); // Closes menu after clicking an option
+    setShowRadial(false); 
     if (actionId === 'react') {
       setReaction('❤️');
       setShowBurst(true);
@@ -93,13 +108,11 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
     }
   };
 
-  // 🚨 SMART FILTER: You can only 'Edit' your own messages!
   const activeActions = isMe ? MENU_ACTIONS : MENU_ACTIONS.filter(a => a.id !== 'edit');
 
   return (
     <div className={`flex w-full group transform transition-all duration-300 my-2 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
       
-      {/* 🌟 SWIPE-TO-REPLY CONTAINER 🌟 */}
       <div className="relative max-w-full flex items-center">
         
         {/* THE GLOWING REPLY ICON */}
@@ -121,17 +134,19 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
           className={`max-w-full flex flex-col relative z-10 cursor-grab active:cursor-grabbing ${isMe ? 'items-end' : 'items-start'}`}
         >
           
-          {/* Breathing Background Glow */}
           <motion.div
             animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          {/* 🚨 THE MESSAGE BUBBLE */}
+          {/* 🚨 THE MESSAGE BUBBLE WITH LONG PRESS LOGIC */}
           <motion.div 
             whileTap={{ scale: 0.95 }}
-            onClick={handleBubbleClick} 
+            onPointerDown={handlePointerDown} 
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} // 🚨 Blocks phone's default text selector!
             onDoubleClick={handleDoubleClick}
             className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-20 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
               isMe 
@@ -139,7 +154,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
               : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
             }`}
           >
-            {/* 🌟 REPLIED MESSAGE PREVIEW INSIDE BUBBLE 🌟 */}
             {msg.replyTo && (
               <div className={`mb-1.5 p-2 rounded-lg border-l-[3px] text-xs opacity-90 backdrop-blur-md ${isMe ? 'bg-black/20 border-white/50 text-white' : 'bg-white/10 border-[#00f0ff] text-white'}`}>
                 <div className="font-black text-[9px] uppercase mb-0.5 opacity-70 tracking-widest">
@@ -151,7 +165,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
               </div>
             )}
             
-            <span className="relative z-10">{msg.text}</span>
+            <span className="relative z-10 pointer-events-none">{msg.text}</span>
           </motion.div>
 
           {/* Timestamp */}
@@ -159,7 +173,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70' : 'text-gray-500'}`}>{msg.time}</span>
           </div>
 
-          {/* Settled Reaction Badge */}
           <AnimatePresence>
             {reaction && (
               <motion.div
@@ -173,7 +186,6 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             )}
           </AnimatePresence>
 
-          {/* Heart Burst Animation */}
           <AnimatePresence>
             {showBurst && (
               <div className="absolute inset-0 pointer-events-none z-30 flex items-center justify-center">
@@ -182,11 +194,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
                     key={i}
                     initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
                     animate={{ 
-                      scale: [0, 1.5, 1], 
-                      x: (Math.random() - 0.5) * 150, 
-                      y: -50 - Math.random() * 100,
-                      opacity: [1, 1, 0],
-                      rotate: Math.random() * 90 - 45
+                      scale: [0, 1.5, 1], x: (Math.random() - 0.5) * 150, y: -50 - Math.random() * 100, opacity: [1, 1, 0], rotate: Math.random() * 90 - 45
                     }}
                     transition={{ duration: 1.2, ease: "easeOut" }}
                     className="absolute text-2xl drop-shadow-[0_0_10px_rgba(255,51,102,0.8)]"
@@ -198,20 +206,19 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
             )}
           </AnimatePresence>
 
-          {/* 🌟 THE RADIAL MENU (Now centered with + Hub and Edit feature!) 🌟 */}
+          {/* 🌟 THE RADIAL MENU 🌟 */}
           <AnimatePresence>
             {showRadial && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                // absolute center of the current message block
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999]"
                 onClick={(e) => e.stopPropagation()} 
               >
                 <div className="relative">
                   
-                  {/* 🌟 NEW: CENTER HUB BUTTON (Rotates + into an X) 🌟 */}
+                  {/* CENTER HUB BUTTON */}
                   <motion.button
                     initial={{ scale: 0, rotate: -90 }}
                     animate={{ scale: 1, rotate: 45 }}
@@ -227,9 +234,8 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply }) {
 
                   {/* SURROUNDING ACTION BUTTONS */}
                   {activeActions.map((action, i) => {
-                    // Spreads icons out perfectly whether there are 4 or 5!
                     const angle = (i / activeActions.length) * Math.PI * 2 - Math.PI / 2;
-                    const radius = 80; // Distance of icons from center
+                    const radius = 80; 
                     const x = Math.cos(angle) * radius;
                     const y = Math.sin(angle) * radius;
 

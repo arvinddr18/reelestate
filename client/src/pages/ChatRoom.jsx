@@ -31,6 +31,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [activeCall, setActiveCall] = useState(null); // 'audio' | 'video' | null
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // 🚨 Add this new line!
 
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
@@ -297,16 +298,22 @@ export default function ChatRoom({ chatUser, onBack }) {
     if (!myId || !friendId || !room) return;
     
     const fetchChatHistory = async () => {
+      setIsLoading(true); // 🚨 Start spinning!
       try {
         const token = localStorage.getItem('reelestate_token');
         const res = await axios.get(`${API_URL}/api/messages/${room}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setMessages(res.data);
-      } catch (err) { console.error(err); }
+      } catch (err) { 
+        console.error(err); 
+      } finally {
+        setIsLoading(false); // 🚨 Stop spinning!
+      }
     };
     
     fetchChatHistory();
+  
     
     socket.emit('join_room', room);
     socket.on('receive_message', (data) => setMessages((prev) => [...prev, data]));
@@ -460,56 +467,67 @@ export default function ChatRoom({ chatUser, onBack }) {
           <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
         </div>
 
-        {messages.map((msg, index) => {
-          const isMe = msg.senderId === myId;
-          return (
-            <div key={index} className={`flex w-full group transform transition-all duration-300 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
-              <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}>
-                
-                {msg.image && (
-                  <div className="relative mb-2 group/img">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
-                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
-                      <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
-                    </div>
-                  </div>
-                )}
-
-                {msg.video && (
-                  <div className="relative mb-2">
-                    <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
-                      <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
-                    </div>
-                  </div>
-                )}
-
-                {msg.audio && (
-                  <div className="relative mt-1 mb-2">
-                    <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
-                  </div>
-                )}
-
-                {msg.text && (
-  <AnimatedMessageBubble 
-    msg={msg} 
-    isMe={isMe} 
-    onReply={() => setReplyingTo(msg)} // 🚨 Catches the swipe!
-  />
-)}
-                
-                <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                  <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70 drop-shadow-sm' : 'text-gray-500'}`}>{msg.time}</span>
-                  {isMe && (
-                    <div className="flex -space-x-1">
-                      <IoMdCheckmark className="text-gray-400" size={14} />
-                      <IoMdCheckmark className="text-gray-400" size={14} />
+        {/* 🌟 THE GLOWING LOADING SPINNER 🌟 */}
+        {isLoading ? (
+          <div className="flex-1 w-full flex flex-col items-center justify-center gap-4 animate-in fade-in duration-500">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#00f0ff] animate-spin shadow-[0_0_15px_rgba(0,240,255,0.5)]"></div>
+              <div className="absolute inset-2 rounded-full border-[3px] border-transparent border-b-[#bc00dd] animate-spin shadow-[0_0_15px_rgba(188,0,221,0.5)]" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+            </div>
+            <span className="text-[10px] font-black tracking-[0.3em] uppercase text-[#00f0ff] animate-pulse drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">Decrypting...</span>
+          </div>
+        ) : (
+          messages.map((msg, index) => {
+            const isMe = msg.senderId === myId;
+            return (
+              <div key={index} className={`flex w-full group transform transition-all duration-300 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
+                <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}>
+                  
+                  {msg.image && (
+                    <div className="relative mb-2 group/img">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
+                      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
+                        <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
+                      </div>
                     </div>
                   )}
+
+                  {msg.video && (
+                    <div className="relative mb-2">
+                      <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
+                        <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.audio && (
+                    <div className="relative mt-1 mb-2">
+                      <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
+                    </div>
+                  )}
+
+                  {msg.text && (
+                    <AnimatedMessageBubble 
+                      msg={msg} 
+                      isMe={isMe} 
+                      onReply={() => setReplyingTo(msg)}
+                    />
+                  )}
+                  
+                  <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                    <span className={`text-[10px] font-semibold tracking-wider ${isMe ? 'text-white/70 drop-shadow-sm' : 'text-gray-500'}`}>{msg.time}</span>
+                    {isMe && (
+                      <div className="flex -space-x-1">
+                        <IoMdCheckmark className="text-gray-400" size={14} />
+                        <IoMdCheckmark className="text-gray-400" size={14} />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
         <div ref={messagesEndRef} />
       </div>
 

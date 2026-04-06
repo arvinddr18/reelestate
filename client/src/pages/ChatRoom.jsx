@@ -391,16 +391,20 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   
 
- const executeSmartDelete = async (action, targetMsg) => {
+const executeSmartDelete = async (action, targetMsg) => {
+    // 🚨 Safety Check: If no message was passed, stop here to prevent black screen!
     if (!targetMsg) return;
+
     const token = localStorage.getItem('nodexa_token');
 
     if (action === 'for_me') {
+      // Remove from screen instantly
       setMessages((prev) => prev.filter((m) => {
         const isSameId = m._id && targetMsg._id && m._id === targetMsg._id;
         const isSameTime = m.timestamp && targetMsg.timestamp && m.timestamp === targetMsg.timestamp;
         return !(isSameId || isSameTime);
       }));
+      
       if (targetMsg._id) {
         try {
           await axios.delete(`${API_URL}/api/messages/${targetMsg._id}`, {
@@ -408,7 +412,9 @@ export default function ChatRoom({ chatUser, onBack }) {
           });
         } catch (err) { console.error("Failed to delete from DB", err); }
       }
+
     } else {
+      // Handle Blur, Replace, and Delete for Everyone
       let modifiedMsg = { ...targetMsg };
       if (action === 'for_everyone') {
         modifiedMsg.isDeleted = true;
@@ -420,12 +426,14 @@ export default function ChatRoom({ chatUser, onBack }) {
         modifiedMsg.isBlurred = !modifiedMsg.isBlurred; 
       }
 
+      // Update screen instantly
       setMessages((prev) => prev.map((m) => {
         const isSameId = m._id && targetMsg._id && m._id === targetMsg._id;
         const isSameTime = m.timestamp && targetMsg.timestamp && m.timestamp === targetMsg.timestamp;
         return (isSameId || isSameTime) ? modifiedMsg : m;
       }));
 
+      // Send live update to other user
       socket.emit('update_message', { room, modifiedMsg });
 
       if (modifiedMsg._id) {
@@ -436,7 +444,9 @@ export default function ChatRoom({ chatUser, onBack }) {
         } catch (err) { console.error("Failed to update DB", err); }
       }
     }
-  }; // This closes executeSmartDelete correctly
+    
+    // 🚨 THE CRITICAL FIX: Make sure NO Reference to setDeleteMenuMsg exists here!
+  };
 
   const handleEditMessage = (msgToEdit) => {
     const msgTime = new Date(msgToEdit.createdAt || msgToEdit.timestamp || Date.now()).getTime();
@@ -682,7 +692,8 @@ export default function ChatRoom({ chatUser, onBack }) {
                         msg={msg} 
                         isMe={isMe} 
                         onReply={() => setReplyingTo(msg)}
-                        onDelete={executeSmartDelete}
+                       // 🚨 FIX: This ensures the 'action' and 'msg' go to the right places
+                        onDelete={(action, selectedMsg) => executeSmartDelete(action, selectedMsg)}
                         onEdit={handleEditMessage}
                         onSave={handleSaveMessage}
                         onForward={handleForwardMessage}

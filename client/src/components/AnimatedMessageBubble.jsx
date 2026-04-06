@@ -145,7 +145,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
           onDragStart={handleDragStart} 
           onDragEnd={handleDragEnd}     
           style={{ x }} 
-          className={`max-w-full flex flex-col relative z-10 cursor-grab active:cursor-grabbing ${isMe ? 'items-end' : 'items-start'}`}
+          className={`max-w-full flex flex-col relative cursor-grab active:cursor-grabbing ${showDeleteMenu ? 'z-[500]' : 'z-10'} ${isMe ? 'items-end' : 'items-start'}`}
         >
           
           <motion.div
@@ -190,7 +190,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8, y: -10 }}
                 /* 🚨 THE FIX: Anchors perfectly to the INSIDE edge and drops DOWN safely! */
-                className={`absolute z-[100] top-[100%] mt-2 ${isMe ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}
+                className={`absolute z-[9999] top-[100%] mt-2 ${isMe ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}
               >
                 <div className="w-[200px] md:w-[240px] bg-[#121826]/95 backdrop-blur-2xl border border-red-500/50 rounded-2xl md:rounded-3xl shadow-[0_15px_50px_rgba(239,68,68,0.5)] p-3 flex flex-col">
                   

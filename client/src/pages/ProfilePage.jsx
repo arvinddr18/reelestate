@@ -30,7 +30,7 @@ const resolveMediaUrl = (source) => {
 };
 
 const getAuthConfig = () => {
-  const token = localStorage.getItem('reelestate_token');
+  const token = localStorage.getItem('nodexa_token');
   return { headers: { Authorization: `Bearer ${token}` }, withCredentials: true };
 };
 

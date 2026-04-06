@@ -28,7 +28,7 @@ export default function Messages() {
       if (!userId) return; 
 
       try {
-        const token = localStorage.getItem('reelestate_token');
+        const token = localStorage.getItem('nodexa_token');
         const headers = { Authorization: `Bearer ${token}` };
         let combinedNetwork = [];
 

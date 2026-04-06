@@ -17,7 +17,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired — clear storage and reload
-      localStorage.removeItem('reelestate_token');
+      localStorage.removeItem('nodexa_token');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }

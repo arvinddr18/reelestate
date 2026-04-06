@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   // On mount: check if a valid VIP token exists
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('reelestate_token');
+      const token = localStorage.getItem('nodexa_token');
       if (token) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
           }
         } catch {
           // Token is dead - clear it out
-          localStorage.removeItem('reelestate_token');
+          localStorage.removeItem('nodexa_token');
           delete api.defaults.headers.common['Authorization'];
         }
       }
@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
 
       if (token) {
         // 2. Lock in the secure token
-        localStorage.setItem('reelestate_token', token);
+        localStorage.setItem('nodexa_token', token);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(userInfo);
         if (userInfo._id) socketService.connect(userInfo._id);
@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
 
       if (token) {
         // 2. Lock in the secure token
-        localStorage.setItem('reelestate_token', token);
+        localStorage.setItem('nodexa_token', token);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(userInfo);
         if (userInfo._id) socketService.connect(userInfo._id);
@@ -82,7 +82,7 @@ export function AuthProvider({ children }) {
 
   // Logout: clear everything
   const logout = useCallback(() => {
-    localStorage.removeItem('reelestate_token');
+    localStorage.removeItem('nodexa_token');
     delete api.defaults.headers.common['Authorization'];
     socketService.disconnect();
     setUser(null);

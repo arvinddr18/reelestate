@@ -301,31 +301,29 @@ export default function ChatRoom({ chatUser, onBack }) {
   }, []);
 
  // ==========================================
-  // 🌟 SOCKET & HISTORY FETCHING 🌟
+  // 🌟 1. HISTORY FETCHING (PAGINATION) 🌟
   // ==========================================
   useEffect(() => {
-    if (!myId || !friendId || !room) return;
-    
-   const fetchChatHistory = async () => {
-      if (!hasMore) return; // Stop asking the database if we reached the very beginning!
-      setIsLoading(true); 
-      
+    if (!room || !myId || !friendId) return;
+
+    const fetchChatHistory = async () => {
+      if (!hasMore) return; 
+      if (page === 1) setIsLoading(true); // Only show spinner on first load
+
       try {
         const token = localStorage.getItem('reelestate_token');
-        // 👇 Notice the ?page=${page} at the end of the URL!
         const res = await axios.get(`${API_URL}/api/messages/${room}?page=${page}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // If the database sends back less than 50 messages, we know we hit the end!
         if (res.data.length < 50) {
-          setHasMore(false); 
+          setHasMore(false); // We hit the end of history!
         }
 
         if (page === 1) {
-          setMessages(res.data); // First load
+          setMessages(res.data);
         } else {
-          // If we are loading older messages, put them at the TOP of the array
+          // Add older messages to the TOP of the chat
           setMessages((prev) => [...res.data, ...prev]); 
         }
       } catch (err) { 
@@ -336,20 +334,22 @@ export default function ChatRoom({ chatUser, onBack }) {
     };
     
     fetchChatHistory();
+  }, [room, myId, friendId, page]); // <--- 🚨 'page' IS HERE! Now it fetches when you scroll!
 
-    // 🚨 THE FIX: Join room immediately, AND auto-rejoin if the phone goes to sleep!
+  // ==========================================
+  // 🌟 2. LIVE SOCKET CONNECTIONS 🌟
+  // ==========================================
+  useEffect(() => {
+    if (!room || !myId || !friendId) return;
+    
     socket.emit('join_room', room);
     
-    const onConnect = () => {
-      socket.emit('join_room', room);
-    };
-
+    const onConnect = () => socket.emit('join_room', room);
     socket.on('connect', onConnect);
     socket.on('receive_message', (data) => setMessages((prev) => [...prev, data]));
     socket.on('display_typing', () => setIsTyping(true));
     socket.on('hide_typing', () => setIsTyping(false));
     
-    // 🚨 NEW: THIS CATCHES THE SMART DELETE/EDIT FROM THE OTHER PERSON!
     socket.on('message_updated', (data) => {
       setMessages((prev) => prev.map((m) => 
         (m._id === data.modifiedMsg._id) || (m.time === data.modifiedMsg.time && m.senderId === data.modifiedMsg.senderId) 
@@ -363,9 +363,9 @@ export default function ChatRoom({ chatUser, onBack }) {
       socket.off('receive_message'); 
       socket.off('display_typing'); 
       socket.off('hide_typing');
-      socket.off('message_updated'); // 🚨 Cleanup the new listener
+      socket.off('message_updated'); 
     };
-  }, [room, myId, friendId]);
+  }, [room, myId, friendId]); // <--- 🚨 No 'page' here, so sockets don't restart when scrolling!
   
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -380,10 +380,10 @@ export default function ChatRoom({ chatUser, onBack }) {
     }
   };
 
-  const handleScroll = (e) => {
-    // If the scrollbar hits the very top (0), and we aren't currently loading...
-    if (e.target.scrollTop === 0 && !isLoading && hasMore) {
-      setPage((prevPage) => prevPage + 1); // Turn the page! This triggers the fetch again.
+ const handleScroll = (e) => {
+    // 🚨 Changed to <= 2 to fix mobile/sub-pixel scrolling bugs!
+    if (e.target.scrollTop <= 2 && !isLoading && hasMore) {
+      setPage((prevPage) => prevPage + 1); 
     }
   };
 

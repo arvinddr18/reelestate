@@ -1,7 +1,7 @@
 import EmojiPicker from 'emoji-picker-react';
 import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
-import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin, IoMdFolder, IoMdTrash } from 'react-icons/io';
+import { IoMdArrowBack, IoMdSend, IoMdMore, IoMdImage, IoMdMic, IoMdClose, IoMdCamera, IoMdAdd, IoMdCheckmark, IoMdDocument, IoMdPin, IoMdFolder, IoMdTrash, IoLogoWhatsapp, IoLogoInstagram, IoLogoFacebook, IoMdChatboxes } from 'react-icons/io';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -474,6 +474,39 @@ export default function ChatRoom({ chatUser, onBack }) {
   const handleForwardMessage = (msgToForward) => {
     // Opens the new Forward Modal UI!
     setForwardMsg(msgToForward);
+  };
+
+const handleExternalShare = async (platform) => {
+    if (!forwardMsg) return;
+    
+    const textToShare = forwardMsg.text || "Check out this media on ReelEstate!";
+    const encodedText = encodeURIComponent(textToShare);
+    const appUrl = encodeURIComponent(window.location.origin);
+
+    try {
+      if (platform === 'whatsapp') {
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+      } else if (platform === 'facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${appUrl}&quote=${encodedText}`, '_blank');
+      } else if (platform === 'sms') {
+        window.open(`sms:?body=${encodedText}`, '_self');
+      } else if (platform === 'instagram' || platform === 'native') {
+        // Instagram doesn't allow direct text links, so we trigger the phone's native iOS/Android share menu!
+        if (navigator.share) {
+          await navigator.share({
+            title: 'ReelEstate Secure Message',
+            text: textToShare,
+            url: window.location.origin
+          });
+        } else {
+          setToast("Native sharing not supported on this browser.");
+          setTimeout(() => setToast(null), 3000);
+        }
+      }
+      setForwardMsg(null); // Close modal after sharing
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
   };
 
   const handleSend = async (e) => {
@@ -977,42 +1010,97 @@ export default function ChatRoom({ chatUser, onBack }) {
         </div>
       )}
 
-      {/* 🌟 FORWARD MESSAGE MODAL 🌟 */}
+     {/* 🌟 FORWARD MESSAGE MODAL 🌟 */}
       {forwardMsg && (
-        <div className="absolute inset-0 z-[99999] bg-[#05070A]/80 backdrop-blur-sm flex items-end md:items-center justify-center animate-in fade-in duration-200">
-          <div className="w-full md:w-[400px] bg-[#121826] border border-white/10 rounded-t-3xl md:rounded-3xl shadow-2xl p-6 flex flex-col animate-in slide-in-from-bottom-10 duration-300">
+        <div className="absolute inset-0 z-[99999] bg-[#05070A]/80 backdrop-blur-md flex items-end md:items-center justify-center animate-in fade-in duration-200">
+          <div className="w-full md:w-[400px] bg-[#121826]/95 backdrop-blur-3xl border border-white/10 md:border-[#00f0ff]/30 rounded-t-3xl md:rounded-3xl shadow-[0_0_50px_rgba(0,240,255,0.15)] p-6 flex flex-col animate-in slide-in-from-bottom-10 duration-300 relative overflow-hidden">
             
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-black tracking-wide text-lg">Forward Message</h3>
-              <button onClick={() => setForwardMsg(null)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
+            {/* Background Glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-24 bg-gradient-to-b from-[#00f0ff]/10 to-transparent pointer-events-none"></div>
+
+            {/* Header */}
+            <div className="flex justify-between items-center mb-5 relative z-10">
+              <h3 className="text-white font-black tracking-wide text-lg flex items-center gap-2">
+                <span className="text-[#00f0ff]">📤</span> Share Message
+              </h3>
+              <button onClick={() => setForwardMsg(null)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/30 transition-colors">
                 <IoMdClose size={18} />
               </button>
             </div>
             
-            {/* Message Preview */}
-            <div className="bg-[#1A1F2E] p-3 rounded-xl border border-white/5 mb-4 text-gray-300 text-sm truncate shadow-inner">
-              {forwardMsg.text || "📸 Media Attachment"}
+            {/* Message Preview Snippet */}
+            <div className="bg-black/50 p-3 rounded-xl border border-white/5 border-l-[3px] border-l-[#00f0ff] mb-6 text-gray-300 text-sm truncate shadow-inner relative z-10">
+              <span className="opacity-50 text-[10px] block uppercase tracking-widest font-bold mb-1">Preview</span>
+              {forwardMsg.text || "📸 Encrypted Media Attachment"}
             </div>
 
-            <p className="text-xs text-[#00f0ff] font-bold tracking-widest uppercase mb-2">Select Contact</p>
+            {/* 1. IN-APP NETWORK (Horizontal Scroll) */}
+            <div className="relative z-10 mb-6">
+              <p className="text-[10px] text-[#00f0ff] font-bold tracking-widest uppercase mb-3 pl-1">Send to Network</p>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 px-1">
+                
+                {/* Note: Map through your actual 'friends' array here later! */}
+                {['John Doe', 'Alice Smith', 'Bob Builder', 'Emma Watson'].map((name, i) => (
+                  <button key={i} onClick={() => { setToast(`Forwarded to ${name}`); setTimeout(() => setToast(null), 2000); setForwardMsg(null); }} className="flex flex-col items-center gap-2 shrink-0 group w-[60px]">
+                    <div className="w-12 h-12 rounded-full p-[1.5px] bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                       <div className="w-full h-full bg-[#1E2532] rounded-full border-2 border-[#121826] flex items-center justify-center text-white font-bold text-sm">
+                         {name.split(' ').map(n => n[0]).join('')}
+                       </div>
+                    </div>
+                    <span className="text-[9px] font-bold text-gray-400 group-hover:text-[#00f0ff] truncate w-full text-center transition-colors">
+                      {name.split(' ')[0]}
+                    </span>
+                  </button>
+                ))}
+                
+              </div>
+            </div>
 
-            {/* Placeholder Contact List (You can connect this to your friends array later!) */}
-            <div className="flex flex-col gap-2 mb-2 max-h-[250px] overflow-y-auto no-scrollbar">
-               <button onClick={() => { alert("Forwarded!"); setForwardMsg(null); }} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors text-left group border border-transparent hover:border-[#00f0ff]/30">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center text-white font-bold shadow-lg">JD</div>
-                  <span className="text-white flex-1 font-medium group-hover:text-[#00f0ff] transition-colors">John Doe</span>
-                  <IoMdSend className="text-gray-500 group-hover:text-[#00f0ff] transition-colors" />
-               </button>
-               <button onClick={() => { alert("Forwarded!"); setForwardMsg(null); }} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-colors text-left group border border-transparent hover:border-[#ff3366]/30">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#801fd6] to-[#ff3366] flex items-center justify-center text-white font-bold shadow-lg">AS</div>
-                  <span className="text-white flex-1 font-medium group-hover:text-[#ff3366] transition-colors">Alice Smith</span>
-                  <IoMdSend className="text-gray-500 group-hover:text-[#ff3366] transition-colors" />
-               </button>
+            {/* 2. EXTERNAL APPS GRID */}
+            <div className="relative z-10">
+              <p className="text-[10px] text-[#bc00dd] font-bold tracking-widest uppercase mb-3 pl-1">Share via Apps</p>
+              
+              <div className="grid grid-cols-4 gap-3">
+                {/* WhatsApp */}
+                <button onClick={() => handleExternalShare('whatsapp')} className="flex flex-col items-center gap-2 group">
+                   <div className="w-14 h-14 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366] group-hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(37,211,102,0.1)] group-hover:shadow-[0_5px_20px_rgba(37,211,102,0.4)] group-hover:-translate-y-1">
+                      <IoLogoWhatsapp size={26} />
+                   </div>
+                   <span className="text-[9px] font-bold tracking-wide text-gray-500 group-hover:text-gray-200">WhatsApp</span>
+                </button>
+
+                {/* Instagram / Native */}
+                <button onClick={() => handleExternalShare('instagram')} className="flex flex-col items-center gap-2 group">
+                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#f9ce34]/10 via-[#ee2a7b]/10 to-[#6228d7]/10 border border-[#ee2a7b]/30 flex items-center justify-center text-[#ee2a7b] group-hover:from-[#f9ce34] group-hover:via-[#ee2a7b] group-hover:to-[#6228d7] group-hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(238,42,123,0.1)] group-hover:shadow-[0_5px_20px_rgba(238,42,123,0.4)] group-hover:-translate-y-1">
+                      <IoLogoInstagram size={26} />
+                   </div>
+                   <span className="text-[9px] font-bold tracking-wide text-gray-500 group-hover:text-gray-200">Instagram</span>
+                </button>
+
+                {/* Facebook */}
+                <button onClick={() => handleExternalShare('facebook')} className="flex flex-col items-center gap-2 group">
+                   <div className="w-14 h-14 rounded-2xl bg-[#1877F2]/10 border border-[#1877F2]/30 flex items-center justify-center text-[#1877F2] group-hover:bg-[#1877F2] group-hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(24,119,242,0.1)] group-hover:shadow-[0_5px_20px_rgba(24,119,242,0.4)] group-hover:-translate-y-1">
+                      <IoLogoFacebook size={26} />
+                   </div>
+                   <span className="text-[9px] font-bold tracking-wide text-gray-500 group-hover:text-gray-200">Facebook</span>
+                </button>
+
+                {/* SMS / System Native */}
+                <button onClick={() => handleExternalShare('sms')} className="flex flex-col items-center gap-2 group">
+                   <div className="w-14 h-14 rounded-2xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center text-[#00f0ff] group-hover:bg-[#00f0ff] group-hover:text-[#121826] transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.1)] group-hover:shadow-[0_5px_20px_rgba(0,240,255,0.4)] group-hover:-translate-y-1">
+                      <IoMdChatboxes size={24} />
+                   </div>
+                   <span className="text-[9px] font-bold tracking-wide text-gray-500 group-hover:text-gray-200">Messages</span>
+                </button>
+              </div>
             </div>
 
           </div>
         </div>
       )}
+      
+
+
       {/* 🌟 SMART DELETE MODAL 🌟 */}
       {deleteMenuMsg && (
         <div className="absolute inset-0 z-[99999] bg-[#05070A]/80 backdrop-blur-sm flex items-end md:items-center justify-center animate-in fade-in duration-200">

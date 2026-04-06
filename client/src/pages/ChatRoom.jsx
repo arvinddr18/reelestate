@@ -707,11 +707,11 @@ const handleExternalShare = async (platform) => {
                       <>
                         <div className="fixed inset-0 z-[90]" onClick={() => setDeleteMenuMsg(null)}></div>
                         
-                        {/* Positions perfectly to the left or right of the bubble center! */}
-                        <div className={`absolute z-[100] top-1/2 -translate-y-1/2 ${isMe ? 'right-full mr-3' : 'left-full ml-3'}`}>
+                       {/* 🚨 THE FIX: Anchors perfectly to the inside edge and drops DOWN to prevent clipping! */}
+                        <div className={`absolute z-[100] top-[80%] ${isMe ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}>
                           
-                          {/* The beautiful original design! */}
-                          <div className="w-[260px] md:w-[320px] bg-[#121826] border border-red-500/30 rounded-3xl shadow-[0_0_40px_rgba(239,68,68,0.3)] p-4 md:p-5 flex flex-col animate-in zoom-in-75 duration-300">
+                          {/* Sleeker, compact width (230px) that perfectly fits all mobile screens! */}
+                          <div className="w-[230px] bg-[#121826] border border-red-500/30 rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-3 md:p-4 flex flex-col animate-in zoom-in-95 duration-200">
                             
                             <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
                               <h3 className="text-white font-black tracking-wide text-sm md:text-base flex items-center gap-2">

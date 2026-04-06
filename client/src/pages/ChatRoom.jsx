@@ -412,6 +412,7 @@ export default function ChatRoom({ chatUser, onBack }) {
           });
         } catch (err) { console.error("Failed to delete from DB", err); }
       }
+    
 
     } else {
       // 1. Create the modified version of the message

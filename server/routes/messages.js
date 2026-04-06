@@ -28,15 +28,15 @@ const holoMessageSchema = new mongoose.Schema({
 
 const HoloMessage = mongoose.models.HoloMessage || mongoose.model('HoloMessage', holoMessageSchema);
 
-// ─── 1. FETCH CHAT HISTORY (OPTIMIZED FOR SPEED) ───
+// ─── 1. FETCH CHAT HISTORY (LOAD ALL MESSAGES) ───
 router.get('/:room', protect, async (req, res) => {
   try {
-    // 🚨 Sort by Newest First (-1), limit to 50, then reverse them so they display bottom-to-top!
+    // 🚨 We removed .limit() so it fetches EVERY message you have ever sent!
+    // 🚨 We changed sort to '1' (Oldest to Newest) so we don't need to use .reverse() anymore!
     const messages = await HoloMessage.find({ room: req.params.room })
-      .sort({ createdAt: -1 }) 
-      .limit(50);
+      .sort({ createdAt: 1 }); 
       
-    res.status(200).json(messages.reverse());
+    res.status(200).json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

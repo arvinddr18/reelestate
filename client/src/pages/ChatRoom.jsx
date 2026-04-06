@@ -990,6 +990,8 @@ export default function ChatRoom({ chatUser, onBack }) {
             </div>
             
            <div className="flex flex-col gap-3">
+               
+               {/* 1. ALWAYS VISIBLE: "Remove for me" (Works for both users' chats) */}
                <button onClick={() => executeSmartDelete('for_me')} className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-left group border border-transparent hover:border-white/20">
                   <span className="text-xl">👤</span>
                   <div className="flex flex-col">
@@ -998,34 +1000,38 @@ export default function ChatRoom({ chatUser, onBack }) {
                   </div>
                </button>
 
-               <button onClick={() => executeSmartDelete('for_everyone')} className="flex items-center gap-3 p-3 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-colors text-left group border border-transparent hover:border-red-500/40">
-                  <span className="text-xl">🌍</span>
-                  <div className="flex flex-col">
-                    <span className="text-red-400 font-bold group-hover:text-red-300 transition-colors">Delete for everyone</span>
-                    <span className="text-xs text-red-500/70">Replaces text with a warning</span>
-                  </div>
-               </button>
+               {/* 🚨 SECURITY LOCK: ONLY SHOW THESE 3 IF YOU SENT THE MESSAGE 🚨 */}
+               {deleteMenuMsg?.senderId === myId && (
+                 <>
+                   <button onClick={() => executeSmartDelete('for_everyone')} className="flex items-center gap-3 p-3 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-colors text-left group border border-transparent hover:border-red-500/40">
+                      <span className="text-xl">🌍</span>
+                      <div className="flex flex-col">
+                        <span className="text-red-400 font-bold group-hover:text-red-300 transition-colors">Delete for everyone</span>
+                        <span className="text-xs text-red-500/70">Replaces text with a warning</span>
+                      </div>
+                   </button>
 
-               <button onClick={() => executeSmartDelete('replace')} className="flex items-center gap-3 p-3 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-colors text-left group border border-transparent hover:border-[#00f0ff]/40">
-                  <span className="text-xl">📝</span>
-                  <div className="flex flex-col">
-                    <span className="text-[#00f0ff] font-bold group-hover:text-[#80ffff] transition-colors">Replace with message</span>
-                    <span className="text-xs text-[#00f0ff]/70">Changes to "Sorry, wrong message!"</span>
-                  </div>
-               </button>
+                   <button onClick={() => executeSmartDelete('replace')} className="flex items-center gap-3 p-3 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-colors text-left group border border-transparent hover:border-[#00f0ff]/40">
+                      <span className="text-xl">📝</span>
+                      <div className="flex flex-col">
+                        <span className="text-[#00f0ff] font-bold group-hover:text-[#80ffff] transition-colors">Replace with message</span>
+                        <span className="text-xs text-[#00f0ff]/70">Changes to "Sorry, wrong message!"</span>
+                      </div>
+                   </button>
 
-               {/* 👇 Your Blur/Unblur Toggle Button 👇 */}
-               <button onClick={() => executeSmartDelete('blur')} className="flex items-center gap-3 p-3 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-colors text-left group border border-transparent hover:border-[#bc00dd]/40">
-                  <span className="text-xl">{deleteMenuMsg?.isBlurred ? '👁️' : '🌫️'}</span>
-                  <div className="flex flex-col">
-                    <span className="text-[#bc00dd] font-bold group-hover:text-[#da80ff] transition-colors">
-                      {deleteMenuMsg?.isBlurred ? 'Unblur message' : 'Blur message'}
-                    </span>
-                    <span className="text-xs text-[#bc00dd]/70">
-                      {deleteMenuMsg?.isBlurred ? 'Reveals content visually' : 'Hides content visually'}
-                    </span>
-                  </div>
-               </button>
+                   <button onClick={() => executeSmartDelete('blur')} className="flex items-center gap-3 p-3 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-colors text-left group border border-transparent hover:border-[#bc00dd]/40">
+                      <span className="text-xl">{deleteMenuMsg?.isBlurred ? '👁️' : '🌫️'}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[#bc00dd] font-bold group-hover:text-[#da80ff] transition-colors">
+                          {deleteMenuMsg?.isBlurred ? 'Unblur message' : 'Blur message'}
+                        </span>
+                        <span className="text-xs text-[#bc00dd]/70">
+                          {deleteMenuMsg?.isBlurred ? 'Reveals content visually' : 'Hides content visually'}
+                        </span>
+                      </div>
+                   </button>
+                 </>
+               )}
             </div>
 
           </div>

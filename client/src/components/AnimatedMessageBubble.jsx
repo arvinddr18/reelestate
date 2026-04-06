@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { IoMdClose } from 'react-icons/io'; // 🚨 ADD THIS LINE
 
 // 🌟 FUTURISTIC RADAR MENU ACTIONS 🌟
 const MENU_ACTIONS = [

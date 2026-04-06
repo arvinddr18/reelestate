@@ -444,9 +444,7 @@ const executeSmartDelete = async (action, targetMsg) => {
         } catch (err) { console.error("Failed to update DB", err); }
       }
     }
-    
-    // 🚨 THE CRITICAL FIX: Make sure NO Reference to setDeleteMenuMsg exists here!
-  };
+  }
 
   const handleEditMessage = (msgToEdit) => {
     const msgTime = new Date(msgToEdit.createdAt || msgToEdit.timestamp || Date.now()).getTime();
@@ -692,8 +690,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                         msg={msg} 
                         isMe={isMe} 
                         onReply={() => setReplyingTo(msg)}
-                       // 🚨 FIX: This ensures the 'action' and 'msg' go to the right places
-                        onDelete={(action, selectedMsg) => executeSmartDelete(action, selectedMsg)}
+                       onDelete={(action, selectedMsg) => executeSmartDelete(action, selectedMsg)}
                         onEdit={handleEditMessage}
                         onSave={handleSaveMessage}
                         onForward={handleForwardMessage}

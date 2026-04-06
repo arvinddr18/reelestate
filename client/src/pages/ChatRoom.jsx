@@ -697,51 +697,117 @@ const handleExternalShare = async (platform) => {
             const isMe = msg.senderId === myId;
             return (
               <div key={index} className={`flex w-full group transform transition-all duration-300 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
-                <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}>
-
-                  {/* 🌟 NEW FORWARDED TAG UI 🌟 */}
-                  {msg.isForwarded && (
-                    <div className={`flex items-center gap-1 mb-1 opacity-90 italic ${isMe ? 'justify-end mr-1' : 'justify-start ml-1'}`}>
-                      <span className="text-[10px] font-black tracking-widest uppercase text-[#00f0ff] drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
-                        ↪ Forwarded from Nodexa
-                      </span>
-                    </div>
-                  )}
+                <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative z-20 ${isMe ? 'items-end' : 'items-start'}`}>
                   
-                  {msg.image && (
-                    <div className="relative mb-2 group/img">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
-                      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
-                        <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
+                  {/* 🌟 1. THE MAGIC "W-FIT" WRAPPER (Fixes the short message bug!) 🌟 */}
+                  <div className={`relative w-fit flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                    
+                    {/* 🌟 2. ORIGINAL SMART DELETE MODAL (NOW INLINE & CENTERED ON EDGE) 🌟 */}
+                    {deleteMenuMsg && ((deleteMenuMsg._id && msg._id && deleteMenuMsg._id === msg._id) || (deleteMenuMsg.timestamp && msg.timestamp && deleteMenuMsg.timestamp === msg.timestamp)) && (
+                      <>
+                        <div className="fixed inset-0 z-[90]" onClick={() => setDeleteMenuMsg(null)}></div>
+                        
+                        {/* Positions perfectly to the left or right of the bubble center! */}
+                        <div className={`absolute z-[100] top-1/2 -translate-y-1/2 ${isMe ? 'right-full mr-3' : 'left-full ml-3'}`}>
+                          
+                          {/* The beautiful original design! */}
+                          <div className="w-[260px] md:w-[320px] bg-[#121826] border border-red-500/30 rounded-3xl shadow-[0_0_40px_rgba(239,68,68,0.3)] p-4 md:p-5 flex flex-col animate-in zoom-in-75 duration-300">
+                            
+                            <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
+                              <h3 className="text-white font-black tracking-wide text-sm md:text-base flex items-center gap-2">
+                                <span className="text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">🗑️</span> Options
+                              </h3>
+                              <button onClick={() => setDeleteMenuMsg(null)} className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
+                                <IoMdClose size={14} />
+                              </button>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2">
+                              <button onClick={() => executeSmartDelete('for_me')} className="flex items-center gap-3 p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-white/20">
+                                <span className="text-lg">👤</span>
+                                <div className="flex flex-col">
+                                  <span className="text-white font-bold text-xs group-hover:text-gray-200">Remove for me</span>
+                                </div>
+                              </button>
+
+                              {isMe && (
+                                <>
+                                  <button onClick={() => executeSmartDelete('replace')} className="flex items-center gap-3 p-2.5 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#00f0ff]/40">
+                                    <span className="text-lg">📝</span>
+                                    <div className="flex flex-col">
+                                      <span className="text-[#00f0ff] font-bold text-xs">Replace message</span>
+                                    </div>
+                                  </button>
+
+                                  <button onClick={() => executeSmartDelete('blur')} className="flex items-center gap-3 p-2.5 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#bc00dd]/40">
+                                    <span className="text-lg">{msg.isBlurred ? '👁️' : '🌫️'}</span>
+                                    <div className="flex flex-col">
+                                      <span className="text-[#bc00dd] font-bold text-xs">{msg.isBlurred ? 'Unblur message' : 'Blur message'}</span>
+                                    </div>
+                                  </button>
+
+                                  <button onClick={() => executeSmartDelete('for_everyone')} className="flex items-center gap-3 p-2.5 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-red-500/40">
+                                    <span className="text-lg">🌍</span>
+                                    <div className="flex flex-col">
+                                      <span className="text-red-400 font-bold text-xs">Delete for everyone</span>
+                                    </div>
+                                  </button>
+                                </>
+                              )}
+                            </div>
+
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* 🌟 NEW FORWARDED TAG UI 🌟 */}
+                    {msg.isForwarded && (
+                      <div className={`flex items-center gap-1 mb-1 opacity-90 italic ${isMe ? 'justify-end mr-1' : 'justify-start ml-1'}`}>
+                        <span className="text-[10px] font-black tracking-widest uppercase text-[#00f0ff] drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
+                          ↪ Forwarded from Nodexa
+                        </span>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {msg.video && (
-                    <div className="relative mb-2">
-                      <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
-                        <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
+                    {msg.image && (
+                      <div className="relative mb-2 group/img">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
+                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
+                          <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {msg.audio && (
-                    <div className="relative mt-1 mb-2">
-                      <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
-                    </div>
-                  )}
+                    {msg.video && (
+                      <div className="relative mb-2">
+                        <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
+                          <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
+                        </div>
+                      </div>
+                    )}
 
-                  {msg.text && (
-                    <AnimatedMessageBubble 
-                      msg={msg} 
-                      isMe={isMe} 
-                      onReply={() => setReplyingTo(msg)}
-                      onDelete={handleDeleteMessage}
-                      onEdit={handleEditMessage}
-                      onSave={handleSaveMessage}
-                      onForward={handleForwardMessage}
-                    />
-                  )}
+                    {msg.audio && (
+                      <div className="relative mt-1 mb-2">
+                        <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
+                      </div>
+                    )}
+
+                    {msg.text && (
+                      <AnimatedMessageBubble 
+                        msg={msg} 
+                        isMe={isMe} 
+                        onReply={() => setReplyingTo(msg)}
+                        onDelete={handleDeleteMessage}
+                        onEdit={handleEditMessage}
+                        onSave={handleSaveMessage}
+                        onForward={handleForwardMessage}
+                      />
+                    )}
+
+                  </div> 
+                  {/* 👆 CLOSES THE W-FIT WRAPPER 👆 */}
+
 
                   {/* Timestamp & Checkmarks */}
                   <div className={`flex items-center gap-1.5 mt-1.5 ${isMe ? 'justify-end' : 'justify-start'}`}>

@@ -160,7 +160,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     setMessages((prev) => [...prev, messageData]);
     socket.emit('send_message', messageData);
     try {
-      const token = localStorage.getItem('reelestate_token');
+      const token = localStorage.getItem('nodexa_token');
       await axios.post(`${API_URL}/api/messages`, messageData, { headers: { Authorization: `Bearer ${token}` } });
     } catch (err) { console.error(err); }
   };
@@ -311,7 +311,7 @@ export default function ChatRoom({ chatUser, onBack }) {
       if (page === 1) setIsLoading(true); // Only show spinner on first load
 
       try {
-        const token = localStorage.getItem('reelestate_token');
+        const token = localStorage.getItem('nodexa_token');
         const res = await axios.get(`${API_URL}/api/messages/${room}?page=${page}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -398,7 +398,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const executeSmartDelete = async (action) => {
     if (!deleteMenuMsg) return;
 
-    const token = localStorage.getItem('reelestate_token');
+    const token = localStorage.getItem('nodexa_token');
 
     if (action === 'for_me') {
       // 1. Remove from screen instantly (🚨 FIX: Strict ID or Millisecond matching)
@@ -479,7 +479,8 @@ export default function ChatRoom({ chatUser, onBack }) {
 const handleExternalShare = async (platform) => {
     if (!forwardMsg) return;
     
-    const textToShare = forwardMsg.text || "Check out this media on ReelEstate!";
+    // 🚨 UPDATED TO NODEXA 🚨
+    const textToShare = `↪️ *Forwarded via Nodexa:*\n\n${forwardMsg.text || "📸 Secure Media Attachment"}\n\n🌐 Join the network: ${window.location.origin}`;
     const encodedText = encodeURIComponent(textToShare);
     const appUrl = encodeURIComponent(window.location.origin);
 
@@ -491,10 +492,9 @@ const handleExternalShare = async (platform) => {
       } else if (platform === 'sms') {
         window.open(`sms:?body=${encodedText}`, '_self');
       } else if (platform === 'instagram' || platform === 'native') {
-        // Instagram doesn't allow direct text links, so we trigger the phone's native iOS/Android share menu!
         if (navigator.share) {
           await navigator.share({
-            title: 'ReelEstate Secure Message',
+            title: 'Nodexa Secure Message', // 🚨 UPDATED TO NODEXA 🚨
             text: textToShare,
             url: window.location.origin
           });
@@ -503,7 +503,7 @@ const handleExternalShare = async (platform) => {
           setTimeout(() => setToast(null), 3000);
         }
       }
-      setForwardMsg(null); // Close modal after sharing
+      setForwardMsg(null); 
     } catch (err) {
       console.error("Error sharing:", err);
     }
@@ -513,7 +513,7 @@ const handleExternalShare = async (platform) => {
     e.preventDefault();
     if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
 
-    const token = localStorage.getItem('reelestate_token');
+    const token = localStorage.getItem('nodexa_token');
 
    if (editingMessage) {
       let modifiedMsg = { ...editingMessage, text: message, isEdited: true };

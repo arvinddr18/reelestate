@@ -1372,5 +1372,6 @@ const executeSmartDelete = async (action, targetMsg) => {
         </div>
      )}
     </div>
-  )};
+  );
+}
 

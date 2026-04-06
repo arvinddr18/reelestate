@@ -450,7 +450,7 @@ export default function ChatRoom({ chatUser, onBack }) {
 
     // Close the menu
     setDeleteMenuMsg(null); 
-  };
+  
 
   const handleEditMessage = (msgToEdit) => {
     // Double check the 5-minute limit just in case!
@@ -1528,4 +1528,4 @@ const handleExternalShare = async (platform) => {
      )}
     </div>
   );
-
+}

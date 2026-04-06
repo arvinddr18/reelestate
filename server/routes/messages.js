@@ -28,15 +28,22 @@ const holoMessageSchema = new mongoose.Schema({
 
 const HoloMessage = mongoose.models.HoloMessage || mongoose.model('HoloMessage', holoMessageSchema);
 
-// ─── 1. FETCH CHAT HISTORY (LOAD ALL MESSAGES) ───
+// ─── 1. FETCH CHAT HISTORY (WITH PAGINATION) ───
 router.get('/:room', protect, async (req, res) => {
   try {
-    // 🚨 We removed .limit() so it fetches EVERY message you have ever sent!
-    // 🚨 We changed sort to '1' (Oldest to Newest) so we don't need to use .reverse() anymore!
+    // Grab the page number from the URL, default to page 1
+    const page = parseInt(req.query.page) || 1;
+    const limit = 50; 
+    const skip = (page - 1) * limit; // Calculates how many messages to skip
+
+    // Fetch the specific chunk of messages
     const messages = await HoloMessage.find({ room: req.params.room })
-      .sort({ createdAt: 1 }); 
-      
-    res.status(200).json(messages);
+      .sort({ createdAt: -1 }) // 1. Sort Newest First
+      .skip(skip)              // 2. Skip the ones we already loaded
+      .limit(limit);           // 3. Grab exactly 50
+
+    // Reverse them so they show chronologically (top-to-bottom) on the screen
+    res.status(200).json(messages.reverse());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

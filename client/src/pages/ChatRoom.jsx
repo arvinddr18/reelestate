@@ -28,6 +28,9 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [deleteMenuMsg, setDeleteMenuMsg] = useState(null); // 🚨 ADD THIS NEW STATE!
   const [showSettings, setShowSettings] = useState(false);
   const [activeSettingTab, setActiveSettingTab] = useState('appearance');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true); // Tells us if there are more older messages to load
+  const chatContainerRef = useRef(null); // Helps us track where the user is scrolling
   
   // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
@@ -303,14 +306,28 @@ export default function ChatRoom({ chatUser, onBack }) {
   useEffect(() => {
     if (!myId || !friendId || !room) return;
     
-    const fetchChatHistory = async () => {
+   const fetchChatHistory = async () => {
+      if (!hasMore) return; // Stop asking the database if we reached the very beginning!
       setIsLoading(true); 
+      
       try {
         const token = localStorage.getItem('reelestate_token');
-        const res = await axios.get(`${API_URL}/api/messages/${room}`, {
+        // 👇 Notice the ?page=${page} at the end of the URL!
+        const res = await axios.get(`${API_URL}/api/messages/${room}?page=${page}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setMessages(res.data);
+
+        // If the database sends back less than 50 messages, we know we hit the end!
+        if (res.data.length < 50) {
+          setHasMore(false); 
+        }
+
+        if (page === 1) {
+          setMessages(res.data); // First load
+        } else {
+          // If we are loading older messages, put them at the TOP of the array
+          setMessages((prev) => [...res.data, ...prev]); 
+        }
       } catch (err) { 
         console.error(err); 
       } finally {
@@ -319,7 +336,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     };
     
     fetchChatHistory();
-  
+
     // 🚨 THE FIX: Join room immediately, AND auto-rejoin if the phone goes to sleep!
     socket.emit('join_room', room);
     
@@ -360,6 +377,13 @@ export default function ChatRoom({ chatUser, onBack }) {
       const reader = new FileReader();
       reader.onloadend = () => setSelectedImage(reader.result);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleScroll = (e) => {
+    // If the scrollbar hits the very top (0), and we aren't currently loading...
+    if (e.target.scrollTop === 0 && !isLoading && hasMore) {
+      setPage((prevPage) => prevPage + 1); // Turn the page! This triggers the fetch again.
     }
   };
 
@@ -601,7 +625,12 @@ export default function ChatRoom({ chatUser, onBack }) {
       </div>
 
       {/* 2. FLEX-1 MESSAGES */}
-      <div className="flex-1 min-h-0 relative w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar z-10">
+      <div 
+        ref={chatContainerRef} 
+        onScroll={handleScroll} 
+        className="flex-1 min-h-0 relative w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar z-10"
+      >
+        <div className="flex justify-center mb-2 mt-2"></div>
         <div className="flex justify-center mb-2 mt-2">
           <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>
         </div>

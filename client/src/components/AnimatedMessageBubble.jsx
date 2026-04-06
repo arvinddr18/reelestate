@@ -17,14 +17,16 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
   const [showReactionMenu, setShowReactionMenu] = useState(false); 
+  const [showDeleteMenu, setShowDeleteMenu] = useState(false); // 👈 1. ADD THIS
   
   const isDragging = useRef(false);
 
   useEffect(() => {
-    if (!showRadial && !showReactionMenu) return;
+   if (!showRadial && !showReactionMenu && !showDeleteMenu) return;
     const closeMenu = () => {
       setShowRadial(false);
       setShowReactionMenu(false);
+      setShowDeleteMenu(false); 
     };
     
     setTimeout(() => {
@@ -91,7 +93,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     if (actionId === 'react') {
       setShowReactionMenu(true); 
     } else if (actionId === 'delete') {
-      if (onDelete) onDelete(msg);
+     setShowDeleteMenu(true); // 👈 3. UPDATE THIS LINE
     } else if (actionId === 'edit') {
       if (onEdit) onEdit(msg);
     } else if (actionId === 'save') {
@@ -132,6 +134,8 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
         >
           ↩️
         </motion.div>
+
+
 
         <motion.div 
           drag="x"
@@ -176,6 +180,58 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
               {msg.text}
             </span>
           </motion.div>
+
+          {/* 🌟 4. THE INLINE SMART DELETE MENU 🌟 */}
+          <AnimatePresence>
+            {showDeleteMenu && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                /* 🚨 THE FIX: Anchors perfectly to the INSIDE edge and drops DOWN safely! */
+                className={`absolute z-[100] top-[100%] mt-2 ${isMe ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}
+              >
+                <div className="w-[200px] md:w-[240px] bg-[#121826]/95 backdrop-blur-2xl border border-red-500/50 rounded-2xl md:rounded-3xl shadow-[0_15px_50px_rgba(239,68,68,0.5)] p-3 flex flex-col">
+                  
+                  <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
+                    <h3 className="text-white font-black tracking-wide text-xs md:text-sm flex items-center gap-2">
+                      <span className="text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">🗑️</span> Options
+                    </h3>
+                    <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); }} className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
+                      <IoMdClose size={12} />
+                    </button>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1">
+                    <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('for_me', msg); }} className="flex items-center gap-3 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-white/20">
+                      <span className="text-sm">👤</span>
+                      <span className="text-white font-bold text-[10px] md:text-xs group-hover:text-gray-200">Remove for me</span>
+                    </button>
+
+                    {isMe && (
+                      <>
+                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('replace', msg); }} className="flex items-center gap-3 p-2 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#00f0ff]/40">
+                          <span className="text-sm">📝</span>
+                          <span className="text-[#00f0ff] font-bold text-[10px] md:text-xs">Replace message</span>
+                        </button>
+
+                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('blur', msg); }} className="flex items-center gap-3 p-2 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#bc00dd]/40">
+                          <span className="text-sm">{msg.isBlurred ? '👁️' : '🌫️'}</span>
+                          <span className="text-[#bc00dd] font-bold text-[10px] md:text-xs">{msg.isBlurred ? 'Unblur message' : 'Blur message'}</span>
+                        </button>
+
+                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('for_everyone', msg); }} className="flex items-center gap-3 p-2 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-red-500/40">
+                          <span className="text-sm">🌍</span>
+                          <span className="text-red-400 font-bold text-[10px] md:text-xs">Delete for everyone</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {reaction && (

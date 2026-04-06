@@ -790,7 +790,7 @@ const handleExternalShare = async (platform) => {
                         msg={msg} 
                         isMe={isMe} 
                         onReply={() => setReplyingTo(msg)}
-                        onDelete={handleDeleteMessage}
+                       onDelete={(action, selectedMsg) => { setDeleteMenuMsg(selectedMsg); setTimeout(() => executeSmartDelete(action), 50); }}
                         onEdit={handleEditMessage}
                         onSave={handleSaveMessage}
                         onForward={handleForwardMessage}

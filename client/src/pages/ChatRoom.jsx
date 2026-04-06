@@ -26,6 +26,8 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [toast, setToast] = useState(null); 
   const [forwardMsg, setForwardMsg] = useState(null);
   const [deleteMenuMsg, setDeleteMenuMsg] = useState(null); // 🚨 ADD THIS NEW STATE!
+  const [showSettings, setShowSettings] = useState(false);
+  const [activeSettingTab, setActiveSettingTab] = useState('appearance');
   
   // 🌟 DRAG & CALL STATES 🌟
   const [isDragging, setIsDragging] = useState(null); // 'audio' | 'video' | null
@@ -590,7 +592,8 @@ export default function ChatRoom({ chatUser, onBack }) {
           </div>
 
           <div className="h-[70px] md:h-24 flex items-center">
-            <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white backdrop-blur-md group">
+            {/* 🚨 ADD THE onClick EVENT TO THIS BUTTON 🚨 */}
+            <button onClick={() => setShowSettings(true)} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-gray-400 hover:text-white backdrop-blur-md group">
               <IoMdMore size={18} className="group-hover:rotate-90 transition-transform duration-300" />
             </button>
           </div>
@@ -1034,6 +1037,295 @@ export default function ChatRoom({ chatUser, onBack }) {
                )}
             </div>
 
+          </div>
+        </div>
+        )}
+        {/* ========================================== */}
+      {/* 🌟 PREMIUM SETTINGS MODAL (NEON GLASS) 🌟 */}
+      {/* ========================================== */}
+      {showSettings && (
+        <div className="absolute inset-0 z-[999999] bg-[#05070A]/80 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-300 p-2 md:p-6">
+          
+          <div className="w-full max-w-4xl h-[90vh] md:h-[80vh] bg-[#0a0514]/90 border border-[#bc00dd]/30 rounded-3xl shadow-[0_0_50px_rgba(188,0,221,0.15)] flex flex-col md:flex-row overflow-hidden relative">
+            
+            {/* Background Nebula Effect */}
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#bc00dd] blur-[150px] opacity-20 pointer-events-none"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-[#00f0ff] blur-[150px] opacity-10 pointer-events-none"></div>
+
+            {/* HEADER FOR MOBILE (Close Button) */}
+            <div className="md:hidden flex justify-between items-center p-4 border-b border-white/10 relative z-10 bg-[#0a0514]">
+               <h2 className="text-white font-black tracking-widest uppercase">Chat Settings</h2>
+               <button onClick={() => setShowSettings(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/30">
+                 <IoMdClose size={18} />
+               </button>
+            </div>
+
+            {/* SIDEBAR TABS */}
+            <div className="w-full md:w-[280px] shrink-0 border-r border-white/10 bg-black/20 p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar relative z-10">
+               <div className="hidden md:flex justify-between items-center mb-6 pl-2 pr-1">
+                 <h2 className="text-white font-black tracking-widest text-sm uppercase opacity-50">Settings</h2>
+                 <button onClick={() => setShowSettings(false)} className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/30 transition-colors">
+                   <IoMdClose size={16} />
+                 </button>
+               </div>
+
+               {[
+                 { id: 'appearance', icon: '🎨', label: 'Appearance' },
+                 { id: 'notifications', icon: '🔔', label: 'Notifications' },
+                 { id: 'privacy', icon: '🔒', label: 'Privacy & Security' },
+                 { id: 'media', icon: '📁', label: 'Media & Files' },
+                 { id: 'manage', icon: '⚙️', label: 'Chat Management' },
+                 { id: 'user', icon: '👤', label: 'User Info' }
+               ].map(tab => (
+                 <button 
+                   key={tab.id}
+                   onClick={() => setActiveSettingTab(tab.id)}
+                   className={`shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 border text-left ${activeSettingTab === tab.id ? 'bg-[#bc00dd]/20 border-[#bc00dd]/50 shadow-[0_0_20px_rgba(188,0,221,0.2)] text-white' : 'bg-transparent border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200'}`}
+                 >
+                   <span className="text-lg">{tab.icon}</span>
+                   <span className="font-bold text-sm tracking-wide hidden md:block">{tab.label}</span>
+                 </button>
+               ))}
+            </div>
+
+            {/* CONTENT AREA */}
+            <div className="flex-1 p-4 md:p-8 overflow-y-auto no-scrollbar relative z-10">
+              
+              {/* 🎨 APPEARANCE TAB */}
+              {activeSettingTab === 'appearance' && (
+                <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
+                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-[#bc00dd]">🎨</span> Appearance</h3>
+                  
+                  {/* Setting Group */}
+                  <div className="bg-black/30 border border-white/5 rounded-2xl p-4 flex flex-col gap-4">
+                     <div>
+                       <p className="text-white font-bold text-sm mb-3">Chat Theme</p>
+                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
+                         <button className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all">Dark</button>
+                         <button className="flex-1 py-2 rounded-lg bg-gradient-to-r from-[#801fd6] to-[#bc00dd] border border-[#bc00dd] text-white shadow-[0_0_15px_rgba(188,0,221,0.4)] text-xs font-bold transition-all">Neon</button>
+                         <button className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all">Glass</button>
+                       </div>
+                     </div>
+
+                     <div>
+                       <p className="text-white font-bold text-sm mb-3">Background</p>
+                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
+                         <button className="flex-1 py-2 rounded-lg bg-gradient-to-r from-[#0057FF] to-[#00F0FF] border border-[#00f0ff] text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] text-xs font-bold transition-all">Galaxy</button>
+                         <button className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all">Gradient</button>
+                         <button className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1"><IoMdImage/> Upload</button>
+                       </div>
+                     </div>
+                     
+                     <div>
+                       <p className="text-white font-bold text-sm mb-3">Bubble Style</p>
+                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
+                         <button className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all">Rounded</button>
+                         <button className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all">Sharp</button>
+                         <button className="flex-1 py-2 rounded-lg bg-white/10 border border-white/20 text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.2)] text-xs font-bold transition-all">Glowing</button>
+                       </div>
+                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 🔒 PRIVACY TAB */}
+              {activeSettingTab === 'privacy' && (
+                <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
+                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-[#00f0ff]">🔒</span> Privacy & Security</h3>
+                  
+                  <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Lock Chat</p>
+                         <p className="text-gray-500 text-xs">Require Biometric / PIN to open</p>
+                       </div>
+                       <div className="w-11 h-6 bg-[#00f0ff]/20 rounded-full relative border border-[#00f0ff]/50 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+                         <div className="w-4 h-4 bg-[#00f0ff] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#00f0ff]"></div>
+                       </div>
+                     </div>
+
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Hide Chat</p>
+                         <p className="text-gray-500 text-xs">Move to secret vault</p>
+                       </div>
+                       <div className="w-11 h-6 bg-white/10 rounded-full relative border border-white/20 cursor-pointer">
+                         <div className="w-4 h-4 bg-gray-400 rounded-full absolute top-[3px] left-1"></div>
+                       </div>
+                     </div>
+
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Screenshot Protection</p>
+                         <p className="text-gray-500 text-xs">Block or warn on capture</p>
+                       </div>
+                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
+                         <button className="px-3 py-1 rounded-lg text-gray-400 hover:text-white text-[10px] font-bold transition-all">Off</button>
+                         <button className="px-3 py-1 rounded-lg text-gray-400 hover:text-white text-[10px] font-bold transition-all">Warn</button>
+                         <button className="px-3 py-1 rounded-lg bg-red-500/20 border border-red-500 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)] text-[10px] font-bold transition-all">Block</button>
+                       </div>
+                     </div>
+
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Read Receipts</p>
+                         <p className="text-gray-500 text-xs">Show ✓✓ when read</p>
+                       </div>
+                       <div className="w-11 h-6 bg-[#bc00dd]/20 rounded-full relative border border-[#bc00dd]/50 cursor-pointer shadow-[0_0_10px_rgba(188,0,221,0.2)]">
+                         <div className="w-4 h-4 bg-[#bc00dd] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#bc00dd]"></div>
+                       </div>
+                     </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* 🔔 NOTIFICATIONS TAB */}
+              {activeSettingTab === 'notifications' && (
+                <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
+                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-[#ffbb00]">🔔</span> Notifications</h3>
+                  
+                  <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Mute Notifications</p>
+                         <p className="text-gray-500 text-xs">Disable alerts for this chat</p>
+                       </div>
+                       <select className="bg-black/50 border border-white/10 text-white text-xs rounded-lg px-3 py-1.5 outline-none">
+                          <option>Off</option>
+                          <option>1 Hour</option>
+                          <option>8 Hours</option>
+                          <option>Always</option>
+                       </select>
+                     </div>
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Priority Mode</p>
+                         <p className="text-gray-500 text-xs">Bypass DND settings</p>
+                       </div>
+                       <div className="w-11 h-6 bg-white/10 rounded-full relative border border-white/20 cursor-pointer">
+                         <div className="w-4 h-4 bg-gray-400 rounded-full absolute top-[3px] left-1"></div>
+                       </div>
+                     </div>
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Smart Alerts</p>
+                         <p className="text-gray-500 text-xs">Only notify on keywords (e.g. "urgent")</p>
+                       </div>
+                       <div className="w-11 h-6 bg-[#ffbb00]/20 rounded-full relative border border-[#ffbb00]/50 cursor-pointer shadow-[0_0_10px_rgba(255,187,0,0.2)]">
+                         <div className="w-4 h-4 bg-[#ffbb00] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#ffbb00]"></div>
+                       </div>
+                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 📁 MEDIA & FILES TAB */}
+              {activeSettingTab === 'media' && (
+                <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
+                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-[#00ff9d]">📁</span> Media & Files</h3>
+                  
+                  <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Auto-Download Media</p>
+                         <p className="text-gray-500 text-xs">Save data usage</p>
+                       </div>
+                       <select className="bg-black/50 border border-white/10 text-white text-xs rounded-lg px-3 py-1.5 outline-none">
+                          <option>Wi-Fi Only</option>
+                          <option>Wi-Fi + Cellular</option>
+                          <option>Never</option>
+                       </select>
+                     </div>
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Image Quality</p>
+                         <p className="text-gray-500 text-xs">Upload resolution</p>
+                       </div>
+                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
+                         <button className="px-3 py-1 rounded-lg text-gray-400 hover:text-white text-[10px] font-bold transition-all">Standard</button>
+                         <button className="px-3 py-1 rounded-lg bg-[#00ff9d]/20 border border-[#00ff9d] text-[#00ff9d] shadow-[0_0_10px_rgba(0,255,157,0.3)] text-[10px] font-bold transition-all">HD Quality</button>
+                       </div>
+                     </div>
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Save to Gallery</p>
+                         <p className="text-gray-500 text-xs">Auto-save received photos</p>
+                       </div>
+                       <div className="w-11 h-6 bg-[#00ff9d]/20 rounded-full relative border border-[#00ff9d]/50 cursor-pointer shadow-[0_0_10px_rgba(0,255,157,0.2)]">
+                         <div className="w-4 h-4 bg-[#00ff9d] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#00ff9d]"></div>
+                       </div>
+                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ⚙️ CHAT MANAGEMENT TAB */}
+              {activeSettingTab === 'manage' && (
+                <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
+                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-white">⚙️</span> Chat Management</h3>
+                  
+                  <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     <button className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group">
+                       <div>
+                         <p className="text-white font-bold text-sm group-hover:text-[#00f0ff] transition-colors">📌 Pin Chat</p>
+                         <p className="text-gray-500 text-xs">Keep at top of list</p>
+                       </div>
+                     </button>
+                     <button className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group">
+                       <div>
+                         <p className="text-white font-bold text-sm group-hover:text-[#ffbb00] transition-colors">⭐ Mark as Important</p>
+                         <p className="text-gray-500 text-xs">Highlight in inbox</p>
+                       </div>
+                     </button>
+                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                       <div>
+                         <p className="text-white font-bold text-sm">Export Chat</p>
+                         <p className="text-gray-500 text-xs">Download history</p>
+                       </div>
+                       <button className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[10px] font-bold transition-all">Format: PDF</button>
+                     </div>
+                     <button className="flex items-center justify-between p-4 hover:bg-red-500/10 transition-colors text-left group">
+                       <div>
+                         <p className="text-red-500 font-bold text-sm drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">🧹 Clear Chat History</p>
+                         <p className="text-red-500/60 text-xs">Permanently delete all messages</p>
+                       </div>
+                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 👤 USER INFO TAB */}
+              {activeSettingTab === 'user' && (
+                <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
+                  <div className="flex flex-col items-center justify-center p-6 bg-black/30 border border-white/5 rounded-2xl mb-2">
+                     <div className="w-24 h-24 rounded-full border-4 border-[#bc00dd]/30 p-1 shadow-[0_0_30px_rgba(188,0,221,0.2)] mb-4">
+                        <img src={chatUser.profilePhoto || "default"} className="w-full h-full rounded-full object-cover" alt="Profile" />
+                     </div>
+                     <h2 className="text-white font-black text-xl tracking-wide">{chatUser.fullName}</h2>
+                     <p className="text-[#00f0ff] font-mono text-xs mt-1">@{chatUser.username}</p>
+                     <p className="text-gray-400 text-xs mt-2 text-center max-w-xs">Quantum encryption secured channel. Network established.</p>
+                  </div>
+                  
+                  <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     <button className="flex items-center gap-3 p-4 hover:bg-white/5 transition-colors text-left group">
+                       <IoMdPin className="text-gray-400 group-hover:text-[#00ff9d]" size={20} />
+                       <span className="text-white font-bold text-sm">Request Live Location</span>
+                     </button>
+                     <button className="flex items-center gap-3 p-4 hover:bg-red-500/10 transition-colors text-left group">
+                       <span className="text-xl opacity-80 group-hover:opacity-100">🚫</span>
+                       <span className="text-red-500 font-bold text-sm">Block User</span>
+                     </button>
+                     <button className="flex items-center gap-3 p-4 hover:bg-red-500/10 transition-colors text-left group rounded-b-2xl">
+                       <span className="text-xl opacity-80 group-hover:opacity-100">⚠️</span>
+                       <span className="text-red-500 font-bold text-sm">Report Account</span>
+                     </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         </div>
       )}

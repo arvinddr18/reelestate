@@ -393,18 +393,14 @@ export default function ChatRoom({ chatUser, onBack }) {
 
  const executeSmartDelete = async (action, targetMsg) => {
     if (!targetMsg) return;
-
     const token = localStorage.getItem('nodexa_token');
 
     if (action === 'for_me') {
-      // 1. Remove from screen instantly
       setMessages((prev) => prev.filter((m) => {
         const isSameId = m._id && targetMsg._id && m._id === targetMsg._id;
         const isSameTime = m.timestamp && targetMsg.timestamp && m.timestamp === targetMsg.timestamp;
         return !(isSameId || isSameTime);
       }));
-      
-      // 2. Delete from Database permanently
       if (targetMsg._id) {
         try {
           await axios.delete(`${API_URL}/api/messages/${targetMsg._id}`, {
@@ -412,10 +408,7 @@ export default function ChatRoom({ chatUser, onBack }) {
           });
         } catch (err) { console.error("Failed to delete from DB", err); }
       }
-    
-
     } else {
-      // 1. Create the modified version of the message
       let modifiedMsg = { ...targetMsg };
       if (action === 'for_everyone') {
         modifiedMsg.isDeleted = true;
@@ -427,17 +420,14 @@ export default function ChatRoom({ chatUser, onBack }) {
         modifiedMsg.isBlurred = !modifiedMsg.isBlurred; 
       }
 
-      // 2. Update screen 
       setMessages((prev) => prev.map((m) => {
         const isSameId = m._id && targetMsg._id && m._id === targetMsg._id;
         const isSameTime = m.timestamp && targetMsg.timestamp && m.timestamp === targetMsg.timestamp;
         return (isSameId || isSameTime) ? modifiedMsg : m;
       }));
 
-      // 3. Emit the live change to your friend's screen
       socket.emit('update_message', { room, modifiedMsg });
 
-      // 4. Save to Database
       if (modifiedMsg._id) {
         try {
           await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, modifiedMsg, {
@@ -446,138 +436,90 @@ export default function ChatRoom({ chatUser, onBack }) {
         } catch (err) { console.error("Failed to update DB", err); }
       }
     }
-  };
-
-    // Close the menu
-    setDeleteMenuMsg(null); 
-  
+  }; // This closes executeSmartDelete correctly
 
   const handleEditMessage = (msgToEdit) => {
-    // Double check the 5-minute limit just in case!
     const msgTime = new Date(msgToEdit.createdAt || msgToEdit.timestamp || Date.now()).getTime();
     if (Date.now() - msgTime > 5 * 60 * 1000) {
       alert("Messages can only be edited within 5 minutes of sending.");
       return;
     }
     setEditingMessage(msgToEdit);
-    setMessage(msgToEdit.text); // Puts old text in the box
+    setMessage(msgToEdit.text);
   };
 
   const handleSaveMessage = (msgToSave) => {
-    // Show a sleek toast notification for 3 seconds instead of an alert!
     setToast("⭐ Message saved securely!");
     setTimeout(() => setToast(null), 3000);
   };
 
   const handleForwardMessage = (msgToForward) => {
-    // Opens the new Forward Modal UI!
     setForwardMsg(msgToForward);
   };
 
-const handleExternalShare = async (platform) => {
+  const handleExternalShare = async (platform) => {
     if (!forwardMsg) return;
-    
-    // 🚨 SUPER CLEAN FORMATTING 🚨
     const textToShare = `↪ Forwarded from Nodexa\n${forwardMsg.text || "📸 Secure Media Attachment"}`;
-    
     const encodedText = encodeURIComponent(textToShare);
-    const appUrl = encodeURIComponent(window.location.origin);
-
     try {
       if (platform === 'whatsapp') {
         window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
-      } else if (platform === 'facebook') {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${appUrl}&quote=${encodedText}`, '_blank');
       } else if (platform === 'sms') {
         window.open(`sms:?body=${encodedText}`, '_self');
       } else if (platform === 'instagram') {
-        // 🚨 INSTAGRAM FIX: They block auto-pasting, so we copy it to clipboard first!
         await navigator.clipboard.writeText(textToShare);
-        
-        // Show a quick toast notification
         setToast("📋 Text Copied! Paste it in Instagram.");
         setTimeout(() => setToast(null), 3000);
-        
-        // Open Instagram Inbox (works on both Mobile Apps and PC Web)
-        setTimeout(() => {
-          window.open('https://www.instagram.com/direct/inbox/', '_blank');
-        }, 800);
-        
-      } else if (platform === 'native') {
-        if (navigator.share) {
-          await navigator.share({ text: textToShare });
-        }
+        setTimeout(() => window.open('https://www.instagram.com/direct/inbox/', '_blank'), 800);
+      } else if (platform === 'native' && navigator.share) {
+        await navigator.share({ text: textToShare });
       }
       setForwardMsg(null); 
-    } catch (err) {
-      console.error("Error sharing:", err);
-      setToast("Failed to share message.");
-      setTimeout(() => setToast(null), 3000);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handleSend = async (e) => {
     e.preventDefault();
     if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
-
     const token = localStorage.getItem('nodexa_token');
 
-   if (editingMessage) {
+    if (editingMessage) {
       let modifiedMsg = { ...editingMessage, text: message, isEdited: true };
-
-      // 1. Update your screen IN PLACE instantly (🚨 FIX: Strict Millisecond matching)
       setMessages((prev) => prev.map((m) => {
         const isSameId = m._id && editingMessage._id && m._id === editingMessage._id;
         const isSameTime = m.timestamp && editingMessage.timestamp && m.timestamp === editingMessage.timestamp;
         return (isSameId || isSameTime) ? modifiedMsg : m;
       }));
-      
-      // 2. Tell friend's screen to update IN PLACE instantly
       socket.emit('update_message', { room, modifiedMsg });
-
-      // 3. Save edit to Database
-      if (modifiedMsg._id) {
-        try {
-          await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, { text: message, isEdited: true }, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-        } catch (err) { console.error("Edit failed", err); }
-      }
-
+      try {
+        await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, { text: message, isEdited: true }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (err) { console.error(err); }
       setEditingMessage(null);
       setMessage('');
-      return; // Stop here so it doesn't send a new message!
+      return;
     }
 
-    // 🚨 IF NORMAL SEND (NEW MESSAGE) 🚨
     const messageData = {
-      room,
-      text: message,
-      image: selectedImage,
-      video: selectedVideo,
-      audio: null,
+      room, text: message, image: selectedImage, video: selectedVideo, audio: null,
       replyTo: replyingTo ? { text: replyingTo.text, senderId: replyingTo.senderId } : null,
-      senderId: myId,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      timestamp: Date.now(), // <-- Added to track the 5 mins!
+      senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now(),
     };
-
     setMessages((prev) => [...prev, messageData]);
     setMessage('');
-    setSelectedImage(null); 
+    setSelectedImage(null);
     setSelectedVideo(null);
-    setShowEmojiPicker(false);
-    setReplyingTo(null); 
+    setReplyingTo(null);
     socket.emit('send_message', messageData);
-
     try {
-      await axios.post(`${API_URL}/api/messages`, messageData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(`${API_URL}/api/messages`, messageData, { headers: { Authorization: `Bearer ${token}` } });
     } catch (err) { console.error(err); }
   };
 
   if (!chatUser) return null;
+
 
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">

@@ -349,13 +349,13 @@ export default function ChatRoom({ chatUser, onBack }) {
     socket.on('receive_message', (data) => setMessages((prev) => [...prev, data]));
     socket.on('display_typing', () => setIsTyping(true));
     socket.on('hide_typing', () => setIsTyping(false));
-    
+   
     socket.on('message_updated', (data) => {
-      setMessages((prev) => prev.map((m) => 
-        (m._id === data.modifiedMsg._id) || (m.time === data.modifiedMsg.time && m.senderId === data.modifiedMsg.senderId) 
-          ? data.modifiedMsg 
-          : m
-      ));
+      setMessages((prev) => prev.map((m) => {
+        const isSameId = m._id && data.modifiedMsg._id && m._id === data.modifiedMsg._id;
+        const isSameTime = m.timestamp && data.modifiedMsg.timestamp && m.timestamp === data.modifiedMsg.timestamp;
+        return (isSameId || isSameTime) ? data.modifiedMsg : m;
+      }));
     });
     
     return () => {
@@ -398,12 +398,15 @@ export default function ChatRoom({ chatUser, onBack }) {
   const executeSmartDelete = async (action) => {
     if (!deleteMenuMsg) return;
 
-    // Grab the token for security
     const token = localStorage.getItem('reelestate_token');
 
     if (action === 'for_me') {
-      // 1. Remove from screen instantly (Using ID for safety!)
-      setMessages((prev) => prev.filter((m) => m._id !== deleteMenuMsg._id && m.time !== deleteMenuMsg.time));
+      // 1. Remove from screen instantly (🚨 FIX: Strict ID or Millisecond matching)
+      setMessages((prev) => prev.filter((m) => {
+        const isSameId = m._id && deleteMenuMsg._id && m._id === deleteMenuMsg._id;
+        const isSameTime = m.timestamp && deleteMenuMsg.timestamp && m.timestamp === deleteMenuMsg.timestamp;
+        return !(isSameId || isSameTime);
+      }));
       
       // 2. Delete from Database permanently
       if (deleteMenuMsg._id) {
@@ -427,12 +430,12 @@ export default function ChatRoom({ chatUser, onBack }) {
         modifiedMsg.isBlurred = !modifiedMsg.isBlurred; 
       }
 
-      // 2. 🚨 THE FIX: Map using the _id to guarantee React finds and updates it!
-      setMessages((prev) => prev.map((m) => 
-        (m._id === deleteMenuMsg._id) || (m.time === deleteMenuMsg.time && m.senderId === deleteMenuMsg.senderId) 
-          ? modifiedMsg 
-          : m
-      ));
+      // 2. Update screen (🚨 FIX: Strict ID or Millisecond matching)
+      setMessages((prev) => prev.map((m) => {
+        const isSameId = m._id && deleteMenuMsg._id && m._id === deleteMenuMsg._id;
+        const isSameTime = m.timestamp && deleteMenuMsg.timestamp && m.timestamp === deleteMenuMsg.timestamp;
+        return (isSameId || isSameTime) ? modifiedMsg : m;
+      }));
 
       // 3. Emit the live change to your friend's screen
       socket.emit('update_message', { room, modifiedMsg });
@@ -479,12 +482,15 @@ export default function ChatRoom({ chatUser, onBack }) {
 
     const token = localStorage.getItem('reelestate_token');
 
-    // 🚨 IF WE ARE EDITING AN EXISTING MESSAGE 🚨
-    if (editingMessage) {
+   if (editingMessage) {
       let modifiedMsg = { ...editingMessage, text: message, isEdited: true };
 
-      // 1. Update your screen IN PLACE instantly
-      setMessages((prev) => prev.map((m) => m._id === editingMessage._id || m === editingMessage ? modifiedMsg : m));
+      // 1. Update your screen IN PLACE instantly (🚨 FIX: Strict Millisecond matching)
+      setMessages((prev) => prev.map((m) => {
+        const isSameId = m._id && editingMessage._id && m._id === editingMessage._id;
+        const isSameTime = m.timestamp && editingMessage.timestamp && m.timestamp === editingMessage.timestamp;
+        return (isSameId || isSameTime) ? modifiedMsg : m;
+      }));
       
       // 2. Tell friend's screen to update IN PLACE instantly
       socket.emit('update_message', { room, modifiedMsg });

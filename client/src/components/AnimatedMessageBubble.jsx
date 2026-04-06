@@ -137,16 +137,15 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
         </motion.div>
 
 
-
-        <motion.div 
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }} 
-          dragElastic={0.15} 
-          onDragStart={handleDragStart} 
-          onDragEnd={handleDragEnd}     
-          style={{ x }} 
-          className={`max-w-full flex flex-col relative cursor-grab active:cursor-grabbing ${showDeleteMenu ? 'z-[500]' : 'z-10'} ${isMe ? 'items-end' : 'items-start'}`}
-        >
+<motion.div 
+  drag="x"
+  dragConstraints={{ left: 0, right: 0 }} 
+  dragElastic={0.15} 
+  onDragStart={handleDragStart} 
+  onDragEnd={handleDragEnd}     
+  style={{ x }} 
+  className={`max-w-full flex flex-col relative cursor-grab active:cursor-grabbing ${showDeleteMenu ? 'z-[500]' : 'z-10'} ${isMe ? 'items-end' : 'items-start'}`}
+>
           
           <motion.div
             animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}

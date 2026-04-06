@@ -480,7 +480,7 @@ const handleExternalShare = async (platform) => {
     if (!forwardMsg) return;
     
     // 🚨 UPDATED TO NODEXA 🚨
-    const textToShare = `↪️ *Forwarded via Nodexa:*\n\n${forwardMsg.text || "📸 Secure Media Attachment"}\n\n🌐 Join the network: ${window.location.origin}`;
+    const textToShare = `↪ Forwarded from Nodexa\n${forwardMsg.text || "📸 Secure Media Attachment"}`;
     const encodedText = encodeURIComponent(textToShare);
     const appUrl = encodeURIComponent(window.location.origin);
 

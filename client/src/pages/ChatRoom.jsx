@@ -702,55 +702,47 @@ const handleExternalShare = async (platform) => {
                   {/* 🌟 1. THE MAGIC "W-FIT" WRAPPER (Fixes the short message bug!) 🌟 */}
                   <div className={`relative w-fit flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                     
-                    {/* 🌟 2. ORIGINAL SMART DELETE MODAL (NOW INLINE & CENTERED ON EDGE) 🌟 */}
+                    {/* 🌟 2. ORIGINAL SMART DELETE MODAL (CENTER-EDGE ATTACHED) 🌟 */}
                     {deleteMenuMsg && ((deleteMenuMsg._id && msg._id && deleteMenuMsg._id === msg._id) || (deleteMenuMsg.timestamp && msg.timestamp && deleteMenuMsg.timestamp === msg.timestamp)) && (
                       <>
                         <div className="fixed inset-0 z-[90]" onClick={() => setDeleteMenuMsg(null)}></div>
                         
-                       {/* 🚨 THE FIX: Anchors perfectly to the inside edge and drops DOWN to prevent clipping! */}
-                        <div className={`absolute z-[100] top-[80%] ${isMe ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}>
+                        {/* 🚨 THE FIX: top-1/2 & -translate-y-1/2 attaches it perfectly to the vertical center edge! */}
+                        <div className={`absolute z-[100] top-1/2 -translate-y-1/2 ${isMe ? 'right-full mr-2' : 'left-full ml-2'}`}>
                           
-                          {/* Sleeker, compact width (230px) that perfectly fits all mobile screens! */}
-                          <div className="w-[230px] bg-[#121826] border border-red-500/30 rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-3 md:p-4 flex flex-col animate-in zoom-in-95 duration-200">
+                          {/* 🚨 Sized to 190px on mobile so it NEVER hides off the screen! */}
+                          <div className="w-[190px] md:w-[260px] bg-[#121826] border border-red-500/30 rounded-2xl md:rounded-3xl shadow-[0_0_40px_rgba(239,68,68,0.4)] p-3 flex flex-col animate-in zoom-in-75 duration-200">
                             
-                            <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
-                              <h3 className="text-white font-black tracking-wide text-sm md:text-base flex items-center gap-2">
+                            <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
+                              <h3 className="text-white font-black tracking-wide text-xs md:text-sm flex items-center gap-2">
                                 <span className="text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">🗑️</span> Options
                               </h3>
-                              <button onClick={() => setDeleteMenuMsg(null)} className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
-                                <IoMdClose size={14} />
+                              <button onClick={() => setDeleteMenuMsg(null)} className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 transition-colors">
+                                <IoMdClose size={12} />
                               </button>
                             </div>
                             
-                            <div className="flex flex-col gap-2">
-                              <button onClick={() => executeSmartDelete('for_me')} className="flex items-center gap-3 p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-white/20">
-                                <span className="text-lg">👤</span>
-                                <div className="flex flex-col">
-                                  <span className="text-white font-bold text-xs group-hover:text-gray-200">Remove for me</span>
-                                </div>
+                            <div className="flex flex-col gap-1">
+                              <button onClick={() => executeSmartDelete('for_me')} className="flex items-center gap-3 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-white/20">
+                                <span className="text-sm">👤</span>
+                                <span className="text-white font-bold text-[10px] md:text-xs group-hover:text-gray-200">Remove for me</span>
                               </button>
 
                               {isMe && (
                                 <>
-                                  <button onClick={() => executeSmartDelete('replace')} className="flex items-center gap-3 p-2.5 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#00f0ff]/40">
-                                    <span className="text-lg">📝</span>
-                                    <div className="flex flex-col">
-                                      <span className="text-[#00f0ff] font-bold text-xs">Replace message</span>
-                                    </div>
+                                  <button onClick={() => executeSmartDelete('replace')} className="flex items-center gap-3 p-2 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#00f0ff]/40">
+                                    <span className="text-sm">📝</span>
+                                    <span className="text-[#00f0ff] font-bold text-[10px] md:text-xs">Replace message</span>
                                   </button>
 
-                                  <button onClick={() => executeSmartDelete('blur')} className="flex items-center gap-3 p-2.5 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#bc00dd]/40">
-                                    <span className="text-lg">{msg.isBlurred ? '👁️' : '🌫️'}</span>
-                                    <div className="flex flex-col">
-                                      <span className="text-[#bc00dd] font-bold text-xs">{msg.isBlurred ? 'Unblur message' : 'Blur message'}</span>
-                                    </div>
+                                  <button onClick={() => executeSmartDelete('blur')} className="flex items-center gap-3 p-2 bg-[#bc00dd]/10 hover:bg-[#bc00dd]/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-[#bc00dd]/40">
+                                    <span className="text-sm">{msg.isBlurred ? '👁️' : '🌫️'}</span>
+                                    <span className="text-[#bc00dd] font-bold text-[10px] md:text-xs">{msg.isBlurred ? 'Unblur message' : 'Blur message'}</span>
                                   </button>
 
-                                  <button onClick={() => executeSmartDelete('for_everyone')} className="flex items-center gap-3 p-2.5 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-red-500/40">
-                                    <span className="text-lg">🌍</span>
-                                    <div className="flex flex-col">
-                                      <span className="text-red-400 font-bold text-xs">Delete for everyone</span>
-                                    </div>
+                                  <button onClick={() => executeSmartDelete('for_everyone')} className="flex items-center gap-3 p-2 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all hover:scale-[1.02] text-left group border border-transparent hover:border-red-500/40">
+                                    <span className="text-sm">🌍</span>
+                                    <span className="text-red-400 font-bold text-[10px] md:text-xs">Delete for everyone</span>
                                   </button>
                                 </>
                               )}

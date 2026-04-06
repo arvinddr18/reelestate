@@ -479,8 +479,9 @@ export default function ChatRoom({ chatUser, onBack }) {
 const handleExternalShare = async (platform) => {
     if (!forwardMsg) return;
     
-    // 🚨 UPDATED TO NODEXA 🚨
+    // 🚨 SUPER CLEAN FORMATTING 🚨
     const textToShare = `↪ Forwarded from Nodexa\n${forwardMsg.text || "📸 Secure Media Attachment"}`;
+    
     const encodedText = encodeURIComponent(textToShare);
     const appUrl = encodeURIComponent(window.location.origin);
 
@@ -491,21 +492,29 @@ const handleExternalShare = async (platform) => {
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${appUrl}&quote=${encodedText}`, '_blank');
       } else if (platform === 'sms') {
         window.open(`sms:?body=${encodedText}`, '_self');
-      } else if (platform === 'instagram' || platform === 'native') {
+      } else if (platform === 'instagram') {
+        // 🚨 INSTAGRAM FIX: They block auto-pasting, so we copy it to clipboard first!
+        await navigator.clipboard.writeText(textToShare);
+        
+        // Show a quick toast notification
+        setToast("📋 Text Copied! Paste it in Instagram.");
+        setTimeout(() => setToast(null), 3000);
+        
+        // Open Instagram Inbox (works on both Mobile Apps and PC Web)
+        setTimeout(() => {
+          window.open('https://www.instagram.com/direct/inbox/', '_blank');
+        }, 800);
+        
+      } else if (platform === 'native') {
         if (navigator.share) {
-          await navigator.share({
-            title: 'Nodexa Secure Message', // 🚨 UPDATED TO NODEXA 🚨
-            text: textToShare,
-            url: window.location.origin
-          });
-        } else {
-          setToast("Native sharing not supported on this browser.");
-          setTimeout(() => setToast(null), 3000);
+          await navigator.share({ text: textToShare });
         }
       }
       setForwardMsg(null); 
     } catch (err) {
       console.error("Error sharing:", err);
+      setToast("Failed to share message.");
+      setTimeout(() => setToast(null), 3000);
     }
   };
 

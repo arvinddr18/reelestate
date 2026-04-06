@@ -1469,5 +1469,5 @@ export default function ChatRoom({ chatUser, onBack }) {
         </div>
      )}
     </div>
-  );
-}
+  )};
+

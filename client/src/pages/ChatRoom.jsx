@@ -689,6 +689,15 @@ const handleExternalShare = async (platform) => {
             return (
               <div key={index} className={`flex w-full group transform transition-all duration-300 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
                 <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative ${isMe ? 'items-end' : 'items-start'}`}>
+
+                  {/* 🌟 NEW FORWARDED TAG UI 🌟 */}
+                  {msg.isForwarded && (
+                    <div className={`flex items-center gap-1 mb-1 opacity-90 italic ${isMe ? 'justify-end mr-1' : 'justify-start ml-1'}`}>
+                      <span className="text-[10px] font-black tracking-widest uppercase text-[#00f0ff] drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
+                        ↪ Forwarded from Nodexa
+                      </span>
+                    </div>
+                  )}
                   
                   {msg.image && (
                     <div className="relative mb-2 group/img">

@@ -389,10 +389,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   // ==========================================
   // 🌟 MESSAGE ACTION FUNCTIONS 🌟
   // ==========================================
-  const handleDeleteMessage = (msgToDelete) => {
-    // Opens the new Smart Delete Menu!
-    setDeleteMenuMsg(msgToDelete);
-  };
+  
 
  const executeSmartDelete = async (action, targetMsg) => {
     if (!targetMsg) return;

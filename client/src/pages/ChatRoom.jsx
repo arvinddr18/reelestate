@@ -702,16 +702,16 @@ const handleExternalShare = async (platform) => {
                   {/* 🌟 1. THE MAGIC "W-FIT" WRAPPER (Fixes the short message bug!) 🌟 */}
                   <div className={`relative w-fit flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                     
-                    {/* 🌟 2. ORIGINAL SMART DELETE MODAL (CENTER-EDGE ATTACHED) 🌟 */}
+                   {/* 🌟 2. ORIGINAL SMART DELETE MODAL (GUARANTEED NO-CLIP) 🌟 */}
                     {deleteMenuMsg && ((deleteMenuMsg._id && msg._id && deleteMenuMsg._id === msg._id) || (deleteMenuMsg.timestamp && msg.timestamp && deleteMenuMsg.timestamp === msg.timestamp)) && (
                       <>
                         <div className="fixed inset-0 z-[90]" onClick={() => setDeleteMenuMsg(null)}></div>
                         
-                        {/* 🚨 THE FIX: top-1/2 & -translate-y-1/2 attaches it perfectly to the vertical center edge! */}
-                        <div className={`absolute z-[100] top-1/2 -translate-y-1/2 ${isMe ? 'right-full mr-2' : 'left-full ml-2'}`}>
+                        {/* 🚨 THE FIX: 'right-0' & 'left-0' forces it to grow INWARD toward the screen center! */}
+                        <div className={`absolute z-[100] top-1/2 -translate-y-1/2 ${isMe ? 'right-0 origin-right' : 'left-0 origin-left'}`}>
                           
-                          {/* 🚨 Sized to 190px on mobile so it NEVER hides off the screen! */}
-                          <div className="w-[190px] md:w-[260px] bg-[#121826] border border-red-500/30 rounded-2xl md:rounded-3xl shadow-[0_0_40px_rgba(239,68,68,0.4)] p-3 flex flex-col animate-in zoom-in-75 duration-200">
+                          {/* Sleek Glassmorphism design so you can still slightly see the chat behind it! */}
+                          <div className="w-[200px] md:w-[240px] bg-[#121826]/95 backdrop-blur-2xl border border-red-500/50 rounded-2xl md:rounded-3xl shadow-[0_15px_50px_rgba(239,68,68,0.5)] p-3 flex flex-col animate-in zoom-in-95 duration-200">
                             
                             <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
                               <h3 className="text-white font-black tracking-wide text-xs md:text-sm flex items-center gap-2">

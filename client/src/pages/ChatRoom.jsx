@@ -1525,6 +1525,7 @@ const handleExternalShare = async (platform) => {
             </div>
           </div>
         </div>
-      )}
+     )}
     </div>
   );
+

@@ -25,7 +25,6 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [editingMessage, setEditingMessage] = useState(null);
   const [toast, setToast] = useState(null); 
   const [forwardMsg, setForwardMsg] = useState(null);
-  const [deleteMenuMsg, setDeleteMenuMsg] = useState(null); // 🚨 ADD THIS NEW STATE!
   const [showSettings, setShowSettings] = useState(false);
   const [activeSettingTab, setActiveSettingTab] = useState('appearance');
   const [page, setPage] = useState(1);
@@ -395,23 +394,23 @@ export default function ChatRoom({ chatUser, onBack }) {
     setDeleteMenuMsg(msgToDelete);
   };
 
-  const executeSmartDelete = async (action) => {
-    if (!deleteMenuMsg) return;
+ const executeSmartDelete = async (action, targetMsg) => {
+    if (!targetMsg) return;
 
     const token = localStorage.getItem('nodexa_token');
 
     if (action === 'for_me') {
-      // 1. Remove from screen instantly (🚨 FIX: Strict ID or Millisecond matching)
+      // 1. Remove from screen instantly
       setMessages((prev) => prev.filter((m) => {
-        const isSameId = m._id && deleteMenuMsg._id && m._id === deleteMenuMsg._id;
-        const isSameTime = m.timestamp && deleteMenuMsg.timestamp && m.timestamp === deleteMenuMsg.timestamp;
+        const isSameId = m._id && targetMsg._id && m._id === targetMsg._id;
+        const isSameTime = m.timestamp && targetMsg.timestamp && m.timestamp === targetMsg.timestamp;
         return !(isSameId || isSameTime);
       }));
       
       // 2. Delete from Database permanently
-      if (deleteMenuMsg._id) {
+      if (targetMsg._id) {
         try {
-          await axios.delete(`${API_URL}/api/messages/${deleteMenuMsg._id}`, {
+          await axios.delete(`${API_URL}/api/messages/${targetMsg._id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
         } catch (err) { console.error("Failed to delete from DB", err); }
@@ -419,7 +418,7 @@ export default function ChatRoom({ chatUser, onBack }) {
 
     } else {
       // 1. Create the modified version of the message
-      let modifiedMsg = { ...deleteMenuMsg };
+      let modifiedMsg = { ...targetMsg };
       if (action === 'for_everyone') {
         modifiedMsg.isDeleted = true;
         modifiedMsg.text = "⚠️ Message removed by sender";
@@ -430,10 +429,10 @@ export default function ChatRoom({ chatUser, onBack }) {
         modifiedMsg.isBlurred = !modifiedMsg.isBlurred; 
       }
 
-      // 2. Update screen (🚨 FIX: Strict ID or Millisecond matching)
+      // 2. Update screen 
       setMessages((prev) => prev.map((m) => {
-        const isSameId = m._id && deleteMenuMsg._id && m._id === deleteMenuMsg._id;
-        const isSameTime = m.timestamp && deleteMenuMsg.timestamp && m.timestamp === deleteMenuMsg.timestamp;
+        const isSameId = m._id && targetMsg._id && m._id === targetMsg._id;
+        const isSameTime = m.timestamp && targetMsg.timestamp && m.timestamp === targetMsg.timestamp;
         return (isSameId || isSameTime) ? modifiedMsg : m;
       }));
 
@@ -449,7 +448,8 @@ export default function ChatRoom({ chatUser, onBack }) {
         } catch (err) { console.error("Failed to update DB", err); }
       }
     }
-    
+  };
+
     // Close the menu
     setDeleteMenuMsg(null); 
   };
@@ -790,7 +790,7 @@ const handleExternalShare = async (platform) => {
                         msg={msg} 
                         isMe={isMe} 
                         onReply={() => setReplyingTo(msg)}
-                       onDelete={(action, selectedMsg) => { setDeleteMenuMsg(selectedMsg); setTimeout(() => executeSmartDelete(action), 50); }}
+                        onDelete={executeSmartDelete}
                         onEdit={handleEditMessage}
                         onSave={handleSaveMessage}
                         onForward={handleForwardMessage}
@@ -1530,4 +1530,3 @@ const handleExternalShare = async (platform) => {
       )}
     </div>
   );
-}

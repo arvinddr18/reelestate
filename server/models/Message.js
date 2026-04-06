@@ -9,7 +9,6 @@ const messageSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // 🚨 CHANGED: text is no longer "required: true", so you can send JUST a photo/video without typing!
   text: { 
     type: String, 
     default: "" 
@@ -17,7 +16,6 @@ const messageSchema = new mongoose.Schema({
   time: { 
     type: String 
   },
-  // 🚨 ADDED THESE TWO LINES SO MONGOOSE SAVES YOUR MEDIA!
   image: { 
     type: String, 
     default: "" 
@@ -25,6 +23,34 @@ const messageSchema = new mongoose.Schema({
   video: { 
     type: String, 
     default: "" 
+  },
+  // 🚨 NEW FIELDS ADDED BELOW FOR YOUR PRO FEATURES 🚨
+  audio: { 
+    type: String, 
+    default: "" 
+  },
+  replyTo: { 
+    type: Object, 
+    default: null 
+  },
+  isDeleted: { 
+    type: Boolean, 
+    default: false 
+  },
+  isReplaced: { 
+    type: Boolean, 
+    default: false 
+  },
+  isBlurred: { 
+    type: Boolean, 
+    default: false 
+  },
+  isEdited: { 
+    type: Boolean, 
+    default: false 
+  },
+  timestamp: { 
+    type: Number 
   }
 }, { timestamps: true });
 

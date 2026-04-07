@@ -315,7 +315,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
 
                   {activeActions.map((action, i) => {
                     const angle = (i / activeActions.length) * Math.PI * 2 - Math.PI / 2;
-                    const radius = 80; 
+                    const radius = 55; 
                     const x = Math.cos(angle) * radius;
                     const y = Math.sin(angle) * radius;
 

@@ -33,6 +33,10 @@ const messageSchema = new mongoose.Schema({
     type: Object, 
     default: null 
   },
+  isRead: { 
+    type: Boolean, 
+    default: false 
+  },
   isDeleted: { 
     type: Boolean, 
     default: false 

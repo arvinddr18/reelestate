@@ -68,7 +68,7 @@ io.on('connection', (socket) => {
         // 1. Find all messages in this room that were NOT sent by the reader, and are unread
         // (Assuming you are using MongoDB/Mongoose)
         await Message.updateMany(
-          { room: room, senderId: { $ne: readerId }, isRead: false },
+          { room: room, senderId: { $ne: readerId }, isRead: { $ne: true } },
           { $set: { isRead: true } }
         );
 

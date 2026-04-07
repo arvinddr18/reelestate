@@ -26,6 +26,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
   const pressTimer = useRef(null);
   
   const isDragging = useRef(false);
+  const isLongPress = useRef(false); // 🚨 ADD THIS LINE
 
  useEffect(() => {
    // 🚨 UPDATED: Added showActionPopup to the check
@@ -74,6 +75,13 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
 
   const handleBubbleClick = (e) => {
     e.stopPropagation(); 
+    
+    // 🚨 THE FIX: If it was a long press, ignore this click and reset the tracker!
+    if (isLongPress.current) {
+      isLongPress.current = false; 
+      return; 
+    }
+
     if (!isDragging.current && !showReactionMenu) {
       setShowRadial(true);
       window.navigator.vibrate?.(50); 
@@ -132,11 +140,13 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
   }) : MENU_ACTIONS.filter(a => a.id !== 'edit');
 
   // 🌟 NEW: LONG PRESS AND BUTTON LOGIC 🌟
-  const handlePressStart = () => {
+ const handlePressStart = () => {
+    isLongPress.current = false; // Reset flag
     pressTimer.current = setTimeout(() => {
+      isLongPress.current = true; // 🚨 Mark that a long press happened!
       window.navigator.vibrate?.(50);
       setShowActionPopup(true);
-    }, 500); // 500ms triggers the long press
+    }, 500); 
   };
 
   const handlePressEnd = () => {

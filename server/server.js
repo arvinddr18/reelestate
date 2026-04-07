@@ -65,25 +65,22 @@ io.on('connection', (socket) => {
  // 🌟 REAL-TIME READ RECEIPTS 🌟
   socket.on('mark_as_read', async ({ room, readerId }) => {
     try {
-      // 🚨 FIX: A much stronger, simpler query. 
-      // It grabs EVERY message in the room NOT sent by the reader, and forces it to be true.
-      const result = await Message.updateMany(
+      // 🚨 FIX: Changed 'Message' to 'HoloMessage' to match your actual database model!
+      const result = await HoloMessage.updateMany(
         { room: room, senderId: { $ne: readerId } }, 
         { $set: { isRead: true } }
       );
 
-      // 🚨 FIX: This will print in your backend terminal so you KNOW it saved!
       if (result.modifiedCount > 0) {
         console.log(`✅ DB SUCCESS: Permanently saved ${result.modifiedCount} messages as READ in room ${room}`);
       }
 
-      // Tell the sender's screen to turn Cyan instantly
       socket.to(room).emit('messages_read');
     } catch (err) {
       console.error("❌ Error marking messages as read:", err);
     }
   });
-
+  
   socket.on('disconnect', () => {
     console.log('❌ User disconnected:', socket.id);
   });

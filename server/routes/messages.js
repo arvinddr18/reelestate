@@ -15,16 +15,20 @@ const holoMessageSchema = new mongoose.Schema({
   image: { type: String, default: "" }, 
   video: { type: String, default: "" }, 
   audio: { type: String, default: "" },
-  replyTo: { type: Object, default: null }, // 🚨 ADD THIS LINE!
+  replyTo: { type: Object, default: null },
   time: { type: String },
-  // 👇 1. ADD THESE 3 LINES 👇
+  
   isDeleted: { type: Boolean, default: false },
   isReplaced: { type: Boolean, default: false },
   isBlurred: { type: Boolean, default: false },
   isEdited: { type: Boolean, default: false },
-  timestamp: { type: Number }
+  timestamp: { type: Number },
+  
+  // 🌟 🚨 THE ULTIMATE FIX: Added isRead so MongoDB stops throwing it away! 🚨 🌟
+  isRead: { type: Boolean, default: false }
 
 }, { timestamps: true });
+
 
 const HoloMessage = mongoose.models.HoloMessage || mongoose.model('HoloMessage', holoMessageSchema);
 

@@ -509,10 +509,10 @@ const executeSmartDelete = async (action, targetMsg) => {
       return;
     }
 
-   const messageData = {
+  const messageData = {
       room, text: message, image: selectedImage, video: selectedVideo, audio: null,
-      // 🚨 THE FIX: Now it saves the image and video of the message you are replying to!
-      replyTo: replyingTo ? { text: replyingTo.text, image: replyingTo.image, video: replyingTo.video, senderId: replyingTo.senderId } : null,
+      // 🚨 THE FIX: Added "audio: replyingTo.audio" right here!
+      replyTo: replyingTo ? { text: replyingTo.text, image: replyingTo.image, video: replyingTo.video, audio: replyingTo.audio, senderId: replyingTo.senderId } : null,
       senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: Date.now(),
     };
@@ -790,7 +790,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                 Replying to {replyingTo.senderId === myId ? 'Yourself' : chatUser.fullName}
               </span>
               
-              {/* 🚨 THE FIX: Shows actual image/video thumbnails in the typing bar */}
+              {/* 🚨 THE FIX: Added the audio condition here */}
               {replyingTo.image ? (
                 <div className="flex items-center gap-2 mt-0.5">
                   <img src={replyingTo.image} className="w-8 h-8 rounded-md object-cover border border-white/20 shadow-sm" alt="reply preview" />
@@ -800,6 +800,13 @@ const executeSmartDelete = async (action, targetMsg) => {
                 <div className="flex items-center gap-2 mt-0.5">
                   <video src={replyingTo.video} className="w-8 h-8 rounded-md object-cover border border-white/20 shadow-sm" />
                   <span className="text-gray-300 text-xs font-bold">Video</span>
+                </div>
+              ) : replyingTo.audio ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="w-8 h-8 rounded-md bg-[#00f0ff]/20 border border-[#00f0ff]/50 flex items-center justify-center">
+                    <span className="text-[#00f0ff] text-lg">🎤</span>
+                  </div>
+                  <span className="text-gray-300 text-xs font-bold">Voice Message</span>
                 </div>
               ) : (
                 <span className="text-gray-300 text-xs md:text-sm truncate max-w-[200px] md:max-w-[400px]">

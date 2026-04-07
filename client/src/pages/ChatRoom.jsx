@@ -486,17 +486,15 @@ const executeSmartDelete = async (action, targetMsg) => {
     } catch (err) { console.error(err); }
   };
 
-  // 🌟 JUMP TO REPLIED MESSAGE FUNCTION 🌟
+ // 🌟 JUMP TO REPLIED MESSAGE FUNCTION 🌟
   const handleScrollToMessage = (msgId) => {
     if (!msgId) return;
     const element = document.getElementById(`msg-${msgId}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Add a quick flash effect to show which message it jumped to
-      element.classList.add('bg-white/10', 'scale-[1.02]', 'rounded-3xl');
-      setTimeout(() => {
-        element.classList.remove('bg-white/10', 'scale-[1.02]', 'rounded-3xl');
-      }, 1200);
+      // Flash the message so the user knows which one it is!
+      element.classList.add('bg-white/20', 'scale-[1.02]', 'rounded-3xl');
+      setTimeout(() => element.classList.remove('bg-white/20', 'scale-[1.02]', 'rounded-3xl'), 1200);
     }
   };
 
@@ -525,18 +523,19 @@ const executeSmartDelete = async (action, targetMsg) => {
 
  const messageData = {
       room, text: message, image: selectedImage, video: selectedVideo, audio: null,
-      // 🚨 THE FIX: Added "messageId" to remember where this came from!
       replyTo: replyingTo ? { 
         text: replyingTo.text, 
         image: replyingTo.image, 
         video: replyingTo.video, 
         audio: replyingTo.audio, 
         senderId: replyingTo.senderId,
+        // 🚨 ADDED THIS LINE SO IT REMEMBERS THE ID:
         messageId: replyingTo._id || replyingTo.timestamp 
       } : null,
       senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: Date.now(),
     };
+    
     setMessages((prev) => [...prev, messageData]);
     setMessage('');
     setSelectedImage(null);

@@ -653,7 +653,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                   
 
 
-                    {/* 🌟 NEW FORWARDED TAG UI 🌟 */}
+                   {/* 🌟 NEW FORWARDED TAG UI 🌟 */}
                     {msg.isForwarded && (
                       <div className={`flex items-center gap-1 mb-1 opacity-90 italic ${isMe ? 'justify-end mr-1' : 'justify-start ml-1'}`}>
                         <span className="text-[10px] font-black tracking-widest uppercase text-[#00f0ff] drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
@@ -662,40 +662,45 @@ const executeSmartDelete = async (action, targetMsg) => {
                       </div>
                     )}
 
-                    {msg.image && (
-                      <div className="relative mb-2 group/img">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
-                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
-                          <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
+                    <AnimatedMessageBubble 
+                      msg={msg} 
+                      isMe={isMe} 
+                      onReply={() => setReplyingTo(msg)}
+                      onDelete={(action, selectedMsg) => executeSmartDelete(action, selectedMsg)}
+                      onEdit={handleEditMessage}
+                      onSave={handleSaveMessage}
+                      onForward={handleForwardMessage}
+                    >
+                      {/* Media and Text are now INSIDE the bubble! */}
+                      {msg.image && (
+                        <div className="relative mb-2 group/img">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
+                          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
+                            <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {msg.video && (
-                      <div className="relative mb-2">
-                        <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
-                          <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
+                      {msg.video && (
+                        <div className="relative mb-2">
+                          <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
+                            <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {msg.audio && (
-                      <div className="relative mt-1 mb-2">
-                        <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
-                      </div>
-                    )}
+                      {msg.audio && (
+                        <div className="relative mt-1 mb-2">
+                          <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
+                        </div>
+                      )}
 
-                    {msg.text && (
-                      <AnimatedMessageBubble 
-                        msg={msg} 
-                        isMe={isMe} 
-                        onReply={() => setReplyingTo(msg)}
-                       onDelete={(action, selectedMsg) => executeSmartDelete(action, selectedMsg)}
-                        onEdit={handleEditMessage}
-                        onSave={handleSaveMessage}
-                        onForward={handleForwardMessage}
-                      />
-                    )}
+                      {msg.text && (
+                        <span className={`relative transition-all duration-500 block ${msg.isBlurred ? 'blur-md opacity-60' : ''}`}>
+                          {msg.text}
+                        </span>
+                      )}
+                    </AnimatedMessageBubble>
 
                   </div> 
                   {/* 👆 CLOSES THE W-FIT WRAPPER 👆 */}

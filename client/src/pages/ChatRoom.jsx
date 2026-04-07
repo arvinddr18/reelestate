@@ -486,6 +486,20 @@ const executeSmartDelete = async (action, targetMsg) => {
     } catch (err) { console.error(err); }
   };
 
+  // 🌟 JUMP TO REPLIED MESSAGE FUNCTION 🌟
+  const handleScrollToMessage = (msgId) => {
+    if (!msgId) return;
+    const element = document.getElementById(`msg-${msgId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a quick flash effect to show which message it jumped to
+      element.classList.add('bg-white/10', 'scale-[1.02]', 'rounded-3xl');
+      setTimeout(() => {
+        element.classList.remove('bg-white/10', 'scale-[1.02]', 'rounded-3xl');
+      }, 1200);
+    }
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
@@ -509,10 +523,17 @@ const executeSmartDelete = async (action, targetMsg) => {
       return;
     }
 
-  const messageData = {
+ const messageData = {
       room, text: message, image: selectedImage, video: selectedVideo, audio: null,
-      // 🚨 THE FIX: Added "audio: replyingTo.audio" right here!
-      replyTo: replyingTo ? { text: replyingTo.text, image: replyingTo.image, video: replyingTo.video, audio: replyingTo.audio, senderId: replyingTo.senderId } : null,
+      // 🚨 THE FIX: Added "messageId" to remember where this came from!
+      replyTo: replyingTo ? { 
+        text: replyingTo.text, 
+        image: replyingTo.image, 
+        video: replyingTo.video, 
+        audio: replyingTo.audio, 
+        senderId: replyingTo.senderId,
+        messageId: replyingTo._id || replyingTo.timestamp 
+      } : null,
       senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: Date.now(),
     };
@@ -645,7 +666,7 @@ const executeSmartDelete = async (action, targetMsg) => {
           messages.map((msg, index) => {
             const isMe = msg.senderId === myId;
             return (
-              <div key={index} className={`flex w-full group transform transition-all duration-300 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
+              <div key={index} id={`msg-${msg._id || msg.timestamp}`} className={`flex w-full group transform transition-all duration-300 p-1 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
                 <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative z-20 ${isMe ? 'items-end' : 'items-start'}`}>
                   
                   {/* 🌟 1. THE MAGIC "W-FIT" WRAPPER (Fixes the short message bug!) 🌟 */}
@@ -671,6 +692,8 @@ const executeSmartDelete = async (action, targetMsg) => {
                       onEdit={handleEditMessage}
                       onSave={handleSaveMessage}
                       onForward={handleForwardMessage}
+                      // 🚨 ADD THIS EXACT LINE RIGHT HERE:
+                      onReplyClick={() => handleScrollToMessage(msg.replyTo?.messageId)} 
                     >
                       {/* Media and Text are now INSIDE the bubble! */}
                       {msg.image && (

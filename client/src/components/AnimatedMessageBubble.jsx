@@ -13,7 +13,7 @@ const MENU_ACTIONS = [
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
 
-export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward, children }) {
+export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward, onReplyClick, children }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
@@ -165,7 +165,11 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             }`}
           >
             {msg.replyTo && (
-              <div className={`mb-1.5 p-2 rounded-lg border-l-[3px] text-xs opacity-90 backdrop-blur-md ${isMe ? 'bg-black/20 border-white/50 text-white' : 'bg-white/10 border-[#00f0ff] text-white'}`}>
+             <div 
+                // 🚨 ADDED onClick AND cursor-pointer HERE:
+                onClick={(e) => { e.stopPropagation(); if(onReplyClick) onReplyClick(); }}
+                className={`mb-1.5 p-2 rounded-lg border-l-[3px] text-xs opacity-90 backdrop-blur-md cursor-pointer hover:opacity-100 active:scale-95 transition-all ${isMe ? 'bg-black/20 border-white/50 text-white' : 'bg-white/10 border-[#00f0ff] text-white'}`}
+              >
                 <div className="font-black text-[9px] uppercase mb-0.5 opacity-70 tracking-widest">
                   Replying to
                 </div>

@@ -438,12 +438,21 @@ const executeSmartDelete = async (action, targetMsg) => {
     } else {
       // Handle Blur, Replace, and Delete for Everyone
       let modifiedMsg = { ...targetMsg };
+      
       if (action === 'for_everyone') {
         modifiedMsg.isDeleted = true;
         modifiedMsg.text = "⚠️ Message removed by sender";
+        // 🚨 FIX: Actually delete the media!
+        modifiedMsg.image = null; 
+        modifiedMsg.video = null;
+        modifiedMsg.audio = null;
       } else if (action === 'replace') {
         modifiedMsg.isReplaced = true;
         modifiedMsg.text = "Sorry, wrong message!";
+        // 🚨 FIX: Actually delete the media!
+        modifiedMsg.image = null; 
+        modifiedMsg.video = null;
+        modifiedMsg.audio = null;
       } else if (action === 'blur') {
         modifiedMsg.isBlurred = !modifiedMsg.isBlurred; 
       }
@@ -717,8 +726,9 @@ const executeSmartDelete = async (action, targetMsg) => {
                       onReplyClick={() => handleScrollToMessage(msg.replyTo?.messageId)} 
                     >
                       {/* Media and Text are now INSIDE the bubble! */}
+                      {/* 🚨 FIX: Added blur-md and pointer-events-none to media! */}
                       {msg.image && (
-                        <div className="relative mb-2 group/img">
+                        <div className={`relative mb-2 group/img transition-all duration-500 ${msg.isBlurred ? 'blur-xl opacity-40 grayscale pointer-events-none' : ''}`}>
                           <div className="absolute -inset-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-2xl blur opacity-25 group-hover/img:opacity-50 transition duration-1000"></div>
                           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
                             <img src={msg.image} alt="Upload" className="w-full max-h-[300px] object-cover opacity-90 brightness-110 group-hover/img:scale-105 transition-transform duration-700" />
@@ -727,7 +737,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                       )}
 
                       {msg.video && (
-                        <div className="relative mb-2">
+                        <div className={`relative mb-2 transition-all duration-500 ${msg.isBlurred ? 'blur-xl opacity-40 grayscale pointer-events-none' : ''}`}>
                           <div className="relative overflow-hidden rounded-2xl border border-[#ff3366]/30 bg-black">
                             <video src={msg.video} controls className="w-full max-h-[300px] object-cover" />
                           </div>
@@ -735,7 +745,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                       )}
 
                       {msg.audio && (
-                        <div className="relative mt-1 mb-2">
+                        <div className={`relative mt-1 mb-2 transition-all duration-500 ${msg.isBlurred ? 'blur-md opacity-40 pointer-events-none' : ''}`}>
                           <audio controls src={msg.audio} className="h-10 w-[200px] md:w-[250px] outline-none rounded-full bg-white/5 opacity-90 shadow-[0_0_15px_rgba(0,240,255,0.1)]" />
                         </div>
                       )}

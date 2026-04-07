@@ -737,11 +737,27 @@ const executeSmartDelete = async (action, targetMsg) => {
                       {msg.time} {msg.isEdited && <span className="italic opacity-60 ml-1 text-[9px]">(edited)</span>}
                     </span>
 
-                    {/* Checkmarks */}
+                   {/* 🌟 PREMIUM READ RECEIPTS 🌟 */}
                     {isMe && (
-                      <div className="flex -space-x-1">
-                        <IoMdCheckmark className="text-gray-400" size={14} />
-                        <IoMdCheckmark className="text-gray-400" size={14} />
+                      <div className="ml-0.5 flex items-center transition-all duration-500">
+                        {msg.isRead ? (
+                          // 🟢 SEEN: Glowing Cyan Aura Pill
+                          <div className="flex items-center gap-1 bg-gradient-to-r from-[#00f0ff]/10 to-transparent border border-[#00f0ff]/30 pl-1.5 pr-2 py-[2px] rounded-full shadow-[0_0_10px_rgba(0,240,255,0.2)] animate-in fade-in duration-500">
+                            <div className="flex -space-x-1.5">
+                              <IoMdCheckmark className="text-[#00f0ff] drop-shadow-[0_0_3px_#00f0ff]" size={13} />
+                              <IoMdCheckmark className="text-[#00f0ff] drop-shadow-[0_0_3px_#00f0ff]" size={13} />
+                            </div>
+                            <span className="text-[8px] font-black text-[#00f0ff] uppercase tracking-widest opacity-90 drop-shadow-md">
+                              Read
+                            </span>
+                          </div>
+                        ) : (
+                          // 🌑 UNSEEN: Faded Ghost Ticks
+                          <div className="flex -space-x-1.5 opacity-30 px-1">
+                            <IoMdCheckmark className="text-white" size={14} />
+                            <IoMdCheckmark className="text-white" size={14} />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

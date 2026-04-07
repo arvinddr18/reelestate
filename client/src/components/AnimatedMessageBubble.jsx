@@ -19,15 +19,22 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
   const [showRadial, setShowRadial] = useState(false);
   const [showReactionMenu, setShowReactionMenu] = useState(false); 
   const [showDeleteMenu, setShowDeleteMenu] = useState(false); // 👈 1. ADD THIS
+  // 🚨 1. ADD THESE NEW STATES FOR LONG PRESS:
+  const [showActionPopup, setShowActionPopup] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isPinned, setIsPinned] = useState(msg.isPinned || false);
+  const pressTimer = useRef(null);
   
   const isDragging = useRef(false);
 
-  useEffect(() => {
-   if (!showRadial && !showReactionMenu && !showDeleteMenu) return;
+ useEffect(() => {
+   // 🚨 UPDATED: Added showActionPopup to the check
+   if (!showRadial && !showReactionMenu && !showDeleteMenu && !showActionPopup) return;
     const closeMenu = () => {
       setShowRadial(false);
       setShowReactionMenu(false);
       setShowDeleteMenu(false); 
+      setShowActionPopup(false); // 🚨 Added this
     };
     
     setTimeout(() => {
@@ -39,7 +46,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
       document.removeEventListener('click', closeMenu);
       document.removeEventListener('touchstart', closeMenu);
     };
-  }, [showRadial, showReactionMenu]);
+  }, [showRadial, showReactionMenu, showDeleteMenu, showActionPopup]);
 
   const x = useMotionValue(0);
   const replyOpacity = useTransform(x, isMe ? [0, -50] : [0, 50], [0, 1]);
@@ -123,6 +130,38 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
     }
     return true;
   }) : MENU_ACTIONS.filter(a => a.id !== 'edit');
+
+  // 🌟 NEW: LONG PRESS AND BUTTON LOGIC 🌟
+  const handlePressStart = () => {
+    pressTimer.current = setTimeout(() => {
+      window.navigator.vibrate?.(50);
+      setShowActionPopup(true);
+    }, 500); // 500ms triggers the long press
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer.current) clearTimeout(pressTimer.current);
+  };
+
+  const handleCopy = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(msg.text || '');
+    setCopied(true);
+    setTimeout(() => { setCopied(false); setShowActionPopup(false); }, 1500);
+  };
+
+  const handlePin = (e) => {
+    e.stopPropagation();
+    setIsPinned(!isPinned);
+    setTimeout(() => setShowActionPopup(false), 800);
+  };
+
+  const getFormattedTime = () => {
+    const d = msg.timestamp ? new Date(msg.timestamp) : new Date();
+    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    return `${time} • ${date}`;
+  };
   
   return (
     <div className={`flex w-full group transform transition-all duration-300 my-2 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
@@ -158,6 +197,12 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             onClick={handleBubbleClick} 
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} 
             onDoubleClick={handleDoubleClick}
+            // 🚨 ADD THESE 5 LINES HERE:
+            onTouchStart={handlePressStart}
+            onTouchEnd={handlePressEnd}
+            onMouseDown={handlePressStart}
+            onMouseUp={handlePressEnd}
+            onMouseLeave={handlePressEnd}
             className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-20 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
@@ -250,6 +295,54 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
                     )}
                   </div>
 
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* 🌟 NEW: LONG PRESS COPY/PIN POPUP 🌟 */}
+          <AnimatePresence>
+            {showActionPopup && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className={`absolute z-[999999] bottom-[105%] mb-2 ${isMe ? 'right-0 origin-bottom-right' : 'left-0 origin-bottom-left'}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="w-[220px] md:w-[250px] bg-[#121826]/85 backdrop-blur-2xl border border-white/20 rounded-2xl md:rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden">
+                  
+                  {/* Top Row: Actions */}
+                  <div className="flex justify-evenly items-center p-3 md:p-4 border-b border-white/10">
+                    <button onClick={handleCopy} className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 w-1/2">
+                      <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">
+                        {copied ? '✅' : '📋'}
+                      </span>
+                      <span className="text-white font-bold text-[11px] md:text-xs tracking-wider">
+                        {copied ? 'Copied!' : 'Copy'}
+                      </span>
+                    </button>
+                    
+                    <div className="w-[1px] h-10 bg-white/10"></div>
+                    
+                    <button onClick={handlePin} className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 w-1/2">
+                      <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,187,0,0.8)] transition-all">
+                        {isPinned ? '🌟' : '📌'}
+                      </span>
+                      <span className={`font-bold text-[11px] md:text-xs tracking-wider ${isPinned ? 'text-[#ffbb00]' : 'text-white'}`}>
+                        {isPinned ? 'Pinned' : 'Pin'}
+                      </span>
+                    </button>
+                  </div>
+                  
+                  {/* Bottom Row: Timestamp */}
+                  <div className="p-2 md:p-2.5 bg-black/40 flex justify-center items-center">
+                    <span className="text-gray-400 text-[10px] md:text-[11px] font-medium tracking-widest uppercase">
+                      {getFormattedTime()}
+                    </span>
+                  </div>
+                  
                 </div>
               </motion.div>
             )}

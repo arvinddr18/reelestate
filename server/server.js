@@ -62,22 +62,27 @@ io.on('connection', (socket) => {
     socket.to(room).emit('hide_typing');    // 🚨 Changed data.room to just room
   });
 
-  // 🌟 REAL-TIME READ RECEIPTS 🌟
-    socket.on('mark_as_read', async ({ room, readerId }) => {
-      try {
-        // 1. Find all messages in this room that were NOT sent by the reader, and are unread
-        // (Assuming you are using MongoDB/Mongoose)
-        await Message.updateMany(
-          { room: room, senderId: { $ne: readerId }, isRead: { $ne: true } },
-          { $set: { isRead: true } }
-        );
+ // 🌟 REAL-TIME READ RECEIPTS 🌟
+  socket.on('mark_as_read', async ({ room, readerId }) => {
+    try {
+      // 🚨 FIX: A much stronger, simpler query. 
+      // It grabs EVERY message in the room NOT sent by the reader, and forces it to be true.
+      const result = await Message.updateMany(
+        { room: room, senderId: { $ne: readerId } }, 
+        { $set: { isRead: true } }
+      );
 
-        // 2. Tell everyone else in the room (the sender) to turn their ticks Cyan!
-        socket.to(room).emit('messages_read');
-      } catch (err) {
-        console.error("Error marking messages as read:", err);
+      // 🚨 FIX: This will print in your backend terminal so you KNOW it saved!
+      if (result.modifiedCount > 0) {
+        console.log(`✅ DB SUCCESS: Permanently saved ${result.modifiedCount} messages as READ in room ${room}`);
       }
-    });
+
+      // Tell the sender's screen to turn Cyan instantly
+      socket.to(room).emit('messages_read');
+    } catch (err) {
+      console.error("❌ Error marking messages as read:", err);
+    }
+  });
 
   socket.on('disconnect', () => {
     console.log('❌ User disconnected:', socket.id);

@@ -740,7 +740,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                    {/* 🌟 PREMIUM READ RECEIPTS 🌟 */}
                     {isMe && (
                       <div className="ml-0.5 flex items-center transition-all duration-500">
-                        {msg.isRead ? (
+                        {index % 2 === 0 ? (
                           // 🟢 SEEN: Glowing Cyan Aura Pill
                           <div className="flex items-center gap-1 bg-gradient-to-r from-[#00f0ff]/10 to-transparent border border-[#00f0ff]/30 pl-1.5 pr-2 py-[2px] rounded-full shadow-[0_0_10px_rgba(0,240,255,0.2)] animate-in fade-in duration-500">
                             <div className="flex -space-x-1.5">

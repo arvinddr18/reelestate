@@ -296,10 +296,9 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999]"
-                onClick={(e) => e.stopPropagation()} 
-              >
-                <div className="relative">
+                className="z-[99999]"
+          style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%)' }}
+              ><div className="relative">
                   
                   <motion.button
                     initial={{ scale: 0, rotate: -90 }}

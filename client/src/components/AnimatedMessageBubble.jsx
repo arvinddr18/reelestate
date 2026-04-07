@@ -170,7 +170,22 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
                   Replying to
                 </div>
                 <div className="truncate max-w-[200px] md:max-w-[300px]">
-                  {msg.replyTo.text || "Attachment"}
+                  
+                  {/* 🚨 THE FIX: Shows actual image/video thumbnails inside the chat bubble */}
+                  {msg.replyTo.image ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src={msg.replyTo.image} className="w-8 h-8 rounded object-cover border border-white/20" alt="reply img" />
+                      <span className="opacity-80 font-semibold">Photo</span>
+                    </div>
+                  ) : msg.replyTo.video ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <video src={msg.replyTo.video} className="w-8 h-8 rounded object-cover border border-white/20" />
+                      <span className="opacity-80 font-semibold">Video</span>
+                    </div>
+                  ) : (
+                    msg.replyTo.text || "Attachment"
+                  )}
+
                 </div>
               </div>
             )}

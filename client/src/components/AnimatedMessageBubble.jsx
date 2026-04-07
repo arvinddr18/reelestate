@@ -297,7 +297,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="z-[99999]"
-         style={{ position: 'absolute', bottom: '110%', left: isMe ? 'auto' : '0', right: isMe ? '100%' : 'auto', transform: isMe ? 'translateX(50%)' : 'none' }}
+        style={{ position: 'absolute', bottom: '110%', left: isMe ? 'auto' : '0', right: isMe ? '0' : 'auto', transform: isMe ? 'translateX(-80px)' : 'translateX(80px)' }}
           onClick={(e) => e.stopPropagation()}
               ><div className="relative">
                   

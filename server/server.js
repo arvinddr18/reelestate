@@ -11,6 +11,7 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
+const Message = require('./models/Message'); // Adjust the path if your models folder is named differently!
 
 const app = express();
 
@@ -60,6 +61,23 @@ io.on('connection', (socket) => {
   socket.on('stop_typing', (room) => {
     socket.to(room).emit('hide_typing');    // 🚨 Changed data.room to just room
   });
+
+  // 🌟 REAL-TIME READ RECEIPTS 🌟
+    socket.on('mark_as_read', async ({ room, readerId }) => {
+      try {
+        // 1. Find all messages in this room that were NOT sent by the reader, and are unread
+        // (Assuming you are using MongoDB/Mongoose)
+        await Message.updateMany(
+          { room: room, senderId: { $ne: readerId }, isRead: false },
+          { $set: { isRead: true } }
+        );
+
+        // 2. Tell everyone else in the room (the sender) to turn their ticks Cyan!
+        socket.to(room).emit('messages_read');
+      } catch (err) {
+        console.error("Error marking messages as read:", err);
+      }
+    });
 
   socket.on('disconnect', () => {
     console.log('❌ User disconnected:', socket.id);

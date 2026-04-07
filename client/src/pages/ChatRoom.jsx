@@ -335,7 +335,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     fetchChatHistory();
   }, [room, myId, friendId, page]); // <--- 🚨 'page' IS HERE! Now it fetches when you scroll!
 
-  // ==========================================
+ // ==========================================
   // 🌟 2. LIVE SOCKET CONNECTIONS 🌟
   // ==========================================
   useEffect(() => {
@@ -345,7 +345,14 @@ export default function ChatRoom({ chatUser, onBack }) {
     
     const onConnect = () => socket.emit('join_room', room);
     socket.on('connect', onConnect);
-    socket.on('receive_message', (data) => setMessages((prev) => [...prev, data]));
+    
+    // Listen for new messages
+    socket.on('receive_message', (data) => {
+      setMessages((prev) => [...prev, data]);
+      // Immediately tell the server we read this new message!
+      socket.emit('mark_as_read', { room, readerId: myId });
+    });
+    
     socket.on('display_typing', () => setIsTyping(true));
     socket.on('hide_typing', () => setIsTyping(false));
    
@@ -356,6 +363,13 @@ export default function ChatRoom({ chatUser, onBack }) {
         return (isSameId || isSameTime) ? data.modifiedMsg : m;
       }));
     });
+
+    // 🚨 NEW: Listen for when the OTHER person reads YOUR messages!
+    socket.on('messages_read', () => {
+      setMessages((prev) => prev.map((m) => 
+        m.senderId === myId ? { ...m, isRead: true } : m
+      ));
+    });
     
     return () => {
       socket.off('connect', onConnect);
@@ -363,8 +377,16 @@ export default function ChatRoom({ chatUser, onBack }) {
       socket.off('display_typing'); 
       socket.off('hide_typing');
       socket.off('message_updated'); 
+      socket.off('messages_read'); // 🚨 Clean up the new listener
     };
-  }, [room, myId, friendId]); // <--- 🚨 No 'page' here, so sockets don't restart when scrolling!
+  }, [room, myId, friendId]);
+
+  // 🚨 NEW: Tell the server we read the chat history when we first open the room
+  useEffect(() => {
+    if (room && myId) {
+      socket.emit('mark_as_read', { room, readerId: myId });
+    }
+  }, [room, myId, messages.length]);
   
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -740,7 +762,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                    {/* 🌟 PREMIUM READ RECEIPTS 🌟 */}
                     {isMe && (
                       <div className="ml-0.5 flex items-center transition-all duration-500">
-                        {index % 2 === 0 ? (
+                        {msg.isRead ? (
                           // 🟢 SEEN: Glowing Cyan Aura Pill
                           <div className="flex items-center gap-1 bg-gradient-to-r from-[#00f0ff]/10 to-transparent border border-[#00f0ff]/30 pl-1.5 pr-2 py-[2px] rounded-full shadow-[0_0_10px_rgba(0,240,255,0.2)] animate-in fade-in duration-500">
                             <div className="flex -space-x-1.5">

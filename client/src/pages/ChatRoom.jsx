@@ -343,14 +343,18 @@ export default function ChatRoom({ chatUser, onBack }) {
     
     socket.emit('join_room', room);
     
+    // 🚨 FIX: Tell the server we read the chat ONCE when we first open it!
+    socket.emit('mark_as_read', { room, readerId: myId });
+    
     const onConnect = () => socket.emit('join_room', room);
     socket.on('connect', onConnect);
     
-    // Listen for new messages
     socket.on('receive_message', (data) => {
       setMessages((prev) => [...prev, data]);
-      // Immediately tell the server we read this new message!
-      socket.emit('mark_as_read', { room, readerId: myId });
+      // 🚨 FIX: ONLY tell the server we read it if the OTHER person sent it!
+      if (data.senderId !== myId) {
+        socket.emit('mark_as_read', { room, readerId: myId });
+      }
     });
     
     socket.on('display_typing', () => setIsTyping(true));
@@ -364,7 +368,6 @@ export default function ChatRoom({ chatUser, onBack }) {
       }));
     });
 
-    // 🚨 NEW: Listen for when the OTHER person reads YOUR messages!
     socket.on('messages_read', () => {
       setMessages((prev) => prev.map((m) => 
         m.senderId === myId ? { ...m, isRead: true } : m
@@ -377,17 +380,12 @@ export default function ChatRoom({ chatUser, onBack }) {
       socket.off('display_typing'); 
       socket.off('hide_typing');
       socket.off('message_updated'); 
-      socket.off('messages_read'); // 🚨 Clean up the new listener
+      socket.off('messages_read');
     };
   }, [room, myId, friendId]);
 
   // 🚨 NEW: Tell the server we read the chat history when we first open the room
-  useEffect(() => {
-    if (room && myId) {
-      socket.emit('mark_as_read', { room, readerId: myId });
-    }
-  }, [room, myId, messages.length]);
-  
+ 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
@@ -560,11 +558,11 @@ const executeSmartDelete = async (action, targetMsg) => {
         video: replyingTo.video, 
         audio: replyingTo.audio, 
         senderId: replyingTo.senderId,
-        // 🚨 ADDED THIS LINE SO IT REMEMBERS THE ID:
         messageId: replyingTo._id || replyingTo.timestamp 
       } : null,
       senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: Date.now(),
+      isRead: false // 🚨 FIX: Explicitly mark as unread when sending!
     };
     
     setMessages((prev) => [...prev, messageData]);

@@ -13,7 +13,7 @@ const MENU_ACTIONS = [
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
 
-export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward }) {
+export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward, children }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
@@ -175,10 +175,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
               </div>
             )}
             
-            {/* 🚨 UPDATED TEXT SPAN: Handles the visual Blur and Warning text! */}
-            <span className={`relative z-10 pointer-events-none transition-all duration-500 ${msg.isBlurred ? 'blur-md opacity-60 select-none' : ''} ${(msg.isDeleted || msg.isReplaced) ? 'italic opacity-80' : ''}`}>
-              {msg.text}
-            </span>
+          {children}
           </motion.div>
 
           {/* 🌟 4. THE INLINE SMART DELETE MENU 🌟 */}

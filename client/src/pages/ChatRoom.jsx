@@ -657,7 +657,7 @@ const executeSmartDelete = async (action, targetMsg) => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               // 🚨 Positions it perfectly in the top right, inside the chat window
-              className="absolute top-4 right-4 md:right-8 z-[100] flex flex-col items-end"
+              className="absolute top-[80px] md:top-[110px] right-4 md:right-8 z-[90] flex flex-col items-end"
             >
               {/* Main Floating Pill */}
               <motion.div

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';

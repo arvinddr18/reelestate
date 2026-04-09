@@ -553,10 +553,9 @@ const executeSmartDelete = async (action, targetMsg) => {
     }
   };
 
-  // 🌟 PIN / UNPIN MESSAGE LOGIC 🌟
+ // 🌟 PIN / UNPIN MESSAGE LOGIC 🌟
   const handlePinMessage = async (msgToPin, pinType) => {
     try {
-      // 🚨 THE FIX: Strictly guarantees it is a valid array before we push data into it!
       let newPinnedBy = Array.isArray(msgToPin.pinnedBy) ? [...msgToPin.pinnedBy] : [];
 
       if (pinType === 'unpin') {
@@ -574,10 +573,14 @@ const executeSmartDelete = async (action, targetMsg) => {
         (m._id === msgToPin._id || m.timestamp === msgToPin.timestamp) ? updatedMsg : m
       ));
 
+      // 🚨 THE FIX: Get the token and attach it to the request so the backend allows the save!
       if (msgToPin._id) {
+        const token = localStorage.getItem('nodexa_token'); // 1. Grab the key
         await axios.put(`${API_URL}/api/messages/${msgToPin._id}`, {
           isPinned: isPinnedNow,
           pinnedBy: newPinnedBy
+        }, {
+          headers: { Authorization: `Bearer ${token}` } // 2. Unlock the database!
         });
       }
 

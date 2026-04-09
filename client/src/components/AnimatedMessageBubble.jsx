@@ -259,11 +259,7 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             onMouseLeave={handlePressEnd}
             className={getBubbleStyles()}
           >
-            className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-20 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
-              isMe 
-              ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
-              : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
-            }`}
+           
           
             {msg.replyTo && (
              <div 

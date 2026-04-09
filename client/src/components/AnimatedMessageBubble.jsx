@@ -13,7 +13,7 @@ const MENU_ACTIONS = [
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
 
-export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward, onReplyClick, children, onPin}) {
+export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDelete, onSave, onForward, onReplyClick, children, onPin, appearance = { theme: 'neon', bubble: 'glowing' } }) {
   const [reaction, setReaction] = useState(null);
   const [showBurst, setShowBurst] = useState(false);
   const [showRadial, setShowRadial] = useState(false);
@@ -27,6 +27,51 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
   
   const isDragging = useRef(false);
   const isLongPress = useRef(false); // 🚨 ADD THIS LINE
+
+
+
+  // 🌟 PREMIUM BUBBLE STYLER 🌟
+  const getBubbleStyles = () => {
+    let styles = "relative p-3 md:p-4 transition-all duration-500 ease-out overflow-hidden ";
+    
+    // 1. SHAPE (Rounded vs Sharp)
+    if (appearance.bubble === 'sharp') {
+      styles += "rounded-lg "; // Clean, modern square edges
+    } else if (appearance.bubble === 'rounded') {
+      styles += isMe ? "rounded-[28px] rounded-br-[8px] " : "rounded-[28px] rounded-bl-[8px] "; // iMessage style
+    } else {
+      styles += isMe ? "rounded-2xl rounded-br-sm " : "rounded-2xl rounded-bl-sm "; // Default Nodexa style
+    }
+    
+    // 2. THEME & GLOW (Glass vs Dark vs Neon)
+    if (appearance.theme === 'glass') {
+       // Ultra-premium frosted glass
+       styles += isMe 
+         ? "bg-white/10 backdrop-blur-2xl border border-white/20 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] " 
+         : "bg-black/20 backdrop-blur-2xl border border-white/10 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] ";
+         
+    } else if (appearance.theme === 'dark') {
+       // Stealthy, minimal dark mode
+       styles += isMe 
+         ? "bg-[#2A3143] text-white shadow-md " 
+         : "bg-[#121826] text-gray-200 border border-white/5 shadow-sm ";
+         
+    } else {
+       // Default Neon/Cyberpunk
+       styles += isMe 
+         ? "bg-gradient-to-br from-[#801fd6] to-[#bc00dd] text-white border border-[#ff3366]/30 " 
+         : "bg-[#1A1F2E]/90 backdrop-blur-md text-white border border-[#00f0ff]/20 ";
+    }
+    
+    // 3. GLOWING EFFECT OVERRIDE
+    if (appearance.bubble === 'glowing') {
+       styles += isMe 
+         ? "shadow-[0_0_25px_rgba(188,0,221,0.5)] border-[#bc00dd]/60 " 
+         : "shadow-[0_0_25px_rgba(0,240,255,0.3)] border-[#00f0ff]/40 ";
+    }
+    
+    return styles;
+  };
 
  useEffect(() => {
    // 🚨 UPDATED: Added showActionPopup to the check
@@ -202,23 +247,24 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
             className={`absolute -inset-1 rounded-3xl blur-lg z-0 pointer-events-none ${isMe ? 'bg-[#c11f70]/30' : 'bg-[#00f0ff]/20'}`}
           />
 
-          <motion.div 
+         <motion.div 
             whileTap={{ scale: 0.95 }}
             onClick={handleBubbleClick} 
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} 
             onDoubleClick={handleDoubleClick}
-            // 🚨 ADD THESE 5 LINES HERE:
             onTouchStart={handlePressStart}
             onTouchEnd={handlePressEnd}
             onMouseDown={handlePressStart}
             onMouseUp={handlePressEnd}
             onMouseLeave={handlePressEnd}
+            className={getBubbleStyles()}
+          >
             className={`relative select-none px-4 py-2.5 md:px-5 md:py-3 text-[14.5px] md:text-[15px] font-medium leading-relaxed tracking-wide rounded-3xl shadow-lg border backdrop-blur-xl z-20 w-fit max-w-full whitespace-pre-wrap break-words cursor-pointer ${
               isMe 
               ? 'bg-gradient-to-br from-[#801fd6]/90 to-[#c11f70]/90 border-white/20 rounded-tr-xl text-white shadow-[0_8px_25px_rgba(193,31,112,0.3)]' 
               : 'bg-[#121826]/80 border-white/5 rounded-tl-xl text-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
             }`}
-          >
+          
             {msg.replyTo && (
              <div 
                 // 🚨 ADDED onClick AND cursor-pointer HERE:

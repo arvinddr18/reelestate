@@ -645,24 +645,26 @@ const executeSmartDelete = async (action, targetMsg) => {
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
 
-      {/* 🌟 DYNAMIC USER BACKGROUND 🌟 */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
-        {chatUser.profilePhoto ? (
-          <>
-            <div 
-              className="absolute inset-0 bg-cover bg-center opacity-40 blur-[10px] scale-110" 
-              style={{ backgroundImage: `url(${chatUser.profilePhoto})` }}
-            />
-            <div className="absolute inset-0 bg-[#05070A]/75" />
-          </>
-        ) : (
-          <>
-            <div className="absolute inset-0 bg-[#05070A]/80" />
-            <span className="text-[50vw] md:text-[30vw] font-black text-white/5 select-none drop-shadow-2xl">
-              {(chatUser.fullName || chatUser.username || 'U')[0].toUpperCase()}
-            </span>
-          </>
-        )}
+     {/* 🌟 PREMIUM REAL-TIME BACKGROUND 🌟 */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center bg-[#05070A]">
+        {/* Galaxy Theme (Deep Space Blur) */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance.bg === 'galaxy' ? 'opacity-100' : 'opacity-0'}`}>
+          {chatUser.profilePhoto && (
+            <div className="absolute inset-0 bg-cover bg-center opacity-50 blur-[20px] scale-110" style={{ backgroundImage: `url(${chatUser.profilePhoto})` }} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#05070A]/40 via-[#05070A]/80 to-[#05070A] backdrop-blur-[2px]" />
+        </div>
+
+        {/* Gradient Theme (Cyberpunk Purple/Cyan) */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance.bg === 'gradient' ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#bc00dd]/20 via-[#05070A] to-[#00f0ff]/10" />
+        </div>
+
+        {/* Custom Uploaded Image */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance.bg.startsWith('data:image') ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${appearance.bg})` }} />
+          <div className="absolute inset-0 bg-[#05070A]/60 backdrop-blur-sm" />
+        </div>
       </div>
       
 {/* 🌟 1. FLOATING PIN BUBBLE & PANEL 🌟 */}
@@ -760,7 +762,11 @@ const executeSmartDelete = async (action, targetMsg) => {
         </AnimatePresence>
 
       {/* 1. FLEX-NONE HEADER */}
-      <div className="shrink-0 flex-none relative w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+     <div className={`shrink-0 flex-none relative w-full h-[70px] md:h-24 px-3 md:px-8 flex items-center justify-between z-20 transition-all duration-700 ease-out ${
+  appearance.theme === 'glass' ? 'bg-white/[0.03] backdrop-blur-3xl border-b border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)]' :
+  appearance.theme === 'dark' ? 'bg-[#05070A] border-b border-white/5 shadow-md' :
+  'bg-[#0a0514]/90 backdrop-blur-xl border-b border-[#bc00dd]/20 shadow-[0_10px_30px_rgba(188,0,221,0.1)]'
+}`}>
         <div className="flex items-center gap-3 md:gap-4">
           <button onClick={onBack} className="md:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 backdrop-blur-md">
             <IoMdArrowBack size={18} />
@@ -1069,7 +1075,11 @@ const executeSmartDelete = async (action, targetMsg) => {
 
         
 
-          <form onSubmit={handleSend} className="relative w-full max-w-3xl mx-auto flex items-center bg-[#1A1F2E]/90 backdrop-blur-2xl border border-white/20 p-1 md:p-1.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.8)] focus-within:border-[#bc00dd]/50 focus-within:shadow-[0_0_30px_rgba(188,0,221,0.2)] transition-all duration-300">
+          <form onSubmit={handleSend} className={`relative w-full max-w-3xl mx-auto flex items-center p-1 md:p-1.5 z-20 transition-all duration-700 ease-out ${
+  appearance.theme === 'glass' ? 'bg-white/[0.05] backdrop-blur-3xl border border-white/20 rounded-[2.5rem] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' :
+  appearance.theme === 'dark' ? 'bg-[#121826] border border-white/10 rounded-full shadow-lg' :
+  'bg-[#1A1F2E]/80 backdrop-blur-2xl border border-[#bc00dd]/40 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.6)] focus-within:border-[#00f0ff]/60 focus-within:shadow-[0_0_30px_rgba(0,240,255,0.2)]'
+}`}>
             
             {showAttachMenu && (
               <div className="absolute bottom-[120%] left-0 md:left-4 p-5 bg-[#1A1F2E]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-wrap gap-6 w-[280px] z-[100] animate-in slide-in-from-bottom-5 fade-in duration-200">

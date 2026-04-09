@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import EmojiPicker from 'emoji-picker-react';
 import AnimatedMessageBubble from '../components/AnimatedMessageBubble';
 import React, { useState, useEffect, useRef } from 'react';
@@ -765,32 +765,8 @@ const executeSmartDelete = async (action, targetMsg) => {
         onScroll={handleScroll} 
         className="flex-1 min-h-0 relative w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar z-10"
       >
-{/* 🌟 2. SCROLL MARKERS (MINIMAP) 🌟 */}
-        {/* This creates a fixed-height vertical track on the right edge */}
-        <div className="sticky top-0 bottom-0 right-1 w-3 h-full z-[60] pointer-events-none hidden md:flex flex-col">
-          {messages.map((msg, idx) => {
-            // Optimization: Only render dots for pinned messages to prevent lag
-            if (!msg.isPinned) return null; 
-            
-            // Calculates exactly how far down the scrollbar this message lives
-            const topPos = `${(idx / Math.max(messages.length - 1, 1)) * 100}%`;
-            
-            return (
-              <div
-                key={idx}
-                className="absolute right-0.5 w-1.5 h-1.5 rounded-full bg-[#ffbb00] shadow-[0_0_10px_#ffbb00] cursor-pointer pointer-events-auto hover:scale-[2] hover:bg-white transition-all duration-300 group"
-                style={{ top: topPos }}
-                onClick={() => handleScrollToMessage(msg._id || msg.timestamp)}
-              >
-                 {/* Hover Tooltip Preview */}
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1A1F2E]/95 backdrop-blur-md border border-[#ffbb00]/50 text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap shadow-lg pointer-events-none">
-                   {msg.text ? msg.text.substring(0, 20) + '...' : 'Attachment'}
-                 </div>
-              </div>
-            );
-          })}
-        </div>
 
+        
         <div className="flex justify-center mb-2 mt-2"></div>
         <div className="flex justify-center mb-2 mt-2">
           <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>

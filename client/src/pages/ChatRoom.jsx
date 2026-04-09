@@ -547,6 +547,33 @@ const executeSmartDelete = async (action, targetMsg) => {
     }
   };
 
+  // 🌟 PIN / UNPIN MESSAGE LOGIC 🌟
+  const handlePinMessage = async (msgToPin) => {
+    try {
+      // 1. Toggle the status (if it's pinned, unpin it. If not, pin it)
+      const newPinStatus = !msgToPin.isPinned;
+      
+      // 2. Update local React state instantly so the UI feels fast
+      const updatedMsg = { ...msgToPin, isPinned: newPinStatus };
+      setMessages((prev) => prev.map((m) => 
+        (m._id === msgToPin._id || m.timestamp === msgToPin.timestamp) ? updatedMsg : m
+      ));
+
+      // 3. Save it permanently to your MongoDB
+      if (msgToPin._id) {
+        await axios.put(`${API_URL}/api/messages/${msgToPin._id}`, {
+          isPinned: newPinStatus
+        });
+      }
+
+      // 4. Fire the Socket so Gahana sees the pin instantly on her screen!
+      socket.emit('update_message', { room, modifiedMsg: updatedMsg });
+
+    } catch (err) {
+      console.error("❌ Error pinning message:", err);
+    }
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     if ((!message.trim() && !selectedImage && !selectedVideo) || !room || !myId) return;
@@ -811,6 +838,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                       onEdit={handleEditMessage}
                       onSave={handleSaveMessage}
                       onForward={handleForwardMessage}
+                      onPin={() => handlePinMessage(msg)}
                       // 🚨 ADD THIS EXACT LINE RIGHT HERE:
                       onReplyClick={() => handleScrollToMessage(msg.replyTo?.messageId)} 
                     >

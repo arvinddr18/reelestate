@@ -5,6 +5,7 @@ const http = require('http');
 const { Server } = require('socket.io'); 
 require('dotenv').config();
 
+
 // --- 1. Import Routes ---
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
@@ -12,7 +13,6 @@ const userRoutes = require('./routes/users');
 const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
 const Message = require('./models/Message'); // Adjust the path if your models folder is named differently!
-
 const app = express();
 
 // --- Wrap Express in an HTTP server for the Chat Pipe ---
@@ -65,16 +65,15 @@ io.on('connection', (socket) => {
  // 🌟 REAL-TIME READ RECEIPTS 🌟
   socket.on('mark_as_read', async ({ room, readerId }) => {
     try {
-      // 🚨 FIX: Changed 'Message' to 'HoloMessage' to match your actual database model!
-      const result = await HoloMessage.updateMany(
-        { room: room, senderId: { $ne: readerId } }, 
+      const HoloMsg = mongoose.models.HoloMessage;
+      if (!HoloMsg) return;
+      const result = await HoloMsg.updateMany(
+        { room: room, senderId: { $ne: readerId } },
         { $set: { isRead: true } }
       );
-
       if (result.modifiedCount > 0) {
-        console.log(`✅ DB SUCCESS: Permanently saved ${result.modifiedCount} messages as READ in room ${room}`);
+        console.log(`✅ Marked ${result.modifiedCount} messages as read`);
       }
-
       socket.to(room).emit('messages_read');
     } catch (err) {
       console.error("❌ Error marking messages as read:", err);

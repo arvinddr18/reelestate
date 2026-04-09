@@ -84,6 +84,32 @@ export default function ChatRoom({ chatUser, onBack }) {
   // 🌟 NEW: FLOATING PIN SYSTEM STATES 🌟
   const [showPinList, setShowPinList] = useState(false);
   const [pinTab, setPinTab] = useState('shared');
+  // 🌟 NEW: REAL-TIME APPEARANCE SETTINGS & MEMORY 🌟
+  const [appearance, setAppearance] = useState(() => {
+    // Check if the user saved a theme before. If not, use defaults!
+    const saved = localStorage.getItem('nodexa_appearance');
+    return saved ? JSON.parse(saved) : { theme: 'neon', bg: 'galaxy', bubble: 'glowing' };
+  });
+
+  // Whenever the appearance changes, instantly save it to localStorage
+  useEffect(() => {
+    localStorage.setItem('nodexa_appearance', JSON.stringify(appearance));
+  }, [appearance]);
+
+  const updateAppearance = (key, value) => {
+    setAppearance(prev => ({ ...prev, [key]: value }));
+  };
+
+  // For uploading custom chat backgrounds
+  const bgInputRef = useRef(null);
+  const handleBgUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => updateAppearance('bg', reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
   const pinPressTimer = useRef(null);
 
   // 🌟 SMART PIN FILTERING 🌟

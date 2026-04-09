@@ -80,6 +80,25 @@ export default function ChatRoom({ chatUser, onBack }) {
     setMessage((prevMsg) => prevMsg + emojiObject.emoji);
   };
 
+  // 🌟 NEW: FLOATING PIN SYSTEM STATES 🌟
+  const [showPinList, setShowPinList] = useState(false);
+  const pinPressTimer = useRef(null);
+
+  // Automatically find all pinned messages from your chat history
+  const pinnedMessages = messages.filter(msg => msg.isPinned);
+  const latestPin = pinnedMessages[pinnedMessages.length - 1]; // Grabs the most recent one
+
+  // Long-press logic for the floating bubble
+  const handlePinPressStart = () => {
+    pinPressTimer.current = setTimeout(() => {
+      window.navigator.vibrate?.(50);
+      setShowPinList(true);
+    }, 500);
+  };
+  const handlePinPressEnd = () => {
+    if (pinPressTimer.current) clearTimeout(pinPressTimer.current);
+  };
+
   // ==========================================
   // 🌟 AUDIO RECORDING ENGINE (PROPERLY PLACED) 🌟
   // ==========================================
@@ -602,6 +621,75 @@ const executeSmartDelete = async (action, targetMsg) => {
         )}
       </div>
       
+{/* 🌟 1. FLOATING PIN BUBBLE & PANEL 🌟 */}
+        <AnimatePresence>
+          {latestPin && (
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              // 🚨 Positions it perfectly in the top right, inside the chat window
+              className="absolute top-4 right-4 md:right-8 z-[100] flex flex-col items-end"
+            >
+              {/* Main Floating Pill */}
+              <motion.div
+                animate={{ y: [0, -4, 0] }} // Gentle floating parallax animation
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                onTouchStart={handlePinPressStart}
+                onTouchEnd={handlePinPressEnd}
+                onMouseDown={handlePinPressStart}
+                onMouseUp={handlePinPressEnd}
+                onMouseLeave={handlePinPressEnd}
+                onClick={() => {
+                  if (!showPinList) handleScrollToMessage(latestPin._id || latestPin.timestamp);
+                }}
+                className="cursor-pointer bg-[#121826]/85 backdrop-blur-2xl border border-[#ffbb00]/40 rounded-full pl-3 pr-4 py-1.5 flex items-center gap-2 shadow-[0_0_20px_rgba(255,187,0,0.25)] hover:scale-105 hover:border-[#ffbb00] transition-all group"
+              >
+                <span className="text-lg drop-shadow-[0_0_8px_rgba(255,187,0,0.8)]">📌</span>
+                <div className="flex flex-col">
+                  <span className="text-[#ffbb00] text-[9px] font-black uppercase tracking-widest leading-none mb-0.5 group-hover:text-yellow-300 transition-colors">
+                    Pinned ({pinnedMessages.length})
+                  </span>
+                  <span className="text-white text-xs max-w-[120px] md:max-w-[160px] truncate font-medium">
+                    {latestPin.text || "Attachment"}
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* Expanded List Panel (Opens on Long Press) */}
+              <AnimatePresence>
+                {showPinList && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: -10, transformOrigin: "top right" }}
+                    animate={{ opacity: 1, scale: 1, y: 5 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                    className="mt-2 w-[250px] md:w-[300px] bg-[#121826]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col"
+                  >
+                    <div className="flex justify-between items-center p-3 border-b border-white/5 bg-black/20">
+                      <span className="text-[#ffbb00] text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                        📌 Pinned Messages
+                      </span>
+                      <button onClick={(e) => { e.stopPropagation(); setShowPinList(false); }} className="text-gray-400 hover:text-white transition-colors">✕</button>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto p-2 flex flex-col gap-1">
+                      {pinnedMessages.slice().reverse().map((pin, i) => (
+                        <div
+                          key={i}
+                          onClick={() => { handleScrollToMessage(pin._id || pin.timestamp); setShowPinList(false); }}
+                          className="p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors border border-transparent hover:border-white/10 group flex flex-col gap-1"
+                        >
+                          <span className="text-white text-sm line-clamp-2 leading-snug group-hover:text-[#ffbb00] transition-colors">{pin.text || "Attachment"}</span>
+                          <span className="text-gray-500 text-[10px] uppercase tracking-wider">{new Date(pin.timestamp).toLocaleDateString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       {/* 1. FLEX-NONE HEADER */}
       <div className="shrink-0 flex-none relative w-full h-[70px] md:h-24 px-3 md:px-8 bg-[#05070A]/98 backdrop-blur-2xl border-b border-white/10 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-3 md:gap-4">
@@ -676,6 +764,32 @@ const executeSmartDelete = async (action, targetMsg) => {
         onScroll={handleScroll} 
         className="flex-1 min-h-0 relative w-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-6 no-scrollbar z-10"
       >
+{/* 🌟 2. SCROLL MARKERS (MINIMAP) 🌟 */}
+        {/* This creates a fixed-height vertical track on the right edge */}
+        <div className="sticky top-0 bottom-0 right-1 w-3 h-full z-[60] pointer-events-none hidden md:flex flex-col">
+          {messages.map((msg, idx) => {
+            // Optimization: Only render dots for pinned messages to prevent lag
+            if (!msg.isPinned) return null; 
+            
+            // Calculates exactly how far down the scrollbar this message lives
+            const topPos = `${(idx / Math.max(messages.length - 1, 1)) * 100}%`;
+            
+            return (
+              <div
+                key={idx}
+                className="absolute right-0.5 w-1.5 h-1.5 rounded-full bg-[#ffbb00] shadow-[0_0_10px_#ffbb00] cursor-pointer pointer-events-auto hover:scale-[2] hover:bg-white transition-all duration-300 group"
+                style={{ top: topPos }}
+                onClick={() => handleScrollToMessage(msg._id || msg.timestamp)}
+              >
+                 {/* Hover Tooltip Preview */}
+                 <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1A1F2E]/95 backdrop-blur-md border border-[#ffbb00]/50 text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap shadow-lg pointer-events-none">
+                   {msg.text ? msg.text.substring(0, 20) + '...' : 'Attachment'}
+                 </div>
+              </div>
+            );
+          })}
+        </div>
+
         <div className="flex justify-center mb-2 mt-2"></div>
         <div className="flex justify-center mb-2 mt-2">
           <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[9px] font-black text-gray-400 tracking-widest uppercase shadow-lg">Encryption Started • Today</span>

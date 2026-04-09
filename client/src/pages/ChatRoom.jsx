@@ -645,24 +645,24 @@ const executeSmartDelete = async (action, targetMsg) => {
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
 
-     {/* 🌟 PREMIUM REAL-TIME BACKGROUND 🌟 */}
+    {/* 🌟 PREMIUM REAL-TIME BACKGROUND 🌟 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center bg-[#05070A]">
         {/* Galaxy Theme (Deep Space Blur) */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance.bg === 'galaxy' ? 'opacity-100' : 'opacity-0'}`}>
-          {chatUser.profilePhoto && (
+        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance?.bg === 'galaxy' ? 'opacity-100' : 'opacity-0'}`}>
+          {chatUser?.profilePhoto && (
             <div className="absolute inset-0 bg-cover bg-center opacity-50 blur-[20px] scale-110" style={{ backgroundImage: `url(${chatUser.profilePhoto})` }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-[#05070A]/40 via-[#05070A]/80 to-[#05070A] backdrop-blur-[2px]" />
         </div>
 
         {/* Gradient Theme (Cyberpunk Purple/Cyan) */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance.bg === 'gradient' ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance?.bg === 'gradient' ? 'opacity-100' : 'opacity-0'}`}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#bc00dd]/20 via-[#05070A] to-[#00f0ff]/10" />
         </div>
 
-        {/* Custom Uploaded Image */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance.bg.startsWith('data:image') ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${appearance.bg})` }} />
+        {/* 🚨 THE FIX: Added '?.' so it never crashes if the memory is empty! */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${appearance?.bg?.startsWith('data:image') ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${appearance?.bg})` }} />
           <div className="absolute inset-0 bg-[#05070A]/60 backdrop-blur-sm" />
         </div>
       </div>

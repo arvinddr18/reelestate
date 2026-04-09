@@ -556,10 +556,10 @@ const executeSmartDelete = async (action, targetMsg) => {
   // 🌟 PIN / UNPIN MESSAGE LOGIC 🌟
   const handlePinMessage = async (msgToPin, pinType) => {
     try {
-      let newPinnedBy = msgToPin.pinnedBy || [];
+      // 🚨 THE FIX: Strictly guarantees it is a valid array before we push data into it!
+      let newPinnedBy = Array.isArray(msgToPin.pinnedBy) ? [...msgToPin.pinnedBy] : [];
 
       if (pinType === 'unpin') {
-        // Remove both private and shared pins
         newPinnedBy = newPinnedBy.filter(id => id !== myId && id !== 'shared');
       } else if (pinType === 'private') {
         if (!newPinnedBy.includes(myId)) newPinnedBy.push(myId);
@@ -567,7 +567,6 @@ const executeSmartDelete = async (action, targetMsg) => {
         if (!newPinnedBy.includes('shared')) newPinnedBy.push('shared');
       }
 
-      // If the array has items, it is pinned.
       const isPinnedNow = newPinnedBy.length > 0;
       const updatedMsg = { ...msgToPin, isPinned: isPinnedNow, pinnedBy: newPinnedBy };
 
@@ -582,7 +581,6 @@ const executeSmartDelete = async (action, targetMsg) => {
         });
       }
 
-      // Tell the other user's screen to update instantly!
       socket.emit('update_message', { room, modifiedMsg: updatedMsg });
     } catch (err) {
       console.error("❌ Error pinning message:", err);
@@ -671,12 +669,11 @@ const executeSmartDelete = async (action, targetMsg) => {
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
-              // 🚨 Positions it perfectly in the top right, inside the chat window
               className="absolute top-[80px] md:top-[110px] right-4 md:right-8 z-[90] flex flex-col items-end"
             >
               {/* Main Floating Pill */}
               <motion.div
-                animate={{ y: [0, -4, 0] }} // Gentle floating parallax animation
+                animate={{ y: [0, -4, 0] }} 
                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                 onTouchStart={handlePinPressStart}
                 onTouchEnd={handlePinPressEnd}
@@ -691,7 +688,8 @@ const executeSmartDelete = async (action, targetMsg) => {
                 <span className="text-lg drop-shadow-[0_0_8px_rgba(255,187,0,0.8)]">📌</span>
                 <div className="flex flex-col">
                   <span className="text-[#ffbb00] text-[9px] font-black uppercase tracking-widest leading-none mb-0.5 group-hover:text-yellow-300 transition-colors">
-                    Pinned ({pinnedMessages.length})
+                    {/* 🚨 THE FIX: It now safely counts the displayPins instead of crashing! */}
+                    Pinned ({displayPins.length})
                   </span>
                   <span className="text-white text-xs max-w-[120px] md:max-w-[160px] truncate font-medium">
                     {latestPin.text || "Attachment"}
@@ -699,7 +697,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                 </div>
               </motion.div>
 
-              {/* Expanded List Panel (Opens on Long Press) */}
+              {/* Expanded List Panel */}
               <AnimatePresence>
                 {showPinList && (
                   <motion.div
@@ -707,7 +705,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                     animate={{ opacity: 1, scale: 1, y: 5 }}
                     exit={{ opacity: 0, scale: 0.9, y: -10 }}
                     className="mt-2 w-[250px] md:w-[300px] bg-[#121826]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col"
-                    onClick={(e) => e.stopPropagation()} // Prevents the menu from closing when you click inside it
+                    onClick={(e) => e.stopPropagation()} 
                   >
                     <div className="flex justify-between items-center p-3 border-b border-white/5 bg-black/20">
                       <span className="text-[#ffbb00] text-xs font-black uppercase tracking-widest flex items-center gap-2">
@@ -716,11 +714,11 @@ const executeSmartDelete = async (action, targetMsg) => {
                       <button onClick={(e) => { e.stopPropagation(); setShowPinList(false); }} className="text-gray-400 hover:text-white transition-colors">✕</button>
                     </div>
 
-                    {/* 🌟 THE NEW TABS UI 🌟 */}
+                    {/* 🌟 THE TABS UI 🌟 */}
                     <div className="flex p-1.5 bg-black/40 border-b border-white/5 gap-1">
                       <button 
                         onClick={(e) => { e.stopPropagation(); setPinTab('mine'); }}
-                        className={`flex-1 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${pinTab === 'mine' ? 'bg-[#ffbb00] text-[#121826] shadow-[0_0_10px_rgba(255,187,0,0.5)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                        className={`flex-1 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${pinTab === 'mine' ? 'bg-[#00f0ff] text-[#121826] shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                       >
                         My Pins
                       </button>
@@ -739,7 +737,6 @@ const executeSmartDelete = async (action, targetMsg) => {
                            <span className="text-[10px] uppercase tracking-wider text-white">No pins here yet...</span>
                          </div>
                       ) : (
-                         /* Map over the dynamically selected pins */
                          displayPins.slice().reverse().map((pin, i) => (
                            <div
                              key={i}

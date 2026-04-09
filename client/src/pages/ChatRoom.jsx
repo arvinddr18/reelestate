@@ -83,6 +83,7 @@ export default function ChatRoom({ chatUser, onBack }) {
 
   // 🌟 NEW: FLOATING PIN SYSTEM STATES 🌟
   const [showPinList, setShowPinList] = useState(false);
+  const [pinTab, setPinTab] = useState('shared');
   const pinPressTimer = useRef(null);
 
   // Automatically find all pinned messages from your chat history
@@ -692,6 +693,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                     animate={{ opacity: 1, scale: 1, y: 5 }}
                     exit={{ opacity: 0, scale: 0.9, y: -10 }}
                     className="mt-2 w-[250px] md:w-[300px] bg-[#121826]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col"
+                    onClick={(e) => e.stopPropagation()} // Prevents the menu from closing when you click inside it
                   >
                     <div className="flex justify-between items-center p-3 border-b border-white/5 bg-black/20">
                       <span className="text-[#ffbb00] text-xs font-black uppercase tracking-widest flex items-center gap-2">
@@ -699,17 +701,43 @@ const executeSmartDelete = async (action, targetMsg) => {
                       </span>
                       <button onClick={(e) => { e.stopPropagation(); setShowPinList(false); }} className="text-gray-400 hover:text-white transition-colors">✕</button>
                     </div>
+
+                    {/* 🌟 THE NEW TABS UI 🌟 */}
+                    <div className="flex p-1.5 bg-black/40 border-b border-white/5 gap-1">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setPinTab('mine'); }}
+                        className={`flex-1 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${pinTab === 'mine' ? 'bg-[#ffbb00] text-[#121826] shadow-[0_0_10px_rgba(255,187,0,0.5)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                      >
+                        My Pins
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setPinTab('shared'); }}
+                        className={`flex-1 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${pinTab === 'shared' ? 'bg-[#ffbb00] text-[#121826] shadow-[0_0_10px_rgba(255,187,0,0.5)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                      >
+                        Shared Pins
+                      </button>
+                    </div>
+
                     <div className="max-h-[300px] overflow-y-auto p-2 flex flex-col gap-1">
-                      {pinnedMessages.slice().reverse().map((pin, i) => (
-                        <div
-                          key={i}
-                          onClick={() => { handleScrollToMessage(pin._id || pin.timestamp); setShowPinList(false); }}
-                          className="p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors border border-transparent hover:border-white/10 group flex flex-col gap-1"
-                        >
-                          <span className="text-white text-sm line-clamp-2 leading-snug group-hover:text-[#ffbb00] transition-colors">{pin.text || "Attachment"}</span>
-                          <span className="text-gray-500 text-[10px] uppercase tracking-wider">{new Date(pin.timestamp).toLocaleDateString()}</span>
-                        </div>
-                      ))}
+                      {pinTab === 'mine' ? (
+                        /* Temporary Empty State for "My Pins" */
+                         <div className="py-6 text-center flex flex-col items-center justify-center opacity-50">
+                           <span className="text-2xl mb-1">📭</span>
+                           <span className="text-[10px] uppercase tracking-wider text-white">Private pins coming soon...</span>
+                         </div>
+                      ) : (
+                         /* Your current Shared Pins */
+                         pinnedMessages.slice().reverse().map((pin, i) => (
+                           <div
+                             key={i}
+                             onClick={() => { handleScrollToMessage(pin._id || pin.timestamp); setShowPinList(false); }}
+                             className="p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors border border-transparent hover:border-white/10 group flex flex-col gap-1"
+                           >
+                             <span className="text-white text-sm line-clamp-2 leading-snug group-hover:text-[#ffbb00] transition-colors">{pin.text || "Attachment"}</span>
+                             <span className="text-gray-500 text-[10px] uppercase tracking-wider">{new Date(pin.timestamp).toLocaleDateString()}</span>
+                           </div>
+                         ))
+                      )}
                     </div>
                   </motion.div>
                 )}

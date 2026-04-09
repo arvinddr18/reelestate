@@ -26,7 +26,8 @@ const holoMessageSchema = new mongoose.Schema({
   
   // 🌟 🚨 THE ULTIMATE FIX: Added isRead so MongoDB stops throwing it away! 🚨 🌟
   isRead: { type: Boolean, default: false },
-  isPinned: { type: Boolean, default: false }
+  isPinned: { type: Boolean, default: false },
+  pinnedBy: { type: [String], default: [] }
   
 
 }, { timestamps: true });

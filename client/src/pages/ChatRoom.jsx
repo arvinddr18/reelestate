@@ -86,9 +86,14 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [pinTab, setPinTab] = useState('shared');
   const pinPressTimer = useRef(null);
 
-  // Automatically find all pinned messages from your chat history
-  const pinnedMessages = messages.filter(msg => msg.isPinned);
-  const latestPin = pinnedMessages[pinnedMessages.length - 1]; // Grabs the most recent one
+  // 🌟 SMART PIN FILTERING 🌟
+  // 'shared' pins are for everyone. 'myId' pins are just for me.
+  const myPrivatePins = messages.filter(msg => msg.pinnedBy?.includes(myId));
+  const sharedPins = messages.filter(msg => msg.pinnedBy?.includes('shared') || (msg.isPinned && (!msg.pinnedBy || msg.pinnedBy.length === 0)));
+  
+  // Decide which list to show based on the active tab
+  const displayPins = pinTab === 'mine' ? myPrivatePins : sharedPins;
+  const latestPin = sharedPins.length > 0 ? sharedPins[sharedPins.length - 1] : (myPrivatePins.length > 0 ? myPrivatePins[myPrivatePins.length - 1] : null);
 
   // Long-press logic for the floating bubble
   const handlePinPressStart = () => {
@@ -549,27 +554,36 @@ const executeSmartDelete = async (action, targetMsg) => {
   };
 
   // 🌟 PIN / UNPIN MESSAGE LOGIC 🌟
-  const handlePinMessage = async (msgToPin) => {
+  const handlePinMessage = async (msgToPin, pinType) => {
     try {
-      // 1. Toggle the status (if it's pinned, unpin it. If not, pin it)
-      const newPinStatus = !msgToPin.isPinned;
-      
-      // 2. Update local React state instantly so the UI feels fast
-      const updatedMsg = { ...msgToPin, isPinned: newPinStatus };
+      let newPinnedBy = msgToPin.pinnedBy || [];
+
+      if (pinType === 'unpin') {
+        // Remove both private and shared pins
+        newPinnedBy = newPinnedBy.filter(id => id !== myId && id !== 'shared');
+      } else if (pinType === 'private') {
+        if (!newPinnedBy.includes(myId)) newPinnedBy.push(myId);
+      } else if (pinType === 'shared') {
+        if (!newPinnedBy.includes('shared')) newPinnedBy.push('shared');
+      }
+
+      // If the array has items, it is pinned.
+      const isPinnedNow = newPinnedBy.length > 0;
+      const updatedMsg = { ...msgToPin, isPinned: isPinnedNow, pinnedBy: newPinnedBy };
+
       setMessages((prev) => prev.map((m) => 
         (m._id === msgToPin._id || m.timestamp === msgToPin.timestamp) ? updatedMsg : m
       ));
 
-      // 3. Save it permanently to your MongoDB
       if (msgToPin._id) {
         await axios.put(`${API_URL}/api/messages/${msgToPin._id}`, {
-          isPinned: newPinStatus
+          isPinned: isPinnedNow,
+          pinnedBy: newPinnedBy
         });
       }
 
-      // 4. Fire the Socket so Gahana sees the pin instantly on her screen!
+      // Tell the other user's screen to update instantly!
       socket.emit('update_message', { room, modifiedMsg: updatedMsg });
-
     } catch (err) {
       console.error("❌ Error pinning message:", err);
     }
@@ -719,15 +733,14 @@ const executeSmartDelete = async (action, targetMsg) => {
                     </div>
 
                     <div className="max-h-[300px] overflow-y-auto p-2 flex flex-col gap-1">
-                      {pinTab === 'mine' ? (
-                        /* Temporary Empty State for "My Pins" */
+                      {displayPins.length === 0 ? (
                          <div className="py-6 text-center flex flex-col items-center justify-center opacity-50">
                            <span className="text-2xl mb-1">📭</span>
-                           <span className="text-[10px] uppercase tracking-wider text-white">Private pins coming soon...</span>
+                           <span className="text-[10px] uppercase tracking-wider text-white">No pins here yet...</span>
                          </div>
                       ) : (
-                         /* Your current Shared Pins */
-                         pinnedMessages.slice().reverse().map((pin, i) => (
+                         /* Map over the dynamically selected pins */
+                         displayPins.slice().reverse().map((pin, i) => (
                            <div
                              key={i}
                              onClick={() => { handleScrollToMessage(pin._id || pin.timestamp); setShowPinList(false); }}
@@ -866,7 +879,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                       onEdit={handleEditMessage}
                       onSave={handleSaveMessage}
                       onForward={handleForwardMessage}
-                      onPin={() => handlePinMessage(msg)}
+                      onPin={(type) => handlePinMessage(msg, type)}
                       // 🚨 ADD THIS EXACT LINE RIGHT HERE:
                       onReplyClick={() => handleScrollToMessage(msg.replyTo?.messageId)} 
                     >

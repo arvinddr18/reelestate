@@ -323,42 +323,50 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
               >
                 <div className="w-[220px] md:w-[250px] bg-[#121826]/85 backdrop-blur-2xl border border-white/20 rounded-2xl md:rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden">
   
-  {/* Top Row: Actions */}
-  <div className="flex justify-evenly items-center p-3 md:p-4 border-b border-white/10">
-    <button onClick={handleCopy} className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 w-1/2">
-      <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">
-        {copied ? '✅' : '📋'}
-      </span>
-      <span className="text-white font-bold text-[11px] md:text-xs tracking-wider">
-        {copied ? 'Copied!' : 'Copy'}
-      </span>
-    </button>
-    
-    <div className="w-[1px] h-10 bg-white/10"></div>
+ {/* Top Row: Actions */}
+          <div className="flex justify-evenly items-center p-3 md:p-4 border-b border-white/10">
+            <button onClick={handleCopy} className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 px-2">
+              <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">
+                {copied ? '✅' : '📋'}
+              </span>
+              <span className="text-white font-bold text-[11px] md:text-xs tracking-wider">
+                {copied ? 'Copied!' : 'Copy'}
+              </span>
+            </button>
 
-    <button 
-      onClick={(e) => {
-        e.stopPropagation();
-        onPin();
-        setShowActionPopup(false);
-      }} 
-      className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110"
-    >
-      <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,187,0,0.8)] transition-all">
-        {msg.isPinned ? '🌟' : '📌'}
-      </span>
-      <span className={`font-bold text-[11px] md:text-xs tracking-wider ${msg.isPinned ? 'text-[#ffbb00]' : 'text-white'}`}>
-        {msg.isPinned ? 'Unpin' : 'Pin'}
-      </span>
-    </button>
-  </div>  {/* ✅ closes "Top Row" div */}
-  
-  {/* Bottom Row: Timestamp */}
-  <div className="p-2 md:p-2.5 bg-black/40 flex justify-center items-center">
-    <span className="text-gray-400 text-[10px] md:text-[11px] font-medium tracking-widest uppercase">
-      {getFormattedTime()}
-    </span>
-  </div>
+            <div className="w-[1px] h-10 bg-white/10"></div>
+
+            {/* 🌟 NEW: SMART PIN BUTTONS 🌟 */}
+            {msg.isPinned ? (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onPin('unpin'); setShowActionPopup(false); }} 
+                className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 px-4"
+              >
+                <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,187,0,0.8)] transition-all">🌟</span>
+                <span className="font-bold text-[11px] md:text-xs tracking-wider text-[#ffbb00]">Unpin</span>
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onPin('private'); setShowActionPopup(false); }} 
+                  className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 px-2"
+                >
+                  <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.8)] transition-all">🔒</span>
+                  <span className="font-bold text-[11px] md:text-xs tracking-wider text-[#00f0ff]">My Pin</span>
+                </button>
+
+                <div className="w-[1px] h-10 bg-white/10"></div>
+
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onPin('shared'); setShowActionPopup(false); }} 
+                  className="flex flex-col items-center gap-1.5 group transition-transform hover:scale-110 px-2"
+                >
+                  <span className="text-xl md:text-2xl group-hover:drop-shadow-[0_0_10px_rgba(255,187,0,0.8)] transition-all">📌</span>
+                  <span className="font-bold text-[11px] md:text-xs tracking-wider text-[#ffbb00]">Shared</span>
+                </button>
+              </>
+            )}
+          </div>
 
 </div>  {/* ✅ closes the main wrapper div */}
               </motion.div>

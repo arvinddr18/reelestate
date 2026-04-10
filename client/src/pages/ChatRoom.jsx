@@ -1433,26 +1433,84 @@ const executeSmartDelete = async (action, targetMsg) => {
                   
                   {/* Setting Group */}
                   <div className="bg-black/30 border border-white/5 rounded-2xl p-4 flex flex-col gap-4">
-                     {/* 1. CHAT THEME */}
-<div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
-  <button onClick={() => updateAppearance('theme', 'dark')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.theme === 'dark' ? 'bg-gray-800 text-white' : 'text-gray-400'}`}>Dark</button>
-  <button onClick={() => updateAppearance('theme', 'neon')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.theme === 'neon' ? 'bg-gradient-to-r from-[#801fd6] to-[#bc00dd] text-white shadow-lg' : 'text-gray-400'}`}>Neon</button>
-  <button onClick={() => updateAppearance('theme', 'glass')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.theme === 'glass' ? 'bg-white/10 backdrop-blur-md text-white border border-white/30' : 'text-gray-400'}`}>Glass</button>
-</div>
 
-{/* 2. BACKGROUND */}
-<div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
-  <button onClick={() => updateAppearance('bg', 'galaxy')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.bg === 'galaxy' ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white shadow-lg' : 'text-gray-400'}`}>Galaxy</button>
-  <button onClick={() => updateAppearance('bg', 'gradient')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.bg === 'gradient' ? 'bg-[#bc00dd]/30 text-[#bc00dd] border border-[#bc00dd]/50' : 'text-gray-400'}`}>Gradient</button>
-  <button onClick={() => bgInputRef.current.click()} className="flex-1 py-2 rounded-lg text-gray-400 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1"><IoMdImage/> Upload</button>
-</div>
+                  {/* 1. CHAT THEME */}
+                     <div>
+                       <p className="text-white font-bold text-sm mb-3 opacity-80">Chat Theme</p>
+                       <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 gap-1.5">
+                         <button 
+                           onClick={() => updateAppearance('theme', 'dark')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.theme === 'dark' ? 'bg-[#1E2532] border-white/30 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Dark
+                         </button>
+                         <button 
+                           onClick={() => updateAppearance('theme', 'neon')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.theme === 'neon' ? 'bg-gradient-to-r from-[#801fd6] to-[#bc00dd] border-[#bc00dd]/50 text-white shadow-[0_0_20px_rgba(188,0,221,0.5)]' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Neon
+                         </button>
+                         <button 
+                           onClick={() => updateAppearance('theme', 'glass')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.theme === 'glass' ? 'bg-white/20 backdrop-blur-md border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Glass
+                         </button>
+                       </div>
+                     </div>
 
-{/* 3. BUBBLE STYLE */}
-<div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
-  <button onClick={() => updateAppearance('bubble', 'rounded')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.bubble === 'rounded' ? 'bg-white/10 text-white shadow-lg' : 'text-gray-400'}`}>Rounded</button>
-  <button onClick={() => updateAppearance('bubble', 'sharp')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.bubble === 'sharp' ? 'bg-white/10 text-white shadow-lg' : 'text-gray-400'}`}>Sharp</button>
-  <button onClick={() => updateAppearance('bubble', 'glowing')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${appearance.bubble === 'glowing' ? 'bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/40 shadow-lg' : 'text-gray-400'}`}>Glowing</button>
-</div>
+                     {/* 2. BACKGROUND */}
+                     <div>
+                       <p className="text-white font-bold text-sm mb-3 opacity-80">Background</p>
+                       <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 gap-1.5">
+                         <button 
+                           onClick={() => updateAppearance('bg', 'galaxy')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.bg === 'galaxy' ? 'bg-gradient-to-r from-[#0057FF] to-[#00F0FF] border-[#00f0ff]/50 text-white shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Galaxy
+                         </button>
+                         <button 
+                           onClick={() => updateAppearance('bg', 'gradient')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.bg === 'gradient' ? 'bg-gradient-to-r from-[#801fd6] to-[#bc00dd] border-[#bc00dd]/50 text-white shadow-[0_0_20px_rgba(188,0,221,0.5)]' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Gradient
+                         </button>
+                         <button 
+                           onClick={() => bgInputRef.current.click()} 
+                           className="flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase text-gray-500 hover:text-white border border-transparent hover:bg-white/10 transition-all flex items-center justify-center gap-1.5"
+                         >
+                           <IoMdImage size={14}/> Upload
+                         </button>
+                         <input type="file" ref={bgInputRef} hidden accept="image/*" onChange={handleBgUpload} />
+                       </div>
+                     </div>
+                     
+                     {/* 3. BUBBLE STYLE */}
+                     <div>
+                       <p className="text-white font-bold text-sm mb-3 opacity-80">Bubble Style</p>
+                       <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 gap-1.5">
+                         <button 
+                           onClick={() => updateAppearance('bubble', 'rounded')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.bubble === 'rounded' ? 'bg-white/10 border-white/30 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Rounded
+                         </button>
+                         <button 
+                           onClick={() => updateAppearance('bubble', 'sharp')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.bubble === 'sharp' ? 'bg-white/10 border-white/30 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Sharp
+                         </button>
+                         <button 
+                           onClick={() => updateAppearance('bubble', 'glowing')} 
+                           className={`flex-1 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all duration-300 border ${appearance.bubble === 'glowing' ? 'bg-[#00f0ff]/20 border-[#00f0ff]/50 text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'text-gray-500 hover:text-gray-300 border-transparent hover:bg-white/5'}`}
+                         >
+                           Glowing
+                         </button>
+                       </div>
+                     </div>                   
+
+
                   </div>
                 </div>
               )}

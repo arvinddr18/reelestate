@@ -81,10 +81,13 @@ export default function ChatRoom({ chatUser, onBack }) {
     setMessage((prevMsg) => prevMsg + emojiObject.emoji);
   };
 
+  
+
   // 🌟 NEW: FLOATING PIN SYSTEM STATES 🌟
   const [showPinList, setShowPinList] = useState(false);
   const [pinTab, setPinTab] = useState('shared');
-  // 🌟 NEW: REAL-TIME APPEARANCE SETTINGS & MEMORY 🌟
+  
+// 🌟 NEW: REAL-TIME APPEARANCE SETTINGS & MEMORY 🌟
   const [appearance, setAppearance] = useState(() => {
     // Check if the user saved a theme before. If not, use defaults!
     const saved = localStorage.getItem('nodexa_appearance');

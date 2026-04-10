@@ -423,10 +423,18 @@ export default function ChatRoom({ chatUser, onBack }) {
       }));
     });
 
-    socket.on('messages_read', () => {
-      setMessages((prev) => prev.map((m) => 
-        m.senderId === myId ? { ...m, isRead: true } : m
-      ));
+   // 🌟 UNIVERSAL SYNC: Update read status across all devices instantly
+    socket.on('messages_read', (data) => {
+      setMessages((prev) => prev.map((m) => {
+        // If the other person read the message OR if another device of mine marked it read
+        const isMyMessage = String(m.senderId) === String(myId);
+        const isTargetRoom = !data || data.room === room;
+        
+        if (isMyMessage && isTargetRoom) {
+          return { ...m, isRead: true };
+        }
+        return m;
+      }));
     });
     
     return () => {
@@ -886,7 +894,7 @@ const executeSmartDelete = async (action, targetMsg) => {
           </div>
         ) : (
           messages.map((msg, index) => {
-            const isMe = msg.senderId === myId;
+           const isMe = String(msg.senderId) === String(myId);
             return (
               <div key={index} id={`msg-${msg._id || msg.timestamp}`} className={`flex w-full group transform transition-all duration-300 p-1 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
                 <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative z-20 ${isMe ? 'items-end' : 'items-start'}`}>
@@ -964,28 +972,26 @@ const executeSmartDelete = async (action, targetMsg) => {
                     </span>
 
                    {/* 🌟 PREMIUM READ RECEIPTS 🌟 */}
-                    {isMe && (
-                      <div className="ml-0.5 flex items-center transition-all duration-500">
-                        {msg.isRead ? (
-                          // 🟢 SEEN: Glowing Cyan Aura Pill
-                          <div className="flex items-center gap-1 bg-gradient-to-r from-[#00f0ff]/10 to-transparent border border-[#00f0ff]/30 pl-1.5 pr-2 py-[2px] rounded-full shadow-[0_0_10px_rgba(0,240,255,0.2)] animate-in fade-in duration-500">
-                            <div className="flex -space-x-1.5">
-                              <IoMdCheckmark className="text-[#00f0ff] drop-shadow-[0_0_3px_#00f0ff]" size={13} />
-                              <IoMdCheckmark className="text-[#00f0ff] drop-shadow-[0_0_3px_#00f0ff]" size={13} />
-                            </div>
-                            <span className="text-[8px] font-black text-[#00f0ff] uppercase tracking-widest opacity-90 drop-shadow-md">
-                              Read
-                            </span>
-                          </div>
-                        ) : (
-                          // 🌑 UNSEEN: Faded Ghost Ticks
-                          <div className="flex -space-x-1.5 opacity-30 px-1">
-                            <IoMdCheckmark className="text-white" size={14} />
-                            <IoMdCheckmark className="text-white" size={14} />
-                          </div>
-                        )}
-                      </div>
-                    )}
+                   {isMe && (
+  <div className="ml-0.5 flex items-center transition-all duration-500">
+    {msg.isRead ? (
+      // ✅ SEEN: Cyan Glowing Ticks
+      <div className="flex items-center gap-1 bg-gradient-to-r from-[#00f0ff]/10 to-transparent border border-[#00f0ff]/30 pl-1.5 pr-2 py-[2px] rounded-full shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+        <div className="flex -space-x-1.5">
+          <IoMdCheckmark className="text-[#00f0ff] drop-shadow-[0_0_3px_#00f0ff]" size={13} />
+          <IoMdCheckmark className="text-[#00f0ff] drop-shadow-[0_0_3px_#00f0ff]" size={13} />
+        </div>
+        <span className="text-[8px] font-black text-[#00f0ff] uppercase tracking-widest opacity-90">Read</span>
+      </div>
+    ) : (
+      // 🌑 UNSEEN: Faded White Ticks
+      <div className="flex -space-x-1.5 opacity-30 px-1">
+        <IoMdCheckmark className="text-white" size={14} />
+        <IoMdCheckmark className="text-white" size={14} />
+      </div>
+    )}
+  </div>
+)}
                   </div>
                 </div>
               </div>

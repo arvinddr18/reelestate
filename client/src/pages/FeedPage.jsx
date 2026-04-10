@@ -283,15 +283,36 @@ export default function FeedPage() {
           </Link>
 
         {/* Right Side: Premium Notification Trigger */}
-          <div className="ml-auto flex items-center z-10">
-            <button 
-              onClick={() => setIsNotifOpen(true)} 
-              className="relative w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all group"
-            >
-              <IoMdNotifications size={22} className="group-hover:rotate-12 transition-transform" />
-              {/* The Red Pulsing Badge */}
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#05070A] animate-pulse shadow-[0_0_8px_#ef4444]" />
-            </button>
+         {/* 🔔 PREMIUM BELL TRIGGER */}
+          <div 
+            onClick={() => {
+              console.log("Bell clicked!"); 
+              setIsNotifOpen(true);
+            }} 
+            className="relative w-11 h-11 rounded-full flex items-center justify-center group z-10 ml-auto cursor-pointer"
+          >
+            {/* 1. Outer Orbiting Energy Ring */}
+            <div className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-[#00F0FF]/30 group-hover:border-[#00F0FF]/80 animate-[spin_10s_linear_infinite] group-hover:animate-[spin_3s_linear_infinite] transition-all duration-500" />
+            
+            {/* 2. Inner Orbiting Ring */}
+            <div className="absolute inset-1 rounded-full border-[1.5px] border-dotted border-[#0057FF]/40 group-hover:border-[#0057FF] animate-[spin_8s_linear_infinite_reverse] group-hover:animate-[spin_2s_linear_infinite_reverse] transition-all duration-500" />
+            
+            {/* 3. Core Frosted Glass Background */}
+            <div className="absolute inset-[6px] bg-[#151A25]/90 backdrop-blur-xl rounded-full border border-white/5 group-hover:bg-gradient-to-tr group-hover:from-[#0057FF]/30 group-hover:to-[#00F0FF]/30 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-500" />
+            
+            {/* 4. The Bell Icon */}
+            <IoMdNotifications 
+              size={18} 
+              className="text-gray-300 group-hover:text-white relative z-10 transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300 drop-shadow-[0_0_5px_rgba(0,240,255,1)]" 
+            />
+            
+            {/* 5. Live Holographic Counter Badge */}
+            <div className="absolute -top-1 -right-1 flex items-center justify-center z-20">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-60"></span>
+              <span className="relative flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-full border-[1.5px] border-[#0B0F19] text-[9px] font-black text-white shadow-[0_0_12px_#00F0FF]">
+                3
+              </span>
+            </div>
           </div>
           
         </div>

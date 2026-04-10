@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; 
-import { IoMdSearch, IoMdAdd } from 'react-icons/io'; 
+import { IoMdSearch, IoMdAdd, IoMdNotifications } from 'react-icons/io';
 import importedLogo from '../assets/nodexa-logo.png'; // 👈 Your exact file!
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';

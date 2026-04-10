@@ -31,45 +31,28 @@ export default function AnimatedMessageBubble({ msg, isMe, onReply, onEdit, onDe
 
 
   // 🌟 PREMIUM BUBBLE STYLER 🌟
+// 🌟 PREMIUM BUBBLE STYLER 🌟
   const getBubbleStyles = () => {
     let styles = "relative p-3 md:p-4 transition-all duration-500 ease-out overflow-hidden ";
     
-    // 1. SHAPE (Rounded vs Sharp)
-    if (appearance.bubble === 'sharp') {
-      styles += "rounded-lg "; // Clean, modern square edges
-    } else if (appearance.bubble === 'rounded') {
-      styles += isMe ? "rounded-[28px] rounded-br-[8px] " : "rounded-[28px] rounded-bl-[8px] "; // iMessage style
+    // 1. Shape logic
+    if (appearance?.bubble === 'sharp') styles += "rounded-lg ";
+    else if (appearance?.bubble === 'rounded') styles += isMe ? "rounded-[28px] rounded-br-[8px] " : "rounded-[28px] rounded-bl-[8px] ";
+    else styles += isMe ? "rounded-2xl rounded-br-sm " : "rounded-2xl rounded-bl-sm ";
+    
+    // 2. Theme & Glow logic
+    if (appearance?.theme === 'glass') {
+       styles += isMe ? "bg-white/10 backdrop-blur-2xl border border-white/20 text-white " : "bg-black/20 backdrop-blur-2xl border border-white/10 text-white ";
+    } else if (appearance?.theme === 'dark') {
+       styles += isMe ? "bg-[#2A3143] text-white shadow-md " : "bg-[#121826] text-gray-200 border border-white/5 ";
     } else {
-      styles += isMe ? "rounded-2xl rounded-br-sm " : "rounded-2xl rounded-bl-sm "; // Default Nodexa style
+       // Neon (Default)
+       styles += isMe ? "bg-gradient-to-br from-[#801fd6] to-[#ff3366] text-white border border-[#ff3366]/30 " : "bg-[#1A1F2E]/90 backdrop-blur-md text-white border border-[#00f0ff]/20 ";
     }
     
-    // 2. THEME & GLOW (Glass vs Dark vs Neon)
-    if (appearance.theme === 'glass') {
-       // Ultra-premium frosted glass
-       styles += isMe 
-         ? "bg-white/10 backdrop-blur-2xl border border-white/20 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] " 
-         : "bg-black/20 backdrop-blur-2xl border border-white/10 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] ";
-         
-    } else if (appearance.theme === 'dark') {
-       // Stealthy, minimal dark mode
-       styles += isMe 
-         ? "bg-[#2A3143] text-white shadow-md " 
-         : "bg-[#121826] text-gray-200 border border-white/5 shadow-sm ";
-         
-    } else {
-       // Default Neon/Cyberpunk
-       styles += isMe 
-         ? "bg-gradient-to-br from-[#801fd6] to-[#bc00dd] text-white border border-[#ff3366]/30 " 
-         : "bg-[#1A1F2E]/90 backdrop-blur-md text-white border border-[#00f0ff]/20 ";
+    if (appearance?.bubble === 'glowing') {
+       styles += isMe ? "shadow-[0_0_25px_rgba(188,0,221,0.5)] " : "shadow-[0_0_20px_rgba(0,240,255,0.3)] ";
     }
-    
-    // 3. GLOWING EFFECT OVERRIDE
-    if (appearance.bubble === 'glowing') {
-       styles += isMe 
-         ? "shadow-[0_0_25px_rgba(188,0,221,0.5)] border-[#bc00dd]/60 " 
-         : "shadow-[0_0_25px_rgba(0,240,255,0.3)] border-[#00f0ff]/40 ";
-    }
-    
     return styles;
   };
 

@@ -373,7 +373,7 @@ export default function ProfilePage() {
       {isEditing && (
         <div className="fixed inset-0 z-[100] bg-[#05070A]/95 backdrop-blur-3xl flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
           
-          <div className="w-full h-full max-w-[1300px] bg-[#0B0F19] border border-[#1E2532] rounded-[32px] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
+          <div className="w-full h-full max-w-[1300px] bg-[#0B0F19] md:rounded-[48px] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
             
             {/* ── SIDEBAR ── */}
             <div className={`w-full md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col ${!showMobileMenu ? 'hidden md:flex' : 'flex'}`}>

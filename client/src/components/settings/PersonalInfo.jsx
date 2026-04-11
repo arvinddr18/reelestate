@@ -8,32 +8,23 @@ import toast from 'react-hot-toast';
 export default function PersonalInfo() {
   const { user, setUser } = useAuth();
   
-  // 1. Unified Form State
+  // 1. Updated Form State (Location Removed 🛡️)
   const [formData, setFormData] = useState({
     name: user?.name || '',
     username: user?.username || '',
-    location: user?.location || '',
     website: user?.website || '',
     bio: user?.bio || ''
   });
 
   const [saving, setSaving] = useState(false);
-  
-  // 🚨 THIS WAS THE MISSING LINE CAUSING THE CRASH!
-  const [strength, setStrength] = useState(0); 
+  const [strength, setStrength] = useState(0);
 
-  // 2. Updated Sync Strength Logic (Neural Link is now a bonus/optional)
+  // 2. Updated Sync Logic (Points redistributed to 3 fields)
   useEffect(() => {
     let score = 0;
-    
-    // Core requirements (25% each)
-    if (formData.name?.length > 2) score += 25;
-    if (formData.username?.length > 2) score += 25;
-    if (formData.location?.length > 2) score += 25;
-    if (formData.bio?.length > 5) score += 25;
-    
-    // website is now optional - we don't add points for it to reach 100
-    // but if you want it to be a "Bonus" score, you can keep it separate
+    if (formData.name?.length > 2) score += 33;     // Identity
+    if (formData.username?.length > 2) score += 33; // Alias
+    if (formData.bio?.length > 5) score += 34;      // Transmission
     
     setStrength(score);
   }, [formData]);
@@ -110,8 +101,7 @@ export default function PersonalInfo() {
         </div>
       </div>
 
-      {/* ─── 📝 DATA ENTRIES ─── */}
-     {/* ─── 📝 DATA ENTRIES (Updated for Username & Links) ─── */}
+      {/* ─── 📝 DATA ENTRIES MATRIX ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Full Name */}
@@ -121,7 +111,7 @@ export default function PersonalInfo() {
             <IoMdFingerPrint className="absolute left-4 text-[#00F0FF] opacity-40" size={18} />
             <input 
               name="name" value={formData.name} onChange={handleChange}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold"
               placeholder="Enter Full Name"
             />
           </div>
@@ -134,33 +124,20 @@ export default function PersonalInfo() {
             <span className="absolute left-4 font-black text-[#00F0FF] opacity-40 text-lg">@</span>
             <input 
               name="username" value={formData.username} onChange={handleChange}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold"
               placeholder="Unique_ID"
             />
           </div>
         </div>
 
-        {/* Geographic Node */}
-        <div className="flex flex-col gap-2">
-          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Geographic Node</label>
-          <div className="relative flex items-center">
-            <IoMdPin className="absolute left-4 text-[#00F0FF] opacity-40" size={18} />
-            <input 
-              name="location" value={formData.location} onChange={handleChange}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
-              placeholder="City, Region"
-            />
-          </div>
-        </div>
-
-        {/* Neural Link (Website) */}
-        <div className="flex flex-col gap-2">
-          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Neural Link (optional)</label>
+        {/* Neural Link (URL) - Now alone on the second row for a spacious look */}
+        <div className="flex flex-col gap-2 md:col-span-2">
+          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Neural Link (Optional)</label>
           <div className="relative flex items-center">
             <IoMdLink className="absolute left-4 text-[#00F0FF] opacity-40" size={18} />
             <input 
               name="website" value={formData.website} onChange={handleChange}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold"
               placeholder="https://portfolio.me"
             />
           </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PersonalInfo from '../components/settings/PersonalInfo';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
@@ -565,43 +566,12 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-8 flex items-center gap-6">
-                      <div className="w-20 h-20 rounded-full border-2 border-[#1E2532] overflow-hidden relative group cursor-pointer shadow-[0_0_15px_rgba(0,240,255,0.2)]" onClick={() => fileInputRef.current.click()}>
-                        <img src={resolveMediaUrl(avatarPreview) || 'https://via.placeholder.com/150'} alt="Avatar" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                          <IoMdCamera size={24} className="text-white" />
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="text-[15px] font-bold text-white">Profile Photo</h4>
-                        <p className="text-xs text-gray-500 mt-1">Tap the image to change your avatar.</p>
-                      </div>
-                    </div>
-
-                    <h3 className="text-[15px] font-bold text-white mb-4">Profile Details</h3>
-                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 grid grid-cols-1 md:grid-cols-2 gap-6 shadow-sm">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 ml-1">Full Name</label>
-                        <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full bg-[#151A25] text-white border border-[#1E2532] p-4 rounded-xl outline-none focus:border-[#0057FF] transition-all text-sm font-bold shadow-inner" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 ml-1">Location</label>
-                        <input type="text" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full bg-[#151A25] text-white border border-[#1E2532] p-4 rounded-xl outline-none focus:border-[#0057FF] transition-all text-sm font-bold shadow-inner" />
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <label className="text-xs font-bold text-gray-400 ml-1">Bio</label>
-                        <textarea value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} className="w-full bg-[#151A25] text-white border border-[#1E2532] p-4 rounded-xl h-24 outline-none focus:border-[#0057FF] transition-all text-sm font-bold resize-none shadow-inner" />
-                      </div>
-                    </div>
-
-                    <div className="mt-8 flex justify-end">
-                       <button onClick={handleUpdate} className="bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white px-8 py-3.5 rounded-xl font-bold tracking-wide shadow-[0_10px_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-                         Save Changes
-                       </button>
-                    </div>
+                    {/* 🚀 CALLING YOUR NEW COMPONENT HERE */}
+                    <PersonalInfo /> 
+                    
                   </div>
                 )}
-
+                
                 {/* ── TAB: PRIVACY ── */}
                 {settingsTab === 'privacy' && (
                   <div className="animate-in fade-in duration-500 pb-20">

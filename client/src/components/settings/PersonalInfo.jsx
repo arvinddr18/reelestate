@@ -8,25 +8,25 @@ import toast from 'react-hot-toast';
 export default function PersonalInfo() {
   const { user, setUser } = useAuth();
   
-  // 1. Form State
+ // 1. Updated Form State
   const [formData, setFormData] = useState({
     name: user?.name || '',
+    username: user?.username || '', // 🚨 New field
     location: user?.location || '',
-    bio: user?.bio || ''
+    bio: user?.bio || '',
+    website: user?.website || ''   // 🚨 New field
   });
 
-  const [saving, setSaving] = useState(false);
-  const [strength, setStrength] = useState(0);
-
-  // 2. Sync Strength Logic (Calculates how complete the profile is)
+  // 2. Updated Sync Strength Logic
   useEffect(() => {
     let score = 0;
-    if (formData.name.length > 2) score += 30;
+    if (formData.name.length > 2) score += 20;
+    if (formData.username.length > 2) score += 20;
     if (formData.location.length > 2) score += 20;
-    if (formData.bio.length > 10) score += 30;
-    if (user?.profilePhoto) score += 20;
+    if (formData.bio.length > 5) score += 20;
+    if (formData.website.length > 5) score += 20;
     setStrength(score);
-  }, [formData, user]);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,7 +101,10 @@ export default function PersonalInfo() {
       </div>
 
       {/* ─── 📝 DATA ENTRIES ─── */}
+     {/* ─── 📝 DATA ENTRIES (Updated for Username & Links) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Full Name */}
         <div className="flex flex-col gap-2">
           <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Legal Identity</label>
           <div className="relative flex items-center">
@@ -114,6 +117,20 @@ export default function PersonalInfo() {
           </div>
         </div>
 
+        {/* Username */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Public Alias (@username)</label>
+          <div className="relative flex items-center">
+            <span className="absolute left-4 font-black text-[#00F0FF] opacity-40 text-lg">@</span>
+            <input 
+              name="username" value={formData.username} onChange={handleChange}
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
+              placeholder="Unique_ID"
+            />
+          </div>
+        </div>
+
+        {/* Geographic Node */}
         <div className="flex flex-col gap-2">
           <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Geographic Node</label>
           <div className="relative flex items-center">
@@ -121,10 +138,24 @@ export default function PersonalInfo() {
             <input 
               name="location" value={formData.location} onChange={handleChange}
               className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
-              placeholder="e.g. Tarikere, Node 01"
+              placeholder="City, Region"
             />
           </div>
         </div>
+
+        {/* Neural Link (Website) */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Neural Link (URL)</label>
+          <div className="relative flex items-center">
+            <IoMdLink className="absolute left-4 text-[#00F0FF] opacity-40" size={18} />
+            <input 
+              name="website" value={formData.website} onChange={handleChange}
+              className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:border-[#00F0FF] transition-all font-bold placeholder:text-gray-700"
+              placeholder="https://portfolio.me"
+            />
+          </div>
+        </div>
+
       </div>
 
       {/* ─── 📡 TRANSMISSION (BIO) ─── */}

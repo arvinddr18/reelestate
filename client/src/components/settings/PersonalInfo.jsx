@@ -8,32 +8,37 @@ import toast from 'react-hot-toast';
 export default function PersonalInfo() {
   const { user, setUser } = useAuth();
   
- // 1. Updated Form State
+  // 1. Unified Form State
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    username: user?.username || '', // 🚨 New field
+    username: user?.username || '',
     location: user?.location || '',
-    bio: user?.bio || '',
-    website: user?.website || ''   // 🚨 New field
+    website: user?.website || '',
+    bio: user?.bio || ''
   });
 
-  // 2. Updated Sync Strength Logic
+  const [saving, setSaving] = useState(false);
+  
+  // 🚨 THIS WAS THE MISSING LINE CAUSING THE CRASH!
+  const [strength, setStrength] = useState(0); 
+
+  // 2. Real-Time Sync Strength Logic
   useEffect(() => {
     let score = 0;
-    if (formData.name.length > 2) score += 20;
-    if (formData.username.length > 2) score += 20;
-    if (formData.location.length > 2) score += 20;
-    if (formData.bio.length > 5) score += 20;
-    if (formData.website.length > 5) score += 20;
+    if (formData.name?.length > 2) score += 20;
+    if (formData.username?.length > 2) score += 20;
+    if (formData.location?.length > 2) score += 20;
+    if (formData.website?.length > 5) score += 20;
+    if (formData.bio?.length > 5) score += 20;
     setStrength(score);
   }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Character limit for bio (250 bytes)
     if (name === 'bio' && value.length > 250) return;
     setFormData({ ...formData, [name]: value });
   };
+ 
 
   const handleSaveChanges = async () => {
     try {

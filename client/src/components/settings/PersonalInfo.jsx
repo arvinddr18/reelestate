@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { IoMdCamera, IoMdPin, IoMdFingerPrint } from 'react-icons/io';
+import { IoMdCamera, IoMdPin, IoMdFingerPrint, IoMdLink } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';

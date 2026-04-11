@@ -22,14 +22,19 @@ export default function PersonalInfo() {
   // 🚨 THIS WAS THE MISSING LINE CAUSING THE CRASH!
   const [strength, setStrength] = useState(0); 
 
-  // 2. Real-Time Sync Strength Logic
+  // 2. Updated Sync Strength Logic (Neural Link is now a bonus/optional)
   useEffect(() => {
     let score = 0;
-    if (formData.name?.length > 2) score += 20;
-    if (formData.username?.length > 2) score += 20;
-    if (formData.location?.length > 2) score += 20;
-    if (formData.website?.length > 5) score += 20;
-    if (formData.bio?.length > 5) score += 20;
+    
+    // Core requirements (25% each)
+    if (formData.name?.length > 2) score += 25;
+    if (formData.username?.length > 2) score += 25;
+    if (formData.location?.length > 2) score += 25;
+    if (formData.bio?.length > 5) score += 25;
+    
+    // website is now optional - we don't add points for it to reach 100
+    // but if you want it to be a "Bonus" score, you can keep it separate
+    
     setStrength(score);
   }, [formData]);
 
@@ -150,7 +155,7 @@ export default function PersonalInfo() {
 
         {/* Neural Link (Website) */}
         <div className="flex flex-col gap-2">
-          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Neural Link (URL)</label>
+          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 ml-2">Neural Link (optional)</label>
           <div className="relative flex items-center">
             <IoMdLink className="absolute left-4 text-[#00F0FF] opacity-40" size={18} />
             <input 

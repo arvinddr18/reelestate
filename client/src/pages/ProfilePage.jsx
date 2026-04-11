@@ -49,6 +49,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(true);
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({ 
@@ -375,7 +376,7 @@ export default function ProfilePage() {
           <div className="w-full h-full max-w-[1300px] bg-[#0B0F19] border border-[#1E2532] rounded-[32px] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
             
             {/* ── SIDEBAR ── */}
-            <div className="w-full md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col">
+            <div className={`w-full md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col ${!showMobileMenu ? 'hidden md:flex' : 'flex'}`}>
               
               <div className="p-8 flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.4)]">
@@ -411,10 +412,14 @@ export default function ProfilePage() {
                   
                   const isActive = settingsTab === item.id;
                   return (
-                    <button 
-                      key={item.id}
-                      onClick={() => setSettingsTab(item.id)}
-                      className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[13px] font-bold transition-all relative group ${
+                    
+                      <button 
+                  key={item.id}
+                  onClick={() => {
+                    setSettingsTab(item.id);
+                    setShowMobileMenu(false); // 🚨 This is the magic line
+                  }}
+                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[13px] font-bold transition-all relative group ${
                         isActive 
                           ? 'bg-[#151A25] text-white' 
                           : 'text-gray-400 hover:text-gray-200 hover:bg-[#151A25]/50'
@@ -440,9 +445,19 @@ export default function ProfilePage() {
             </div>
 
             {/* ── CONTENT AREA ── */}
-            <div className="flex-1 bg-[#05070A] overflow-y-auto no-scrollbar relative p-6 md:p-12">
+            <div className={`flex-1 bg-[#05070A] overflow-y-auto no-scrollbar relative p-6 md:p-12 ${showMobileMenu ? 'hidden md:block' : 'block'}`}>
               <div className="max-w-3xl mx-auto">
                 
+                {/* 🔙 MOBILE BACK TO MENU BUTTON */}
+                {!showMobileMenu && (
+                  <button 
+                    onClick={() => setShowMobileMenu(true)}
+                    className="md:hidden flex items-center gap-2 text-[#00F0FF] font-black text-[10px] uppercase tracking-widest mb-8 bg-[#151A25] px-4 py-2 rounded-xl border border-[#00F0FF]/20"
+                  >
+                    <IoMdArrowBack /> System Menu
+                  </button>
+                )}
+
                 {/* ── TAB: SECURITY ── */}
                 {settingsTab === 'security' && (
                   <div className="animate-in fade-in duration-500">

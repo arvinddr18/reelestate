@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { IoMdCamera, IoMdPin, IoMdFingerPrint, IoMdLink } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
@@ -7,14 +7,20 @@ import toast from 'react-hot-toast';
 
 export default function PersonalInfo() {
   const { user, setUser } = useAuth();
+
+  const fileInputRef = useRef(null);
   
   // 1. Updated Form State (Location Removed 🛡️)
   const [formData, setFormData] = useState({
     name: user?.name || '',
     username: user?.username || '',
     website: user?.website || '',
-    bio: user?.bio || ''
+    bio: user?.bio || '',
+    profilePhoto: user?.profilePhoto || user?.avatar || ''
   });
+
+  // State just for showing the picture on the screen immediately
+  const [photoPreview, setPhotoPreview] = useState(user?.profilePhoto || user?.avatar || "https://i.pravatar.cc/150");
 
   const [saving, setSaving] = useState(false);
   const [strength, setStrength] = useState(0);
@@ -28,6 +34,19 @@ export default function PersonalInfo() {
     
     setStrength(score);
   }, [formData]);
+
+  // 🚨 Add this function to handle file selection
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result); // Updates the UI instantly
+        setFormData({ ...formData, profilePhoto: reader.result }); // Prepares it to be sent to the backend
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,16 +97,26 @@ export default function PersonalInfo() {
         </div>
       </div>
 
-      {/* ─── 🛰️ NEURAL SCANNER (PHOTO) ─── */}
+     {/* ─── 🛰️ NEURAL SCANNER (PHOTO) ─── */}
       <div className="flex items-center gap-6 bg-white/5 border border-white/5 p-6 rounded-[32px]">
-        <div className="relative group cursor-pointer">
+        
+        {/* 🚨 Hidden File Input */}
+        <input 
+          type="file" 
+          hidden 
+          ref={fileInputRef} 
+          accept="image/*" 
+          onChange={handlePhotoChange} 
+        />
+
+        {/* 🚨 Clickable Area */}
+        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
           <div className="w-24 h-24 rounded-[24px] overflow-hidden border-2 border-white/10 p-1 bg-black/40 transition-all duration-500 group-hover:border-[#00F0FF]/50">
-            {/* The Animated Scanning Line */}
             <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity overflow-hidden rounded-[24px]">
                <div className="w-full h-[2px] bg-[#00F0FF] shadow-[0_0_12px_#00F0FF] animate-[scan_2s_linear_infinite] absolute top-0" />
             </div>
             <img 
-              src={user?.profilePhoto || user?.avatar || "https://i.pravatar.cc/150"} 
+              src={photoPreview} // 🚨 Now uses the live preview state
               className="w-full h-full object-cover rounded-[20px] grayscale group-hover:grayscale-0 transition-all duration-700" 
               alt="avatar" 
             />

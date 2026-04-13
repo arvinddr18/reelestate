@@ -105,13 +105,13 @@ export default function PersonalInfo() {
      {/* ─── 🛰️ NEURAL SCANNER (PHOTO) ─── */}
       <div className="flex items-center gap-6 bg-white/5 border border-white/5 p-6 rounded-[32px] relative">
         
-        {/* 🚨 Hidden Input 1: DIRECT CAMERA */}
+       {/* 🚨 Hidden Input 1: DIRECT CAMERA */}
         <input 
           type="file" 
           hidden 
           ref={cameraInputRef} 
           accept="image/*" 
-          capture="user" // Forces mobile to open the camera directly
+          capture="environment" // 🚨 Best standard for forcing mobile camera
           onChange={handlePhotoChange} 
         />
 

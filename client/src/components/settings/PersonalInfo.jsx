@@ -46,32 +46,37 @@ export default function PersonalInfo() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result); // Updates the UI instantly
-        setFormData({ ...formData, profilePhoto: reader.result }); // Prepares it to be sent to the backend
+        // 1. Create an image element in memory
+        const img = new Image();
+        img.src = reader.result;
+        
+        img.onload = () => {
+          // 2. Set maximum dimensions for a profile picture
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          // 3. Draw it to a hidden canvas to resize it
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 4. Compress it to a JPEG with 70% quality (Shrinks 5MB to ~100KB!)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          // 5. Update state with the lightweight image
+          setPhotoPreview(compressedBase64); 
+          setFormData({ ...formData, profilePhoto: compressedBase64 });
+        };
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'bio' && value.length > 250) return;
-    setFormData({ ...formData, [name]: value });
-  };
- 
-
-  const handleSaveChanges = async () => {
-    try {
-      setSaving(true);
-      const res = await api.put('/users/update', formData);
-      if (res.data.success) {
-        setUser(res.data.user); // Updates the entire app in real-time
-        toast.success("Identity synchronized with Node matrix.");
-      }
-    } catch (err) {
-      toast.error("Network synchronization failed.");
-    } finally {
-      setSaving(false);
     }
   };
 

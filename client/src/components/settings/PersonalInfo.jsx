@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { IoMdCamera, IoMdPin, IoMdFingerPrint, IoMdLink } from 'react-icons/io';
+import { IoMdCamera, IoMdPin, IoMdFingerPrint, IoMdLink, IoMdImage } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 export default function PersonalInfo() {
   const { user, setUser } = useAuth();
+
+  // 🚨 1. Add Two Refs and a Menu State
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const fileInputRef = useRef(null);
   
@@ -98,33 +103,69 @@ export default function PersonalInfo() {
       </div>
 
      {/* ─── 🛰️ NEURAL SCANNER (PHOTO) ─── */}
-      <div className="flex items-center gap-6 bg-white/5 border border-white/5 p-6 rounded-[32px]">
+      <div className="flex items-center gap-6 bg-white/5 border border-white/5 p-6 rounded-[32px] relative">
         
-        {/* 🚨 Hidden File Input */}
+        {/* 🚨 Hidden Input 1: DIRECT CAMERA */}
         <input 
           type="file" 
           hidden 
-          ref={fileInputRef} 
+          ref={cameraInputRef} 
+          accept="image/*" 
+          capture="user" // Forces mobile to open the camera directly
+          onChange={handlePhotoChange} 
+        />
+
+        {/* 🚨 Hidden Input 2: GALLERY */}
+        <input 
+          type="file" 
+          hidden 
+          ref={galleryInputRef} 
           accept="image/*" 
           onChange={handlePhotoChange} 
         />
 
-        {/* 🚨 Clickable Area */}
-        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
-          <div className="w-24 h-24 rounded-[24px] overflow-hidden border-2 border-white/10 p-1 bg-black/40 transition-all duration-500 group-hover:border-[#00F0FF]/50">
-            <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity overflow-hidden rounded-[24px]">
-               <div className="w-full h-[2px] bg-[#00F0FF] shadow-[0_0_12px_#00F0FF] animate-[scan_2s_linear_infinite] absolute top-0" />
+        <div className="relative">
+          {/* The Clickable Avatar */}
+          <div 
+            className="relative group cursor-pointer" 
+            onClick={() => setShowPhotoMenu(!showPhotoMenu)} // Toggles the menu
+          >
+            <div className="w-24 h-24 rounded-[24px] overflow-hidden border-2 border-white/10 p-1 bg-black/40 transition-all duration-500 group-hover:border-[#00F0FF]/50">
+              <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity overflow-hidden rounded-[24px]">
+                 <div className="w-full h-[2px] bg-[#00F0FF] shadow-[0_0_12px_#00F0FF] animate-[scan_2s_linear_infinite] absolute top-0" />
+              </div>
+              <img 
+                src={photoPreview} 
+                className="w-full h-full object-cover rounded-[20px] grayscale group-hover:grayscale-0 transition-all duration-700" 
+                alt="avatar" 
+              />
             </div>
-            <img 
-              src={photoPreview} // 🚨 Now uses the live preview state
-              className="w-full h-full object-cover rounded-[20px] grayscale group-hover:grayscale-0 transition-all duration-700" 
-              alt="avatar" 
-            />
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#00F0FF] rounded-xl flex items-center justify-center text-black shadow-lg scale-90 group-hover:scale-100 transition-transform">
+              <IoMdCamera size={18} />
+            </div>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#00F0FF] rounded-xl flex items-center justify-center text-black shadow-lg scale-90 group-hover:scale-100 transition-transform">
-            <IoMdCamera size={18} />
-          </div>
+
+          {/* 🚨 The Action Menu Popover */}
+          {showPhotoMenu && (
+            <div className="absolute top-full left-0 mt-4 bg-[#0B0F19] border border-[#1E2532] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-50 w-56 animate-in fade-in zoom-in-95 duration-200">
+              <button 
+                onClick={() => { cameraInputRef.current.click(); setShowPhotoMenu(false); }}
+                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-[#151A25] transition-colors border-b border-[#1E2532] text-left"
+              >
+                <IoMdCamera size={20} className="text-[#00F0FF]" />
+                <span className="text-xs font-black text-white uppercase tracking-widest">Take Photo</span>
+              </button>
+              <button 
+                onClick={() => { galleryInputRef.current.click(); setShowPhotoMenu(false); }}
+                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-[#151A25] transition-colors text-left"
+              >
+                <IoMdImage size={20} className="text-purple-400" />
+                <span className="text-xs font-black text-white uppercase tracking-widest">Gallery</span>
+              </button>
+            </div>
+          )}
         </div>
+
         <div>
            <h3 className="text-white font-black text-sm uppercase tracking-widest">Neural Link Photo</h3>
            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Tap image to broadcast new signal</p>

@@ -8,6 +8,8 @@ const Post = require('../models/Post');
 const { Follow } = require('../models/index');
 const { deleteFromCloudinary } = require('../middleware/upload');
 
+const cloudinary = require('cloudinary').v2;
+
 // ─── Get User Profile ─────────────────────────────────────────────────────────
 const getUserProfile = async (req, res) => {
   try {
@@ -34,35 +36,55 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// ─── Update Profile ───────────────────────────────────────────────────────────
-// --- Update Profile ---
+//update profile//
+
 const updateProfile = async (req, res) => {
   try {
-    // 1. Grab everything from req.body (including our Base64 profilePhoto string)
-    const { fullName, bio, location, phone, website, profilePhoto } = req.body;
+    // Note: Use req.user._id or req.user.id depending on how your auth middleware sets it
+    const userId = req.user._id || req.user.id; 
     
-    const updates = { fullName, bio, location, phone, website };
+    // We get the data from the frontend (including the giant Base64 photo string)
+    const { name, username, bio, website, profilePhoto } = req.body;
 
-    // 2. If a new photo was sent from the frontend, add it to the updates
-    if (profilePhoto) {
-      updates.profilePhoto = profilePhoto;
-      updates.avatar = profilePhoto; // Just in case your DB uses 'avatar' instead
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
-    // 3. Update the user in the database
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    ).select('-password');
+    // 🚨 1. Handle the Image Upload to Cloudinary
+    // We check if it starts with 'data:image' to ensure it's a NEW Base64 photo
+    if (profilePhoto && profilePhoto.startsWith('data:image')) {
+      const uploadResponse = await cloudinary.uploader.upload(profilePhoto, {
+        folder: 'nodexa_avatars', // Puts it in a neat folder in your Cloudinary
+      });
+      
+      // Save the secure URL to the user
+      user.profilePhoto = uploadResponse.secure_url;
+      user.avatar = uploadResponse.secure_url; // Updating both just in case your UI uses 'avatar'
+    }
 
-    res.json({ success: true, data: user });
+    // 🚨 2. Update the rest of the text fields
+    if (name) user.fullName = name; 
+    if (username) user.username = username;
+    if (bio !== undefined) user.bio = bio;
+    if (website !== undefined) user.website = website;
+
+    // 3. Save to database
+    await user.save();
+
+    // 4. Send success back to the frontend
+    return res.status(200).json({ 
+      success: true, 
+      user, 
+      message: 'Node synchronized successfully.' 
+    });
 
   } catch (error) {
-    console.error("Profile Update Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Update Profile Error:", error);
+    return res.status(500).json({ success: false, message: 'Server error during synchronization.' });
   }
 };
+
 // ─── Toggle Follow ────────────────────────────────────────────────────────────
 const toggleFollow = async (req, res) => {
   try {

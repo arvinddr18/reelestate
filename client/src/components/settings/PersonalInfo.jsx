@@ -80,6 +80,13 @@ export default function PersonalInfo() {
     }
   };
 
+  // 🚨 ADD THIS MISSING FUNCTION BACK:
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'bio' && value.length > 250) return; // Prevents typing past 250 characters
+    setFormData({ ...formData, [name]: value });
+  };
+
   return (
     <div className="flex flex-col gap-10">
       

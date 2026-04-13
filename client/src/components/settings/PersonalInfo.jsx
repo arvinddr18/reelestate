@@ -87,7 +87,7 @@ export default function PersonalInfo() {
     setFormData({ ...formData, [name]: value });
   };
 
-// 🚨 ADD THIS MISSING API CALL FUNCTION
+// API Call
   const handleSaveChanges = async () => {
     try {
       setSaving(true);
@@ -97,7 +97,12 @@ export default function PersonalInfo() {
         toast.success("Identity synchronized with Node matrix.");
       }
     } catch (err) {
-      toast.error("Network synchronization failed.");
+      // 🚨 This will now print the EXACT backend error to your console
+      console.error("BACKEND REJECTION:", err.response?.data || err.message);
+      
+      // 🚨 This will show the specific error message in the red toast popup
+      const errorMessage = err.response?.data?.message || "Network synchronization failed.";
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setSaving(false);
     }

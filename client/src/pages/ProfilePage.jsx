@@ -569,17 +569,19 @@ export default function ProfilePage() {
                 )}
 
                 {/* ── TAB: PERSONAL INFO ── */}
-                {settingsTab === 'personal' && (
-                  <div className="animate-in fade-in duration-500 pb-20">
-                    <div className="flex items-center gap-4 mb-10">
-                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
-                        <IoMdPerson size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-black text-white">Personal Info</h2>
-                        <p className="text-sm text-gray-400 font-medium mt-1">Manage your identity and public profile.</p>
-                      </div>
-                    </div>
+{settingsTab === 'personal' && (
+  <div className="animate-in fade-in duration-500 pb-20">
+    {/* Updated Header: Smaller icons and text on mobile */}
+    <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-10">
+      <div className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+        <IoMdPerson size={22} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)] md:hidden" />
+        <IoMdPerson size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)] hidden md:block" />
+      </div>
+      <div>
+        <h2 className="text-xl md:text-3xl font-black text-white">Personal Info</h2>
+        <p className="text-[10px] md:text-sm text-gray-400 font-medium mt-0.5">Manage your identity and public profile.</p>
+      </div>
+    </div>
 
                     {/* 🚀 CALLING YOUR NEW COMPONENT HERE */}
                     <PersonalInfo /> 

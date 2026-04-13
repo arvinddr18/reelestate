@@ -55,23 +55,24 @@ export default function PersonalInfo() {
     <div className="flex flex-col gap-10">
       
       {/* ─── 📊 NODE SYNCHRONIZATION BAR ─── */}
-      <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 backdrop-blur-xl">
+      <div className="bg-white/5 border border-white/10 rounded-2xl md:rounded-[32px] p-4 md:p-6 backdrop-blur-xl">
         <div className="flex justify-between items-end mb-3 px-1">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00F0FF]">Sync Status</span>
-            <span className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-[#00F0FF]">Sync Status</span>
+            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
               {strength === 100 ? 'Fully Integrated' : 'Linking Identity...'}
             </span>
           </div>
-          <span className="text-3xl font-black italic text-white drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+          {/* Shrunk percentage for mobile */}
+          <span className="text-2xl md:text-3xl font-black italic text-white drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]">
             {strength}%
           </span>
         </div>
-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[2px]">
+        {/* Slightly thinner bar for mobile */}
+        <div className="h-1.5 md:h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${strength}%` }}
-            transition={{ type: "spring", stiffness: 50 }}
             className="h-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-full shadow-[0_0_15px_rgba(0,240,255,0.5)]"
           />
         </div>

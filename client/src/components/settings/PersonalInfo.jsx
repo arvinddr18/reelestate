@@ -87,6 +87,22 @@ export default function PersonalInfo() {
     setFormData({ ...formData, [name]: value });
   };
 
+// 🚨 ADD THIS MISSING API CALL FUNCTION
+  const handleSaveChanges = async () => {
+    try {
+      setSaving(true);
+      const res = await api.put('/users/update', formData);
+      if (res.data.success) {
+        setUser(res.data.user);
+        toast.success("Identity synchronized with Node matrix.");
+      }
+    } catch (err) {
+      toast.error("Network synchronization failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-10">
       

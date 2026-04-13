@@ -92,22 +92,24 @@ export default function PersonalInfo() {
     try {
       setSaving(true);
       const res = await api.put('/users/update', formData);
+      
       if (res.data.success) {
-        setUser(res.data.user);
+        // 1. Show the green success message
         toast.success("Identity synchronized with Node matrix.");
+        
+        // 2. Wait 1.5 seconds, then safely reload to update the avatars everywhere
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
     } catch (err) {
-      // 🚨 This will now print the EXACT backend error to your console
-      console.error("BACKEND REJECTION:", err.response?.data || err.message);
-      
-      // 🚨 This will show the specific error message in the red toast popup
+      console.error("Upload Error:", err);
       const errorMessage = err.response?.data?.message || "Network synchronization failed.";
       toast.error(`Error: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
   };
-
   return (
     <div className="flex flex-col gap-10">
       

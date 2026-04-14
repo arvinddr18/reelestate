@@ -53,9 +53,24 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
   // ── 🚨 ACCOUNT SWITCHER STATE ──
+  // ── 🚨 REAL-TIME ACCOUNT SWITCHER STATE ──
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [savedAccounts, setSavedAccounts] = useState([]);
   const accountMenuRef = useRef(null);
 
+  // 1. Fetch saved accounts from Local Storage
+  useEffect(() => {
+    try {
+      const storedAccounts = JSON.parse(localStorage.getItem('nodexa_saved_accounts')) || [];
+      // Filter out the currently active user so they don't show up in the "Other Accounts" list
+      const others = storedAccounts.filter(acc => String(acc.user._id) !== String(currentUser?._id));
+      setSavedAccounts(others);
+    } catch (error) {
+      console.error("Error loading saved accounts:", error);
+    }
+  }, [currentUser]);
+
+  // 2. Handle Click Outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
@@ -66,10 +81,19 @@ export default function ProfilePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const otherAccounts = [
-    { id: 2, name: 'Fit_Raj', username: '@fit_raj', icon: <IoMdFitness size={16} className="text-purple-400" /> },
-    { id: 3, name: 'Seller_X', username: '@seller_x', icon: <IoMdHome size={16} className="text-[#F5A623]" /> }
-  ];
+  // 3. Switch Account Action
+  const handleSwitchAccount = (account) => {
+    localStorage.setItem('nodexa_token', account.token); // Swap the active token
+    window.location.reload(); // Reload to hydrate the app with the new user's data
+  };
+
+  // 4. Logout All Action
+  const handleLogoutAll = () => {
+    localStorage.removeItem('nodexa_token');
+    localStorage.removeItem('nodexa_saved_accounts'); // Wipe the multi-login vault
+    navigate('/login');
+    window.location.reload();
+  };
   // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -448,36 +472,60 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      <div className="px-2 pb-2">
-                        <span className="px-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2 mt-2">Other Accounts</span>
-                        <div className="flex flex-col gap-1">
-                          {otherAccounts.map((acc) => (
-                            <button key={acc.id} className="w-full flex items-center justify-between p-3 rounded-[16px] hover:bg-[#151A25] transition-all group active:scale-[0.98]">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-gray-800 to-gray-700 overflow-hidden flex items-center justify-center">
-                                  <img src={`https://i.pravatar.cc/150?u=${acc.id}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="" />
+                      {/* Section 2: Other Accounts (DYNAMIC) */}
+                      {savedAccounts.length > 0 && (
+                        <div className="px-2 pb-2">
+                          <span className="px-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2 mt-2">Other Accounts</span>
+                          <div className="flex flex-col gap-1">
+                            {savedAccounts.map((acc) => (
+                              <button 
+                                key={acc.user._id} 
+                                onClick={() => handleSwitchAccount(acc)}
+                                className="w-full flex items-center justify-between p-3 rounded-[16px] hover:bg-[#151A25] transition-all group active:scale-[0.98]"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-gray-800 to-gray-700 overflow-hidden flex items-center justify-center border border-white/5">
+                                    <img 
+                                      src={resolveMediaUrl(acc.user.profilePhoto || acc.user.avatar) || `https://i.pravatar.cc/150?u=${acc.user._id}`} 
+                                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                                      alt="" 
+                                    />
+                                  </div>
+                                  <div className="flex flex-col text-left">
+                                    <span className="text-xs font-black text-gray-300 group-hover:text-white transition-colors leading-tight">
+                                      {acc.user.fullName || acc.user.username}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-gray-600 group-hover:text-gray-400 transition-colors">
+                                      @{acc.user.username}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex flex-col text-left">
-                                  <span className="text-xs font-black text-gray-300 group-hover:text-white transition-colors leading-tight">{acc.name}</span>
-                                  <span className="text-[10px] font-bold text-gray-600 group-hover:text-gray-400 transition-colors">{acc.username}</span>
+                                <div className="w-7 h-7 rounded-full bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center group-hover:border-[#00F0FF]/40 transition-colors">
+                                  <IoMdCheckmark size={14} className="text-transparent group-hover:text-[#00F0FF] transition-colors" />
                                 </div>
-                              </div>
-                              <div className="w-7 h-7 rounded-full bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center group-hover:border-white/10 transition-colors">
-                                {acc.icon}
-                              </div>
-                            </button>
-                          ))}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div className="border-t border-[#1E2532] p-2 flex flex-col gap-1">
-                        <button className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group">
+                        {/* 🚨 Add Account Button */}
+                        <button 
+                          onClick={() => navigate('/login')} 
+                          className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group"
+                        >
                           <div className="w-8 h-8 rounded-full border border-dashed border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] group-hover:bg-[#00F0FF]/10 transition-colors">
                             <IoMdAdd size={16} />
                           </div>
-                          <span className="text-xs font-black text-[#00F0FF] tracking-wide">Add Account</span>
+                          <span className="text-xs font-black text-[#00F0FF] tracking-wide">Add Existing Account</span>
                         </button>
-                        <button className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-red-500/10 transition-colors group mt-1">
+                        
+                        {/* 🚨 Logout All Button */}
+                        <button 
+                          onClick={handleLogoutAll}
+                          className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-red-500/10 transition-colors group mt-1"
+                        >
                           <div className="w-8 h-8 flex items-center justify-center text-red-500">
                             <IoMdLogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
                           </div>

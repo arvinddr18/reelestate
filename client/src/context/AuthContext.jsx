@@ -31,12 +31,12 @@ export function AuthProvider({ children }) {
     initAuth();
   }, []);
 
-  // ─── UPGRADED LOGIN ROUTE ───
+// —— UPGRADED LOGIN ROUTE ——
   const login = async (email, password) => {
     try {
       // 1. Send credentials to backend
       const response = await api.post('/auth/login', { email, password });
-      
+
       // Handle the data structure (whether wrapped in 'data' or not)
       const userData = response.data.data || response.data;
       const { token, ...userInfo } = userData;
@@ -47,6 +47,20 @@ export function AuthProvider({ children }) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(userInfo);
         if (userInfo._id) socketService.connect(userInfo._id);
+
+        // ─── 🚨 3. MULTI-ACCOUNT VAULT LOGIC ───
+        const existingAccounts = JSON.parse(localStorage.getItem('nodexa_saved_accounts')) || [];
+        const accountExists = existingAccounts.some(acc => String(acc.user._id) === String(userInfo._id));
+
+        if (!accountExists) {
+          existingAccounts.push({
+            token: token,
+            user: userInfo
+          });
+          localStorage.setItem('nodexa_saved_accounts', JSON.stringify(existingAccounts));
+        }
+        // ────────────────────────────────────────
+
         return true; // Success! Let them in.
       }
       return false;

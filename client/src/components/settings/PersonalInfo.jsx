@@ -15,9 +15,11 @@ export default function PersonalInfo() {
 
   const fileInputRef = useRef(null);
   
-  // 1. Updated Form State (Location Removed 🛡️)
+  // Form State
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    // 🚨 FIX: Tell it to look for fullName from the database!
+    name: user?.fullName || user?.name || '', 
+    
     username: user?.username || '',
     website: user?.website || '',
     bio: user?.bio || '',

@@ -41,11 +41,11 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Username, email and password are required.' });
     }
 
-    // Check for existing user
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+
+   // Check for existing user (ONLY BY USERNAME NOW)
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
-      const field = existingUser.email === email ? 'Email' : 'Username';
-      return res.status(409).json({ success: false, message: `${field} is already taken.` });
+      return res.status(409).json({ success: false, message: 'Initialization failed. Handle (@username) is already taken.' });
     }
 
     // Only allow buyer/seller roles during registration (admin created separately)
@@ -74,7 +74,8 @@ const login = async (req, res) => {
     }
 
     // Find user and explicitly include password (select: false by default)
-    const user = await User.findOne({ email }).select('+password');
+  // Find user by USERNAME (even though the frontend variable is called 'email')
+    const user = await User.findOne({ username: email }).select('+password');
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }

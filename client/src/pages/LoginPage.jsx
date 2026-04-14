@@ -64,18 +64,18 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1">
-              <label className="text-[9px] font-black text-gray-500 tracking-[0.3em] uppercase ml-2">Operator Identity</label>
-              <div className="relative">
-                <IoMdMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 focus-within:text-[#00F0FF]" size={18} />
-                <input 
-                  type="email" 
-                  value={email} // Fixes the autofill bug!
-                  placeholder="name@nodexa.com" 
-                  className="w-full bg-[#05070A]/50 border border-[#1E2532] rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none focus:border-[#00F0FF]/40 transition-all text-white"
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              <label className="text-[9px] font-black text-gray-500 tracking-[0.3em] uppercase ml-2">Operator Alias (@username)</label>
+<div className="relative">
+  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-gray-600 text-lg">@</span>
+  <input 
+    type="text" // 🚨 Changed from email to text
+    value={email} 
+    placeholder="Enter Username" 
+    className="w-full bg-[#05070A]/50 border border-[#1E2532] rounded-2xl py-3 pl-12 pr-4 text-sm font-bold outline-none focus:border-[#00F0FF]/40 transition-all text-white"
+    onChange={(e) => setEmail(e.target.value)}
+    required
+  />
+</div>
             </div>
 
             <div className="space-y-1">

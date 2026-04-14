@@ -85,6 +85,20 @@ export function AuthProvider({ children }) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(userInfo);
         if (userInfo._id) socketService.connect(userInfo._id);
+
+        // ─── 🚨 SAVE TO MULTI-ACCOUNT VAULT DURING REGISTRATION ───
+        const existingAccounts = JSON.parse(localStorage.getItem('nodexa_saved_accounts')) || [];
+        const accountExists = existingAccounts.some(acc => String(acc.user._id) === String(userInfo._id));
+
+        if (!accountExists) {
+          existingAccounts.push({
+            token: token,
+            user: userInfo
+          });
+          localStorage.setItem('nodexa_saved_accounts', JSON.stringify(existingAccounts));
+        }
+        // ─────────────────────────────────────────────────────────
+
         return true; // Success! Let them in.
       }
       return false;

@@ -9,16 +9,30 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // On mount: check if a valid VIP token exists
+// On mount: check if a valid VIP token exists
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('nodexa_token');
       if (token) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
+          // 1. Get the current user
           const { data } = await api.get('/auth/me');
           if (data.success) {
             setUser(data.data);
             socketService.connect(data.data._id);
+
+            // ─── 🚨 2. CLOUD SYNC THE MULTI-ACCOUNT VAULT ───
+            try {
+              const syncRes = await api.get('/auth/linked-accounts');
+              if (syncRes.data.success) {
+                // Instantly update the local browser memory with the cloud memory!
+                localStorage.setItem('nodexa_saved_accounts', JSON.stringify(syncRes.data.data));
+              }
+            } catch (syncErr) {
+              console.error("Cloud sync failed, using local vault only.", syncErr);
+            }
+            // ────────────────────────────────────────────────
           }
         } catch {
           // Token is dead - clear it out

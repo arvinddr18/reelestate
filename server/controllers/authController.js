@@ -107,4 +107,36 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe };
+/**
+ * GET /api/auth/linked-accounts
+ * Finds all accounts sharing the same email as the logged-in user and issues tokens for them.
+ */
+const getLinkedAccounts = async (req, res) => {
+  try {
+    // 1. Find the current user to get their email
+    const currentUser = await User.findById(req.user.id); // Assuming req.user comes from your protect middleware
+    if (!currentUser) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // 2. Find ALL users that share this exact same email
+    const siblingAccounts = await User.find({ email: currentUser.email });
+
+    // 3. Create a ready-to-use vault array with fresh tokens for all of them
+    const syncedVault = siblingAccounts.map(user => ({
+      token: generateToken(user._id),
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        profilePhoto: user.profilePhoto,
+      }
+    }));
+
+    res.json({ success: true, data: syncedVault });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 🚨 Make sure you add getLinkedAccounts to your exports at the bottom!
+module.exports = { register, login, getMe, getLinkedAccounts };

@@ -87,6 +87,13 @@ export default function ProfilePage() {
     window.location.reload(); // Reload to hydrate the app with the new user's data
   };
 
+  // 🚨 ADD THIS NEW FUNCTION: Temporarily clears active session to bypass the Auth Guard
+  const handleAddAccountFlow = (route) => {
+    localStorage.removeItem('nodexa_token'); // Only removes current active user
+    // Note: We DO NOT remove 'nodexa_saved_accounts' here, so your vault is safe!
+    window.location.href = route; // Hard redirect bypasses React Router's logged-in check
+  };
+
   // 4. Logout All Action
   const handleLogoutAll = () => {
     localStorage.removeItem('nodexa_token');

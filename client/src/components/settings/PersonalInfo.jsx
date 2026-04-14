@@ -115,22 +115,20 @@ export default function PersonalInfo() {
   return (
     <div className="flex flex-col gap-10">
       
-      {/* ─── 📊 NODE SYNCHRONIZATION BAR ─── */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl md:rounded-[32px] p-4 md:p-6 backdrop-blur-xl">
-        <div className="flex justify-between items-end mb-3 px-1">
+      {/* ─── 📊 NODE SYNCHRONIZATION BAR (SLIM VERSION) ─── */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-3 md:py-3 md:px-5 backdrop-blur-xl">
+        <div className="flex justify-between items-center mb-2 px-1">
           <div className="flex flex-col">
-            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-[#00F0FF]">Sync Status</span>
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-[#00F0FF] leading-tight">Sync Status</span>
+            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
               {strength === 100 ? 'Fully Integrated' : 'Linking Identity...'}
             </span>
           </div>
-          {/* Shrunk percentage for mobile */}
-          <span className="text-2xl md:text-3xl font-black italic text-white drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+          <span className="text-xl md:text-2xl font-black italic text-white drop-shadow-[0_0_10px_rgba(0,240,255,0.3)] leading-none">
             {strength}%
           </span>
         </div>
-        {/* Slightly thinner bar for mobile */}
-        <div className="h-1.5 md:h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
+        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${strength}%` }}

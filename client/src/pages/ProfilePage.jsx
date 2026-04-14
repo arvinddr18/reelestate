@@ -520,7 +520,7 @@ export default function ProfilePage() {
                         
                         {/* 🚨 1. Add Existing Account Button */}
                         <button 
-                          onClick={() => navigate('/login')} 
+                          onClick={() => handleAddAccountFlow('/login')} 
                           className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group"
                         >
                           <div className="w-8 h-8 rounded-full border border-dashed border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] group-hover:bg-[#00F0FF]/10 transition-colors">
@@ -531,7 +531,7 @@ export default function ProfilePage() {
 
                         {/* 🚨 2. Create New Account Button */}
                         <button 
-                          onClick={() => navigate('/register')} 
+                          onClick={() => handleAddAccountFlow('/register')} 
                           className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group"
                         >
                           <div className="w-8 h-8 rounded-full border border-dashed border-purple-500/50 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/10 transition-colors">

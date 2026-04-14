@@ -518,16 +518,20 @@ export default function ProfilePage() {
 
                       <div className="border-t border-[#1E2532] p-2 flex flex-col gap-1">
                         
-                        {/* 🚨 1. Add Existing Account Button */}
-                        <button 
-                          onClick={() => handleAddAccountFlow('/login')} 
-                          className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group"
-                        >
-                          <div className="w-8 h-8 rounded-full border border-dashed border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] group-hover:bg-[#00F0FF]/10 transition-colors">
-                            <IoMdAdd size={16} />
-                          </div>
-                          <span className="text-xs font-black text-[#00F0FF] tracking-wide">Add Existing Account</span>
-                        </button>
+                       {/* 🚨 Updated Add Existing Account Button */}
+<button 
+  onClick={() => {
+    // Save the current username so the login page can autofill it
+    localStorage.setItem('nodexa_last_username', user?.username || '');
+    handleAddAccountFlow('/login');
+  }} 
+  className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group"
+>
+  <div className="w-8 h-8 rounded-full border border-dashed border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] group-hover:bg-[#00F0FF]/10 transition-colors">
+    <IoMdAdd size={16} />
+  </div>
+  <span className="text-xs font-black text-[#00F0FF] tracking-wide">Add Existing Account</span>
+</button>
 
                         {/* 🚨 2. Create New Account Button */}
                         <button 

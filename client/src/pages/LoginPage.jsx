@@ -5,7 +5,13 @@ import NodexaLogo from '../components/NodexaLogo';
 import { IoMdMail, IoMdLock, IoMdFingerPrint } from 'react-icons/io';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+ // 🚨 Checks if we just came from the account switcher
+const [email, setEmail] = useState(localStorage.getItem('nodexa_last_username') || '');
+
+// Clean up memory after autofilling so it doesn't stay there forever
+useEffect(() => {
+  localStorage.removeItem('nodexa_last_username');
+}, []);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

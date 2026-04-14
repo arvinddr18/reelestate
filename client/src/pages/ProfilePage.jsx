@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'; // 🚨 ADDED FRAMER MOTION
 import PersonalInfo from '../components/settings/PersonalInfo';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -7,11 +8,12 @@ import {
   IoMdPin, IoMdCall, IoMdMail, IoMdArrowBack, IoMdBookmark, 
   IoMdHeart, IoMdCheckmarkCircle, IoMdTime, IoMdStar, IoMdShareAlt,
   IoMdPerson, IoMdLock, IoMdNotifications, IoMdCard, IoMdColorPalette,
-  IoMdAnalytics, IoMdHelpCircle, IoMdInformationCircle
+  IoMdAnalytics, IoMdHelpCircle, IoMdInformationCircle,
+  IoMdCheckmark, IoMdAdd, IoMdLogOut, IoMdFitness, IoMdHome, IoMdArrowDropdown // 🚨 NEW ICONS ADDED HERE
 } from 'react-icons/io';
 import { MdOutlineDoubleArrow, MdShield, MdBlock, MdAutoAwesome, MdLaptopMac, MdSmartphone } from 'react-icons/md';
 import PostCard from '../components/feed/PostCard'; 
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || '';
@@ -50,6 +52,25 @@ export default function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
+  // ── 🚨 ACCOUNT SWITCHER STATE ──
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const otherAccounts = [
+    { id: 2, name: 'Fit_Raj', username: '@fit_raj', icon: <IoMdFitness size={16} className="text-purple-400" /> },
+    { id: 3, name: 'Seller_X', username: '@seller_x', icon: <IoMdHome size={16} className="text-[#F5A623]" /> }
+  ];
+  // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({ 
@@ -378,13 +399,94 @@ export default function ProfilePage() {
             {/* ── SIDEBAR ── */}
             <div className={`w-full md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col ${!showMobileMenu ? 'hidden md:flex' : 'flex'}`}>
               
-              <div className="p-8 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0057FF] to-[#00F0FF] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-                  <span className="font-black text-white text-sm">N</span>
+             {/* ── 🚨 PREMIUM ACCOUNT SWITCHER ── */}
+              <div className="p-6 md:p-8 relative z-50" ref={accountMenuRef}>
+                
+                {/* Trigger Button */}
+                <div 
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="w-full flex items-center justify-between p-3 rounded-[20px] bg-[#151A25]/60 border border-[#1E2532] hover:border-[#00F0FF]/40 hover:bg-[#151A25] hover:shadow-[0_0_20px_rgba(0,240,255,0.1)] transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10 group-hover:border-[#00F0FF]/50 transition-colors">
+                      <img src={avatarPreview || "https://i.pravatar.cc/150"} alt="Avatar" className="w-full h-full object-cover" />
+                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-[#151A25]" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-sm font-black text-white leading-tight">{user?.fullName || 'Gahana'}</span>
+                      <span className="text-[10px] font-bold text-gray-500">@{user?.username || 'gahana123'}</span>
+                    </div>
+                  </div>
+                  <motion.div animate={{ rotate: isAccountMenuOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <IoMdArrowDropdown className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" size={24} />
+                  </motion.div>
                 </div>
-                <span className="text-xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF]">
-                  NODEXA
-                </span>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isAccountMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute top-[85%] left-6 right-6 mt-2 bg-[#0B0F19]/95 backdrop-blur-3xl border border-[#1E2532] rounded-[24px] shadow-[0_30px_60px_rgba(0,0,0,0.9)] overflow-hidden"
+                    >
+                      <div className="p-2">
+                        <span className="px-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2 mt-2">Current Account</span>
+                        <div className="flex items-center justify-between p-3 rounded-[16px] bg-[#151A25] border border-[#00F0FF]/20 shadow-[0_0_15px_rgba(0,240,255,0.05)] cursor-default">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10">
+                              <img src={avatarPreview || "https://i.pravatar.cc/150"} alt="Avatar" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-black text-white leading-tight">{user?.fullName || 'Gahana'}</span>
+                              <span className="text-[10px] font-bold text-gray-500">@{user?.username || 'gahana123'}</span>
+                            </div>
+                          </div>
+                          <IoMdCheckmark size={18} className="text-[#00F0FF]" />
+                        </div>
+                      </div>
+
+                      <div className="px-2 pb-2">
+                        <span className="px-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2 mt-2">Other Accounts</span>
+                        <div className="flex flex-col gap-1">
+                          {otherAccounts.map((acc) => (
+                            <button key={acc.id} className="w-full flex items-center justify-between p-3 rounded-[16px] hover:bg-[#151A25] transition-all group active:scale-[0.98]">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-gray-800 to-gray-700 overflow-hidden flex items-center justify-center">
+                                  <img src={`https://i.pravatar.cc/150?u=${acc.id}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                  <span className="text-xs font-black text-gray-300 group-hover:text-white transition-colors leading-tight">{acc.name}</span>
+                                  <span className="text-[10px] font-bold text-gray-600 group-hover:text-gray-400 transition-colors">{acc.username}</span>
+                                </div>
+                              </div>
+                              <div className="w-7 h-7 rounded-full bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center group-hover:border-white/10 transition-colors">
+                                {acc.icon}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="border-t border-[#1E2532] p-2 flex flex-col gap-1">
+                        <button className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-[#151A25] transition-colors group">
+                          <div className="w-8 h-8 rounded-full border border-dashed border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF] group-hover:bg-[#00F0FF]/10 transition-colors">
+                            <IoMdAdd size={16} />
+                          </div>
+                          <span className="text-xs font-black text-[#00F0FF] tracking-wide">Add Account</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-red-500/10 transition-colors group mt-1">
+                          <div className="w-8 h-8 flex items-center justify-center text-red-500">
+                            <IoMdLogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+                          </div>
+                          <span className="text-xs font-black text-red-500 tracking-wide">Logout from all accounts</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="flex-1 overflow-y-auto no-scrollbar px-4 flex flex-col gap-1 pb-8">

@@ -117,41 +117,33 @@ export default function Messages() {
               </div>
               
               <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 snap-x">
+                
                 {dbUsers.slice(0, 10).map(user => (
                   <div key={user._id || user.id} onClick={() => setActiveChat(user)} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
                     <div className="relative">
                       <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
+                      
+                      {/* Avatar (Lets click pass through to open Chat) */}
                       <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-xl border-2 border-white/10 overflow-hidden relative">
                         {user.profilePhoto ? (
                           <img 
                             src={user.profilePhoto} 
                             alt={user.fullName} 
-                            className="w-full h-full object-cover opacity-90 cursor-pointer hover:opacity-100 transition-all"
-                            onClick={(e) => {
-                              e.stopPropagation(); 
-                              navigate(`/profile/${user._id}`); 
-                            }}
+                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all"
                           />
                         ) : (
-                          <div 
-                            className="w-full h-full flex items-center justify-center font-black text-white text-xl cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation(); 
-                              navigate(`/profile/${user._id}`); 
-                            }}
-                          >
+                          <div className="w-full h-full flex items-center justify-center font-black text-white text-xl">
                             {(user.fullName || user.username || 'U')[0].toUpperCase()}
                           </div>
                         )}
                       </div>
                       
-                      {/* The little blue online dot */}
                       <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
-                    </div> {/* 🚨 THIS IS THE DIV THAT WAS MISSING! */}
+                    </div> 
                     
-                    {/* The Clickable Username */}
+                    {/* The Clickable Username (Opens Profile) */}
                     <span 
-                      className="text-[10px] font-black text-gray-200 uppercase tracking-wider truncate w-16 text-center drop-shadow-md cursor-pointer hover:text-[#00F0FF] hover:underline"
+                      className="text-[10px] font-black text-gray-200 uppercase tracking-wider truncate w-16 text-center drop-shadow-md cursor-pointer hover:text-[#00F0FF] hover:underline relative z-20"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/profile/${user._id}`);
@@ -178,22 +170,16 @@ export default function Messages() {
                     <div className="relative shrink-0">
                       <div className={`absolute -inset-1 rounded-full border ${activeChat?._id === user._id ? 'border-[#00f0ff] animate-[pulse_2s_infinite]' : 'border-[#00ff9d] opacity-50'}`} />
                       
-                      {/* Clickable Image in Encrypted Channels */}
-                      <div 
-                        className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#1E2532]/50 overflow-hidden text-lg font-bold z-10 cursor-pointer hover:ring-2 ring-[#00F0FF]"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/profile/${user._id}`);
-                        }}
-                      >
+                      {/* Avatar (Lets click pass through to open Chat) */}
+                      <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#1E2532]/50 overflow-hidden text-lg font-bold z-10">
                         {user.profilePhoto ? <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" /> : (user.fullName || user.username || 'U')[0].toUpperCase()}
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       
-                      {/* Clickable Name in Encrypted Channels */}
+                      {/* Clickable Name (Opens Profile). Added 'inline-block max-w-full' so clicking empty space opens chat! */}
                       <h3 
-                        className={`text-sm font-black truncate cursor-pointer hover:underline ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}
+                        className={`text-sm font-black truncate inline-block max-w-full cursor-pointer hover:underline relative z-20 ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/profile/${user._id}`);
@@ -201,11 +187,12 @@ export default function Messages() {
                       >
                         {user.fullName || `@${user.username}`}
                       </h3>
-                      <span className="text-[11px] font-bold truncate text-gray-300">Tap to open secure channel...</span>
+                      <span className="text-[11px] font-bold truncate text-gray-300 block">Tap to open secure channel...</span>
                     </div>
                   </div>
                 </div>
               ))
+            
             )}
           </div>
         </div>

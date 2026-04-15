@@ -427,8 +427,9 @@ export default function ProfilePage() {
           
           <div className="w-full h-full max-w-[1300px] bg-[#0B0F19] md:rounded-[48px] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
             
+        
             {/* ── SIDEBAR ── */}
-            <div className={`w-full md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col ${!showMobileMenu ? 'hidden md:flex' : 'flex'}`}>
+            <div className={`w-full h-full md:h-auto md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col ${!showMobileMenu ? 'hidden md:flex' : 'flex'}`}>
               
              {/* ── 🚨 PREMIUM ACCOUNT SWITCHER ── */}
               <div className="p-6 md:p-8 relative z-50" ref={accountMenuRef}>

@@ -54,42 +54,53 @@ export default function ProfilePage() {
   // ─── NOD SYSTEM STATE ───
   // Ideally, your backend should send 'isFollowing: true/false' in the profile fetch.
   // ─── NOD SYSTEM STATE ───
+ // ─── NOD SYSTEM STATE ───
   const [isNodded, setIsNodded] = useState(false);
 
-  // Set the initial state when the user data loads
+  // 🚨 FIX 1: Only check the database when the actual profile ID changes
   useEffect(() => {
     if (user && currentUser) {
-      // Safely check if the current user's ID is in the target user's followers list
       const followersArray = user.followers || [];
-      const hasNodded = followersArray.some(id => String(id) === String(currentUser._id)) || user.isFollowing;
-      
+      // Handles both populated objects and raw string IDs safely
+      const hasNodded = followersArray.some(f => String(f._id || f) === String(currentUser._id)) || user.isFollowing;
       setIsNodded(hasNodded);
     }
-  }, [user, currentUser]);
+  }, [user?._id, currentUser?._id]); 
 
   const handleNod = async () => {
-    if (!currentUser) return; // Add a toast here if you want!
+    if (!currentUser) return;
 
-    // 1. Optimistic UI Update (Changes to "Nodded" instantly)
+    // 1. Instantly flip the UI switch
     const wasNodded = isNodded;
     setIsNodded(!wasNodded);
     
-    // Instantly update the Network Size number
-    setUser(prev => ({
-      ...prev,
-      followersCount: Math.max(0, (prev.followersCount || 0) + (wasNodded ? -1 : 1))
-    }));
+    // 🚨 FIX 2: Update the local array AND the count so React doesn't fight us
+    setUser(prev => {
+      if (!prev) return prev;
+      
+      let updatedFollowers = [...(prev.followers || [])];
+      
+      if (wasNodded) {
+        // Un-Nodding: Remove from array
+        updatedFollowers = updatedFollowers.filter(f => String(f._id || f) !== String(currentUser._id));
+      } else {
+        // Nodding: Add to array
+        updatedFollowers.push(currentUser._id);
+      }
+
+      return {
+        ...prev,
+        followers: updatedFollowers,
+        followersCount: Math.max(0, (prev.followersCount || 0) + (wasNodded ? -1 : 1))
+      };
+    });
 
     try {
-      // 2. Send to backend using your clean API setup
+      // 2. Send to backend in the background
       await api.post(`/users/${user._id}/follow`);
     } catch (error) {
-      // 3. Revert back if the database connection fails
+      // 3. Revert if the server completely fails
       setIsNodded(wasNodded);
-      setUser(prev => ({
-        ...prev,
-        followersCount: Math.max(0, (prev.followersCount || 0) + (wasNodded ? 1 : -1))
-      }));
       console.error("Nod failed:", error);
     }
   };

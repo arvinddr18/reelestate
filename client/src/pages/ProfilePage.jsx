@@ -54,8 +54,6 @@ export default function ProfilePage() {
   // ─── NOD SYSTEM STATE ───
   // Ideally, your backend should send 'isFollowing: true/false' in the profile fetch.
   // ─── NOD SYSTEM STATE ───
- // ─── NOD SYSTEM STATE ───
-  // ─── NOD SYSTEM STATE ───
   const [isNodded, setIsNodded] = useState(false);
 
   // 🚨 FIX: Listen to the entire 'user' object so we catch the data when it finishes downloading!
@@ -122,6 +120,8 @@ export default function ProfilePage() {
       console.error("Nod failed:", error);
     }
   };
+
+
   const [isEditing, setIsEditing] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
   // ── 🚨 ACCOUNT SWITCHER STATE ──

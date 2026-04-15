@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion'; // 🚨 ADDED FRAMER MOTION
 import PersonalInfo from '../components/settings/PersonalInfo';
 import axios from 'axios';
@@ -52,44 +53,46 @@ export default function ProfilePage() {
 
   // ─── NOD SYSTEM STATE ───
   // Ideally, your backend should send 'isFollowing: true/false' in the profile fetch.
+  // ─── NOD SYSTEM STATE ───
   const [isNodded, setIsNodded] = useState(false);
 
   // Set the initial state when the user data loads
   useEffect(() => {
     if (user && currentUser) {
-      // If your backend returns an array of followers, we check it here
-      setIsNodded(user.followers?.includes(currentUser._id) || user.isFollowing || false);
+      // Safely check if the current user's ID is in the target user's followers list
+      const followersArray = user.followers || [];
+      const hasNodded = followersArray.some(id => String(id) === String(currentUser._id)) || user.isFollowing;
+      
+      setIsNodded(hasNodded);
     }
   }, [user, currentUser]);
 
   const handleNod = async () => {
-    if (!currentUser) return alert("Please initialize identity to Nod.");
+    if (!currentUser) return; // Add a toast here if you want!
 
-    // 1. Optimistic UI Update (Instant visual feedback)
+    // 1. Optimistic UI Update (Changes to "Nodded" instantly)
     const wasNodded = isNodded;
     setIsNodded(!wasNodded);
     
-    // Update the Network Size instantly
+    // Instantly update the Network Size number
     setUser(prev => ({
       ...prev,
-      followersCount: (prev.followersCount || 0) + (wasNodded ? -1 : 1)
+      followersCount: Math.max(0, (prev.followersCount || 0) + (wasNodded ? -1 : 1))
     }));
 
     try {
-      // 2. Send to backend (Using your existing toggle route!)
-      await axios.post(getApiUrl(`/api/users/${user._id}/follow`), {}, getAuthConfig());
-      // Optional: Add a toast notification here if you have a toast library installed!
+      // 2. Send to backend using your clean API setup
+      await api.post(`/users/${user._id}/follow`);
     } catch (error) {
-      // 3. Revert if the server fails
+      // 3. Revert back if the database connection fails
       setIsNodded(wasNodded);
       setUser(prev => ({
         ...prev,
-        followersCount: (prev.followersCount || 0) + (wasNodded ? 1 : -1)
+        followersCount: Math.max(0, (prev.followersCount || 0) + (wasNodded ? 1 : -1))
       }));
       console.error("Nod failed:", error);
     }
   };
-
   const [isEditing, setIsEditing] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
   // ── 🚨 ACCOUNT SWITCHER STATE ──

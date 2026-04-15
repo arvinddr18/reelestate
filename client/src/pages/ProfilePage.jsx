@@ -267,20 +267,7 @@ export default function ProfilePage() {
           </button>
           
           <div className="flex gap-2">
-            {/* Universal Share Button */}
-            <button 
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({ title: 'Nodexa Profile', url: window.location.href }).catch(console.error);
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert("Profile Link Copied to Clipboard!");
-                }
-              }} 
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#00F0FF] transition-all active:scale-95"
-            >
-              <IoMdShareAlt size={18} />
-            </button>
+           
 
             {/* 3-DOT MENU (System Config) */}
             {canEditProfile && (

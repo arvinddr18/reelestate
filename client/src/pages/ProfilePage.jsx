@@ -479,16 +479,18 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {/* Section 2: Other Accounts (DYNAMIC) */}
+                     {/* Section 2: Other Accounts (DYNAMIC) */}
                       {savedAccounts.length > 0 && (
                         <div className="px-2 pb-2">
                           <span className="px-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2 mt-2">Other Accounts</span>
-                          <div className="flex flex-col gap-1">
+                          
+                          {/* 🚨 ADDED SCROLLING CLASSES HERE 🚨 */}
+                          <div className="flex flex-col gap-1 max-h-[76px] overflow-y-auto pr-1 no-scrollbar">
                             {savedAccounts.map((acc) => (
                               <button 
                                 key={acc.user._id} 
                                 onClick={() => handleSwitchAccount(acc)}
-                                className="w-full flex items-center justify-between p-3 rounded-[16px] hover:bg-[#151A25] transition-all group active:scale-[0.98]"
+                                className="w-full flex items-center justify-between p-3 rounded-[16px] hover:bg-[#151A25] transition-all group active:scale-[0.98] shrink-0"
                               >
                                 <div className="flex items-center gap-3">
                                   <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-gray-800 to-gray-700 overflow-hidden flex items-center justify-center border border-white/5">

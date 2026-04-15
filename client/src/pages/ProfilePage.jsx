@@ -55,17 +55,21 @@ export default function ProfilePage() {
   // Ideally, your backend should send 'isFollowing: true/false' in the profile fetch.
   // ─── NOD SYSTEM STATE ───
  // ─── NOD SYSTEM STATE ───
+  // ─── NOD SYSTEM STATE ───
   const [isNodded, setIsNodded] = useState(false);
 
-  // 🚨 FIX 1: Only check the database when the actual profile ID changes
+  // 🚨 FIX: Listen to the entire 'user' object so we catch the data when it finishes downloading!
   useEffect(() => {
     if (user && currentUser) {
       const followersArray = user.followers || [];
-      // Handles both populated objects and raw string IDs safely
-      const hasNodded = followersArray.some(f => String(f._id || f) === String(currentUser._id)) || user.isFollowing;
-      setIsNodded(hasNodded);
+      
+      // Bulletproof check: Look in their followers, look in your following, and look at backend flags!
+      const inFollowers = followersArray.some(f => String(f._id || f) === String(currentUser._id));
+      const inFollowing = (currentUser.following || []).some(id => String(id) === String(user._id));
+
+      setIsNodded(inFollowers || inFollowing || user.isFollowing || false);
     }
-  }, [user?._id, currentUser?._id]); 
+  }, [user, currentUser]); // 👈 Changed from user?._id back to user!
 
   const handleNod = async () => {
     if (!currentUser) return;
@@ -74,17 +78,17 @@ export default function ProfilePage() {
     const wasNodded = isNodded;
     setIsNodded(!wasNodded);
     
-    // 🚨 FIX 2: Update the local array AND the count so React doesn't fight us
+    // 2. Update the local array AND the count so React agrees with our click
     setUser(prev => {
       if (!prev) return prev;
       
       let updatedFollowers = [...(prev.followers || [])];
       
       if (wasNodded) {
-        // Un-Nodding: Remove from array
+        // Un-Nodding: Remove your ID from their array
         updatedFollowers = updatedFollowers.filter(f => String(f._id || f) !== String(currentUser._id));
       } else {
-        // Nodding: Add to array
+        // Nodding: Add your ID to their array
         updatedFollowers.push(currentUser._id);
       }
 
@@ -96,11 +100,25 @@ export default function ProfilePage() {
     });
 
     try {
-      // 2. Send to backend in the background
+      // 3. Send to backend in the background
       await api.post(`/users/${user._id}/follow`);
     } catch (error) {
-      // 3. Revert if the server completely fails
+      // Revert if the server completely fails (No internet, etc.)
       setIsNodded(wasNodded);
+      setUser(prev => {
+        if (!prev) return prev;
+        let updatedFollowers = [...(prev.followers || [])];
+        if (!wasNodded) {
+          updatedFollowers = updatedFollowers.filter(f => String(f._id || f) !== String(currentUser._id));
+        } else {
+          updatedFollowers.push(currentUser._id);
+        }
+        return {
+          ...prev,
+          followers: updatedFollowers,
+          followersCount: Math.max(0, (prev.followersCount || 0) + (wasNodded ? 1 : -1))
+        };
+      });
       console.error("Nod failed:", error);
     }
   };

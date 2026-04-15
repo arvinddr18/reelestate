@@ -452,7 +452,8 @@ export default function ProfilePage() {
         {/* ── TAB CONTENT ── */}
         <div className="pb-10 min-h-[300px]">
           {activeTab === 'grid' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 animate-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-3 gap-1.5 md:gap-4 animate-in slide-in-from-bottom-4 duration-500">
+            
               {userPosts.length === 0 ? <div className="col-span-full text-center py-20 text-gray-500 font-bold uppercase tracking-widest text-xs">No Nodes Discovered</div> : (
                 userPosts.map(post => (
                   <Link key={post._id} to={`/post/${post._id}`} className="relative aspect-[4/5] rounded-[24px] md:rounded-[32px] overflow-hidden group border border-white/5 hover:border-[#00F0FF]/40 transition-all duration-500 bg-[#0B0F19] shadow-[0_8px_25px_rgba(0,0,0,0.4)] hover:shadow-[0_0_25px_rgba(0,240,255,0.2)]">

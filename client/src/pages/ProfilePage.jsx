@@ -249,18 +249,25 @@ export default function ProfilePage() {
 
   const trustScore = Math.min(98, 70 + (userPosts.length * 2)); 
 
-  return (
-    <div className="min-h-screen bg-[#0B0F19] text-white font-sans pb-24 overflow-x-hidden relative">
+ return (
+    <div className="min-h-screen bg-[#05070A] text-white font-sans pb-24 overflow-x-hidden relative">
       
+      {/* ── BACKGROUND AMBIENCE ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] bg-[#00F0FF]/10 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[50vw] h-[50vw] bg-purple-500/10 blur-[150px] rounded-full mix-blend-screen" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay" />
+      </div>
+
       {/* ── STICKY TOP BAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-transparent pointer-events-none">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between pointer-events-auto">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:text-[#00F0FF] hover:border-[#00F0FF]/50 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] active:scale-95 group">
-            <IoMdArrowBack size={20} className="group-hover:-translate-x-1 transition-transform" />
+      <header className="fixed top-0 left-0 right-0 z-40 bg-[#05070A]/60 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:text-[#00F0FF] transition-all active:scale-95">
+            <IoMdArrowBack size={22} />
           </button>
           
-          <div className="flex gap-3">
-            {/* Universal Share Profile Button */}
+          <div className="flex gap-2">
+            {/* Universal Share Button */}
             <button 
               onClick={() => {
                 if (navigator.share) {
@@ -270,173 +277,177 @@ export default function ProfilePage() {
                   alert("Profile Link Copied to Clipboard!");
                 }
               }} 
-              className="w-10 h-10 rounded-full bg-[#0B0F19]/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-[#00F0FF] hover:bg-[#00F0FF] hover:text-[#0B0F19] transition-all shadow-[0_0_15px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.8)] active:scale-95"
-              title="Share Profile"
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#00F0FF] transition-all active:scale-95"
             >
-              <IoMdShareAlt size={20} />
+              <IoMdShareAlt size={18} />
             </button>
+
+            {/* 3-DOT MENU (System Config) */}
+            {canEditProfile && (
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#00F0FF] transition-all active:scale-95"
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="w-1 h-1 bg-current rounded-full"/>
+                  <span className="w-1 h-1 bg-current rounded-full"/>
+                  <span className="w-1 h-1 bg-current rounded-full"/>
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </header>
 
-      {/* ── 2045 HERO BANNER ── */}
-      <div className="h-56 md:h-72 bg-gradient-to-b from-[#0057FF]/30 via-[#0B0F19] to-[#0B0F19] relative overflow-hidden flex items-center justify-center">
-        <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-[#00F0FF] opacity-20 blur-[100px] rounded-full mix-blend-screen animate-pulse" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-[#0057FF] opacity-20 blur-[100px] rounded-full mix-blend-screen" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.05)_1px,transparent_1px)] bg-[size:30px_30px] opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent" />
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-24 relative z-10">
+      <div className="max-w-2xl mx-auto px-4 pt-24 relative z-10">
         
-        {/* ── 2050 HOLOGRAPHIC ID CARD (MERGED PROFILE & STATS) ── */}
-        <div className="relative bg-[#151A25]/60 backdrop-blur-3xl border border-white/5 rounded-[40px] p-6 md:p-10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] mb-8 overflow-hidden group hover:border-white/10 transition-colors duration-500">
+        {/* ── ASYMMETRICAL IDENTITY SECTION ── */}
+        <div className="flex justify-between items-start mb-8">
           
-          {/* Ambient Glass Shimmers */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/40 to-transparent" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#0057FF]/40 to-transparent" />
-          <div className="absolute -left-20 -top-20 w-64 h-64 bg-[#00F0FF]/5 blur-[80px] rounded-full pointer-events-none group-hover:bg-[#00F0FF]/10 transition-colors duration-700" />
-
-          {/* ── TOP HALF: IDENTITY & ACTIONS ── */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
-            
-            {/* The "Nexus Ring" Avatar */}
-            <div className="relative shrink-0 w-36 h-36 md:w-40 md:h-40 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[2px] border-dashed border-[#00F0FF]/40 animate-[spin_12s_linear_infinite] group-hover:border-[#00F0FF]/80 group-hover:animate-[spin_4s_linear_infinite] transition-all duration-500" />
-              <div className="absolute inset-2 rounded-full border-[2px] border-dotted border-[#0057FF]/50 animate-[spin_10s_linear_infinite_reverse] group-hover:border-[#0057FF] group-hover:animate-[spin_3s_linear_infinite_reverse] transition-all duration-500" />
-              
-              <div className="absolute inset-4 rounded-full bg-[#0B0F19] overflow-hidden border-[1.5px] border-[#00F0FF]/20 shadow-[0_0_30px_rgba(0,240,255,0.2)] flex items-center justify-center text-4xl font-black text-white group-hover:scale-105 transition-transform duration-500">
-                {avatarPreview ? (
-                  <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="Profile" />
-                ) : (
-                  <span>{user?.username?.[0]?.toUpperCase()}</span>
-                )}
-              </div>
+          {/* LEFT: Info & Tags */}
+          <div className="flex-1 pr-2">
+            {/* Live Node Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_#34d399] animate-pulse"/>
+              <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Live Node</span>
             </div>
-
-            {/* Identity Details */}
-            <div className="flex-1 text-center md:text-left w-full mt-2 md:mt-4">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-3 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                    {user?.fullName || `@${user?.username}`}
-                    {user?.isVerified && <IoMdCheckmarkCircle className="text-[#00F0FF] drop-shadow-[0_0_12px_rgba(0,240,255,0.8)]" size={28} />}
-                    {user?.isPrivate && <IoMdLock className="text-gray-500" size={20} title="Private Vault" />}
-                  </h2>
-                  
-                  {/* Digital Footprint Labels */}
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-                    <span className="bg-[#1E2532]/80 backdrop-blur-md text-[#00F0FF] text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-lg border border-[#00F0FF]/20 uppercase">
-                      {user?.role || 'Verified Member'}
-                    </span>
-                    <span className="bg-gradient-to-r from-emerald-500/10 to-emerald-400/10 text-emerald-400 text-[10px] font-black tracking-widest px-3 py-1.5 rounded-lg border border-emerald-500/20 uppercase flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping absolute" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 relative" />
-                      Live Node
-                    </span>
-                  </div>
-                </div>
-
-                {/* Cyber-Actions */}
-                <div className="flex items-center justify-center shrink-0">
-                  {canEditProfile ? (
-                    <button onClick={() => setIsEditing(true)} className="px-6 py-3.5 rounded-2xl font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 bg-[#151A25] text-[#00F0FF] border border-[#00F0FF]/30 hover:bg-[#00F0FF]/10 hover:shadow-[0_0_25px_rgba(0,240,255,0.3)] active:scale-95">
-                      <IoMdSettings size={18} className="animate-[spin_4s_linear_infinite]"/> System Config
-                    </button>
-                  ) : (
-                    <div className="flex gap-3">
-                      {/* ── THE NOD BUTTON ── */}
-          <button 
-            onClick={handleNod}
-            className={`px-6 py-3.5 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all flex items-center gap-2 shadow-lg active:scale-95 ${
-              isNodded 
-                ? 'bg-[#00F0FF] text-[#0B0F19] shadow-[0_0_20px_rgba(0,240,255,0.6)]' 
-                : 'bg-[#151A25] text-[#00F0FF] border border-[#00F0FF]/50 hover:bg-[#00F0FF]/10 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]' 
-            }`}
-          >
-            <MdAutoAwesome className={isNodded ? "" : "animate-pulse"} size={16} />
-            {isNodded ? 'Nodded' : 'Nod'}
-          </button>
-                      <button onClick={() => navigate(`/messages/${userId}`)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#151A25] text-white hover:text-[#00F0FF] border border-white/10 transition-all hover:border-[#00F0FF]/50 active:scale-95 shadow-lg">
-                        <IoMdMail size={20}/>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Bio & Location HUD */}
-              <div className="mt-6">
-                {user?.bio && <p className="text-gray-300 text-sm leading-relaxed mb-4 max-w-2xl">{user.bio}</p>}
-                
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                  {user?.location && (
-                    <span className="flex items-center gap-1.5 bg-[#0B0F19]/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 text-[11px] font-bold text-gray-400 tracking-wide shadow-inner">
-                      <IoMdPin className="text-[#F5A623]"/> {user.location}
-                    </span>
-                  )}
-                  {user?.website && (
-                    <a href={user.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 bg-[#0B0F19]/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 text-[11px] font-bold text-gray-400 tracking-wide hover:text-[#00F0FF] hover:border-[#00F0FF]/30 transition-all shadow-inner">
-                      🔗 Neural Link
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── BOTTOM HALF: NEON HUD STATS ── */}
-          <div className="mt-8 pt-6 relative border-t border-white/5">
-            <div className="grid grid-cols-3 gap-2 md:gap-4">
-              
-              <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#00F0FF]/20 transition-all cursor-default group/stat">
-                <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#00F0FF] transition-all">
-                  {userPosts.length}
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#00F0FF]/60 mt-1 group-hover/stat:text-[#00F0FF]">Total Posts</span>
-              </div>
-
-              <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-purple-500/20 transition-all cursor-default group/stat">
-                <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-purple-400 transition-all">
-                  {user?.followersCount || 0}
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400/60 mt-1 group-hover/stat:text-purple-400">Network Size</span>
-              </div>
-
-              <div className="flex flex-col items-center justify-center py-4 bg-[#0B0F19]/30 rounded-2xl hover:bg-[#0B0F19]/80 border border-transparent hover:border-[#F5A623]/20 transition-all cursor-default group/stat">
-                <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover/stat:from-white group-hover/stat:to-[#F5A623] transition-all">
-                  {(userPosts.length * 124 + 342).toLocaleString()}
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#F5A623]/60 mt-1 group-hover/stat:text-[#F5A623]">Global Reach</span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        {/* ── 2050 SMART TABS (LIQUID ENERGY SLIDER) ── */}
-        <div className="mb-8 relative z-20">
-          <div className="flex bg-[#0B0F19]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-1.5 relative max-w-md mx-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
             
-            <div className={`absolute top-1.5 bottom-1.5 bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-xl transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) shadow-[0_0_20px_rgba(0,240,255,0.4)] ${canEditProfile ? (activeTab === 'grid' ? 'left-1.5 w-[calc(33.33%-4px)]' : activeTab === 'list' ? 'left-[calc(33.33%+2px)] w-[calc(33.33%-4px)]' : 'left-[calc(66.66%+2px)] w-[calc(33.33%-4px)]') : (activeTab === 'grid' ? 'left-1.5 w-[calc(50%-4px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)]')}`} />
-
-            <button onClick={() => setActiveTab('grid')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'grid' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
-              <IoMdGrid size={16} className={activeTab === 'grid' ? 'animate-pulse' : ''} /> Grid
-            </button>
+            <h1 className="text-3xl md:text-4xl font-black text-white flex items-center gap-2 mb-1 tracking-tight">
+              {user?.fullName || user?.username}
+              {user?.isVerified && <IoMdCheckmarkCircle className="text-[#0057FF]" size={24} />}
+            </h1>
+            <p className="text-sm text-gray-400 mb-4 font-medium">@{user?.username}</p>
             
-            <button onClick={() => setActiveTab('list')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'list' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
-              <svg className={`w-4 h-4 ${activeTab === 'list' ? 'animate-pulse' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" /></svg> List
-            </button>
-            
-            {canEditProfile && (
-              <button onClick={() => setActiveTab('saved')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 z-10 ${activeTab === 'saved' ? 'text-white drop-shadow-md' : 'text-gray-500 hover:text-white'}`}>
-                <IoMdBookmark size={16} className={activeTab === 'saved' ? 'animate-pulse' : ''} /> Vault
-              </button>
+            {user?.bio && (
+              <div className="flex gap-2 text-gray-300 italic mb-4 max-w-[250px]">
+                <span className="text-[#0057FF] font-black text-lg leading-none">"</span>
+                <p className="text-sm leading-relaxed">{user.bio}</p>
+                <span className="text-[#0057FF] font-black text-lg leading-none">"</span>
+              </div>
             )}
             
+            {/* Holographic Hashtags */}
+            <div className="flex flex-wrap gap-2">
+              {['#creator', '#aesthetic', '#nodexa'].map(tag => (
+                <span key={tag} className="px-3 py-1.5 rounded-lg border border-purple-500/20 bg-purple-500/10 text-purple-300 text-[10px] font-bold tracking-wider">{tag}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT: Avatar with Orbital Rings */}
+          <div className="relative shrink-0 w-28 h-28 md:w-36 md:h-36 mt-4">
+            {/* Outer Purple Orbit */}
+            <div className="absolute inset-[-20px] rounded-full border-[1px] border-dashed border-purple-500/30 animate-[spin_15s_linear_infinite_reverse]">
+              <div className="absolute bottom-2 left-[15%] w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_10px_#a855f7]" />
+            </div>
+            {/* Inner Cyan Orbit */}
+            <div className="absolute inset-[-8px] rounded-full border-[1.5px] border-[#00F0FF]/40 animate-[spin_10s_linear_infinite]">
+              <div className="absolute top-[10%] right-[10%] w-1.5 h-1.5 bg-[#00F0FF] rounded-full shadow-[0_0_8px_#00F0FF]" />
+            </div>
+            
+            {/* Avatar Container */}
+            <div className="absolute inset-0 rounded-full overflow-hidden border-2 border-[#00F0FF]/60 shadow-[0_0_25px_rgba(0,240,255,0.3)] bg-[#0B0F19]">
+              {avatarPreview ? (
+                <img src={resolveMediaUrl(avatarPreview)} className="w-full h-full object-cover" alt="Profile" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-4xl font-black text-white">
+                  {user?.username?.[0]?.toUpperCase()}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Edit Overlay */}
+            {canEditProfile && (
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="absolute bottom-0 right-0 w-8 h-8 bg-[#151A25] border border-[#00F0FF] rounded-full flex items-center justify-center text-white hover:text-[#00F0FF] shadow-[0_0_10px_rgba(0,0,0,0.5)] z-10 transition-colors"
+              >
+                <IoMdCreate size={14} />
+              </button>
+            )}
           </div>
         </div>
+
+        {/* ── ACTION BUTTONS ROW ── */}
+        <div className="flex items-center gap-3 mb-6">
+          {!canEditProfile && (
+            <button 
+              onClick={handleNod} 
+              className={`flex-1 py-3.5 rounded-[16px] font-bold text-[12px] flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 border ${
+                isNodded 
+                  ? 'bg-transparent border-[#00F0FF] text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]' 
+                  : 'bg-transparent border-white/10 text-gray-300 hover:border-[#00F0FF]/50 hover:text-[#00F0FF]'
+              }`}
+            >
+              <MdAutoAwesome className={isNodded ? "" : "animate-pulse"} size={16} />
+              {isNodded ? 'Nodded' : 'Nod'}
+            </button>
+          )}
+
+          {!canEditProfile && (
+            <button 
+              onClick={() => navigate(`/messages/${userId}`)} 
+              className="flex-1 py-3.5 rounded-[16px] font-bold text-[12px] bg-transparent border border-white/10 text-gray-300 flex items-center justify-center gap-2 hover:border-[#00F0FF]/50 hover:text-white transition-all active:scale-95"
+            >
+              <IoMdMail size={16} /> Message
+            </button>
+          )}
+
+          <button 
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({ title: 'Nodexa Profile', url: window.location.href }).catch(console.error);
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Profile Link Copied to Clipboard!");
+              }
+            }} 
+            className={`${canEditProfile ? 'w-full' : 'flex-1'} py-3.5 rounded-[16px] font-bold text-[12px] bg-transparent border border-white/10 text-gray-300 flex items-center justify-center gap-2 hover:border-[#00F0FF]/50 hover:text-white transition-all active:scale-95`}
+          >
+            <IoMdShareAlt size={16} /> Share
+          </button>
+        </div>
+
+        {/* ── GLASSMORPHISM STATS CARD ── */}
+        <div className="bg-gradient-to-b from-[#151A25]/80 to-[#0B0F19]/80 backdrop-blur-xl border border-white/5 rounded-[24px] p-5 mb-8 shadow-lg">
+          <div className="grid grid-cols-3 divide-x divide-white/5">
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <IoMdCard size={18} className="text-[#00F0FF]" />
+              <span className="text-xl font-black text-white">{userPosts.length}</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#00F0FF]">Total Posts</span>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <IoMdPerson size={18} className="text-purple-400" />
+              <span className="text-xl font-black text-white">{user?.followersCount || 0}</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-purple-400">Network Size</span>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <div className="w-4 h-4 rounded-full border border-[#F5A623] flex items-center justify-center">
+                <span className="text-[#F5A623] text-[8px]">🌐</span>
+              </div>
+              <span className="text-xl font-black text-white">{(userPosts.length * 124 + 342).toLocaleString()}</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5A623]">Global Reach</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── TABS ── */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <button onClick={() => setActiveTab('grid')} className={`py-3.5 rounded-[16px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border ${activeTab === 'grid' ? 'bg-transparent border-[#00F0FF] text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}>
+            <IoMdGrid size={16} /> Grid
+          </button>
+          <button onClick={() => setActiveTab('list')} className={`py-3.5 rounded-[16px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border ${activeTab === 'list' ? 'bg-transparent border-[#00F0FF] text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" /></svg> List
+          </button>
+          {canEditProfile ? (
+            <button onClick={() => setActiveTab('saved')} className={`py-3.5 rounded-[16px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border ${activeTab === 'saved' ? 'bg-transparent border-[#00F0FF] text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}>
+              <IoMdBookmark size={16} /> Vault
+            </button>
+          ) : (
+            <div className="py-3.5 rounded-[16px] border border-transparent"></div>
+          )}
+        </div>
+
 
         {/* ── TAB CONTENT ── */}
         <div className="pb-10 min-h-[300px]">

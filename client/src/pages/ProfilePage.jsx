@@ -614,8 +614,9 @@ export default function ProfilePage() {
                 })}
               </div>
 
-              <div className="p-6">
-                <button onClick={() => setIsEditing(false)} className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 text-gray-400 hover:text-white bg-[#151A25] hover:bg-[#1E2532] transition-all text-[12px] font-bold border border-[#1E2532] hover:border-gray-500 shadow-sm active:scale-95">
+             {/* 🚨 Added 'pb-32' for mobile to clear the bottom nav, and 'md:pb-6' to keep laptop perfect */}
+              <div className="p-6 pb-32 md:pb-6 mt-auto relative z-50 shrink-0">
+                <button onClick={() => setIsEditing(false)} className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 text-gray-400 hover:text-white bg-[#151A25] hover:bg-[#1E2532] transition-all text-[12px] font-bold border border-[#1E2532] hover:border-gray-500 shadow-sm active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                   <IoMdArrowBack size={18} /> Back to App
                 </button>
               </div>

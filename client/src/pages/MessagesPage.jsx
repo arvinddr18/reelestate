@@ -121,16 +121,42 @@ export default function Messages() {
                   <div key={user._id || user.id} onClick={() => setActiveChat(user)} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
                     <div className="relative">
                       <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
-                      <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-xl border-2 border-white/10 overflow-hidden relative z-10 flex items-center justify-center text-xl font-bold shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+                      <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-xl border-2 border-white/10 overflow-hidden relative">
                         {user.profilePhoto ? (
-                          <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                          <img 
+                            src={user.profilePhoto} 
+                            alt={user.fullName} 
+                            className="w-full h-full object-cover opacity-90 cursor-pointer hover:opacity-100 transition-all"
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              navigate(`/profile/${user._id}`); 
+                            }}
+                          />
                         ) : (
-                          (user.fullName || user.username || 'U')[0].toUpperCase()
+                          <div 
+                            className="w-full h-full flex items-center justify-center font-black text-white text-xl cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              navigate(`/profile/${user._id}`); 
+                            }}
+                          >
+                            {(user.fullName || user.username || 'U')[0].toUpperCase()}
+                          </div>
                         )}
                       </div>
-                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-                    </div>
-                    <span className="text-[10px] font-black text-gray-200 uppercase tracking-wider truncate w-16 text-center drop-shadow-md">
+                      
+                      {/* The little blue online dot */}
+                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00F0FF] rounded-full border-[3px] border-[#0B0F19] z-20 shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
+                    </div> {/* 🚨 THIS IS THE DIV THAT WAS MISSING! */}
+                    
+                    {/* The Clickable Username */}
+                    <span 
+                      className="text-[10px] font-black text-gray-200 uppercase tracking-wider truncate w-16 text-center drop-shadow-md cursor-pointer hover:text-[#00F0FF] hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/profile/${user._id}`);
+                      }}
+                    >
                       {user.fullName || user.username}
                     </span>
                   </div>
@@ -146,17 +172,35 @@ export default function Messages() {
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-10 text-gray-400 font-bold text-sm">No networked users found.</div>
             ) : (
-              filteredUsers.map(user => (
+             filteredUsers.map(user => (
                 <div key={user._id || user.id} onClick={() => setActiveChat(user)} className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-white/10 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] scale-[1.02]' : 'bg-[#121826]/40 border-transparent hover:bg-white/5 hover:border-white/10 hover:-translate-y-1'}`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className="relative shrink-0">
                       <div className={`absolute -inset-1 rounded-full border ${activeChat?._id === user._id ? 'border-[#00f0ff] animate-[pulse_2s_infinite]' : 'border-[#00ff9d] opacity-50'}`} />
-                      <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#1E2532]/50 overflow-hidden text-lg font-bold z-10">
+                      
+                      {/* Clickable Image in Encrypted Channels */}
+                      <div 
+                        className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#1E2532]/50 overflow-hidden text-lg font-bold z-10 cursor-pointer hover:ring-2 ring-[#00F0FF]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/profile/${user._id}`);
+                        }}
+                      >
                         {user.profilePhoto ? <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" /> : (user.fullName || user.username || 'U')[0].toUpperCase()}
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className={`text-sm font-black truncate ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}>{user.fullName || `@${user.username}`}</h3>
+                      
+                      {/* Clickable Name in Encrypted Channels */}
+                      <h3 
+                        className={`text-sm font-black truncate cursor-pointer hover:underline ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/profile/${user._id}`);
+                        }}
+                      >
+                        {user.fullName || `@${user.username}`}
+                      </h3>
                       <span className="text-[11px] font-bold truncate text-gray-300">Tap to open secure channel...</span>
                     </div>
                   </div>

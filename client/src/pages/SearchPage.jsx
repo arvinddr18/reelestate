@@ -8,6 +8,7 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { IoMdSearch, IoMdArrowBack, IoMdOptions, IoMdClose, IoMdPerson, IoMdImages } from 'react-icons/io';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const formatPrice = (p) => {
   if (!p) return '';
@@ -41,9 +42,76 @@ const SEARCH_CATEGORIES = [
   { id: 'Kids', name: 'Kids', icon: '🧸' },
 ];
 
+
+// ─── THE MASTER CATEGORY LIST ───
+// ... (your existing categories stay here) ...
+
+// 🚨 PASTE THE NEW COMPONENT HERE 🚨
+const UserSearchCard = ({ targetUser, currentUser }) => {
+  const [isNodded, setIsNodded] = useState(targetUser.isFollowing || targetUser.followers?.includes(currentUser?._id) || false);
+
+  const handleNod = async (e) => {
+    e.preventDefault(); 
+    if (!currentUser) {
+      toast.error("Please initialize identity to Nod.");
+      return;
+    }
+
+    const wasNodded = isNodded;
+    setIsNodded(!wasNodded);
+
+    try {
+      // Uses your existing 'api' instance!
+      await api.post(`/users/${targetUser._id}/follow`);
+    } catch (error) {
+      setIsNodded(wasNodded); // Revert on fail
+    }
+  };
+
+  return (
+    <Link 
+      to={`/profile/${targetUser._id}`} 
+      className="w-full bg-[#151A25]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-4 flex items-center justify-between hover:border-white/10 transition-colors group"
+    >
+      <div className="flex items-center gap-4">
+        {targetUser.profilePhoto ? (
+          <img src={targetUser.profilePhoto} alt="" className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-[#00F0FF] transition-all" />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] flex items-center justify-center font-bold text-lg text-white">
+            {targetUser.username?.[0]?.toUpperCase()}
+          </div>
+        )}
+        <div className="flex flex-col text-left">
+          <p className="font-black text-white text-base group-hover:text-[#00F0FF] transition-colors">@{targetUser.username}</p>
+          <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-0.5">{targetUser.role || 'Member'}</p>
+        </div>
+      </div>
+
+      {/* The Nod Button */}
+      {currentUser?._id !== targetUser._id && (
+        <button 
+          onClick={handleNod}
+          className={`px-5 py-2.5 rounded-xl font-black text-[10px] tracking-widest uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-lg ${
+            isNodded 
+              ? 'bg-[#00F0FF] text-[#0B0F19] shadow-[0_0_15px_rgba(0,240,255,0.4)]'
+              : 'bg-[#0B0F19] text-[#00F0FF] border border-[#00F0FF]/50 hover:bg-[#00F0FF]/10'
+          }`}
+        >
+          {isNodded ? 'Nodded' : 'Nod'}
+        </button>
+      )}
+    </Link>
+  );
+};
+
+
+
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // 🚨 ADD THIS LINE TO GET THE LOGGED IN USER
+  const { user: currentUser } = useAuth();
   
   // Core Search State
   const [query, setQuery] = useState(searchParams.get('q') || '');
@@ -321,21 +389,8 @@ export default function SearchPage() {
                 <p className="text-xs text-gray-400 font-bold">Try searching a different username.</p>
               </div>
             ) : (
-              users.map(u => (
-                <Link key={u._id} to={`/profile/${u._id}`} className="flex items-center gap-4 bg-[#151A25] border border-[#1E2532] rounded-2xl p-4 hover:border-[#00F0FF]/50 transition-all group">
-                  {u.profilePhoto ? (
-                    <img src={u.profilePhoto} alt="" className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-[#00F0FF] transition-all" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0057FF] to-[#00F0FF] flex items-center justify-center font-bold text-lg text-white">
-                      {u.username?.[0]?.toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-black text-white text-base group-hover:text-[#00F0FF] transition-colors">@{u.username}</p>
-                    {u.fullName && <p className="text-xs text-gray-300 font-bold">{u.fullName}</p>}
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black mt-1">{u.role || 'User'}</p>
-                  </div>
-                </Link>
+             users.map(u => (
+                <UserSearchCard key={u._id} targetUser={u} currentUser={currentUser} />
               ))
             )}
           </div>

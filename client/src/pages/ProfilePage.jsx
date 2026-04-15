@@ -50,6 +50,46 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('grid'); 
   const [loading, setLoading] = useState(true);
 
+  // ─── NOD SYSTEM STATE ───
+  // Ideally, your backend should send 'isFollowing: true/false' in the profile fetch.
+  const [isNodded, setIsNodded] = useState(false);
+
+  // Set the initial state when the user data loads
+  useEffect(() => {
+    if (user && currentUser) {
+      // If your backend returns an array of followers, we check it here
+      setIsNodded(user.followers?.includes(currentUser._id) || user.isFollowing || false);
+    }
+  }, [user, currentUser]);
+
+  const handleNod = async () => {
+    if (!currentUser) return alert("Please initialize identity to Nod.");
+
+    // 1. Optimistic UI Update (Instant visual feedback)
+    const wasNodded = isNodded;
+    setIsNodded(!wasNodded);
+    
+    // Update the Network Size instantly
+    setUser(prev => ({
+      ...prev,
+      followersCount: (prev.followersCount || 0) + (wasNodded ? -1 : 1)
+    }));
+
+    try {
+      // 2. Send to backend (Using your existing toggle route!)
+      await axios.post(getApiUrl(`/api/users/${user._id}/follow`), {}, getAuthConfig());
+      // Optional: Add a toast notification here if you have a toast library installed!
+    } catch (error) {
+      // 3. Revert if the server fails
+      setIsNodded(wasNodded);
+      setUser(prev => ({
+        ...prev,
+        followersCount: (prev.followersCount || 0) + (wasNodded ? 1 : -1)
+      }));
+      console.error("Nod failed:", error);
+    }
+  };
+
   const [isEditing, setIsEditing] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
   // ── 🚨 ACCOUNT SWITCHER STATE ──
@@ -274,9 +314,18 @@ export default function ProfilePage() {
                     </button>
                   ) : (
                     <div className="flex gap-3">
-                      <button className="px-6 py-3.5 rounded-2xl font-black text-[10px] tracking-widest uppercase bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-105 active:scale-95 flex items-center gap-2">
-                        <IoMdCall size={16}/> Connect
-                      </button>
+                      {/* ── THE NOD BUTTON ── */}
+          <button 
+            onClick={handleNod}
+            className={`px-6 py-3.5 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all flex items-center gap-2 shadow-lg active:scale-95 ${
+              isNodded 
+                ? 'bg-[#00F0FF] text-[#0B0F19] shadow-[0_0_20px_rgba(0,240,255,0.6)]' 
+                : 'bg-[#151A25] text-[#00F0FF] border border-[#00F0FF]/50 hover:bg-[#00F0FF]/10 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]' 
+            }`}
+          >
+            <MdAutoAwesome className={isNodded ? "" : "animate-pulse"} size={16} />
+            {isNodded ? 'Nodded' : 'Nod'}
+          </button>
                       <button onClick={() => navigate(`/messages/${userId}`)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#151A25] text-white hover:text-[#00F0FF] border border-white/10 transition-all hover:border-[#00F0FF]/50 active:scale-95 shadow-lg">
                         <IoMdMail size={20}/>
                       </button>

@@ -213,14 +213,15 @@ useEffect(() => {
 
         setUser(userData);
         setUserPosts(postsData);
-        setFormData({
+       setFormData({
           fullName: userData.fullName || '',
           bio: userData.bio || '',
           location: userData.location || '',
           phone: userData.phone || '',
           website: userData.website || '',
-          isPrivate: userData.isPrivate || false,
-          hideActivity: userData.hideActivity || false,
+          // 🚨 Bulletproof boolean checkers:
+          isPrivate: userData.isPrivate !== undefined ? userData.isPrivate : true, 
+          hideActivity: userData.hideActivity !== undefined ? userData.hideActivity : false,
           emailAlerts: userData.emailAlerts !== false,
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);

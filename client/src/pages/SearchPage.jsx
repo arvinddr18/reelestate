@@ -46,30 +46,15 @@ const SEARCH_CATEGORIES = [
 // ─── THE MASTER CATEGORY LIST ───
 // ... (your existing categories stay here) ...
 
-// ─── 🚨 SMART USER SEARCH CARD (NOD SYSTEM) ───
 const UserSearchCard = ({ targetUser, currentUser }) => {
-  const [isNodded, setIsNodded] = useState(false);
-
-  // Bulletproof state checker
- useEffect(() => {
-  if (targetUser && currentUser) {
-    // ✅ Trust isFollowing from backend first
-    if (typeof targetUser.isFollowing === 'boolean') {
-      setIsNodded(targetUser.isFollowing);
-      return;
-    }
-
-    // Fallback: manual check
-    const myId = String(currentUser._id || currentUser.id);
-    const followers = targetUser.followers || [];
-    const inFollowers = followers.some(f => String(f._id || f.id || f) === myId);
-    setIsNodded(inFollowers);
-  }
-}, [targetUser, currentUser]);
+  // ✅ Read isFollowing DIRECTLY from backend data, no useEffect needed
+  const [isNodded, setIsNodded] = useState(() => {
+    return targetUser.isFollowing === true;
+  });
 
   const handleNod = async (e) => {
-    e.preventDefault(); 
-    e.stopPropagation(); // 🚨 Stops the click from opening the profile!
+    e.preventDefault();
+    e.stopPropagation();
     
     if (!currentUser) {
       toast.error("Please initialize identity to Nod.");
@@ -77,7 +62,7 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
     }
 
     const wasNodded = isNodded;
-    setIsNodded(!wasNodded);
+    setIsNodded(!wasNodded); // Instant UI flip
 
     try {
       await api.post(`/users/${targetUser._id || targetUser.id}/follow`);
@@ -105,7 +90,6 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
         </div>
       </div>
 
-      {/* The Nod Button */}
       {String(currentUser?._id || currentUser?.id) !== String(targetUser._id || targetUser.id) && (
         <button 
           onClick={handleNod}
@@ -115,13 +99,12 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
               : 'bg-[#0B0F19] text-[#00F0FF] border border-[#00F0FF]/50 hover:bg-[#00F0FF]/10'
           }`}
         >
-          {isNodded ? 'Nodded' : 'Nod'}
+          {isNodded ? 'Nodded ✓' : 'Nod'}
         </button>
       )}
     </Link>
   );
 };
-
 
 
 export default function SearchPage() {

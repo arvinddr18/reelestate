@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean, 
       default: true 
     },
+    hideActivity: { 
+      type: Boolean, 
+      default: false // Default is false (meaning they ARE visible by default)
+    },
 
   },
   { timestamps: true }

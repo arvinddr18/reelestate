@@ -35,8 +35,18 @@ const io = new Server(server, {
   }
 });
 
+// 🚨 1. Add a Map to remember which socket belongs to which user
+const activeSockets = new Map();
+
 io.on('connection', (socket) => {
   console.log('⚡ User connected to chat:', socket.id);
+
+  // 🚨 2. When they open the app, save them as Online
+  socket.on('iam_online', async (userId) => {
+    activeSockets.set(socket.id, userId);
+    const User = mongoose.models.User; // Access the model directly
+    if (User) await User.findByIdAndUpdate(userId, { isOnline: true });
+  });
 
   socket.on('join_room', (roomId) => {
     socket.join(roomId);
@@ -80,11 +90,19 @@ io.on('connection', (socket) => {
     }
   });
   
-  socket.on('disconnect', () => {
+  // 🚨 3. REPLACED DISCONNECT EVENT HERE
+  socket.on('disconnect', async () => {
     console.log('❌ User disconnected:', socket.id);
+    
+    // When they close the app, find who they were and set them offline!
+    const userId = activeSockets.get(socket.id);
+    if (userId) {
+      const User = mongoose.models.User;
+      if (User) await User.findByIdAndUpdate(userId, { isOnline: false });
+      activeSockets.delete(socket.id); // Clean up memory
+    }
   });
 });
-
 // --- 4. Route Connections ---
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);

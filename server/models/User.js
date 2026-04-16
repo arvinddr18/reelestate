@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean, 
       default: false // Default is false (meaning they ARE visible by default)
     },
+    isOnline: {
+      type: Boolean,
+      default: false
+    },
 
   },
   { timestamps: true }

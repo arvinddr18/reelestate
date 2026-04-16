@@ -151,23 +151,18 @@ const searchUsers = async (req, res) => {
     .select('username fullName profilePhoto isVerified role')
     .limit(20);
 
-    // ✅ THE FIX: For each user, check if the logged-in user already follows them
+    // ✅ Check isFollowing for each user
     const usersWithFollowStatus = await Promise.all(
       users.map(async (u) => {
         let isFollowing = false;
-
         if (req.user) {
           const followRecord = await Follow.findOne({ 
-            follower: req.user._id,   // logged-in user
-            following: u._id          // the search result user
+            follower: req.user._id,
+            following: u._id
           });
-          isFollowing = !!followRecord; // true if record exists, false if not
+          isFollowing = !!followRecord;
         }
-
-        return {
-          ...u.toObject(),
-          isFollowing, // ✅ This is what the frontend reads to show Nod/Nodded
-        };
+        return { ...u.toObject(), isFollowing };
       })
     );
 
@@ -177,7 +172,17 @@ const searchUsers = async (req, res) => {
   }
 };
 
+// ─── Get All Users (For Inbox Sidebar) ───────────────────────────────────────
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password');
+    res.json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = { 
   getUserProfile, updateProfile, toggleFollow, 
-  getFollowers, getFollowing, searchUsers, getAllUsers 
+  getFollowers, getFollowing, searchUsers, getAllUsers  // ✅ ALL exported
 };

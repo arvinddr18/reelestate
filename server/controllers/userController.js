@@ -18,27 +18,28 @@ const getUserProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
-    // Get user's posts
     const posts = await Post.find({ author: req.params.id, isActive: true })
       .sort({ createdAt: -1 })
       .limit(20);
 
-    // Check if requesting user follows this profile
     let isFollowing = false;
     if (req.user) {
-      const followRecord = await Follow.findOne({ follower: req.user._id, following: req.params.id });
+      const followRecord = await Follow.findOne({ 
+        follower: req.user._id, 
+        following: req.params.id 
+      });
       isFollowing = !!followRecord;
     }
 
-    // ✅ AFTER
-res.json({ 
-  success: true, 
-  data: { 
-    user: { ...user.toObject(), isFollowing }, // ✅ isFollowing INSIDE user object
-    posts, 
-    isFollowing  // keep this too for safety
-  } 
-});
+    // ✅ KEY FIX: isFollowing is INSIDE the user object
+    res.json({ 
+      success: true, 
+      data: { 
+        user: { ...user.toObject(), isFollowing },
+        posts, 
+        isFollowing 
+      } 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

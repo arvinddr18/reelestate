@@ -35,17 +35,26 @@ const io = new Server(server, {
   }
 });
 
-// 🚨 1. Add a Map to remember which socket belongs to which user
-const activeSockets = new Map();
+// 🚨 1. SMART TRACKING MAPS
+const activeSockets = new Map(); // Maps socket.id -> userId
+const userConnectionCounts = new Map(); // Maps userId -> number of open tabs
 
 io.on('connection', (socket) => {
   console.log('⚡ User connected to chat:', socket.id);
 
-  // 🚨 2. When they open the app, save them as Online
+  // 🚨 2. SMART ONLINE DETECTION
   socket.on('iam_online', async (userId) => {
     activeSockets.set(socket.id, userId);
-    const User = mongoose.models.User; // Access the model directly
-    if (User) await User.findByIdAndUpdate(userId, { isOnline: true });
+    
+    // Count how many tabs this user has open
+    const currentCount = userConnectionCounts.get(userId) || 0;
+    userConnectionCounts.set(userId, currentCount + 1);
+
+    // ONLY hit the database if this is their first tab opening
+    if (currentCount === 0) {
+      const User = mongoose.models.User;
+      if (User) await User.findByIdAndUpdate(userId, { isOnline: true });
+    }
   });
 
   socket.on('join_room', (roomId) => {
@@ -57,22 +66,18 @@ io.on('connection', (socket) => {
     socket.to(data.room).emit('receive_message', data); 
   });
 
-  // 👇 1. ADD THIS NEW BLOCK RIGHT HERE 👇
   socket.on('update_message', (data) => {
-    // This catches the Smart Delete / Edit and bounces it to the other person!
     socket.to(data.room).emit('message_updated', data);
   });
 
- // ─── NEW: TYPING INDICATOR RADAR ───
   socket.on('typing', (room) => {
-    socket.to(room).emit('display_typing'); // 🚨 Changed data.room to just room
+    socket.to(room).emit('display_typing'); 
   });
 
   socket.on('stop_typing', (room) => {
-    socket.to(room).emit('hide_typing');    // 🚨 Changed data.room to just room
+    socket.to(room).emit('hide_typing');    
   });
 
- // 🌟 REAL-TIME READ RECEIPTS 🌟
   socket.on('mark_as_read', async ({ room, readerId }) => {
     try {
       const HoloMsg = mongoose.models.HoloMessage;
@@ -90,16 +95,25 @@ io.on('connection', (socket) => {
     }
   });
   
-  // 🚨 3. REPLACED DISCONNECT EVENT HERE
+  // 🚨 3. SMART OFFLINE DETECTION
   socket.on('disconnect', async () => {
     console.log('❌ User disconnected:', socket.id);
     
-    // When they close the app, find who they were and set them offline!
     const userId = activeSockets.get(socket.id);
     if (userId) {
-      const User = mongoose.models.User;
-      if (User) await User.findByIdAndUpdate(userId, { isOnline: false });
-      activeSockets.delete(socket.id); // Clean up memory
+      activeSockets.delete(socket.id); // Remove this specific tab
+      
+      const currentCount = userConnectionCounts.get(userId) || 0;
+
+      if (currentCount <= 1) {
+        // This was their LAST tab. They are truly offline now.
+        userConnectionCounts.delete(userId);
+        const User = mongoose.models.User;
+        if (User) await User.findByIdAndUpdate(userId, { isOnline: false });
+      } else {
+        // They just closed a tab, or refreshed, but still have the app open! Stay online!
+        userConnectionCounts.set(userId, currentCount - 1);
+      }
     }
   });
 });

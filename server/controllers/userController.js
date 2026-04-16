@@ -136,7 +136,7 @@ const getFollowing = async (req, res) => {
 };
 
 // ─── Search Users ─────────────────────────────────────────────────────────────
-// --- Search Users ---
+// ─── Search Users ─────────────────────────────────────────────────────────────
 const searchUsers = async (req, res) => {
   try {
     const { q } = req.query;
@@ -147,24 +147,31 @@ const searchUsers = async (req, res) => {
         { username: new RegExp(q, 'i') },
         { fullName: new RegExp(q, 'i') },
       ]
-      // We removed 'isActive: true' from here so it stops hiding your friends!
     })
     .select('username fullName profilePhoto isVerified role')
     .limit(20);
 
-    res.json({ success: true, data: users });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+    // ✅ THE FIX: For each user, check if the logged-in user already follows them
+    const usersWithFollowStatus = await Promise.all(
+      users.map(async (u) => {
+        let isFollowing = false;
 
-// --- Get All Users (For Inbox Sidebar) ---
-// --- Get All Users (For Inbox Sidebar) ---
-const getAllUsers = async (req, res) => {
-  try {
-    // We removed 'isActive: true' so it grabs EVERY registered user
-    const users = await User.find({}).select('-password');
-    res.json({ success: true, data: users });
+        if (req.user) {
+          const followRecord = await Follow.findOne({ 
+            follower: req.user._id,   // logged-in user
+            following: u._id          // the search result user
+          });
+          isFollowing = !!followRecord; // true if record exists, false if not
+        }
+
+        return {
+          ...u.toObject(),
+          isFollowing, // ✅ This is what the frontend reads to show Nod/Nodded
+        };
+      })
+    );
+
+    res.json({ success: true, data: usersWithFollowStatus });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

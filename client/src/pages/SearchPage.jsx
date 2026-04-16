@@ -51,22 +51,21 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
   const [isNodded, setIsNodded] = useState(false);
 
   // Bulletproof state checker
-  useEffect(() => {
-    if (targetUser && currentUser) {
-      const myId = String(currentUser._id || currentUser.id);
-      const targetId = String(targetUser._id || targetUser.id);
-      
-      const followers = targetUser.followers || [];
-      const following = currentUser.following || [];
-      
-      const isFollowed = 
-        targetUser.isFollowing || 
-        followers.some(f => String(f._id || f.id || f) === myId) ||
-        following.some(f => String(f._id || f.id || f) === targetId);
-        
-      setIsNodded(isFollowed);
+ useEffect(() => {
+  if (targetUser && currentUser) {
+    // ✅ Trust isFollowing from backend first
+    if (typeof targetUser.isFollowing === 'boolean') {
+      setIsNodded(targetUser.isFollowing);
+      return;
     }
-  }, [targetUser, currentUser]);
+
+    // Fallback: manual check
+    const myId = String(currentUser._id || currentUser.id);
+    const followers = targetUser.followers || [];
+    const inFollowers = followers.some(f => String(f._id || f.id || f) === myId);
+    setIsNodded(inFollowers);
+  }
+}, [targetUser, currentUser]);
 
   const handleNod = async (e) => {
     e.preventDefault(); 

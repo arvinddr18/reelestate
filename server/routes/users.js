@@ -16,7 +16,7 @@ const {
 
 // --- Routes ---
 router.get('/', getAllUsers);
-router.get('/search', searchUsers);
+router.get('/search', protect, searchUsers);
 router.get('/:id', getUserProfile);
 
 // THE FIX: Changed to '/update' to match frontend, and removed the upload middleware!

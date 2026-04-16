@@ -315,8 +315,9 @@ useEffect(() => {
           
           {/* LEFT: Info & Tags */}
           <div className="flex-1 pr-2">
-            {/* 🚨 THE FIX: Only show Live Node if they haven't hidden their activity! */}
-            {!user?.hideActivity && (
+            
+            {/* 🚨 THE FIX: Only show if they haven't hidden it AND they are currently online (or if you are viewing your own profile) */}
+            {!user?.hideActivity && (canEditProfile || user?.isOnline) && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_#34d399] animate-pulse"/>
                 <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Live Node</span>

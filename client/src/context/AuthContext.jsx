@@ -122,6 +122,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 👇 🚨 ADD THIS NEW BLOCK RIGHT HERE 👇
+  // ─── TELL THE SERVER WE ARE ONLINE ───
+  useEffect(() => {
+    if (user) {
+      // We use a tiny 1-second delay to ensure socketService finishes connecting first!
+      setTimeout(() => {
+        if (socketService.socket) {
+          socketService.socket.emit('iam_online', user._id);
+        }
+      }, 1000);
+    }
+  }, [user]);
+  // 👆 🚨 ────────────────────────────── 👆
+
   // Logout: clear everything
   const logout = useCallback(() => {
     localStorage.removeItem('nodexa_token');
@@ -129,6 +143,9 @@ export function AuthProvider({ children }) {
     socketService.disconnect();
     setUser(null);
   }, []);
+  
+
+  
 
   // Update user data (e.g. after profile edit)
   const updateUser = useCallback((updates) => {

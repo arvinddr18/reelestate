@@ -47,13 +47,13 @@ const getUserProfile = async (req, res) => {
 
 //update profile//
 
+//update profile//
 const updateProfile = async (req, res) => {
   try {
-    // Note: Use req.user._id or req.user.id depending on how your auth middleware sets it
     const userId = req.user._id || req.user.id; 
     
-    // We get the data from the frontend (including the giant Base64 photo string)
-    const { name, username, bio, website, profilePhoto } = req.body;
+    // 🚨 FIX 1: We added isPrivate and hideActivity here so the backend actually receives them!
+    const { name, username, bio, website, profilePhoto, isPrivate, hideActivity } = req.body;
 
     let user = await User.findById(userId);
     if (!user) {
@@ -61,22 +61,23 @@ const updateProfile = async (req, res) => {
     }
 
     // 🚨 1. Handle the Image Upload to Cloudinary
-    // We check if it starts with 'data:image' to ensure it's a NEW Base64 photo
     if (profilePhoto && profilePhoto.startsWith('data:image')) {
       const uploadResponse = await cloudinary.uploader.upload(profilePhoto, {
-        folder: 'nodexa_avatars', // Puts it in a neat folder in your Cloudinary
+        folder: 'nodexa_avatars',
       });
-      
-      // Save the secure URL to the user
       user.profilePhoto = uploadResponse.secure_url;
-      user.avatar = uploadResponse.secure_url; // Updating both just in case your UI uses 'avatar'
+      user.avatar = uploadResponse.secure_url; 
     }
 
-    // 🚨 2. Update the rest of the text fields
+    // 🚨 2. Update the text fields
     if (name) user.fullName = name; 
     if (username) user.username = username;
     if (bio !== undefined) user.bio = bio;
     if (website !== undefined) user.website = website;
+
+    // 🚨 FIX 2: ADD THESE LINES! We use !== undefined because 'false' is a valid setting for Public!
+    if (isPrivate !== undefined) user.isPrivate = isPrivate;
+    if (hideActivity !== undefined) user.hideActivity = hideActivity;
 
     // 3. Save to database
     await user.save();

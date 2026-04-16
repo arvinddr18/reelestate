@@ -48,6 +48,13 @@ const userSchema = new mongoose.Schema(
 
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+
+    // 🚨 ADD THIS NEW FIELD RIGHT HERE 🚨
+    isPrivate: { 
+      type: Boolean, 
+      default: true 
+    },
+
   },
   { timestamps: true }
 );

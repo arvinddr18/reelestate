@@ -881,20 +881,21 @@ useEffect(() => {
                     </div>
                      <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
                         
-                        {/* Private Account Toggle */}
+                       {/* Public Account Toggle */}
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
-                            <IoMdLock size={22} className="text-gray-400" />
+                            {/* Changed icon to a Globe/Eye concept using an existing icon */}
+                            <IoMdPerson size={22} className={!formData.isPrivate ? "text-[#00F0FF]" : "text-gray-400"} />
                             <div>
-                              <p className="text-sm font-bold text-white">Private Account</p>
-                              <p className="text-xs text-gray-500 mt-0.5">Only approved followers can see your posts.</p>
+                              <p className="text-sm font-bold text-white">Public Account</p>
+                              <p className="text-xs text-gray-500 mt-0.5">When on, anyone can see your posts. When off, your account is safely private.</p>
                             </div>
                           </div>
                           <button 
                             onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} 
-                            className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.isPrivate ? 'bg-[#00F0FF] border-[#00F0FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                            className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${!formData.isPrivate ? 'bg-[#00F0FF] border-[#00F0FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
                           >
-                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.isPrivate ? 'right-[2px]' : 'left-[2px]'}`} />
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${!formData.isPrivate ? 'right-[2px]' : 'left-[2px]'}`} />
                           </button>
                         </div>
 

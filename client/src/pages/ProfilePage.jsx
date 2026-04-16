@@ -245,24 +245,29 @@ useEffect(() => {
     }
   }, [userId, currentUser, canEditProfile]);
 
-  const handleUpdate = async () => {
+ const handleUpdate = async () => {
     try {
+      // 1. Prepare the data (including the new privacy toggle states)
       const payload = { ...formData, profilePhoto: avatarPreview };
+      
+      // 2. Send to backend
       const res = await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
+      
       if(res.data.success) {
+        // 3. Update the local user state instantly (No hard page refresh needed!)
+        setUser(prev => ({ 
+          ...prev, 
+          ...formData,
+          profilePhoto: avatarPreview || prev.profilePhoto
+        }));
+        
+        // 4. Close the command center modal
         setIsEditing(false);
-        window.location.reload(); 
       }
     } catch (err) {
-      alert(`Backend Error: ${err.message}`);
+      alert(`Update Failed: ${err.response?.data?.message || err.message}`);
     }
   };
-
-  if (loading) return (
-    <div className="h-screen bg-[#0B0F19] flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-[#00F0FF] border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  );
 
   const trustScore = Math.min(98, 70 + (userPosts.length * 2)); 
 
@@ -875,6 +880,8 @@ useEffect(() => {
                       </div>
                     </div>
                      <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                        
+                        {/* Private Account Toggle */}
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
                             <IoMdLock size={22} className="text-gray-400" />
@@ -883,10 +890,15 @@ useEffect(() => {
                               <p className="text-xs text-gray-500 mt-0.5">Only approved followers can see your posts.</p>
                             </div>
                           </div>
-                          <button onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.isPrivate ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}>
-                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all ${formData.isPrivate ? 'right-[2px]' : 'left-[2px]'}`} />
+                          <button 
+                            onClick={() => setFormData({...formData, isPrivate: !formData.isPrivate})} 
+                            className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.isPrivate ? 'bg-[#00F0FF] border-[#00F0FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                          >
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.isPrivate ? 'right-[2px]' : 'left-[2px]'}`} />
                           </button>
                         </div>
+
+                        {/* Hide Online Status Toggle */}
                         <div className="flex items-center justify-between p-5 hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
                             <IoMdStar size={22} className="text-gray-400" />
@@ -895,13 +907,21 @@ useEffect(() => {
                               <p className="text-xs text-gray-500 mt-0.5">Turn off the green dot on your profile.</p>
                             </div>
                           </div>
-                          <button onClick={() => setFormData({...formData, hideActivity: !formData.hideActivity})} className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.hideActivity ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}>
-                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all ${formData.hideActivity ? 'right-[2px]' : 'left-[2px]'}`} />
+                          <button 
+                            onClick={() => setFormData({...formData, hideActivity: !formData.hideActivity})} 
+                            className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.hideActivity ? 'bg-[#00F0FF] border-[#00F0FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                          >
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.hideActivity ? 'right-[2px]' : 'left-[2px]'}`} />
                           </button>
                         </div>
+
                      </div>
+                     
                      <div className="mt-8 flex justify-end">
-                       <button onClick={handleUpdate} className="bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 px-8 py-3.5 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all">
+                       <button 
+                         onClick={handleUpdate} 
+                         className="bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 px-8 py-3.5 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all active:scale-95"
+                       >
                          Apply Settings
                        </button>
                     </div>

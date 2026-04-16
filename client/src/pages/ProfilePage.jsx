@@ -12,7 +12,7 @@ import {
   IoMdAnalytics, IoMdHelpCircle, IoMdInformationCircle,
   IoMdCheckmark, IoMdAdd, IoMdLogOut, IoMdFitness, IoMdHome, IoMdArrowDropdown // 🚨 NEW ICONS ADDED HERE
 } from 'react-icons/io';
-import { MdOutlineDoubleArrow, MdShield, MdBlock, MdAutoAwesome, MdLaptopMac, MdSmartphone } from 'react-icons/md';
+import { MdOutlineDoubleArrow, MdShield, MdBlock, MdAutoAwesome, MdLaptopMac, MdSmartphone, MdNotificationsOff } from 'react-icons/md';
 import PostCard from '../components/feed/PostCard'; 
 import { useAuth } from '../context/AuthContext';
 
@@ -53,6 +53,7 @@ export default function ProfilePage() {
 
  // ─── NOD SYSTEM STATE ───
   const [isNodded, setIsNodded] = useState(false);
+  const [showNoddedMenu, setShowNoddedMenu] = useState(false);
 
   // 🚨 Indestructible logic that checks both ID and _ID formats
 // ✅ REPLACE WITH THIS
@@ -378,9 +379,10 @@ useEffect(() => {
 
         {/* ── ACTION BUTTONS ROW ── */}
         <div className="flex items-center gap-3 mb-6">
-          {!canEditProfile && (
+         {!canEditProfile && (
             <button 
-              onClick={handleNod} 
+              // 🚨 FIX: Open menu if already nodded, otherwise just Nod instantly!
+              onClick={() => isNodded ? setShowNoddedMenu(true) : handleNod()} 
               className={`flex-1 py-3.5 rounded-[16px] font-bold text-[12px] flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 border ${
                 isNodded 
                   ? 'bg-transparent border-[#00F0FF] text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]' 
@@ -1187,6 +1189,94 @@ useEffect(() => {
           </div>
         </div>
       )}
+{/* ─── 🚀 NODDED BOTTOM SHEET MODAL ─── */}
+      <AnimatePresence>
+        {showNoddedMenu && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-end md:items-center justify-center bg-[#05070A]/80 backdrop-blur-sm p-4"
+            onClick={() => setShowNoddedMenu(false)}
+          >
+            <motion.div 
+              initial={{ y: "100%" }} 
+              animate={{ y: 0 }} 
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="w-full max-w-sm bg-[#0B0F19] border border-white/10 rounded-[32px] overflow-hidden shadow-[0_-10px_50px_rgba(0,0,0,0.8)]"
+              onClick={e => e.stopPropagation()} // Prevent clicking inside from closing it
+            >
+              
+              {/* Header: User Info */}
+              <div className="p-6 border-b border-[#1E2532] flex flex-col items-center relative">
+                <div className="w-12 h-1 bg-[#1E2532] rounded-full absolute top-3 md:hidden" />
+                <div className="w-16 h-16 rounded-full border border-[#00F0FF]/40 overflow-hidden mb-3 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                  <img src={resolveMediaUrl(user?.profilePhoto) || `https://ui-avatars.com/api/?name=${user?.username}`} className="w-full h-full object-cover" alt="Avatar" />
+                </div>
+                <h3 className="text-white font-black text-lg tracking-tight">@{user?.username}</h3>
+              </div>
+
+              {/* Options List */}
+              <div className="p-2 flex flex-col gap-1">
+                
+                {/* 1. UNNOD */}
+                <button 
+                  onClick={() => { handleNod(); setShowNoddedMenu(false); }} 
+                  className="flex items-center gap-4 p-4 hover:bg-[#151A25] transition-colors rounded-2xl text-left group"
+                >
+                  <span className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors shadow-inner">
+                    <IoMdClose size={20} />
+                  </span>
+                  <div>
+                    <span className="text-sm font-black text-red-500 group-hover:text-white transition-colors block tracking-wide">Unnod</span>
+                  </div>
+                </button>
+
+                {/* 2. MUTE */}
+                <button 
+                  onClick={() => { alert("Muted!"); setShowNoddedMenu(false); }} 
+                  className="flex items-center gap-4 p-4 hover:bg-[#151A25] transition-colors rounded-2xl text-left group"
+                >
+                  <span className="w-10 h-10 rounded-full bg-gray-500/10 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors shadow-inner">
+                    <MdNotificationsOff size={20} /> 
+                  </span>
+                  <div>
+                    <span className="text-sm font-black text-white block tracking-wide">Mute</span>
+                    <span className="text-xs text-gray-500 font-medium mt-0.5 block">Hide their posts from your feed</span>
+                  </div>
+                </button>
+
+                {/* 3. PRIORITIZE */}
+                <button 
+                  onClick={() => { alert("Prioritized!"); setShowNoddedMenu(false); }} 
+                  className="flex items-center gap-4 p-4 hover:bg-[#151A25] transition-colors rounded-2xl text-left group"
+                >
+                  <span className="w-10 h-10 rounded-full bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] group-hover:bg-[#F5A623] group-hover:text-white transition-colors shadow-inner">
+                    <IoMdStar size={20} />
+                  </span>
+                  <div>
+                    <span className="text-sm font-black text-[#F5A623] group-hover:text-white transition-colors block tracking-wide">Prioritize</span>
+                    <span className="text-xs text-gray-500 font-medium mt-0.5 block">See their content higher in feed</span>
+                  </div>
+                </button>
+
+                {/* 4. BLOCK */}
+                <button 
+                  onClick={() => { alert("Blocked!"); setShowNoddedMenu(false); }} 
+                  className="flex items-center gap-4 p-4 hover:bg-[#151A25] transition-colors rounded-2xl text-left group"
+                >
+                  <span className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-gray-500 group-hover:text-white transition-colors shadow-inner">
+                    <MdBlock size={20} />
+                  </span>
+                  <span className="text-sm font-black text-gray-500 group-hover:text-white transition-colors block tracking-wide">Block</span>
+                </button>
+
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

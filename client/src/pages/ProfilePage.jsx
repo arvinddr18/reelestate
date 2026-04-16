@@ -55,21 +55,36 @@ export default function ProfilePage() {
   const [isNodded, setIsNodded] = useState(false);
 
   // 🚨 Indestructible logic that checks both ID and _ID formats
-  useEffect(() => {
-    if (user && currentUser) {
-      const myId = String(currentUser._id || currentUser.id);
-      const targetId = String(user._id || user.id);
-      
-      const followersArray = user.followers || [];
-      const followingArray = currentUser.following || [];
-
-      // Check if your ID is inside their followers, or their ID is inside your following
-      const inFollowers = followersArray.some(f => String(f._id || f.id || f) === myId);
-      const inFollowing = followingArray.some(f => String(f._id || f.id || f) === targetId);
-
-      setIsNodded(inFollowers || inFollowing || user.isFollowing || false);
+// ✅ REPLACE WITH THIS
+useEffect(() => {
+  if (user && currentUser) {
+    // Backend sends isFollowing directly — trust it first!
+    if (typeof user.isFollowing === 'boolean') {
+      setIsNodded(user.isFollowing);
+      return;
     }
-  }, [user, currentUser]);
+    // Fallback check
+    const myId = String(currentUser._id || currentUser.id);
+    const followersArray = user.followers || [];
+    const inFollowers = followersArray.some(f => String(f._id || f.id || f) === myId);
+    setIsNodded(inFollowers);
+  }
+}, [user, currentUser]);
+
+useEffect(() => {
+  if (user && currentUser) {
+    const myId = String(currentUser._id || currentUser.id);
+    const targetId = String(user._id || user.id);
+    
+    const followersArray = user.followers || [];
+    const followingArray = currentUser.following || [];
+
+    const inFollowers = followersArray.some(f => String(f._id || f.id || f) === myId);
+    const inFollowing = followingArray.some(f => String(f._id || f.id || f) === targetId);
+
+    setIsNodded(inFollowers || inFollowing || user.isFollowing || false);
+  }
+}, [user, currentUser]);
 
   const handleNod = async () => {
     if (!currentUser) return;

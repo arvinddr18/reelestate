@@ -30,7 +30,15 @@ const getUserProfile = async (req, res) => {
       isFollowing = !!followRecord;
     }
 
-    res.json({ success: true, data: { user, posts, isFollowing } });
+    // ✅ AFTER
+res.json({ 
+  success: true, 
+  data: { 
+    user: { ...user.toObject(), isFollowing }, // ✅ isFollowing INSIDE user object
+    posts, 
+    isFollowing  // keep this too for safety
+  } 
+});
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

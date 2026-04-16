@@ -122,16 +122,27 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 👇 🚨 ADD THIS NEW BLOCK RIGHT HERE 👇
-  // ─── TELL THE SERVER WE ARE ONLINE ───
+ // 👇 🚨 INDESTRUCTIBLE ONLINE PRESENCE 👇
   useEffect(() => {
-    if (user) {
-      // We use a tiny 1-second delay to ensure socketService finishes connecting first!
-      setTimeout(() => {
-        if (socketService.socket) {
-          socketService.socket.emit('iam_online', user._id);
-        }
-      }, 1000);
+    if (user && socketService.socket) {
+      const userId = user._id || user.id;
+
+      const announceOnline = () => {
+        socketService.socket.emit('iam_online', userId);
+      };
+
+      // 1. If socket is already connected, tell server immediately
+      if (socketService.socket.connected) {
+        announceOnline();
+      } 
+      
+      // 2. If socket connects (or reconnects after dropping), tell server!
+      socketService.socket.on('connect', announceOnline);
+
+      // Cleanup listener when they log out
+      return () => {
+        socketService.socket.off('connect', announceOnline);
+      };
     }
   }, [user]);
   // 👆 🚨 ────────────────────────────── 👆

@@ -51,23 +51,25 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('grid'); 
   const [loading, setLoading] = useState(true);
 
-  // ─── NOD SYSTEM STATE ───
-  // Ideally, your backend should send 'isFollowing: true/false' in the profile fetch.
-  // ─── NOD SYSTEM STATE ───
+ // ─── NOD SYSTEM STATE ───
   const [isNodded, setIsNodded] = useState(false);
 
-  // 🚨 FIX: Listen to the entire 'user' object so we catch the data when it finishes downloading!
+  // 🚨 Indestructible logic that checks both ID and _ID formats
   useEffect(() => {
     if (user && currentUser) {
-      const followersArray = user.followers || [];
+      const myId = String(currentUser._id || currentUser.id);
+      const targetId = String(user._id || user.id);
       
-      // Bulletproof check: Look in their followers, look in your following, and look at backend flags!
-      const inFollowers = followersArray.some(f => String(f._id || f) === String(currentUser._id));
-      const inFollowing = (currentUser.following || []).some(id => String(id) === String(user._id));
+      const followersArray = user.followers || [];
+      const followingArray = currentUser.following || [];
+
+      // Check if your ID is inside their followers, or their ID is inside your following
+      const inFollowers = followersArray.some(f => String(f._id || f.id || f) === myId);
+      const inFollowing = followingArray.some(f => String(f._id || f.id || f) === targetId);
 
       setIsNodded(inFollowers || inFollowing || user.isFollowing || false);
     }
-  }, [user, currentUser]); // 👈 Changed from user?._id back to user!
+  }, [user, currentUser]);
 
   const handleNod = async () => {
     if (!currentUser) return;

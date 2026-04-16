@@ -46,12 +46,32 @@ const SEARCH_CATEGORIES = [
 // ─── THE MASTER CATEGORY LIST ───
 // ... (your existing categories stay here) ...
 
-// 🚨 PASTE THE NEW COMPONENT HERE 🚨
+// ─── 🚨 SMART USER SEARCH CARD (NOD SYSTEM) ───
 const UserSearchCard = ({ targetUser, currentUser }) => {
-  const [isNodded, setIsNodded] = useState(targetUser.isFollowing || targetUser.followers?.includes(currentUser?._id) || false);
+  const [isNodded, setIsNodded] = useState(false);
+
+  // Bulletproof state checker
+  useEffect(() => {
+    if (targetUser && currentUser) {
+      const myId = String(currentUser._id || currentUser.id);
+      const targetId = String(targetUser._id || targetUser.id);
+      
+      const followers = targetUser.followers || [];
+      const following = currentUser.following || [];
+      
+      const isFollowed = 
+        targetUser.isFollowing || 
+        followers.some(f => String(f._id || f.id || f) === myId) ||
+        following.some(f => String(f._id || f.id || f) === targetId);
+        
+      setIsNodded(isFollowed);
+    }
+  }, [targetUser, currentUser]);
 
   const handleNod = async (e) => {
     e.preventDefault(); 
+    e.stopPropagation(); // 🚨 Stops the click from opening the profile!
+    
     if (!currentUser) {
       toast.error("Please initialize identity to Nod.");
       return;
@@ -61,8 +81,7 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
     setIsNodded(!wasNodded);
 
     try {
-      // Uses your existing 'api' instance!
-      await api.post(`/users/${targetUser._id}/follow`);
+      await api.post(`/users/${targetUser._id || targetUser.id}/follow`);
     } catch (error) {
       setIsNodded(wasNodded); // Revert on fail
     }
@@ -70,7 +89,7 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
 
   return (
     <Link 
-      to={`/profile/${targetUser._id}`} 
+      to={`/profile/${targetUser._id || targetUser.id}`} 
       className="w-full bg-[#151A25]/60 backdrop-blur-xl border border-white/5 rounded-2xl p-4 flex items-center justify-between hover:border-white/10 transition-colors group"
     >
       <div className="flex items-center gap-4">
@@ -88,7 +107,7 @@ const UserSearchCard = ({ targetUser, currentUser }) => {
       </div>
 
       {/* The Nod Button */}
-      {currentUser?._id !== targetUser._id && (
+      {String(currentUser?._id || currentUser?.id) !== String(targetUser._id || targetUser.id) && (
         <button 
           onClick={handleNod}
           className={`px-5 py-2.5 rounded-xl font-black text-[10px] tracking-widest uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-lg ${

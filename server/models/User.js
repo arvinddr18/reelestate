@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    emailAlerts: {
+      type: Boolean,
+      default: true // Default is true (users get emails by default)
+    },
 
   },
   { timestamps: true }

@@ -53,7 +53,7 @@ const updateProfile = async (req, res) => {
     const userId = req.user._id || req.user.id; 
     
     // 🚨 FIX 1: We added isPrivate and hideActivity here so the backend actually receives them!
-    const { name, username, bio, website, profilePhoto, isPrivate, hideActivity } = req.body;
+    const { name, username, bio, website, profilePhoto, isPrivate, hideActivity, emailAlerts } = req.body;
 
     let user = await User.findById(userId);
     if (!user) {
@@ -78,6 +78,9 @@ const updateProfile = async (req, res) => {
     // 🚨 FIX 2: ADD THESE LINES! We use !== undefined because 'false' is a valid setting for Public!
     if (isPrivate !== undefined) user.isPrivate = isPrivate;
     if (hideActivity !== undefined) user.hideActivity = hideActivity;
+
+    // 🚨 Add this new line:
+    if (emailAlerts !== undefined) user.emailAlerts = emailAlerts;
 
     // 3. Save to database
     await user.save();

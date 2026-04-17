@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import socketService from '../services/socket'; // 🚨 ADD THIS LINE!
 import { motion, AnimatePresence } from 'framer-motion'; // 🚨 ADDED FRAMER MOTION
 import PersonalInfo from '../components/settings/PersonalInfo';
 import axios from 'axios';
@@ -200,6 +201,42 @@ useEffect(() => {
   });
 
   const canEditProfile = !userId || String(userId) === String(currentUser?._id);
+
+// ─── 🚨 REAL-TIME LIVE NODE RADAR (AUTO-CONNECTING) ───
+  useEffect(() => {
+    let cleanup;
+
+    const setupRadar = () => {
+      if (socketService.socket && user) {
+        const handleStatusChange = (data) => {
+          if (data.userId === String(user._id || user.id)) {
+            setUser(prev => ({ ...prev, isOnline: data.isOnline }));
+          }
+        };
+        // Turn on radar
+        socketService.socket.on('user_status_change', handleStatusChange);
+        return () => socketService.socket.off('user_status_change', handleStatusChange);
+      }
+      return null;
+    };
+
+    // Try immediately
+    cleanup = setupRadar();
+
+    // If socket isn't ready, keep trying every 1 second until it connects!
+    const radarInterval = setInterval(() => {
+      if (socketService.socket && !cleanup) {
+        cleanup = setupRadar();
+        if (cleanup) clearInterval(radarInterval);
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(radarInterval);
+      if (cleanup) cleanup();
+    };
+  }, [user]);
+
 
   useEffect(() => {
     const fetchProfile = async () => {

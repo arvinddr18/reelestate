@@ -35,35 +35,61 @@ const io = new Server(server, {
   }
 });
 
-// 🚨 1. SMART TRACKING MAPS
+
+// 🚨 1. JUST ONE MAP NEEDED NOW
 const activeSockets = new Map(); // Maps socket.id -> userId
-const userConnectionCounts = new Map(); // Maps userId -> number of open tabs
 
 io.on('connection', (socket) => {
   console.log('⚡ User connected to chat:', socket.id);
 
-  // 🚨 2. SMART ONLINE DETECTION & BROADCASTING
+  // 🚨 2. BULLETPROOF ONLINE DETECTION
   socket.on('iam_online', async (userId) => {
     if (!userId) return;
-    const idString = String(userId); // Bulletproof string conversion so Maps don't break!
-
+    const idString = String(userId);
     activeSockets.set(socket.id, idString);
-    
-    const currentCount = userConnectionCounts.get(idString) || 0;
-    userConnectionCounts.set(idString, currentCount + 1);
 
-    if (currentCount === 0) {
-      const User = mongoose.models.User;
-      if (User) await User.findByIdAndUpdate(idString, { isOnline: true });
-      
-      // 🚨 THE FIX: Shout to EVERYONE in the app that this user is now online!
-      io.emit('user_status_change', { userId: idString, isOnline: true });
-    }
+    // ALWAYS update database and shout to everyone, just to be safe!
+    const User = mongoose.models.User;
+    if (User) await User.findByIdAndUpdate(idString, { isOnline: true });
+    io.emit('user_status_change', { userId: idString, isOnline: true });
   });
 
-  /* ... (Keep your join_room, send_message, typing events here) ... */
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined private room: ${roomId}`);
+  });
+
+  socket.on('send_message', (data) => {
+    socket.to(data.room).emit('receive_message', data); 
+  });
+
+  socket.on('update_message', (data) => {
+    socket.to(data.room).emit('message_updated', data);
+  });
+
+  socket.on('typing', (room) => {
+    socket.to(room).emit('display_typing'); 
+  });
+
+  socket.on('stop_typing', (room) => {
+    socket.to(room).emit('hide_typing');    
+  });
+
+  socket.on('mark_as_read', async ({ room, readerId }) => {
+    try {
+      const HoloMsg = mongoose.models.HoloMessage;
+      if (!HoloMsg) return;
+      await HoloMsg.updateMany(
+        { room: room, senderId: { $ne: readerId } },
+        { $set: { isRead: true } }
+      );
+      socket.to(room).emit('messages_read');
+    } catch (err) {
+      console.error("❌ Error marking messages as read:", err);
+    }
+  });
   
-  // 🚨 3. SMART OFFLINE DETECTION & BROADCASTING
+  // 🚨 3. BULLETPROOF OFFLINE DETECTION
   socket.on('disconnect', async () => {
     console.log('❌ User disconnected:', socket.id);
     
@@ -71,21 +97,25 @@ io.on('connection', (socket) => {
     if (idString) {
       activeSockets.delete(socket.id); 
       
-      const currentCount = userConnectionCounts.get(idString) || 0;
+      // Look at all remaining sockets. Does this user still have another tab open?
+      let stillOnline = false;
+      for (const uid of activeSockets.values()) {
+        if (uid === idString) {
+          stillOnline = true;
+          break;
+        }
+      }
 
-      if (currentCount <= 1) {
-        userConnectionCounts.delete(idString);
+      // If they have NO tabs left open, truly mark them offline
+      if (!stillOnline) {
         const User = mongoose.models.User;
         if (User) await User.findByIdAndUpdate(idString, { isOnline: false });
-        
-        // 🚨 THE FIX: Shout to EVERYONE that this user left!
         io.emit('user_status_change', { userId: idString, isOnline: false });
-      } else {
-        userConnectionCounts.set(idString, currentCount - 1);
       }
     }
-  })
   });
+});
+
 // --- 4. Route Connections ---
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);

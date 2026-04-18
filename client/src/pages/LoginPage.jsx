@@ -25,8 +25,11 @@ useEffect(() => {
     setLoading(true);
     
     try {
-      // Trying to log in...
-      const success = await login(email, password);
+      // 👇 1. Grab the timezone directly from the user's computer
+      const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // 👇 2. Pass the timezone into your login function!
+      const success = await login(email, password, userTimeZone); 
       
       if (success) {
         navigate('/'); // Goes to main feed

@@ -46,10 +46,10 @@ export function AuthProvider({ children }) {
   }, []);
 
 // —— UPGRADED LOGIN ROUTE ——
-  const login = async (email, password) => {
+  const login = async (email, password, timezone) => {
     try {
       // 1. Send credentials to backend
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password, timezone });
 
       // Handle the data structure (whether wrapped in 'data' or not)
       const userData = response.data.data || response.data;

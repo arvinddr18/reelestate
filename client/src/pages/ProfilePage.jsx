@@ -878,10 +878,14 @@ useEffect(() => {
                               <p className="text-sm font-bold text-white">Login Alerts</p>
                               <p className="text-xs text-gray-500 mt-0.5">Get notified of new sign-ins</p>
                             </div>
-                          </div>
-                          <button className="w-12 h-6 rounded-full bg-[#0057FF] relative transition-colors shadow-inner border border-[#0057FF]">
-                            <div className="w-5 h-5 rounded-full bg-white absolute top-[1px] right-[2px] shadow-sm transition-all" />
-                          </button>
+                            </div>
+                            <button 
+  onClick={() => setFormData({...formData, loginAlerts: !formData.loginAlerts})} 
+  className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${formData.loginAlerts ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}
+>
+  <div className={`w-5 h-5 rounded-full bg-white absolute top-[2px] transition-all duration-300 ${formData.loginAlerts ? 'left-[26px]' : 'left-[2px]'}`}></div>
+</button>
+                         
                         </div>
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">

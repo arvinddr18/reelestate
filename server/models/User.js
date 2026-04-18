@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 30,
     },
+    loginAlerts: { type: Boolean, default: true }, // Defaults to ON for safety!
     email: {
       type: String,
       required: [true, 'Email is required'],

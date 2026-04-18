@@ -88,6 +88,46 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
+    
+    // 👇 🚨 AUTOMATED LOGIN ALERT EMAIL 👇
+    try {
+      if (user.loginAlerts) {
+        const sendEmail = require('../utils/sendEmail'); // Adjust path if needed
+        
+        // Grab basic info about the browser making the request
+        const userAgent = req.headers['user-agent'] || 'Unknown Device';
+        const date = new Date().toLocaleString();
+
+        await sendEmail({
+          email: user.email,
+          subject: `Security Alert: New Login to Nodexa 🛡️`,
+          html: `
+            <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
+              <h2 style="color: #00F0FF; margin-top: 0; font-weight: 900;">Login Detected</h2>
+              <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">
+                Hello <b>@${user.username}</b>,
+              </p>
+              <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">
+                We noticed a new login to your Nodexa account. 
+              </p>
+              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px;">
+                <b>Time:</b> ${date}<br/><br/>
+                <b>Device Info:</b> ${userAgent}
+              </div>
+              <p style="color: #6B7280; font-size: 12px;">
+                If this was you, you can ignore this email. If you don't recognize this activity, please change your password immediately.
+              </p>
+            </div>
+          `
+        });
+        console.log(`📧 Login alert sent to ${user.email}`);
+      }
+    } catch (emailErr) {
+      console.error("Failed to send login alert:", emailErr);
+    }
+    // 👆 🚨 ───────────────────────────────── 👆
+
+    // res.status(200).json({ ... }) <-- Your existing success response
 
     const token = generateToken(user._id);
     res.json({ success: true, data: userResponse(user, token) });

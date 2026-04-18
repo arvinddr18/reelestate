@@ -1023,19 +1023,7 @@ useEffect(() => {
                        </button>
                     </div>
                     {/* Drop this button right under your Apply Settings button just for testing! */}
-  <button 
-    onClick={async () => {
-      try {
-        await api.post('/users/test-email');
-        alert("Email sent! Check your inbox.");
-      } catch (err) {
-        alert("Error sending email: " + err.response?.data?.message);
-      }
-    }} 
-    className="mt-4 bg-purple-500/20 text-purple-400 border border-purple-500/50 px-8 py-3.5 rounded-xl font-bold"
-  >
-    Fire Test Email 🚀
-  </button>
+
                   </div>
                   
                 )}

@@ -67,7 +67,7 @@ const register = async (req, res) => {
  */
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, timezone } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required.' });
@@ -89,33 +89,49 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
-    // 👇 🚨 AUTOMATED LOGIN ALERT EMAIL 👇
+  // 👇 🚨 AUTOMATED LOGIN ALERT EMAIL (GLOBAL & CLEANED) 👇
     try {
       if (user.loginAlerts) {
-        const sendEmail = require('../utils/sendEmail'); // Adjust path if needed
+        const sendEmail = require('../utils/sendEmail'); 
+        const UAParser = require('ua-parser-js'); // <--- Still need this for the device!
         
-        // Grab basic info about the browser making the request
-        const userAgent = req.headers['user-agent'] || 'Unknown Device';
-        const date = new Date().toLocaleString();
+        // 1. Translate the ugly User-Agent into clean text (e.g., "Chrome on Windows")
+        const parser = new UAParser(req.headers['user-agent']);
+        const browser = parser.getBrowser().name || 'Unknown Browser';
+        const os = parser.getOS().name || 'Unknown OS';
+        const cleanDeviceInfo = `${browser} on ${os}`;
+
+        // 2. Use the DYNAMIC timezone sent from the React frontend!
+        const userTimeZone = req.body.timezone || 'Asia/Kolkata'; // Fallback just in case
+        
+        const date = new Date().toLocaleString('en-US', { 
+          timeZone: userTimeZone,
+          dateStyle: 'medium',
+          timeStyle: 'medium'
+        });
 
         await sendEmail({
           email: user.email,
           subject: `Security Alert: New Login to Nodexa 🛡️`,
           html: `
             <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
-              <h2 style="color: #00F0FF; margin-top: 0; font-weight: 900;">Login Detected</h2>
+              <h2 style="color: #00F0FF; margin-top: 0; font-weight: 900; letter-spacing: -0.5px;">Login Detected</h2>
+              
               <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">
                 Hello <b>@${user.username}</b>,
               </p>
+              
               <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">
                 We noticed a new login to your Nodexa account. 
               </p>
-              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px;">
-                <b>Time:</b> ${date}<br/><br/>
-                <b>Device Info:</b> ${userAgent}
+              
+              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px; line-height: 1.6;">
+                <b>Time:</b> ${date}<br/>
+                <b>Device Info:</b> ${cleanDeviceInfo}
               </div>
-              <p style="color: #6B7280; font-size: 12px;">
-                If this was you, you can ignore this email. If you don't recognize this activity, please change your password immediately.
+              
+              <p style="color: #6B7280; font-size: 12px; margin-top: 30px;">
+                If this was you, you can safely ignore this email. If you don't recognize this activity, please change your password immediately.
               </p>
             </div>
           `

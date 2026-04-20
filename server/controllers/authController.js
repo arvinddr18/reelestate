@@ -90,25 +90,81 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
- // 👇 📡 1. GET DEVICE AND TIME INFO (BULLETPROOF VERSION) 👇
-        const UAParser = require('ua-parser-js');
-        const parser = new UAParser(req.headers['user-agent']);
-        
-        const browser = parser.getBrowser().name || 'Unknown Browser';
-        const os = parser.getOS().name || 'Unknown OS';
-        const device = parser.getDevice();
+ // ✅ REPLACE WITH THIS
+const browser = parser.getBrowser().name || 'Unknown Browser';
+const os = parser.getOS().name || 'Unknown OS';
+const device = parser.getDevice();
 
-        // Fix for the "K" bug: Default to the OS (e.g., "Android" or "Windows")
-        let hardware = os; 
-        
-        // Only use the device model if it is a real, full word (longer than 2 characters!)
-        if (device.vendor && device.model && device.model.length > 2) {
-          hardware = `${device.vendor} ${device.model}`;
-        } else if (device.model && device.model.length > 2) {
-          hardware = device.model;
-        }
+// ── XIAOMI/REDMI/POCO FRIENDLY NAME LOOKUP ──
+const XIAOMI_DEVICES = {
+  // Redmi Note series
+  'M1906G7G': 'Redmi Note 8 Pro',
+  'M1906G7I': 'Redmi Note 8 Pro',
+  'M2003J15SC': 'Redmi Note 9 Pro',
+  'M2007J20CG': 'Redmi Note 9 Pro Max',
+  'M2101K7BG': 'Redmi Note 10 Pro',
+  'M2101K7BI': 'Redmi Note 10 Pro',
+  'M2101K7BNY': 'Redmi Note 10 Pro',
+  'M2101K7AI': 'Redmi Note 10',
+  'M2101K7AG': 'Redmi Note 10',
+  'M2010J19SG': 'Redmi Note 9',
+  'M2010J19CG': 'Redmi Note 9',
+  'M1803E7SG': 'Redmi Note 5 Pro',
+  'M1805E10A': 'Redmi Note 5',
+  'M2111K6G': 'Redmi Note 11',
+  'M2111K6I': 'Redmi Note 11',
+  '22111317G': 'Redmi Note 11 Pro',
+  '2201116TG': 'Redmi Note 11 Pro+',
+  '23049PCD8G': 'Redmi Note 12 Pro',
+  '23049PCD8I': 'Redmi Note 12 Pro',
+  '22111317I': 'Redmi Note 12',
+  // Redmi series
+  'M2006C3LG': 'Redmi 9',
+  'M2004J19C': 'Redmi 9A',
+  'M2006C3LI': 'Redmi 9i',
+  'M2101K9AG': 'Redmi 9 Power',
+  '220733SFG': 'Redmi 12C',
+  'M2010J19CG': 'Redmi 9C',
+  // POCO series
+  'M2004J11G': 'POCO M2',
+  'M2101K9G': 'POCO M3 Pro',
+  'M2012K11AG': 'POCO X3 Pro',
+  '22021211RG': 'POCO M4 Pro',
+  'PFEM00': 'POCO F1',
+  // Mi series
+  'M2007J3SG': 'Mi 10T',
+  'M2007J3SY': 'Mi 10T Pro',
+  'M2102J20SG': 'Mi 11X',
+  // Samsung
+  'SM-G991B': 'Samsung Galaxy S21',
+  'SM-G998B': 'Samsung Galaxy S21 Ultra',
+  'SM-A325F': 'Samsung Galaxy A32',
+  'SM-A525F': 'Samsung Galaxy A52',
+  'SM-A725F': 'Samsung Galaxy A72',
+  'SM-A135F': 'Samsung Galaxy A13',
+  'SM-A235F': 'Samsung Galaxy A23',
+  'SM-M325FV': 'Samsung Galaxy M32',
+  'SM-M515F': 'Samsung Galaxy M51',
+  // OnePlus
+  'IN2010': 'OnePlus 8T',
+  'LE2101': 'OnePlus 9R',
+  'CPH2423': 'OnePlus Nord CE 2',
+  'CPH2409': 'OnePlus Nord 2T',
+};
 
-        const cleanDeviceInfo = `${hardware} • ${browser}`;
+let hardware = os;
+
+// Check model code against our lookup table first
+const rawModel = device.model || '';
+if (XIAOMI_DEVICES[rawModel]) {
+  hardware = XIAOMI_DEVICES[rawModel];
+} else if (device.vendor && rawModel && rawModel.length > 2) {
+  hardware = `${device.vendor} ${rawModel}`;
+} else if (rawModel && rawModel.length > 2) {
+  hardware = rawModel;
+}
+
+const cleanDeviceInfo = `${hardware} • ${browser}`;
 
         const userTimeZone = req.body.timezone || 'Asia/Kolkata'; 
         const date = new Date().toLocaleString('en-US', { 

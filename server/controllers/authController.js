@@ -90,20 +90,30 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
-  // 👇 📡 1. GET DEVICE AND TIME INFO 👇
-    const UAParser = require('ua-parser-js');
-    const parser = new UAParser(req.headers['user-agent']);
-    const browser = parser.getBrowser().name || 'Unknown Browser';
-    const os = parser.getOS().name || 'Unknown OS';
-    const cleanDeviceInfo = `${browser} on ${os}`;
+ // 👇 📡 1. GET DEVICE AND TIME INFO (UPGRADED) 👇
+        const UAParser = require('ua-parser-js');
+        const parser = new UAParser(req.headers['user-agent']);
+        
+        const browser = parser.getBrowser().name || 'Unknown Browser';
+        const os = parser.getOS().name || 'Unknown OS';
+        const device = parser.getDevice();
 
-    const userTimeZone = req.body.timezone || 'Asia/Kolkata'; 
-    const date = new Date().toLocaleString('en-US', { 
-      timeZone: userTimeZone,
-      dateStyle: 'medium',
-      timeStyle: 'medium'
-    });
-    // 👆 ─────────────────────────────── 👆
+        // Attempt to grab the exact brand/model (e.g., "Samsung SM-G991B"). 
+        // If the browser hides it for privacy, fallback gracefully to the OS (e.g., "Android").
+        const hardware = (device.vendor && device.model) 
+          ? `${device.vendor} ${device.model}` 
+          : (device.model || os);
+
+        // Format it to look like your original UI design! (e.g., "Android • Chrome")
+        const cleanDeviceInfo = `${hardware} • ${browser}`;
+
+        const userTimeZone = req.body.timezone || 'Asia/Kolkata'; 
+        const date = new Date().toLocaleString('en-US', { 
+          timeZone: userTimeZone,
+          dateStyle: 'medium',
+          timeStyle: 'medium'
+        });
+        // 👆 ─────────────────────────────── 👆
 
 
     // 👇 🚨 2. AUTOMATED LOGIN ALERT EMAIL 👇

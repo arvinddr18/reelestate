@@ -857,7 +857,9 @@ useEffect(() => {
                     <div className="mb-8">
                       <div className="mb-4">
                         <h3 className="text-[15px] font-bold text-white">Active Sessions</h3>
-                        <p className="text-xs text-gray-500 mt-1">You're logged in on 2 devices</p>
+                        <p className="text-xs text-gray-500 mt-1">
+  You're logged in on {user?.activeSessions?.length || 0} device{user?.activeSessions?.length === 1 ? '' : 's'}
+</p>
                       </div>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
                         {/* 👇 📡 THE DYNAMIC RADAR: Maps over real database sessions 👇 */}

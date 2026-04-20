@@ -594,8 +594,7 @@ useEffect(() => {
             <div className={`w-full h-full md:h-auto md:w-[280px] lg:w-[320px] flex-shrink-0 bg-[#0B0F19] border-r border-[#1E2532] flex flex-col ${!showMobileMenu ? 'hidden md:flex' : 'flex'}`}>
               
              {/* ── 🚨 PREMIUM ACCOUNT SWITCHER ── */}
-              <div className="p-6 md:p-8 relative z-50" ref={accountMenuRef}>
-                
+              <div className="p-6 md:p-8 relative z-[100]" ref={accountMenuRef}>
                 {/* Trigger Button */}
                 <div 
                   onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
@@ -882,9 +881,10 @@ useEffect(() => {
             )}
           </div>
           {/* 👆 ──────────────────────────────────────────────────────── 👆 */}
-                        <button className="w-full p-5 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold">
-                          <IoMdArrowBack size={16} className="rotate-180" /> Logout from All Devices
-                        </button>
+          <button onClick={handleLogoutAll} className="w-full p-5 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold">
+  <IoMdArrowBack size={16} className="rotate-180" /> Logout from All Devices
+</button>
+                        
                       </div>
                     </div>
 

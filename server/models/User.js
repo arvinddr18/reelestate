@@ -17,6 +17,13 @@ const userSchema = new mongoose.Schema(
       maxlength: 30,
     },
     loginAlerts: { type: Boolean, default: true }, // Defaults to ON for safety!
+
+    activeSessions: [{
+      deviceInfo: String,
+      time: String
+    }],
+
+
     email: {
       type: String,
       required: [true, 'Email is required'],

@@ -90,7 +90,7 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
- // 👇 📡 1. GET DEVICE AND TIME INFO (UPGRADED) 👇
+ // 👇 📡 1. GET DEVICE AND TIME INFO (BULLETPROOF VERSION) 👇
         const UAParser = require('ua-parser-js');
         const parser = new UAParser(req.headers['user-agent']);
         
@@ -98,13 +98,16 @@ const login = async (req, res) => {
         const os = parser.getOS().name || 'Unknown OS';
         const device = parser.getDevice();
 
-        // Attempt to grab the exact brand/model (e.g., "Samsung SM-G991B"). 
-        // If the browser hides it for privacy, fallback gracefully to the OS (e.g., "Android").
-        const hardware = (device.vendor && device.model) 
-          ? `${device.vendor} ${device.model}` 
-          : (device.model || os);
+        // Fix for the "K" bug: Default to the OS (e.g., "Android" or "Windows")
+        let hardware = os; 
+        
+        // Only use the device model if it is a real, full word (longer than 2 characters!)
+        if (device.vendor && device.model && device.model.length > 2) {
+          hardware = `${device.vendor} ${device.model}`;
+        } else if (device.model && device.model.length > 2) {
+          hardware = device.model;
+        }
 
-        // Format it to look like your original UI design! (e.g., "Android • Chrome")
         const cleanDeviceInfo = `${hardware} • ${browser}`;
 
         const userTimeZone = req.body.timezone || 'Asia/Kolkata'; 

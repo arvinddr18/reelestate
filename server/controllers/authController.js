@@ -90,79 +90,33 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
-    
-    // 👇 BULLETPROOF DEVICE PARSER - won't crash login
-    let cleanDeviceInfo = 'Unknown Device • Unknown Browser';
-    let date = new Date().toLocaleString('en-US', { 
-      timeZone: 'Asia/Kolkata',
-      dateStyle: 'medium',
-      timeStyle: 'medium'
-    });
-    try {
-      const UAParser = require('ua-parser-js');
-      const parser = new UAParser(req.headers['user-agent']);
-      const browser = parser.getBrowser().name || 'Unknown Browser';
-      const os = parser.getOS().name || 'Unknown OS';
-      const device = parser.getDevice();
-      const rawModel = device.model || '';
+ // 👇 📡 1. GET DEVICE AND TIME INFO (BULLETPROOF VERSION) 👇
+        const UAParser = require('ua-parser-js');
+        const parser = new UAParser(req.headers['user-agent']);
+        
+        const browser = parser.getBrowser().name || 'Unknown Browser';
+        const os = parser.getOS().name || 'Unknown OS';
+        const device = parser.getDevice();
 
-      // ── EXTRACT MODEL FROM RAW USER-AGENT IF ua-parser MISSED IT ──
-let modelCode = rawModel;
-if (!modelCode || modelCode.length <= 2) {
-  const uaString = req.headers['user-agent'] || '';
-  const uaMatch = uaString.match(/Android[\s\d.]+;\s*([A-Za-z0-9_\-]+)\s*(Build|MIUI)/);
-  if (uaMatch && uaMatch[1]) {
-    modelCode = uaMatch[1].trim();
-  }
-}
+        // Fix for the "K" bug: Default to the OS (e.g., "Android" or "Windows")
+        let hardware = os; 
+        
+        // Only use the device model if it is a real, full word (longer than 2 characters!)
+        if (device.vendor && device.model && device.model.length > 2) {
+          hardware = `${device.vendor} ${device.model}`;
+        } else if (device.model && device.model.length > 2) {
+          hardware = device.model;
+        }
 
-let hardware = os;
-if (XIAOMI_DEVICES[modelCode]) {
-  hardware = XIAOMI_DEVICES[modelCode];
-} else if (XIAOMI_DEVICES[rawModel]) {
-  hardware = XIAOMI_DEVICES[rawModel];
-} else if (device.vendor && rawModel && rawModel.length > 2) {
-  hardware = `${device.vendor} ${rawModel}`;
-} else if (modelCode && modelCode.length > 2) {
-  hardware = `Android (${modelCode})`;
-}
+        const cleanDeviceInfo = `${hardware} • ${browser}`;
 
-      const XIAOMI_DEVICES = {
-        'M1906G7G': 'Redmi Note 8 Pro',
-        'M1906G7I': 'Redmi Note 8 Pro',
-        'M2003J15SC': 'Redmi Note 9 Pro',
-        'M2007J20CG': 'Redmi Note 9 Pro Max',
-        'M2101K7BG': 'Redmi Note 10 Pro',
-        'M2101K7AI': 'Redmi Note 10',
-        'M2010J19SG': 'Redmi Note 9',
-        'M2111K6G': 'Redmi Note 11',
-        '22111317G': 'Redmi Note 11 Pro',
-        '23049PCD8G': 'Redmi Note 12 Pro',
-        'M2006C3LG': 'Redmi 9',
-        'M2004J19C': 'Redmi 9A',
-        'M2004J11G': 'POCO M2',
-        'M2012K11AG': 'POCO X3 Pro',
-        'SM-G991B': 'Samsung Galaxy S21',
-        'SM-A325F': 'Samsung Galaxy A32',
-        'SM-A525F': 'Samsung Galaxy A52',
-        'SM-A135F': 'Samsung Galaxy A13',
-        'SM-M325FV': 'Samsung Galaxy M32',
-        'IN2010': 'OnePlus 8T',
-        'LE2101': 'OnePlus 9R',
-        'CPH2423': 'OnePlus Nord CE 2',
-      };
-     
-      cleanDeviceInfo = `${hardware} • ${browser}`;
-      const userTimeZone = req.body.timezone || 'Asia/Kolkata';
-      date = new Date().toLocaleString('en-US', { 
-        timeZone: userTimeZone,
-        dateStyle: 'medium',
-        timeStyle: 'medium'
-      });
-    } catch (parseErr) {
-      console.error("Device parse failed:", parseErr.message);
-    }
-    // 👆 BULLETPROOF END
+        const userTimeZone = req.body.timezone || 'Asia/Kolkata'; 
+        const date = new Date().toLocaleString('en-US', { 
+          timeZone: userTimeZone,
+          dateStyle: 'medium',
+          timeStyle: 'medium'
+        });
+        // 👆 ─────────────────────────────── 👆
 
 
     // 👇 🚨 2. AUTOMATED LOGIN ALERT EMAIL 👇

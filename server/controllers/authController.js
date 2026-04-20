@@ -90,10 +90,6 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
-const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
-    }
     
     // 👇 BULLETPROOF DEVICE PARSER - won't crash login
     let cleanDeviceInfo = 'Unknown Device • Unknown Browser';

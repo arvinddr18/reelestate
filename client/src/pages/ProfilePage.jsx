@@ -11,7 +11,7 @@ import {
   IoMdHeart, IoMdCheckmarkCircle, IoMdTime, IoMdStar, IoMdShareAlt,
   IoMdPerson, IoMdLock, IoMdNotifications, IoMdCard, IoMdColorPalette,
   IoMdAnalytics, IoMdHelpCircle, IoMdInformationCircle,
-  IoMdCheckmark, IoMdAdd, IoMdLogOut, IoMdFitness, IoMdHome, IoMdArrowDropdown // 🚨 NEW ICONS ADDED HERE
+  IoMdCheckmark, IoMdAdd, IoMdLogOut, IoMdFitness, IoMdHome, IoMdArrowDropdown, IoMdDesktop, IoMdPhonePortrait // 🚨 NEW ICONS ADDED HERE
 } from 'react-icons/io';
 import { MdOutlineDoubleArrow, MdShield, MdBlock, MdAutoAwesome, MdLaptopMac, MdSmartphone, MdNotificationsOff } from 'react-icons/md';
 import PostCard from '../components/feed/PostCard'; 
@@ -848,20 +848,40 @@ useEffect(() => {
                         <p className="text-xs text-gray-500 mt-1">You're logged in on 2 devices</p>
                       </div>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                        <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
-                          <div className="flex items-center gap-4">
-                            <MdLaptopMac size={22} className="text-gray-400" />
-                            <p className="text-sm font-medium text-gray-300">MacBook Pro <span className="text-gray-500 mx-1">•</span> Chrome <span className="text-gray-500 mx-1">•</span> Bangalore</p>
-                          </div>
-                          <span className="text-[11px] font-bold text-[#0057FF] bg-[#0057FF]/10 px-3 py-1 rounded-full border border-[#0057FF]/20">Current</span>
-                        </div>
-                        <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
-                          <div className="flex items-center gap-4">
-                            <MdSmartphone size={22} className="text-gray-400" />
-                            <p className="text-sm font-medium text-gray-300">iPhone 14 <span className="text-gray-500 mx-1">•</span> Mobile <span className="text-gray-500 mx-1">•</span> Bangalore</p>
-                          </div>
-                          <span className="text-xs text-gray-500">2 days ago</span>
-                        </div>
+                        {/* 👇 📡 THE DYNAMIC RADAR: Maps over real database sessions 👇 */}
+          <div className="flex flex-col-reverse"> {/* Reverses it so the newest login is at the top! */}
+            {user?.activeSessions && user.activeSessions.length > 0 ? (
+              user.activeSessions.map((session, index) => (
+                <div key={index} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                  <div className="flex items-center gap-4">
+                    {/* Shows a mobile icon if 'Mobile' or 'Android' is in the text, otherwise shows a laptop */}
+                    {session.deviceInfo.includes('Mobile') || session.deviceInfo.includes('Android') || session.deviceInfo.includes('iOS') ? (
+                      <IoMdPhonePortrait size={22} className="text-gray-400" />
+                    ) : (
+                      <IoMdDesktop size={22} className="text-gray-400" />
+                    )}
+                    
+                    <div>
+                      <p className="text-sm font-bold text-white">{session.deviceInfo}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{session.time}</p>
+                    </div>
+                  </div>
+                  
+                  {/* If this is the absolute newest session in the array, give it the 'Current' badge */}
+                  {index === user.activeSessions.length - 1 && (
+                    <span className="text-[10px] font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-3 py-1 rounded-full border border-[#00F0FF]/20">
+                      Current
+                    </span>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="p-5 text-sm text-gray-500 text-center italic">
+                No session data recorded yet. Log out and log back in to trigger the radar!
+              </div>
+            )}
+          </div>
+          {/* 👆 ──────────────────────────────────────────────────────── 👆 */}
                         <button className="w-full p-5 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold">
                           <IoMdArrowBack size={16} className="rotate-180" /> Logout from All Devices
                         </button>

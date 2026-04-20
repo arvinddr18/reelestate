@@ -26,6 +26,18 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User not found or deactivated.' });
     }
 
+    // 👇 🚨 THE GLOBAL KILLSWITCH CHECK 👇
+    if (req.user.lastLogoutAll) {
+      // JWT 'iat' (issued at) is in seconds, JavaScript time is milliseconds
+      const tokenIssuedAt = decoded.iat * 1000; 
+      
+      // If the badge was printed BEFORE the killswitch was pressed... reject it!
+      if (tokenIssuedAt < req.user.lastLogoutAll.getTime()) {
+        return res.status(401).json({ success: false, message: 'Session expired. Please log in again.' });
+      }
+    }
+    // 👆 ────────────────────────────────────── 👆
+
     next();
   } catch (error) {
     return res.status(401).json({ success: false, message: 'Invalid or expired token.' });

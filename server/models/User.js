@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
       time: String
     }],
 
+    lastLogoutAll: Date,
+
 
     email: {
       type: String,

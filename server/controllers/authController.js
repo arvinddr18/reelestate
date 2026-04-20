@@ -228,9 +228,10 @@ const getLinkedAccounts = async (req, res) => {
  */
 const logoutAll = async (req, res) => {
   try {
-    // Wipe the active sessions array clean for this user!
+    // Wipe the sessions AND record the exact time the killswitch was pressed!
     await User.findByIdAndUpdate(req.user.id, {
-      $set: { activeSessions: [] }
+      $set: { activeSessions: [] },
+      lastLogoutAll: Date.now() // <--- 🚨 ADD THIS LINE!
     });
     
     res.json({ success: true, message: 'All sessions terminated.' });

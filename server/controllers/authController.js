@@ -105,6 +105,28 @@ const login = async (req, res) => {
       const os = parser.getOS().name || 'Unknown OS';
       const device = parser.getDevice();
       const rawModel = device.model || '';
+
+      // ── EXTRACT MODEL FROM RAW USER-AGENT IF ua-parser MISSED IT ──
+let modelCode = rawModel;
+if (!modelCode || modelCode.length <= 2) {
+  const uaString = req.headers['user-agent'] || '';
+  const uaMatch = uaString.match(/Android[\s\d.]+;\s*([A-Za-z0-9_\-]+)\s*(Build|MIUI)/);
+  if (uaMatch && uaMatch[1]) {
+    modelCode = uaMatch[1].trim();
+  }
+}
+
+let hardware = os;
+if (XIAOMI_DEVICES[modelCode]) {
+  hardware = XIAOMI_DEVICES[modelCode];
+} else if (XIAOMI_DEVICES[rawModel]) {
+  hardware = XIAOMI_DEVICES[rawModel];
+} else if (device.vendor && rawModel && rawModel.length > 2) {
+  hardware = `${device.vendor} ${rawModel}`;
+} else if (modelCode && modelCode.length > 2) {
+  hardware = `Android (${modelCode})`;
+}
+
       const XIAOMI_DEVICES = {
         'M1906G7G': 'Redmi Note 8 Pro',
         'M1906G7I': 'Redmi Note 8 Pro',
@@ -129,14 +151,7 @@ const login = async (req, res) => {
         'LE2101': 'OnePlus 9R',
         'CPH2423': 'OnePlus Nord CE 2',
       };
-      let hardware = os;
-      if (XIAOMI_DEVICES[rawModel]) {
-        hardware = XIAOMI_DEVICES[rawModel];
-      } else if (device.vendor && rawModel && rawModel.length > 2) {
-        hardware = `${device.vendor} ${rawModel}`;
-      } else if (rawModel && rawModel.length > 2) {
-        hardware = rawModel;
-      }
+     
       cleanDeviceInfo = `${hardware} • ${browser}`;
       const userTimeZone = req.body.timezone || 'Asia/Kolkata';
       date = new Date().toLocaleString('en-US', { 

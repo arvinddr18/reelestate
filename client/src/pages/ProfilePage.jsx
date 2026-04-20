@@ -185,13 +185,26 @@ useEffect(() => {
     window.location.href = route; // Hard redirect bypasses React Router's logged-in check
   };
 
-  // 4. Logout All Action
-  const handleLogoutAll = () => {
-    localStorage.removeItem('nodexa_token');
-    localStorage.removeItem('nodexa_saved_accounts'); // Wipe the multi-login vault
-    navigate('/login');
-    window.location.reload();
+ // 4. Logout All Action (THE KILLSWITCH)
+  const handleLogoutAll = async () => {
+    try {
+      // 1. Tell the backend to wipe all sessions from the database
+      await api.post('/auth/logout-all');
+      
+      // 2. Clear the local storage vault on this device
+      localStorage.removeItem('nodexa_token');
+      localStorage.removeItem('nodexa_saved_accounts'); 
+      
+      // 3. Send them back to the login screen
+      window.location.href = '/login';
+    } catch (error) {
+      console.error("Killswitch failed:", error);
+      // Fallback: still log them out locally even if the server fails
+      localStorage.removeItem('nodexa_token');
+      window.location.href = '/login';
+    }
   };
+
   // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);

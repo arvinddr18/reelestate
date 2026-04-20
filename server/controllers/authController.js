@@ -222,5 +222,22 @@ const getLinkedAccounts = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/auth/logout-all
+ * Clears the active sessions array in the database
+ */
+const logoutAll = async (req, res) => {
+  try {
+    // Wipe the active sessions array clean for this user!
+    await User.findByIdAndUpdate(req.user.id, {
+      $set: { activeSessions: [] }
+    });
+    
+    res.json({ success: true, message: 'All sessions terminated.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // 🚨 Make sure you add getLinkedAccounts to your exports at the bottom!
-module.exports = { register, login, getMe, getLinkedAccounts };
+module.exports = { register, login, getMe, getLinkedAccounts, logoutAll };

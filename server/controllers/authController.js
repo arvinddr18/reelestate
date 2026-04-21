@@ -240,5 +240,60 @@ const logoutAll = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/auth/change-password
+ * Body: { currentPassword, newPassword }
+ */
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Please provide both current and new passwords.' });
+    }
+
+    // 1. Find the user. We MUST use .select('+password') because we hid it by default in the model!
+    const user = await User.findById(req.user.id).select('+password');
+
+    // 2. Verify the current password is actually correct
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Access Denied: Current password is incorrect.' });
+    }
+
+    // 3. Set the new password (Your User model will automatically hash this before saving!)
+    user.password = newPassword;
+    await user.save();
+
+    // 4. Send an automated Security Alert Email 🛡️
+    try {
+      if (user.loginAlerts) {
+        const sendEmail = require('../utils/sendEmail');
+        await sendEmail({
+          email: user.email,
+          subject: `Security Alert: Password Changed 🛡️`,
+          html: `
+            <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
+              <h2 style="color: #00F0FF; margin-top: 0; font-weight: 900; letter-spacing: -0.5px;">Password Updated</h2>
+              <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">Hello <b>@${user.username}</b>,</p>
+              <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">The password for your Nodexa account was just successfully changed.</p>
+              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px; line-height: 1.6;">
+                <b>Time of Change:</b> ${new Date().toLocaleString()}<br/>
+              </div>
+              <p style="color: #6B7280; font-size: 12px; margin-top: 30px;">If you did not authorize this change, please reply to this email immediately to lock down your account.</p>
+            </div>
+          `
+        });
+      }
+    } catch (emailErr) {
+      console.error("Failed to send password change alert:", emailErr);
+    }
+
+    res.json({ success: true, message: 'Password updated successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // 🚨 Make sure you add getLinkedAccounts to your exports at the bottom!
-module.exports = { register, login, getMe, getLinkedAccounts, logoutAll };
+module.exports = { register, login, getMe, getLinkedAccounts, logoutAll, changePassword };

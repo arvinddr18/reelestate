@@ -14,4 +14,6 @@ router.get('/linked-accounts', protect, getLinkedAccounts);
 
 router.post('/logout-all', protect, logoutAll); // new killswitch
 
+router.put('/change-password', protect, changePassword);
+
 module.exports = router;

@@ -328,6 +328,25 @@ useEffect(() => {
     }
   }, [userId, currentUser, canEditProfile]);
 
+  // ── 🚨 AUTO-SAVE: LOGIN ALERTS ──
+  const handleToggleLoginAlerts = async () => {
+    // 1. Figure out the new value (opposite of what it is now)
+    const newValue = !formData.loginAlerts;
+    
+    // 2. Instantly update the UI so it feels incredibly fast
+    setFormData(prev => ({ ...prev, loginAlerts: newValue }));
+
+    try {
+      // 3. Silently save it to the database in the background!
+      const payload = { ...formData, loginAlerts: newValue, profilePhoto: avatarPreview };
+      await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
+    } catch (err) {
+      // 4. If the server fails, flip the toggle back and warn the user
+      alert("Failed to save setting. Please check your connection.");
+      setFormData(prev => ({ ...prev, loginAlerts: !newValue }));
+    }
+  };
+
  const handleUpdate = async () => {
     try {
       // 1. Prepare the data (including the new privacy toggle states)
@@ -934,9 +953,11 @@ useEffect(() => {
                       </div>
                     </div>
 
-                    <div className="mb-10">
+                   <div className="mb-10">
                       <h3 className="text-[15px] font-bold text-white mb-4">Data & Safety</h3>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                        
+                        {/* 1. LOGIN ALERTS (Now with Auto-Save!) */}
                         <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                           <div className="flex items-center gap-4">
                             <MdShield size={22} className="text-gray-400" />
@@ -944,16 +965,17 @@ useEffect(() => {
                               <p className="text-sm font-bold text-white">Login Alerts</p>
                               <p className="text-xs text-gray-500 mt-0.5">Get notified of new sign-ins</p>
                             </div>
-                            </div>
-                            <button 
-  onClick={() => setFormData({...formData, loginAlerts: !formData.loginAlerts})} 
-  className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${formData.loginAlerts ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}
->
-  <div className={`w-5 h-5 rounded-full bg-white absolute top-[2px] transition-all duration-300 ${formData.loginAlerts ? 'left-[26px]' : 'left-[2px]'}`}></div>
-</button>
-                         
+                          </div>
+                          <button 
+                            onClick={handleToggleLoginAlerts} 
+                            className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${formData.loginAlerts ? 'bg-[#00F0FF]' : 'bg-[#1E2532]'}`}
+                          >
+                            <div className={`w-5 h-5 rounded-full bg-white absolute top-[2px] transition-all duration-300 ${formData.loginAlerts ? 'left-[26px]' : 'left-[2px]'}`}></div>
+                          </button>
                         </div>
-                        <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
+
+                        {/* 2. TRUSTED CONTACTS (Interactive Placeholder) */}
+                        <div onClick={() => alert("Trusted Contacts module is unlocking in Phase 6! 🚀")} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdPerson size={22} className="text-gray-400 group-hover:text-white transition-colors" />
                             <div>
@@ -963,7 +985,9 @@ useEffect(() => {
                           </div>
                           <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                         </div>
-                        <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer transition-colors group">
+
+                        {/* 3. ACCOUNT RECOVERY (Interactive Placeholder) */}
+                        <div onClick={() => alert("Account Recovery module is unlocking in Phase 6! 🚀")} className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdTime size={22} className="text-gray-400 group-hover:text-white transition-colors" />
                             <div>
@@ -973,9 +997,10 @@ useEffect(() => {
                           </div>
                           <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                         </div>
+
                       </div>
                     </div>
-                  </div>
+                    </div>
                 )}
 
                 {/* ── TAB: PERSONAL INFO ── */}
@@ -1059,6 +1084,7 @@ useEffect(() => {
                        </button>
                     </div>
                   </div>
+                  
                 )}
 
                 {/* ── TAB: NOTIFICATIONS ── */}

@@ -241,7 +241,7 @@ useEffect(() => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({ 
     fullName: '', bio: '', location: '', phone: '', website: '',
-    isPrivate: false, hideActivity: false, emailAlerts: true
+    isPrivate: false, hideActivity: false, emailAlerts: true, loginAlerts: true
   });
 
   const canEditProfile = !userId || String(userId) === String(currentUser?._id);
@@ -305,6 +305,7 @@ useEffect(() => {
           isPrivate: userData.isPrivate !== undefined ? userData.isPrivate : true, 
           hideActivity: userData.hideActivity !== undefined ? userData.hideActivity : false,
           emailAlerts: userData.emailAlerts !== false,
+          loginAlerts: userData.loginAlerts !== false,
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
 

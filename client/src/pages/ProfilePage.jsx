@@ -205,6 +205,37 @@ useEffect(() => {
     }
   };
 
+  // ── 🚨 PASSWORD VAULT STATE ──
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '' });
+  const [passwordStatus, setPasswordStatus] = useState({ error: '', success: '', loading: false });
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordStatus({ error: '', success: '', loading: true });
+    
+    try {
+      // Send the passwords to the new secure backend route we just made!
+      const res = await api.put('/auth/change-password', passwordData);
+      
+      setPasswordStatus({ error: '', success: 'Password successfully updated! 🛡️', loading: false });
+      
+      // Close the modal automatically after 2 seconds
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordData({ currentPassword: '', newPassword: '' });
+        setPasswordStatus({ error: '', success: '', loading: false });
+      }, 2000);
+      
+    } catch (err) {
+      setPasswordStatus({ 
+        error: err.response?.data?.message || 'Failed to update password. Try again.', 
+        success: '', 
+        loading: false 
+      });
+    }
+  };
+
   // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -826,7 +857,7 @@ useEffect(() => {
                     <div className="mb-8">
                       <h3 className="text-[15px] font-bold text-white mb-4">Account Security</h3>
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                        <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
+                          <div onClick={() => setShowPasswordModal(true)} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdLock size={22} className="text-gray-400 group-hover:text-white transition-colors" />
                             <div>
@@ -1360,6 +1391,83 @@ useEffect(() => {
         )}
       </AnimatePresence>
 
+      {/* ─── 🔐 CHANGE PASSWORD MODAL ─── */}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#05070A]/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[#0B0F19] border border-white/10 rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-[#1E2532] flex justify-between items-center bg-[#151A25]/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-[#00F0FF]">
+                    <IoMdLock size={20} />
+                  </div>
+                  <h3 className="text-white font-black text-lg tracking-tight">Security Vault</h3>
+                </div>
+                <button onClick={() => setShowPasswordModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                  <IoMdClose size={24} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handlePasswordSubmit} className="p-6 space-y-5">
+                
+                {/* Status Messages */}
+                {passwordStatus.error && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center">
+                    {passwordStatus.error}
+                  </div>
+                )}
+                {passwordStatus.success && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">
+                    {passwordStatus.success}
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Current Password</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                    className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors"
+                    placeholder="Enter current password"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">New Password</label>
+                  <input 
+                    type="password" 
+                    required
+                    minLength="6"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors"
+                    placeholder="Enter new password"
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={passwordStatus.loading || passwordStatus.success}
+                  className="w-full py-3.5 mt-2 bg-[#00F0FF] text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-white transition-colors disabled:opacity-50"
+                >
+                  {passwordStatus.loading ? 'Updating...' : 'Confirm Update'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+        
+  
     </div>
   );
 }

@@ -273,6 +273,43 @@ useEffect(() => {
     }
   };
 
+  // ── 🚨 TRUSTED CONTACT STATE ──
+  const [showTrustedModal, setShowTrustedModal] = useState(false);
+  const [trustedContact, setTrustedContact] = useState('');
+  const [trustedStatus, setTrustedStatus] = useState({ error: '', success: '', loading: false });
+
+  // Update local state when user data loads
+  useEffect(() => {
+    if (user?.trustedContact) setTrustedContact(user.trustedContact);
+  }, [user]);
+
+  const handleTrustedSubmit = async (e) => {
+    e.preventDefault();
+    setTrustedStatus({ error: '', success: '', loading: true });
+    
+    try {
+      // Reusing your powerful update route to save the trusted contact!
+      const payload = { trustedContact: trustedContact };
+      await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
+      
+      // Update local user state so it reflects instantly
+      setUser(prev => ({ ...prev, trustedContact: trustedContact }));
+      setTrustedStatus({ error: '', success: 'Trusted contact secured! 🤝', loading: false });
+      
+      // Close modal automatically
+      setTimeout(() => {
+        setShowTrustedModal(false);
+        setTrustedStatus({ error: '', success: '', loading: false });
+      }, 2000);
+    } catch (err) {
+      setTrustedStatus({ 
+        error: err.response?.data?.message || 'Failed to update trusted contact.', 
+        success: '', 
+        loading: false 
+      });
+    }
+  };
+
   // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -1012,16 +1049,23 @@ useEffect(() => {
                           </button>
                         </div>
 
-                        {/* 2. TRUSTED CONTACTS (Interactive Placeholder) */}
-                        <div onClick={() => alert("Trusted Contacts module is unlocking in Phase 6! 🚀")} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
+                       {/* 2. TRUSTED CONTACTS (Now Fully Functional!) */}
+                        <div onClick={() => setShowTrustedModal(true)} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <IoMdPerson size={22} className="text-gray-400 group-hover:text-white transition-colors" />
                             <div>
                               <p className="text-sm font-bold text-white">Trusted Contacts</p>
-                              <p className="text-xs text-gray-500 mt-0.5">Manage recovery contacts</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {user?.trustedContact ? 'Trusted node linked' : 'Manage recovery contacts'}
+                              </p>
                             </div>
                           </div>
-                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                          <div className="flex items-center gap-3">
+                            {user?.trustedContact && (
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                            )}
+                            <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+                          </div>
                         </div>
 
                        {/* 3. ACCOUNT RECOVERY (Now Fully Functional!) */}
@@ -1603,7 +1647,75 @@ useEffect(() => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ─── 🤝 TRUSTED CONTACT MODAL ─── */}
+      <AnimatePresence>
+        {showTrustedModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#05070A]/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[#0B0F19] border border-white/10 rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-[#1E2532] flex justify-between items-center bg-[#151A25]/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-blue-400">
+                    <IoMdPerson size={20} />
+                  </div>
+                  <h3 className="text-white font-black text-lg tracking-tight">Trusted Nodes</h3>
+                </div>
+                <button onClick={() => setShowTrustedModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                  <IoMdClose size={24} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleTrustedSubmit} className="p-6 space-y-5">
+                
+                <p className="text-xs text-gray-400 font-medium leading-relaxed">
+                  Designate a highly trusted friend. In an emergency lock-out, they can provide a secondary verification code to help you regain access.
+                </p>
+
+                {/* Status Messages */}
+                {trustedStatus.error && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center">
+                    {trustedStatus.error}
+                  </div>
+                )}
+                {trustedStatus.success && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">
+                    {trustedStatus.success}
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Friend's Username or Email</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={trustedContact}
+                    onChange={(e) => setTrustedContact(e.target.value)}
+                    className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-blue-500/50 transition-colors"
+                    placeholder="e.g. @vijetha or email..."
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={trustedStatus.loading || trustedStatus.success}
+                  className="w-full py-3.5 mt-2 bg-blue-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-blue-400 transition-colors disabled:opacity-50"
+                >
+                  {trustedStatus.loading ? 'Securing...' : 'Add Trusted Contact'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
   
+
     </div>
   );
   }

@@ -19,7 +19,9 @@
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^8.0.5",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.6.2",
+    "speakeasy": "^2.0.0",
     "ua-parser-js": "^2.0.9"
   },
   "devDependencies": {

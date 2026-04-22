@@ -25,6 +25,8 @@ router.put('/update', protect, updateProfile);
 router.post('/:id/follow', protect, toggleFollow);
 router.get('/:id/followers', getFollowers);
 router.get('/:id/following', getFollowing);
+router.post('/2fa/setup', protect, setup2FA); // Assuming 'protect' is your auth middleware
+router.post('/2fa/verify', protect, verify2FA);
 
 const sendEmail = require('../utils/sendEmail'); // Import your mailman
 

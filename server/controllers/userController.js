@@ -7,6 +7,8 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 const { Follow } = require('../models/index');
 const { deleteFromCloudinary } = require('../middleware/upload');
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
 
 const cloudinary = require('cloudinary').v2;
 
@@ -197,6 +199,49 @@ const getAllUsers = async (req, res) => {
     res.json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─── Generate 2FA QR Code ──────────────────────────────────────────────
+const setup2FA = async (req, res) => {
+  try {
+    // 1. Generate a highly secure secret specifically for Nodexa
+    const secret = speakeasy.generateSecret({ name: `Nodexa (${req.user.username})` });
+    
+    // 2. Save the secret to the user's database profile temporarily
+    await User.findByIdAndUpdate(req.user._id, { twoFactorSecret: secret.base32 });
+
+    // 3. Turn that secret into a scannable QR Code image URL
+    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
+    
+    res.json({ success: true, qrCodeUrl });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to generate 2FA" });
+  }
+};
+
+// ─── Verify the 6-Digit Code ───────────────────────────────────────────
+const verify2FA = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const user = await User.findById(req.user._id);
+
+    // Check if the 6 digits match the math of the secret key
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code
+    });
+
+    if (verified) {
+      user.is2FAEnabled = true;
+      await user.save();
+      res.json({ success: true, message: "2FA Enabled Successfully!" });
+    } else {
+      res.status(400).json({ success: false, message: "Invalid 6-digit code. Try again." });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Verification failed." });
   }
 };
 

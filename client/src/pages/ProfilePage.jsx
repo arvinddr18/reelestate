@@ -321,10 +321,10 @@ useEffect(() => {
     const fetchQR = async () => {
       if (showTwoFactorModal && !user?.is2FAEnabled) {
         try {
-          const res = await api.post('/users/2fa/setup'); 
+          const res = await axios.post(getApiUrl('/api/users/2fa/setup'), {}, getAuthConfig()); 
           setQrCodeUrl(res.data.qrCodeUrl);
         } catch (err) {
-          console.error("Failed to fetch QR code");
+          console.error("Failed to fetch QR code", err);
         }
       }
     };
@@ -337,7 +337,7 @@ useEffect(() => {
     
     try {
       // Send the 6 digits to the backend to verify the math!
-      const res = await api.post('/users/2fa/verify', { code: twoFactorCode });
+      const res = await axios.post(getApiUrl('/api/users/2fa/verify'), { code: twoFactorCode }, getAuthConfig());
       
       setTwoFactorStatus({ error: '', success: '2FA Successfully Enabled! 🔐', loading: false });
       setUser(prev => ({...prev, is2FAEnabled: true})); // Instantly update UI

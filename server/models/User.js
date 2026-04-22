@@ -76,6 +76,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true // Default is true (users get emails by default)
     },
+    backupEmail: {
+    type: String,
+    default: ""
+  },
+  trustedContact: {
+    type: String,
+    default: ""
+  },
 
   },
   { timestamps: true }

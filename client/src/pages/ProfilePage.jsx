@@ -310,27 +310,46 @@ useEffect(() => {
     }
   };
 
-// ── 🚨 2FA STATE ──
+// ── 🚨 2FA STATE (LIVE) ──
   const [showTwoFactorModal, setShowTwoFactorModal] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [twoFactorStatus, setTwoFactorStatus] = useState({ error: '', success: '', loading: false });
-  
-  // We will replace this with a REAL generated QR code from your backend in Part 2!
-  const dummyQR = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Nodexa?secret=DUMMY&issuer=Nodexa";
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+
+  // When the modal opens, ask the backend to generate a real, secure QR code!
+  useEffect(() => {
+    const fetchQR = async () => {
+      if (showTwoFactorModal && !user?.is2FAEnabled) {
+        try {
+          const res = await api.post('/users/2fa/setup'); 
+          setQrCodeUrl(res.data.qrCodeUrl);
+        } catch (err) {
+          console.error("Failed to fetch QR code");
+        }
+      }
+    };
+    fetchQR();
+  }, [showTwoFactorModal, user]);
 
   const handleTwoFactorSubmit = async (e) => {
     e.preventDefault();
     setTwoFactorStatus({ error: '', success: '', loading: true });
     
-    // Fake loading delay for now to test the UI
-    setTimeout(() => {
-      if (twoFactorCode.length === 6) {
-        setTwoFactorStatus({ error: '', success: '2FA Successfully Enabled! 🔐', loading: false });
-        setTimeout(() => setShowTwoFactorModal(false), 2000);
-      } else {
-        setTwoFactorStatus({ error: 'Invalid 6-digit code. Try again.', success: '', loading: false });
-      }
-    }, 1000);
+    try {
+      // Send the 6 digits to the backend to verify the math!
+      const res = await api.post('/users/2fa/verify', { code: twoFactorCode });
+      
+      setTwoFactorStatus({ error: '', success: '2FA Successfully Enabled! 🔐', loading: false });
+      setUser(prev => ({...prev, is2FAEnabled: true})); // Instantly update UI
+      
+      setTimeout(() => setShowTwoFactorModal(false), 2000);
+    } catch (err) {
+      setTwoFactorStatus({ 
+        error: err.response?.data?.message || 'Invalid 6-digit code. Try again.', 
+        success: '', 
+        loading: false 
+      });
+    }
   };
 
   // ───────────────────────────────
@@ -1776,7 +1795,7 @@ useEffect(() => {
 
                 {/* QR Code Display */}
                 <div className="bg-white p-3 rounded-2xl mb-6 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-                  <img src={dummyQR} alt="2FA QR Code" className="w-36 h-36" />
+                  <img src={qrCodeUrl || "https://via.placeholder.com/200?text=Generating..."} alt="2FA QR Code" className="w-36 h-36" />
                 </div>
 
                 {/* Status Messages */}

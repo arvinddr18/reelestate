@@ -310,6 +310,29 @@ useEffect(() => {
     }
   };
 
+// ── 🚨 2FA STATE ──
+  const [showTwoFactorModal, setShowTwoFactorModal] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorStatus, setTwoFactorStatus] = useState({ error: '', success: '', loading: false });
+  
+  // We will replace this with a REAL generated QR code from your backend in Part 2!
+  const dummyQR = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Nodexa?secret=DUMMY&issuer=Nodexa";
+
+  const handleTwoFactorSubmit = async (e) => {
+    e.preventDefault();
+    setTwoFactorStatus({ error: '', success: '', loading: true });
+    
+    // Fake loading delay for now to test the UI
+    setTimeout(() => {
+      if (twoFactorCode.length === 6) {
+        setTwoFactorStatus({ error: '', success: '2FA Successfully Enabled! 🔐', loading: false });
+        setTimeout(() => setShowTwoFactorModal(false), 2000);
+      } else {
+        setTwoFactorStatus({ error: 'Invalid 6-digit code. Try again.', success: '', loading: false });
+      }
+    }, 1000);
+  };
+
   // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -961,7 +984,7 @@ useEffect(() => {
                           </div>
                           <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                         </div>
-                        <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer transition-colors group">
+                        <div onClick={() => setShowTwoFactorModal(true)} className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer transition-colors group">
                           <div className="flex items-center gap-4">
                             <MdSmartphone size={22} className="text-gray-400 group-hover:text-white transition-colors" />
                             <div>
@@ -970,13 +993,19 @@ useEffect(() => {
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Enabled
-                            </span>
+                            {user?.is2FAEnabled ? (
+                              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Enabled
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1.5 text-xs font-bold text-gray-400 bg-[#1E2532] px-3 py-1 rounded-full border border-white/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-pulse" /> Setup Required
+                              </span>
+                            )}
                             <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
                           </div>
                         </div>
-                      </div>
+                        </div>
                     </div>
 
                     <div className="mb-8">
@@ -1708,6 +1737,79 @@ useEffect(() => {
                   className="w-full py-3.5 mt-2 bg-blue-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-blue-400 transition-colors disabled:opacity-50"
                 >
                   {trustedStatus.loading ? 'Securing...' : 'Add Trusted Contact'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── 📱 TWO-FACTOR AUTHENTICATION MODAL ─── */}
+      <AnimatePresence>
+        {showTwoFactorModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#05070A]/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[#0B0F19] border border-white/10 rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-[#1E2532] flex justify-between items-center bg-[#151A25]/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-emerald-400">
+                    <MdSmartphone size={20} />
+                  </div>
+                  <h3 className="text-white font-black text-lg tracking-tight">Setup 2FA</h3>
+                </div>
+                <button onClick={() => setShowTwoFactorModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                  <IoMdClose size={24} />
+                </button>
+              </div>
+
+              {/* Form & QR Code */}
+              <form onSubmit={handleTwoFactorSubmit} className="p-6 flex flex-col items-center">
+                
+                <p className="text-xs text-gray-400 font-medium text-center mb-6 leading-relaxed">
+                  Scan this QR code with <span className="text-white font-bold">Google Authenticator</span> or <span className="text-white font-bold">Authy</span>, then enter the 6-digit code below to verify.
+                </p>
+
+                {/* QR Code Display */}
+                <div className="bg-white p-3 rounded-2xl mb-6 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                  <img src={dummyQR} alt="2FA QR Code" className="w-36 h-36" />
+                </div>
+
+                {/* Status Messages */}
+                {twoFactorStatus.error && (
+                  <div className="w-full p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center">
+                    {twoFactorStatus.error}
+                  </div>
+                )}
+                {twoFactorStatus.success && (
+                  <div className="w-full p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">
+                    {twoFactorStatus.success}
+                  </div>
+                )}
+
+                <div className="w-full space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Authentication Code</label>
+                  <input 
+                    type="text" 
+                    required
+                    maxLength="6"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))} // Only allows numbers
+                    className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-center text-2xl tracking-[0.5em] font-black text-white outline-none focus:border-emerald-500/50 transition-colors placeholder:text-gray-700"
+                    placeholder="000000"
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={twoFactorStatus.loading || twoFactorStatus.success || twoFactorCode.length < 6}
+                  className="w-full py-3.5 mt-6 bg-emerald-500 text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-emerald-400 transition-colors disabled:opacity-50"
+                >
+                  {twoFactorStatus.loading ? 'Verifying...' : 'Verify & Enable'}
                 </button>
               </form>
             </motion.div>

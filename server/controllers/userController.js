@@ -247,5 +247,5 @@ const verify2FA = async (req, res) => {
 
 module.exports = { 
   getUserProfile, updateProfile, toggleFollow, 
-  getFollowers, getFollowing, searchUsers, getAllUsers  // ✅ ALL exported
+  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA  // ✅ ALL exported
 };

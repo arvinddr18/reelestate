@@ -11,7 +11,7 @@ const { protect } = require('../middleware/auth');
 const {
   getUserProfile, updateProfile,
   toggleFollow, getFollowers, getFollowing,
-  searchUsers, getAllUsers 
+  searchUsers, getAllUsers, setup2FA, verify2FA 
 } = require('../controllers/userController');
 
 // --- Routes ---

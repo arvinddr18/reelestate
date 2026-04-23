@@ -5,40 +5,28 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
 
-// Note: We completely removed the old 'uploadProfile' middleware 
-// because we are using Base64 strings directly in the JSON body now!
-
 const {
   getUserProfile, updateProfile,
   toggleFollow, getFollowers, getFollowing,
   searchUsers, getAllUsers, setup2FA, verify2FA 
 } = require('../controllers/userController');
 
+const sendEmail = require('../utils/sendEmail');
+
 // --- Routes ---
 router.get('/', getAllUsers);
 router.get('/search', protect, searchUsers);
-router.get('/:id', protect, getUserProfile);
 
-// THE FIX: Changed to '/update' to match frontend, and removed the upload middleware!
-router.put('/update', protect, updateProfile);
-
-router.post('/:id/follow', protect, toggleFollow);
-router.get('/:id/followers', getFollowers);
-router.get('/:id/following', getFollowing);
-router.post('/2fa/setup', protect, setup2FA); // Assuming 'protect' is your auth middleware
+// ✅ 2FA ROUTES MOVED UP - Must be before /:id routes!
+router.post('/2fa/setup', protect, setup2FA);
 router.post('/2fa/verify', protect, verify2FA);
 
-const sendEmail = require('../utils/sendEmail'); // Import your mailman
-
-// 🚨 TEMPORARY TEST ROUTE 🚨
+// ✅ TEST EMAIL ROUTE MOVED UP - Must be before /:id routes!
 router.post('/test-email', protect, async (req, res) => {
   try {
-    // 1. Check if the user actually wants emails!
     if (!req.user.emailAlerts) {
       return res.status(400).json({ message: "You have email alerts turned OFF in settings!" });
     }
-
-    // 2. Send the test email
     await sendEmail({
       email: req.user.email,
       subject: '🚀 Welcome to Nodexa Live Nodes!',
@@ -51,12 +39,20 @@ router.post('/test-email', protect, async (req, res) => {
         </div>
       `
     });
-
     res.json({ success: true, message: "Check your inbox!" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Email failed to send." });
   }
 });
+
+// ✅ UPDATE ROUTE
+router.put('/update', protect, updateProfile);
+
+// ✅ DYNAMIC /:id ROUTES LAST
+router.get('/:id', protect, getUserProfile);
+router.post('/:id/follow', protect, toggleFollow);
+router.get('/:id/followers', getFollowers);
+router.get('/:id/following', getFollowing);
 
 module.exports = router;

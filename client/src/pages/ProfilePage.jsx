@@ -319,15 +319,15 @@ useEffect(() => {
   // When the modal opens, ask the backend to generate a real, secure QR code!
   useEffect(() => {
     const fetchQR = async () => {
-      if (showTwoFactorModal && !user?.is2FAEnabled) {
-        try {
-          const res = await axios.post(getApiUrl('/api/users/2fa/setup'), {}, getAuthConfig()); 
-          setQrCodeUrl(res.data.qrCodeUrl);
-        } catch (err) {
-          console.error("Failed to fetch QR code", err);
-        }
-      }
-    };
+  if (showTwoFactorModal && !user?.is2FAEnabled) {
+    try {
+      const res = await axios.post(getApiUrl('/api/users/2fa/setup'), {}, getAuthConfig());
+      setQrCodeUrl(res.data.qrCodeUrl);
+    } catch (err) {
+      console.error("Failed to fetch QR code", err);
+    }
+  }
+};
     fetchQR();
   }, [showTwoFactorModal, user]);
 

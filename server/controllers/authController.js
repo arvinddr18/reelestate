@@ -173,6 +173,18 @@ const login = async (req, res) => {
 
     // res.status(200).json({ ... }) <-- Your existing success response
 
+    // 👇 🚨 THE 2FA GATEKEEPER 🚨 👇
+    // If the user has 2FA enabled, STOP! Do not give them a token yet.
+    if (user.is2FAEnabled) {
+      return res.status(200).json({ 
+        success: true, 
+        requires2FA: true, // Special flag to tell React to show the modal
+        userId: user._id,  // Pass the ID so we know who is trying to log in
+        message: "2FA Required" 
+      });
+    }
+
+    // If 2FA is OFF, proceed as normal and give them the token
     const token = generateToken(user._id);
     res.json({ success: true, data: userResponse(user, token) });
   } catch (error) {
@@ -295,5 +307,44 @@ const changePassword = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/auth/verify-2fa-login
+ * Body: { userId, code }
+ */
+const verify2FALogin = async (req, res) => {
+  try {
+    const { userId, code, deviceInfo, time } = req.body;
+    const speakeasy = require('speakeasy'); // Ensure speakeasy is imported at the top of the file!
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    // Check the 6-digit code against the user's secret key
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code
+    });
+
+    if (!verified) {
+      return res.status(401).json({ success: false, message: 'Invalid 6-digit code.' });
+    }
+
+    // Success! The code was right. NOW we generate the token.
+    const token = generateToken(user._id);
+
+    // Save session data (optional, but good for radar)
+    if (deviceInfo && time) {
+      const newSession = { deviceInfo, time };
+      user.activeSessions = [...(user.activeSessions || []), newSession].slice(-5);
+      await user.save();
+    }
+
+    res.json({ success: true, data: userResponse(user, token) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: '2FA verification failed.' });
+  }
+};
+
 // 🚨 Make sure you add getLinkedAccounts to your exports at the bottom!
-module.exports = { register, login, getMe, getLinkedAccounts, logoutAll, changePassword };
+module.exports = { register, login, getMe, getLinkedAccounts, logoutAll, changePassword, verify2FALogin };

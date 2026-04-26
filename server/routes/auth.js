@@ -3,9 +3,10 @@
  */
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, getLinkedAccounts, logoutAll, changePassword } = require('../controllers/authController');
+const { register, login, getMe, getLinkedAccounts, logoutAll, changePassword, verify2FALogin } = require('../controllers/authController');
 const { protect } = require('../middleware/auth'); // Assuming you have an auth middleware
 
+router.post('/verify-2fa-login', verify2FALogin);
 router.post('/register', register);
 router.post('/login', login);
 router.get('/me', protect, getMe);

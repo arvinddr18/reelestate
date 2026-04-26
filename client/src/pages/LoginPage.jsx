@@ -2,7 +2,17 @@ import React, { useState, useEffect } from 'react'; // 🚨 ADDED useEffect HERE
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NodexaLogo from '../components/NodexaLogo';
-import { IoMdMail, IoMdLock, IoMdFingerPrint } from 'react-icons/io';
+import { IoMdMail, IoMdLock, IoMdFingerPrint, IoMdClose } from 'react-icons/io';
+import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// 🚨 ADD THIS HELPER
+const getApiUrl = (endpoint) => {
+  const base = import.meta.env.VITE_API_URL || '';
+  return base.endsWith('/api') && endpoint.startsWith('/api') 
+    ? base.replace('/api', '') + endpoint 
+    : base + endpoint;
+};
 
 export default function Login() {
  // 🚨 Checks if we just came from the account switcher
@@ -15,32 +25,63 @@ useEffect(() => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 👇 🚨 2FA STATE ADDED HERE 👇
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Clear old errors
+    setError(''); 
     setLoading(true);
     
     try {
-      // 👇 1. Grab the timezone directly from the user's computer
       const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      // 👇 2. Pass the timezone into your login function!
-      const success = await login(email, password, userTimeZone); 
+      // 🚨 We use axios directly here so we can catch the 2FA Gatekeeper!
+      const res = await axios.post(getApiUrl('/api/auth/login'), { 
+        email, 
+        password, 
+        timezone: userTimeZone 
+      });
       
-      if (success) {
-        navigate('/'); // Goes to main feed
-      } else {
-        setError('Access Denied: Invalid credentials.');
+      // THE GATEKEEPER CAUGHT THEM!
+      if (res.data.requires2FA) {
+        setPendingUserId(res.data.userId); // Save ID for the next step
+        setShow2FAModal(true); // Open the vault
+        setLoading(false);
+        return; // STOP! Do not let them in yet.
+      }
+
+      // If 2FA is OFF, let them in normally
+      if (res.data.success) {
+        localStorage.setItem('nodexa_token', res.data.data.token);
+        window.location.href = '/'; // Hard redirect to load their profile
       }
     } catch (err) {
-      setError('Connection failed. Is the server online?');
-      console.error(err);
-    } finally {
+      setError(err.response?.data?.message || 'Access Denied: Invalid credentials.');
       setLoading(false);
+    } 
+  };
+
+  // 🚨 THIS RUNS WHEN THEY TYPE THE 6 DIGITS
+  const submit2FACode = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(getApiUrl('/api/auth/verify-2fa-login'), { 
+        userId: pendingUserId, 
+        code: twoFactorCode 
+      });
+      
+      // Success! Token granted.
+      localStorage.setItem('nodexa_token', res.data.data.token);
+      window.location.href = '/'; 
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid 2FA Code");
     }
   };
 
@@ -112,6 +153,62 @@ useEffect(() => {
               New User? <span className="text-white ml-1">Initialize Identity</span>
             </Link>
           </div>
+
+          {/* ─── 📱 2FA LOGIN MODAL ─── */}
+        <AnimatePresence>
+          {show2FAModal && (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#05070A]/90 backdrop-blur-md">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-sm bg-[#0B0F19] border border-[#00F0FF]/30 rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,240,255,0.15)] relative"
+              >
+                {/* Header */}
+                <div className="p-6 border-b border-[#1E2532] flex justify-between items-center bg-[#151A25]/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-emerald-400">
+                      <IoMdLock size={20} />
+                    </div>
+                    <h3 className="text-white font-black text-lg tracking-tight">2FA Required</h3>
+                  </div>
+                  <button onClick={() => setShow2FAModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                    <IoMdClose size={24} />
+                  </button>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={submit2FACode} className="p-6 flex flex-col items-center">
+                  <p className="text-xs text-gray-400 font-medium text-center mb-6 leading-relaxed">
+                    Enter the 6-digit code from your Authenticator app to access your terminal.
+                  </p>
+
+                  <div className="w-full space-y-1.5">
+                    <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Authentication Code</label>
+                    <input 
+                      type="text" 
+                      required
+                      maxLength="6"
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-center text-2xl tracking-[0.5em] font-black text-white outline-none focus:border-emerald-500/50 transition-colors"
+                      placeholder="000000"
+                      autoFocus
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={twoFactorCode.length < 6}
+                    className="w-full py-4 mt-6 bg-emerald-500 text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-emerald-400 transition-colors disabled:opacity-50"
+                  >
+                    Verify & Enter
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
         </div>
       </div>
     </div>

@@ -243,21 +243,30 @@ const verify2FA = async (req, res) => {
     const { code } = req.body;
     const user = await User.findById(req.user._id);
 
+    if (!user.twoFactorSecret) {
+      return res.status(400).json({ success: false, message: "2FA not set up yet." });
+    }
+
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
       token: code,
-      window: 6 // ✅ THIS IS THE FIX - allows 2 time steps (±60 seconds tolerance)
+      window: 6
     });
 
     if (verified) {
-      user.is2FAEnabled = true;
-      await user.save();
+      // ✅ Use findByIdAndUpdate instead of save() - more reliable!
+      await User.findByIdAndUpdate(
+        req.user._id, 
+        { is2FAEnabled: true },
+        { new: true }
+      );
       res.json({ success: true, message: "2FA Enabled Successfully!" });
     } else {
       res.status(400).json({ success: false, message: "Invalid 6-digit code. Try again." });
     }
   } catch (err) {
+    console.error("verify2FA error:", err);
     res.status(500).json({ success: false, message: "Verification failed." });
   }
 };

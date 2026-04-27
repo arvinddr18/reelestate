@@ -243,7 +243,7 @@ const verify2FA = async (req, res) => {
     const { code } = req.body;
     const user = await User.findById(req.user._id);
 
-    if (!user.twoFactorSecret) {
+    if (!user || !user.twoFactorSecret) {
       return res.status(400).json({ success: false, message: "2FA not set up yet." });
     }
 
@@ -255,13 +255,21 @@ const verify2FA = async (req, res) => {
     });
 
     if (verified) {
-      // ✅ Use findByIdAndUpdate instead of save() - more reliable!
-      await User.findByIdAndUpdate(
-        req.user._id, 
-        { is2FAEnabled: true },
-        { new: true }
+      // ✅ Use updateOne directly - bypasses all middleware including password hashing!
+      await User.updateOne(
+        { _id: req.user._id },
+        { $set: { is2FAEnabled: true } }
       );
-      res.json({ success: true, message: "2FA Enabled Successfully!" });
+
+      // ✅ Verify it actually saved
+      const updatedUser = await User.findById(req.user._id);
+      console.log('Saved is2FAEnabled:', updatedUser.is2FAEnabled);
+
+      res.json({ 
+        success: true, 
+        message: "2FA Enabled Successfully!",
+        is2FAEnabled: updatedUser.is2FAEnabled
+      });
     } else {
       res.status(400).json({ success: false, message: "Invalid 6-digit code. Try again." });
     }

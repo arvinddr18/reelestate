@@ -226,11 +226,11 @@ const verify2FA = async (req, res) => {
     const { code } = req.body;
     const user = await User.findById(req.user._id);
 
-    // Check if the 6 digits match the math of the secret key
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
-      token: code
+      token: code,
+      window: 4  // ✅ THIS IS THE FIX - allows 2 time steps (±60 seconds tolerance)
     });
 
     if (verified) {

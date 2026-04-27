@@ -406,7 +406,8 @@ useEffect(() => {
         const id = userId || currentUser?._id; 
         if (!id) return; 
 
-        const res = await axios.get(getApiUrl(`/api/users/${id}`), getAuthConfig());
+        // 🚨 ADD ?timestamp=${Date.now()} to trick the browser into fetching fresh data!
+const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`), getAuthConfig());
         
         const userData = res.data.data?.user || res.data.data || res.data;
         const postsData = res.data.data?.posts || res.data.posts || [];

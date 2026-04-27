@@ -25,6 +25,7 @@ const userResponse = (user, token) => ({
   followingCount: user.followingCount,
   postsCount: user.postsCount,
   isVerified: user.isVerified,
+  is2FAEnabled: user.is2FAEnabled,
   activeSessions: user.activeSessions,
   token,
 });

@@ -356,5 +356,68 @@ const verify2FALogin = async (req, res) => {
     res.status(500).json({ success: false, message: '2FA verification failed.' });
   }
 };
+
+// ─── Send Password Reset OTP to Email ──────────────────────────────────
+const sendPasswordOTP = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    // 1. Generate a random 6-digit code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // 2. Save it to the user (expires in 10 minutes)
+    user.resetPasswordOtp = otp;
+    user.resetPasswordOtpExpire = Date.now() + 10 * 60 * 1000;
+    await user.save(); 
+
+    // 3. Send the Email
+    const sendEmail = require('../utils/sendEmail');
+    await sendEmail({
+      email: user.email,
+      subject: `Nodexa Security: Password Reset Code 🛡️`,
+      html: `
+        <div style="background-color: #0B0F19; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px;">
+          <h2 style="color: #00F0FF; margin-top: 0;">Password Reset Request</h2>
+          <p style="color: #D1D5DB;">Your 6-digit verification code is:</p>
+          <h1 style="letter-spacing: 10px; font-size: 36px; background: #151A25; padding: 15px 20px; border-radius: 12px; color: white; width: max-content;">${otp}</h1>
+          <p style="color: #6B7280; font-size: 12px; margin-top: 20px;">This code will expire in 10 minutes.</p>
+        </div>`
+    });
+
+    res.json({ success: true, message: 'OTP sent to email.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to send email.' });
+  }
+};
+
+// ─── Verify OTP & Change Password ──────────────────────────────────────
+const resetPasswordWithOTP = async (req, res) => {
+  try {
+    const { otp, newPassword } = req.body;
+    // We MUST explicitly ask for the OTP fields and the password field
+    const user = await User.findById(req.user.id).select('+password +resetPasswordOtp +resetPasswordOtpExpire');
+
+    // 1. Check if OTP is correct
+    if (!user.resetPasswordOtp || user.resetPasswordOtp !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid or incorrect code.' });
+    }
+    
+    // 2. Check if OTP is expired
+    if (user.resetPasswordOtpExpire < Date.now()) {
+       return res.status(400).json({ success: false, message: 'Code has expired. Request a new one.' });
+    }
+
+    // 3. Success! Set new password and destroy the OTP so it can't be reused
+    user.password = newPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordOtpExpire = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successfully!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to reset password.' });
+  }
+};
 // 🚨 Make sure you add getLinkedAccounts to your exports at the bottom!
-module.exports = { register, login, getMe, getLinkedAccounts, logoutAll, changePassword, verify2FALogin };
+module.exports = { register, login, getMe, getLinkedAccounts, logoutAll, changePassword, verify2FALogin, sendPasswordOTP, resetPasswordWithOTP };

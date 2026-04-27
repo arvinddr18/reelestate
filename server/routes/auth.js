@@ -17,4 +17,8 @@ router.post('/logout-all', protect, logoutAll); // new killswitch
 
 router.put('/change-password', protect, changePassword);
 
+// Make sure to import them at the top first!
+router.post('/send-password-otp', protect, sendPasswordOTP);
+router.post('/reset-password-with-otp', protect, resetPasswordWithOTP);
+
 module.exports = router;

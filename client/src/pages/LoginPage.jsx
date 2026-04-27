@@ -68,7 +68,7 @@ useEffect(() => {
     } 
   };
 
-  // 🚨 THIS RUNS WHEN THEY TYPE THE 6 DIGITS
+ // 🚨 THIS RUNS WHEN THEY TYPE THE 6 DIGITS
   const submit2FACode = async (e) => {
     e.preventDefault();
     try {
@@ -81,7 +81,8 @@ useEffect(() => {
       localStorage.setItem('nodexa_token', res.data.data.token);
       window.location.href = '/'; 
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid 2FA Code");
+      // 👇 THIS WILL FORCE THE ERROR TO POP UP ON SCREEN 👇
+      alert("SECURITY ALERT: " + (err.response?.data?.message || err.message));
     }
   };
 

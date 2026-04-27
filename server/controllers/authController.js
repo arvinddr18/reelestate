@@ -323,7 +323,8 @@ const verify2FALogin = async (req, res) => {
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
-      token: code
+      token: code,
+      window: 1
     });
 
     if (!verified) {

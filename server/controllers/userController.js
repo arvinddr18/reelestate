@@ -238,43 +238,34 @@ const setup2FA = async (req, res) => {
 };
 
 // ─── Verify the 6-Digit Code ───────────────────────────────────────────
+// ─── Verify the 6-Digit Code ───────────────────────────────────────────
 const verify2FA = async (req, res) => {
   try {
     const { code } = req.body;
     const user = await User.findById(req.user._id);
 
-    if (!user || !user.twoFactorSecret) {
-      return res.status(400).json({ success: false, message: "2FA not set up yet." });
-    }
-
+    // Check if the 6 digits match the math of the secret key
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
       token: code,
-      window: 6
+      window: 2 // Keeps your 60-second grace period!
     });
 
     if (verified) {
-      // ✅ Use updateOne directly - bypasses all middleware including password hashing!
-      await User.updateOne(
-        { _id: req.user._id },
-        { $set: { is2FAEnabled: true } }
+      // 👇 🚨 THE BULLETPROOF SAVE 🚨 👇
+      // strict: false tells MongoDB to forcefully save this permanently, even if the database blueprint tries to reject it!
+      await User.findByIdAndUpdate(
+        req.user._id, 
+        { is2FAEnabled: true }, 
+        { new: true, strict: false } 
       );
-
-      // ✅ Verify it actually saved
-      const updatedUser = await User.findById(req.user._id);
-      console.log('Saved is2FAEnabled:', updatedUser.is2FAEnabled);
-
-      res.json({ 
-        success: true, 
-        message: "2FA Enabled Successfully!",
-        is2FAEnabled: updatedUser.is2FAEnabled
-      });
+      
+      res.json({ success: true, message: "2FA Enabled Successfully!" });
     } else {
       res.status(400).json({ success: false, message: "Invalid 6-digit code. Try again." });
     }
   } catch (err) {
-    console.error("verify2FA error:", err);
     res.status(500).json({ success: false, message: "Verification failed." });
   }
 };

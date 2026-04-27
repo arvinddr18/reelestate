@@ -236,6 +236,47 @@ useEffect(() => {
     }
   };
 
+  // 👇 ADD THESE NEW VARIABLES 👇
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+
+  // 👇 ADD THESE TWO NEW FUNCTIONS 👇
+  const handleSendOTP = async () => {
+    setPasswordStatus({ error: '', success: '', loading: true });
+    try {
+      await axios.post(getApiUrl('/api/auth/send-password-otp'), {}, getAuthConfig());
+      setOtpSent(true); // Switches the UI to show the code input!
+      setPasswordStatus({ error: '', success: 'Verification Code sent to your email! 📧', loading: false });
+    } catch (err) {
+      setPasswordStatus({ error: 'Failed to send email.', success: '', loading: false });
+    }
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordStatus({ error: '', success: '', loading: true });
+    try {
+      await axios.post(getApiUrl('/api/auth/reset-password-with-otp'), { 
+        otp: otpCode, 
+        newPassword: passwordData.newPassword 
+      }, getAuthConfig());
+      
+      setPasswordStatus({ error: '', success: 'Password updated successfully! 🛡️', loading: false });
+      
+      // Clean up and close modal after 2 seconds
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setForgotPasswordMode(false);
+        setOtpSent(false);
+        setPasswordData({ currentPassword: '', newPassword: '' });
+        setPasswordStatus({ error: '', success: '', loading: false });
+      }, 2000);
+    } catch (err) {
+      setPasswordStatus({ error: err.response?.data?.message || 'Invalid Code.', success: '', loading: false });
+    }
+  };
+
 // ── 🚨 ACCOUNT RECOVERY STATE ──
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [backupEmail, setBackupEmail] = useState('');
@@ -1579,54 +1620,75 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                 </button>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handlePasswordSubmit} className="p-6 space-y-5">
+             {/* ── DYNAMIC FORM AREA ── */}
+              {!forgotPasswordMode ? (
                 
-                {/* Status Messages */}
-                {passwordStatus.error && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center">
-                    {passwordStatus.error}
+                // ── MODE 1: STANDARD RESET FORM ──
+                <form onSubmit={handlePasswordSubmit} className="p-6 space-y-5">
+                  {passwordStatus.error && <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center">{passwordStatus.error}</div>}
+                  {passwordStatus.success && <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">{passwordStatus.success}</div>}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Current Password</label>
+                    <input type="password" required value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" placeholder="Enter current password" />
                   </div>
-                )}
-                {passwordStatus.success && (
-                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">
-                    {passwordStatus.success}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">New Password</label>
+                    <input type="password" required minLength="6" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" placeholder="Enter new password" />
                   </div>
-                )}
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Current Password</label>
-                  <input 
-                    type="password" 
-                    required
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                    className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors"
-                    placeholder="Enter current password"
-                  />
-                </div>
+                  <button type="submit" disabled={passwordStatus.loading || passwordStatus.success} className="w-full py-3.5 mt-2 bg-[#00F0FF] text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-white transition-colors disabled:opacity-50">
+                    {passwordStatus.loading ? 'Updating...' : 'Confirm Update'}
+                  </button>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">New Password</label>
-                  <input 
-                    type="password" 
-                    required
-                    minLength="6"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                    className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors"
-                    placeholder="Enter new password"
-                  />
-                </div>
+                  {/* 👇 THE NEW BUTTON 👇 */}
+                  <div className="text-center pt-2">
+                    <button type="button" onClick={() => setForgotPasswordMode(true)} className="text-[10px] font-black text-gray-500 hover:text-[#00F0FF] uppercase tracking-widest transition-colors">
+                      Forgot Current Password?
+                    </button>
+                  </div>
+                </form>
 
-                <button 
-                  type="submit" 
-                  disabled={passwordStatus.loading || passwordStatus.success}
-                  className="w-full py-3.5 mt-2 bg-[#00F0FF] text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-white transition-colors disabled:opacity-50"
-                >
-                  {passwordStatus.loading ? 'Updating...' : 'Confirm Update'}
-                </button>
-              </form>
+              ) : (
+
+                // ── MODE 2: FORGOT PASSWORD (OTP) FORM ──
+                <form onSubmit={handleForgotSubmit} className="p-6 space-y-5">
+                  <p className="text-xs text-gray-400 font-medium text-center mb-2">We will send a 6-digit verification code to your registered email to confirm your identity.</p>
+                  
+                  {passwordStatus.error && <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold text-center">{passwordStatus.error}</div>}
+                  {passwordStatus.success && <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">{passwordStatus.success}</div>}
+
+                  {!otpSent ? (
+                    // Show this BEFORE they click send
+                    <button type="button" onClick={handleSendOTP} disabled={passwordStatus.loading} className="w-full py-3.5 mt-2 bg-purple-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-purple-400 transition-colors disabled:opacity-50">
+                      {passwordStatus.loading ? 'Sending...' : 'Send Code to Email'}
+                    </button>
+                  ) : (
+                    // Show this AFTER the email is sent!
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-purple-400 tracking-[0.2em] uppercase ml-1">6-Digit Email Code</label>
+                        <input type="text" required maxLength="6" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} className="w-full bg-[#05070A] border border-purple-500/30 rounded-2xl py-3 px-4 text-center text-xl tracking-[0.5em] font-black text-white outline-none focus:border-purple-500 transition-colors" placeholder="000000" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">New Password</label>
+                        <input type="password" required minLength="6" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full bg-[#05070A] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-purple-500/50 transition-colors" placeholder="Enter new password" />
+                      </div>
+                      <button type="submit" disabled={passwordStatus.loading || otpCode.length < 6} className="w-full py-3.5 mt-2 bg-emerald-500 text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-emerald-400 transition-colors disabled:opacity-50">
+                        {passwordStatus.loading ? 'Verifying...' : 'Verify & Reset Password'}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Back button to return to standard mode */}
+                  <div className="text-center pt-2">
+                    <button type="button" onClick={() => { setForgotPasswordMode(false); setOtpSent(false); setPasswordStatus({error:'', success:'', loading:false}); }} className="text-[10px] font-black text-gray-500 hover:text-white uppercase tracking-widest transition-colors">
+                      Back to Standard Reset
+                    </button>
+                  </div>
+                </form>
+              )}
             </motion.div>
           </div>
         )}

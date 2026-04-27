@@ -238,13 +238,17 @@ const setup2FA = async (req, res) => {
 };
 
 // ─── Verify the 6-Digit Code ───────────────────────────────────────────
-// ─── Verify the 6-Digit Code ───────────────────────────────────────────
 const verify2FA = async (req, res) => {
   try {
     const { code } = req.body;
-    const user = await User.findById(req.user._id);
+    
+    // 🚨 1. Bulletproof ID grabber (Checks both .id and ._id just to be safe)
+    const userId = req.user?.id || req.user?._id;
+    const user = await User.findById(userId);
 
-    // Check if the 6 digits match the math of the secret key
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const speakeasy = require('speakeasy');
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
@@ -253,19 +257,18 @@ const verify2FA = async (req, res) => {
     });
 
     if (verified) {
-      // 👇 🚨 THE BULLETPROOF SAVE 🚨 👇
-      // strict: false tells MongoDB to forcefully save this permanently, even if the database blueprint tries to reject it!
-      await User.findByIdAndUpdate(
-        req.user._id, 
-        { is2FAEnabled: true }, 
-        { new: true, strict: false } 
+      // 🚨 2. THE ULTIMATE SAVE: Write directly to MongoDB (Bypasses all Mongoose rules)
+      await User.collection.updateOne(
+        { _id: user._id },
+        { $set: { is2FAEnabled: true } }
       );
-      
+
       res.json({ success: true, message: "2FA Enabled Successfully!" });
     } else {
       res.status(400).json({ success: false, message: "Invalid 6-digit code. Try again." });
     }
   } catch (err) {
+    console.error("2FA Setup Error:", err);
     res.status(500).json({ success: false, message: "Verification failed." });
   }
 };

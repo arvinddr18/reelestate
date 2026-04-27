@@ -333,7 +333,7 @@ const verify2FALogin = async (req, res) => {
       secret: user.twoFactorSecret,
       encoding: 'base32',
       token: code,
-      window: 4 // 🚨 Expanded to a full 1-minute grace period for time drift!
+      window: 6 // 🚨 Expanded to a full 1-minute grace period for time drift!
     });
 
     if (!verified) {

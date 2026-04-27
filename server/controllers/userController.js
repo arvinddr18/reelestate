@@ -203,19 +203,36 @@ const getAllUsers = async (req, res) => {
 };
 
 // ─── Generate 2FA QR Code ──────────────────────────────────────────────
+// ─── Generate 2FA QR Code ──────────────────────────────────────────────
 const setup2FA = async (req, res) => {
   try {
-    // 1. Generate a highly secure secret specifically for Nodexa
-    const secret = speakeasy.generateSecret({ name: `Nodexa (${req.user.username})` });
+    const user = await User.findById(req.user._id);
     
-    // 2. Save the secret to the user's database profile temporarily
-    await User.findByIdAndUpdate(req.user._id, { twoFactorSecret: secret.base32 });
+    let secretBase32;
+    
+    if (user.twoFactorSecret && !user.is2FAEnabled) {
+      secretBase32 = user.twoFactorSecret;
+    } else {
+      const secret = speakeasy.generateSecret({ 
+        name: `Nodexa (${req.user.username})` 
+      });
+      secretBase32 = secret.base32;
+      await User.findByIdAndUpdate(req.user._id, { 
+        twoFactorSecret: secretBase32,
+        is2FAEnabled: false
+      });
+    }
 
-    // 3. Turn that secret into a scannable QR Code image URL
-    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
-    
+    const otpauthUrl = speakeasy.otpauthURL({
+      secret: secretBase32,
+      label: `Nodexa (${req.user.username})`,
+      encoding: 'base32'
+    });
+
+    const qrCodeUrl = await qrcode.toDataURL(otpauthUrl);
     res.json({ success: true, qrCodeUrl });
   } catch (err) {
+    console.error("2FA setup error:", err);
     res.status(500).json({ success: false, message: "Failed to generate 2FA" });
   }
 };
@@ -230,7 +247,7 @@ const verify2FA = async (req, res) => {
       secret: user.twoFactorSecret,
       encoding: 'base32',
       token: code,
-      window: 4  // ✅ THIS IS THE FIX - allows 2 time steps (±60 seconds tolerance)
+      window: 6 // ✅ THIS IS THE FIX - allows 2 time steps (±60 seconds tolerance)
     });
 
     if (verified) {

@@ -360,16 +360,20 @@ const verify2FALogin = async (req, res) => {
 // ─── Send Password Reset OTP to Email ──────────────────────────────────
 const sendPasswordOTP = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const userId = req.user?.id || req.user?._id;
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
     // 1. Generate a random 6-digit code
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // 2. Save it to the user (expires in 10 minutes)
-    user.resetPasswordOtp = otp;
-    user.resetPasswordOtpExpire = Date.now() + 10 * 60 * 1000;
-    await user.save(); 
+    const expireTime = Date.now() + 10 * 60 * 1000; // 10 mins
+
+    // 👇 BULLETPROOF SAVE: Bypasses schema to force-save the OTP to the database 👇
+    await User.findByIdAndUpdate(
+      userId,
+      { $set: { resetPasswordOtp: otp, resetPasswordOtpExpire: expireTime } },
+      { new: true, strict: false }
+    );
 
     // 3. Send the Email
     const sendEmail = require('../utils/sendEmail');
@@ -387,6 +391,7 @@ const sendPasswordOTP = async (req, res) => {
 
     res.json({ success: true, message: 'OTP sent to email.' });
   } catch (error) {
+    console.error("Send OTP Error:", error);
     res.status(500).json({ success: false, message: 'Failed to send email.' });
   }
 };
@@ -395,27 +400,38 @@ const sendPasswordOTP = async (req, res) => {
 const resetPasswordWithOTP = async (req, res) => {
   try {
     const { otp, newPassword } = req.body;
-    // We MUST explicitly ask for the OTP fields and the password field
-    const user = await User.findById(req.user.id).select('+password +resetPasswordOtp +resetPasswordOtpExpire');
+    const userId = req.user?.id || req.user?._id;
 
-    // 1. Check if OTP is correct
-    if (!user.resetPasswordOtp || user.resetPasswordOtp !== otp) {
+    // 👇 BULLETPROOF READ: .lean() forces Mongoose to give us the RAW database data! 👇
+    const rawUser = await User.findById(userId).lean();
+
+    if (!rawUser) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    // 1. Check if OTP is correct (Casting to String prevents any math weirdness)
+    if (!rawUser.resetPasswordOtp || String(rawUser.resetPasswordOtp) !== String(otp)) {
       return res.status(400).json({ success: false, message: 'Invalid or incorrect code.' });
     }
     
     // 2. Check if OTP is expired
-    if (user.resetPasswordOtpExpire < Date.now()) {
+    if (rawUser.resetPasswordOtpExpire && rawUser.resetPasswordOtpExpire < Date.now()) {
        return res.status(400).json({ success: false, message: 'Code has expired. Request a new one.' });
     }
 
-    // 3. Success! Set new password and destroy the OTP so it can't be reused
+    // 3. Success! Set new password using normal Mongoose so the password gets securely hashed!
+    const user = await User.findById(userId);
     user.password = newPassword;
-    user.resetPasswordOtp = undefined;
-    user.resetPasswordOtpExpire = undefined;
     await user.save();
+
+    // 4. Destroy the OTP using bulletproof update so it can't be reused
+    await User.findByIdAndUpdate(
+      userId,
+      { $unset: { resetPasswordOtp: "", resetPasswordOtpExpire: "" } },
+      { strict: false }
+    );
 
     res.json({ success: true, message: 'Password reset successfully!' });
   } catch (error) {
+    console.error("Verify OTP Error:", error);
     res.status(500).json({ success: false, message: 'Failed to reset password.' });
   }
 };

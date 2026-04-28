@@ -253,32 +253,35 @@ const logoutAll = async (req, res) => {
   }
 };
 
-/**
- * PUT /api/auth/change-password
- * Body: { currentPassword, newPassword }
- */
+// ─── Change Password (Standard) ────────────────────────────────────────
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Please provide both current and new passwords.' });
+      return res.status(400).json({ success: false, message: 'Please provide both passwords.' });
     }
 
-    // 1. Find the user. We MUST use .select('+password') because we hid it by default in the model!
-    const user = await User.findById(req.user.id).select('+password');
+    const userId = req.user?.id || req.user?._id;
+    const user = await User.findById(userId).select('+password');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
-    // 2. Verify the current password is actually correct
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Access Denied: Current password is incorrect.' });
     }
 
-    // 3. Set the new password (Your User model will automatically hash this before saving!)
-    user.password = newPassword;
-    await user.save();
+    // 👇 🚨 THE BULLETPROOF DATABASE OVERRIDE 🚨 👇
+    // We manually hash the password and write it directly to the hard drive!
+    const bcrypt = require('bcryptjs'); // ⚠️ Change to 'bcrypt' if your package.json uses that instead
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-    // 4. Send an automated Security Alert Email 🛡️
+    await User.collection.updateOne(
+      { _id: user._id },
+      { $set: { password: hashedPassword } }
+    );
+    // 👆 ────────────────────────────────────── 👆
+
+    // Send an automated Security Alert Email 🛡️
     try {
       if (user.loginAlerts) {
         const sendEmail = require('../utils/sendEmail');
@@ -286,14 +289,11 @@ const changePassword = async (req, res) => {
           email: user.email,
           subject: `Security Alert: Password Changed 🛡️`,
           html: `
-            <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
-              <h2 style="color: #00F0FF; margin-top: 0; font-weight: 900; letter-spacing: -0.5px;">Password Updated</h2>
-              <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">Hello <b>@${user.username}</b>,</p>
-              <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">The password for your Nodexa account was just successfully changed.</p>
-              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px; line-height: 1.6;">
-                <b>Time of Change:</b> ${new Date().toLocaleString()}<br/>
-              </div>
-              <p style="color: #6B7280; font-size: 12px; margin-top: 30px;">If you did not authorize this change, please reply to this email immediately to lock down your account.</p>
+            <div style="background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
+              <h2 style="color: #00F0FF; margin-top: 0;">Password Updated</h2>
+              <p style="color: #D1D5DB;">Hello <b>@${user.username}</b>,</p>
+              <p style="color: #D1D5DB;">The password for your Nodexa account was successfully changed.</p>
+              <p style="color: #6B7280; font-size: 12px; margin-top: 30px;">If you did not authorize this change, please contact support immediately.</p>
             </div>
           `
         });
@@ -304,9 +304,11 @@ const changePassword = async (req, res) => {
 
     res.json({ success: true, message: 'Password updated successfully.' });
   } catch (error) {
+    console.error("Change Password Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 /**
  * POST /api/auth/verify-2fa-login
@@ -402,36 +404,33 @@ const resetPasswordWithOTP = async (req, res) => {
     const { otp, newPassword } = req.body;
     const userId = req.user?.id || req.user?._id;
 
-    // 👇 BULLETPROOF READ: .lean() forces Mongoose to give us the RAW database data! 👇
     const rawUser = await User.findById(userId).lean();
-
     if (!rawUser) return res.status(404).json({ success: false, message: 'User not found.' });
 
-    // 1. Check if OTP is correct (Casting to String prevents any math weirdness)
     if (!rawUser.resetPasswordOtp || String(rawUser.resetPasswordOtp) !== String(otp)) {
       return res.status(400).json({ success: false, message: 'Invalid or incorrect code.' });
     }
     
-    // 2. Check if OTP is expired
     if (rawUser.resetPasswordOtpExpire && rawUser.resetPasswordOtpExpire < Date.now()) {
        return res.status(400).json({ success: false, message: 'Code has expired. Request a new one.' });
     }
 
-    // 3. Success! Set new password using normal Mongoose so the password gets securely hashed!
-    const user = await User.findById(userId);
-    user.password = newPassword;
-    await user.save();
+    // 👇 🚨 THE BULLETPROOF DATABASE OVERRIDE 🚨 👇
+    const bcrypt = require('bcryptjs'); // ⚠️ Change to 'bcrypt' if your package.json uses that instead
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-    // 4. Destroy the OTP using bulletproof update so it can't be reused
-    await User.findByIdAndUpdate(
-      userId,
-      { $unset: { resetPasswordOtp: "", resetPasswordOtpExpire: "" } },
-      { strict: false }
+    await User.collection.updateOne(
+      { _id: rawUser._id },
+      { 
+        $set: { password: hashedPassword },
+        $unset: { resetPasswordOtp: "", resetPasswordOtpExpire: "" }
+      }
     );
+    // 👆 ────────────────────────────────────── 👆
 
     res.json({ success: true, message: 'Password reset successfully!' });
   } catch (error) {
-    console.error("Verify OTP Error:", error);
+    console.error("OTP Reset Error:", error);
     res.status(500).json({ success: false, message: 'Failed to reset password.' });
   }
 };

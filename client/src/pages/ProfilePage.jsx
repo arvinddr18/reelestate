@@ -398,6 +398,47 @@ useEffect(() => {
     }
   };
 
+  // ── 🚨 RAZORPAY PAYMENT ENGINE ──
+  const handlePayment = async (amount) => {
+    try {
+      // 1. Tell backend to create a secure order
+      const res = await axios.post(getApiUrl('/api/payments/create-order'), { amount }, getAuthConfig());
+      const orderData = res.data.order;
+
+      // 2. Configure the Razorpay UI
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "YOUR_TEST_KEY_HERE", // We will use env variables!
+        amount: orderData.amount,
+        currency: "INR",
+        name: "Nodexa Wallet",
+        description: "Wallet Top-up",
+        order_id: orderData.id,
+        handler: async (response) => {
+          // 3. User paid successfully! Verify with backend
+          // (We will build this verify route next!)
+          alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
+        },
+        prefill: { 
+          email: currentUser?.email,
+          name: currentUser?.fullName || currentUser?.username 
+        },
+        theme: { color: "#00F0FF" } // Your gorgeous neon cyan!
+      };
+
+      // 4. Pop open the magic Amazon-style checkout!
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response){
+        alert("Payment Failed. Please try again.");
+      });
+      rzp.open(); 
+    } catch (err) {
+      console.error("Payment initialization failed:", err);
+      alert("Could not connect to payment gateway.");
+    }
+  };
+  // ───────────────────────────────
+
+
   // ───────────────────────────────
   const [settingsTab, setSettingsTab] = useState('personal');
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -1440,7 +1481,10 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                   <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-[#00F0FF] tracking-tight mb-6">
                     ₹1,250.00
                   </h1>
-                  <button className="bg-emerald-500 text-black font-black uppercase tracking-widest text-xs px-8 py-3.5 rounded-2xl hover:bg-emerald-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                  <button 
+      onClick={() => handlePayment(1000)} // 🚨 Added the trigger here! (1000 rupees)
+      className="bg-emerald-500 text-black font-black uppercase tracking-widest text-xs px-8 py-3.5 rounded-2xl hover:bg-emerald-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+    >
                     Top Up Wallet
                   </button>
                 </div>

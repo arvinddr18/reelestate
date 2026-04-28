@@ -12,6 +12,7 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
+const paymentRoutes = require('./routes/paymentRoutes');
 const Message = require('./models/Message'); // Adjust the path if your models folder is named differently!
 const app = express();
 
@@ -122,6 +123,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK', time: new Date() }));
 

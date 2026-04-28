@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema(
 
     lastLogoutAll: Date,
 
-
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -96,7 +95,19 @@ const userSchema = new mongoose.Schema(
   },
   resetPasswordOtpExpire: {
     type: Date
-  }
+  },
+  // Add to server/models/User.js
+walletBalance: {
+  type: Number,
+  default: 0
+},
+transactions: [{
+  amount: Number,
+  type: { type: String, enum: ['credit', 'debit'] },
+  status: String,
+  razorpay_payment_id: String,
+  date: { type: Date, default: Date.now }
+}]
 
   },
   { timestamps: true, strict: false }

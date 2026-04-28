@@ -56,6 +56,9 @@ export default function ProfilePage() {
   const [isNodded, setIsNodded] = useState(false);
   const [showNoddedMenu, setShowNoddedMenu] = useState(false);
 
+  // 👇 💳 PAYMENTS STATE 👇
+  const [paymentView, setPaymentView] = useState('main'); // 'main', 'methods', 'history', 'wallet', 'refunds'
+
   // 🚨 Indestructible logic that checks both ID and _ID formats
 // ✅ REPLACE WITH THIS
 useEffect(() => {
@@ -1305,55 +1308,161 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                 )}
 
                 {/* ── TAB: PAYMENTS ── */}
-                {settingsTab === 'payments' && (
-                  <div className="animate-in fade-in duration-500 pb-20">
-                    <div className="flex items-center gap-4 mb-10">
-                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
-                        <IoMdCard size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-black text-white">Payments</h2>
-                        <p className="text-sm text-gray-400 font-medium mt-1">Manage your payment methods and transactions.</p>
-                      </div>
+        {settingsTab === 'payments' && (
+          <div className="animate-in fade-in duration-500 pb-20">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                <IoMdCard size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-white">Payments</h2>
+                <p className="text-sm text-gray-400 font-medium mt-1">Manage your payment methods and transactions.</p>
+              </div>
+            </div>
+
+            {/* 🔙 SUB-MENU BACK BUTTON */}
+            {paymentView !== 'main' && (
+              <button 
+                onClick={() => setPaymentView('main')}
+                className="flex items-center gap-2 text-[#00F0FF] font-black text-[10px] uppercase tracking-widest mb-6 bg-[#00F0FF]/10 px-4 py-2 rounded-xl border border-[#00F0FF]/20 hover:bg-[#00F0FF]/20 transition-colors w-max"
+              >
+                <IoMdArrowBack size={14} /> Back to Payments Menu
+              </button>
+            )}
+
+            {/* ── MAIN MENU VIEW ── */}
+            {paymentView === 'main' && (
+              <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm animate-in slide-in-from-right-4 duration-300">
+                <div onClick={() => setPaymentView('methods')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
+                  <div className="flex items-center gap-4">
+                    <IoMdCard size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
+                    <p className="text-sm font-bold text-white">Saved Payment Methods</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500 font-bold">2 Cards, 1 UPI</span>
+                    <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                  </div>
+                </div>
+                
+                <div onClick={() => setPaymentView('history')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
+                  <div className="flex items-center gap-4">
+                    <IoMdTime size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
+                    <p className="text-sm font-bold text-white">Transaction History</p>
+                  </div>
+                  <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                </div>
+                
+                <div onClick={() => setPaymentView('wallet')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
+                  <div className="flex items-center gap-4">
+                    <IoMdStar size={22} className="text-gray-400 group-hover:text-emerald-400 transition-colors" />
+                    <p className="text-sm font-bold text-white">Wallet & Credits</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-emerald-400 font-black tracking-wide">₹1,250</span>
+                    <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-emerald-400 transition-transform" />
+                  </div>
+                </div>
+                
+                <div onClick={() => setPaymentView('refunds')} className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group transition-colors">
+                  <div className="flex items-center gap-4">
+                    <IoMdArrowBack size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors rotate-[270deg]" />
+                    <p className="text-sm font-bold text-white">Refunds</p>
+                  </div>
+                  <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                </div>
+              </div>
+            )}
+
+            {/* ── SUB-VIEW: SAVED METHODS ── */}
+            {paymentView === 'methods' && (
+              <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                <div className="bg-[#151A25] border border-blue-500/30 rounded-[20px] p-5 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] pointer-events-none" />
+                  <div className="flex justify-between items-start mb-6">
+                    <span className="text-white font-black italic tracking-widest">VISA</span>
+                    <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">DEFAULT</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xl tracking-[0.2em] font-mono text-gray-300 mb-2">
+                    <span>••••</span><span>••••</span><span>••••</span><span className="text-white">4242</span>
+                  </div>
+                  <p className="text-xs text-gray-500 font-bold uppercase">Expires 12/28</p>
+                </div>
+
+                <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[20px] p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-[#151A25] rounded-full flex items-center justify-center border border-[#1E2532]">
+                      <span className="text-sm">🏦</span>
                     </div>
-                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdCard size={22} className="text-gray-400 group-hover:text-white transition-colors" />
-                          <p className="text-sm font-bold text-white">Saved Payment Methods</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-gray-500 font-bold">2 Cards, 1 UPI</span>
-                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdTime size={22} className="text-gray-400 group-hover:text-white transition-colors" />
-                          <p className="text-sm font-bold text-white">Transaction History</p>
-                        </div>
-                        <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
-                      </div>
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdStar size={22} className="text-gray-400 group-hover:text-white transition-colors" />
-                          <p className="text-sm font-bold text-white">Wallet & Credits</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-emerald-400 font-bold">₹1,250</span>
-                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdArrowBack size={22} className="text-gray-400 group-hover:text-white transition-colors rotate-[270deg]" />
-                          <p className="text-sm font-bold text-white">Refunds</p>
-                        </div>
-                        <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
-                      </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">UPI / Netbanking</p>
+                      <p className="text-xs text-gray-500 mt-0.5">arvinddr@okaxis</p>
                     </div>
                   </div>
-                )}
+                  <button className="text-red-500 text-xs font-black uppercase hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors">Remove</button>
+                </div>
+
+                <button className="w-full py-4 mt-4 bg-transparent border border-dashed border-[#00F0FF]/40 text-[#00F0FF] font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-[#00F0FF]/10 transition-colors flex items-center justify-center gap-2">
+                  <IoMdAdd size={16} /> Add New Payment Method
+                </button>
+              </div>
+            )}
+
+            {/* ── SUB-VIEW: TRANSACTION HISTORY ── */}
+            {paymentView === 'history' && (
+              <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm animate-in slide-in-from-right-4 duration-300">
+                {[
+                  { title: 'Premium Node Access', date: 'Apr 26, 2026', amount: '-₹499', type: 'debit' },
+                  { title: 'Wallet Top-up', date: 'Apr 20, 2026', amount: '+₹1,000', type: 'credit' },
+                  { title: 'Verification Badge Fee', date: 'Mar 15, 2026', amount: '-₹299', type: 'debit' },
+                ].map((txn, i) => (
+                  <div key={i} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${txn.type === 'credit' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-red-500/10 border-red-500/30 text-red-500'}`}>
+                        <IoMdArrowBack size={16} className={txn.type === 'credit' ? 'rotate-[270deg]' : 'rotate-90'} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white">{txn.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{txn.date}</p>
+                      </div>
+                    </div>
+                    <span className={`text-sm font-black tracking-wide ${txn.type === 'credit' ? 'text-emerald-400' : 'text-white'}`}>{txn.amount}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── SUB-VIEW: WALLET ── */}
+            {paymentView === 'wallet' && (
+              <div className="animate-in slide-in-from-right-4 duration-300">
+                <div className="bg-gradient-to-br from-[#151A25] to-[#0B0F19] border border-[#1E2532] rounded-[32px] p-8 text-center relative overflow-hidden mb-6">
+                  <div className="absolute top-[-50%] left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/10 rounded-full blur-[60px] pointer-events-none" />
+                  <p className="text-xs font-black text-gray-500 tracking-[0.2em] uppercase mb-2">Available Balance</p>
+                  <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-[#00F0FF] tracking-tight mb-6">
+                    ₹1,250.00
+                  </h1>
+                  <button className="bg-emerald-500 text-black font-black uppercase tracking-widest text-xs px-8 py-3.5 rounded-2xl hover:bg-emerald-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                    Top Up Wallet
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 text-center font-medium">Credits can be used for instant checkouts across the Nodexa network.</p>
+              </div>
+            )}
+
+            {/* ── SUB-VIEW: REFUNDS ── */}
+            {paymentView === 'refunds' && (
+              <div className="flex flex-col items-center justify-center py-16 text-center animate-in zoom-in-95 duration-500">
+                <div className="w-20 h-20 rounded-full border border-white/10 bg-[#151A25] flex items-center justify-center mb-6 shadow-inner">
+                  <IoMdCheckmarkCircle size={32} className="text-emerald-500 opacity-50" />
+                </div>
+                <h2 className="text-xl font-black text-white tracking-wide mb-2">No Active Refunds</h2>
+                <p className="text-xs text-gray-400 font-medium max-w-[250px]">
+                  You have no pending or recent refund requests on your account.
+                </p>
+              </div>
+            )}
+
+          </div>
+        )}
 
                 {/* ── TAB: PREFERENCES ── */}
                 {settingsTab === 'preferences' && (

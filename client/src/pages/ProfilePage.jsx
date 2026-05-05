@@ -58,6 +58,8 @@ export default function ProfilePage() {
 
   // 👇 💳 PAYMENTS STATE 👇
   const [paymentView, setPaymentView] = useState('main'); // 'main', 'methods', 'history', 'wallet', 'refunds'
+  // 👇 ⚙️ PREFERENCES STATE 👇
+  const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
 
   // 🚨 Indestructible logic that checks both ID and _ID formats
 // ✅ REPLACE WITH THIS
@@ -1520,38 +1522,134 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                         <p className="text-sm text-gray-400 font-medium mt-1">Customize your experience across the app.</p>
                       </div>
                     </div>
-                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdBookmark size={22} className="text-gray-400 group-hover:text-white transition-colors" />
-                          <p className="text-sm font-bold text-white">Interested Categories</p>
+
+                    {/* 🔙 SUB-MENU BACK BUTTON */}
+                    {prefView !== 'main' && (
+                      <button 
+                        onClick={() => setPrefView('main')}
+                        className="flex items-center gap-2 text-[#00F0FF] font-black text-[10px] uppercase tracking-widest mb-6 bg-[#00F0FF]/10 px-4 py-2 rounded-xl border border-[#00F0FF]/20 hover:bg-[#00F0FF]/20 transition-colors w-max"
+                      >
+                        <IoMdArrowBack size={14} /> Back to Preferences
+                      </button>
+                    )}
+
+                    {/* ── MAIN MENU VIEW ── */}
+                    {prefView === 'main' && (
+                      <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm animate-in slide-in-from-right-4 duration-300">
+                        
+                        <div onClick={() => setPrefView('categories')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
+                          <div className="flex items-center gap-4">
+                            <IoMdBookmark size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
+                            <p className="text-sm font-bold text-white">Interested Categories</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="flex gap-2 text-[14px]">🏠 🍔 💼</span>
+                            <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="flex gap-2 text-[14px]">🏠 🍔 💼 🎓</span>
-                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
+
+                        <div onClick={() => setPrefView('budget')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
+                          <div className="flex items-center gap-4">
+                            <IoMdCard size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
+                            <p className="text-sm font-bold text-white">Budget Range</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 font-bold">₹0 - ₹50K</span>
+                            <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                          </div>
+                        </div>
+
+                        <div onClick={() => setPrefView('location')} className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group transition-colors">
+                          <div className="flex items-center gap-4">
+                            <IoMdPin size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
+                            <p className="text-sm font-bold text-white">Preferred Location</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 font-bold">Bangalore, India</span>
+                            <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdCard size={22} className="text-gray-400 group-hover:text-white transition-colors" />
-                          <p className="text-sm font-bold text-white">Budget Range</p>
+                    )}
+
+                    {/* ── SUB-VIEW: CATEGORIES ── */}
+                    {prefView === 'categories' && (
+                      <div className="animate-in slide-in-from-right-4 duration-300">
+                        <p className="text-xs text-gray-400 mb-4 font-medium">Select the types of properties or nodes you want to see in your feed.</p>
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                          {[
+                            { name: 'Residential', icon: '🏠', active: true },
+                            { name: 'Commercial', icon: '🏢', active: false },
+                            { name: 'Plots/Land', icon: '🗺️', active: false },
+                            { name: 'PG / Co-living', icon: '🛌', active: true },
+                            { name: 'Food & Dining', icon: '🍔', active: true },
+                            { name: 'Services', icon: '💼', active: false },
+                          ].map((cat, i) => (
+                            <div key={i} className={`p-4 rounded-[20px] border cursor-pointer transition-all flex flex-col gap-2 ${cat.active ? 'bg-[#00F0FF]/10 border-[#00F0FF]/50 shadow-[0_0_15px_rgba(0,240,255,0.1)]' : 'bg-[#0B0F19] border-[#1E2532] hover:border-gray-500'}`}>
+                              <div className="flex justify-between items-center">
+                                <span className="text-2xl">{cat.icon}</span>
+                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${cat.active ? 'bg-[#00F0FF] border-[#00F0FF]' : 'border-gray-600'}`}>
+                                  {cat.active && <IoMdCheckmark size={14} className="text-black" />}
+                                </div>
+                              </div>
+                              <span className={`text-sm font-bold ${cat.active ? 'text-white' : 'text-gray-400'}`}>{cat.name}</span>
+                            </div>
+                          ))}
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-gray-500 font-bold">₹0 - ₹50K</span>
-                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
-                        </div>
+                        <button className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all">Save Categories</button>
                       </div>
-                      <div className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                          <IoMdPin size={22} className="text-gray-400 group-hover:text-white transition-colors" />
-                          <p className="text-sm font-bold text-white">Preferred Location</p>
+                    )}
+
+                    {/* ── SUB-VIEW: BUDGET ── */}
+                    {prefView === 'budget' && (
+                      <div className="animate-in slide-in-from-right-4 duration-300">
+                        <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-6">
+                          <p className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase text-center mb-6">Maximum Monthly Budget</p>
+                          <h1 className="text-4xl font-black text-center text-white tracking-tight mb-8">₹50,000</h1>
+                          
+                          {/* Visual Fake Slider */}
+                          <div className="relative w-full h-2 bg-[#1E2532] rounded-full mb-4">
+                            <div className="absolute top-0 left-0 h-full w-[40%] bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-full shadow-[0_0_10px_#00F0FF]" />
+                            <div className="absolute top-1/2 left-[40%] -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full border-[3px] border-[#00F0FF] shadow-lg cursor-grab" />
+                          </div>
+                          <div className="flex justify-between text-[10px] font-bold text-gray-500">
+                            <span>₹0</span>
+                            <span>₹100K+</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-gray-500 font-bold">Bangalore, India</span>
-                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180" />
-                        </div>
+                        <button className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all">Update Budget</button>
                       </div>
-                    </div>
+                    )}
+
+                    {/* ── SUB-VIEW: LOCATION ── */}
+                    {prefView === 'location' && (
+                      <div className="animate-in slide-in-from-right-4 duration-300">
+                        <div className="space-y-4 mb-6">
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                              <IoMdPin size={20} className="text-[#00F0FF]" />
+                            </div>
+                            <input 
+                              type="text" 
+                              defaultValue="Bangalore, India" 
+                              className="w-full bg-[#0B0F19] border border-[#1E2532] rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" 
+                              placeholder="Search city or area..." 
+                            />
+                          </div>
+                          
+                          <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[20px] p-2">
+                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase px-3 py-2 block">Suggested Hubs</span>
+                            {['Mumbai, India', 'Delhi NCR, India', 'Pune, India'].map((city, i) => (
+                              <div key={i} className="flex items-center gap-3 p-3 hover:bg-[#151A25] rounded-xl cursor-pointer transition-colors text-sm font-bold text-gray-400 hover:text-white">
+                                <IoMdPin size={16} /> {city}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <button className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all">Set Location</button>
+                      </div>
+                    )}
+
                   </div>
                 )}
 

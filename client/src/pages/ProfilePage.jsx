@@ -58,8 +58,17 @@ export default function ProfilePage() {
 
   // 👇 💳 PAYMENTS STATE 👇
   const [paymentView, setPaymentView] = useState('main'); // 'main', 'methods', 'history', 'wallet', 'refunds'
-  // 👇 ⚙️ PREFERENCES STATE 👇
+ // 👇 ⚙️ PREFERENCES STATE 👇
   const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
+  
+  // 🚨 NEW: Updated Default Categories
+  const [prefCategories, setPrefCategories] = useState(['Social', 'Sale Hub', 'Food']);
+  const [prefBudget, setPrefBudget] = useState(50000);
+  const [prefLocation, setPrefLocation] = useState('Bangalore, India');
+  
+  // 🚨 NEW: Smart Budget Logic (Only these categories trigger the money slider!)
+  const budgetApplicableCategories = ['Sale Hub', 'Rents', 'PGs & Hostels', 'Motors', 'Market'];
+  const showBudgetMenu = prefCategories.some(cat => budgetApplicableCategories.includes(cat));
 
   // 🚨 Indestructible logic that checks both ID and _ID formats
 // ✅ REPLACE WITH THIS
@@ -1510,7 +1519,7 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
           </div>
         )}
 
-                {/* ── TAB: PREFERENCES ── */}
+               {/* ── TAB: PREFERENCES ── */}
                 {settingsTab === 'preferences' && (
                   <div className="animate-in fade-in duration-500 pb-20">
                     <div className="flex items-center gap-4 mb-10">
@@ -1540,24 +1549,29 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                         <div onClick={() => setPrefView('categories')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
                           <div className="flex items-center gap-4">
                             <IoMdBookmark size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
-                            <p className="text-sm font-bold text-white">Interested Categories</p>
+                            <p className="text-sm font-bold text-white">Interested Hubs</p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="flex gap-2 text-[14px]">🏠 🍔 💼</span>
+                            <span className="text-[12px] text-[#00F0FF] font-bold bg-[#00F0FF]/10 px-3 py-1 rounded-full border border-[#00F0FF]/20">
+                              {prefCategories.length > 0 ? `${prefCategories.length} Selected` : "None"}
+                            </span>
                             <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
                           </div>
                         </div>
 
-                        <div onClick={() => setPrefView('budget')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors">
-                          <div className="flex items-center gap-4">
-                            <IoMdCard size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
-                            <p className="text-sm font-bold text-white">Budget Range</p>
+                        {/* 🚨 DYNAMIC BUDGET TAB: Hides if they only select Social, Food, Cinema, etc. */}
+                        {showBudgetMenu && (
+                          <div onClick={() => setPrefView('budget')} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer group transition-colors animate-in fade-in duration-300">
+                            <div className="flex items-center gap-4">
+                              <IoMdCard size={22} className="text-gray-400 group-hover:text-[#00F0FF] transition-colors" />
+                              <p className="text-sm font-bold text-white">Budget Range</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-500 font-bold">Max ₹{prefBudget.toLocaleString()}</span>
+                              <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-500 font-bold">₹0 - ₹50K</span>
-                            <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
-                          </div>
-                        </div>
+                        )}
 
                         <div onClick={() => setPrefView('location')} className="flex items-center justify-between p-5 hover:bg-[#151A25] cursor-pointer group transition-colors">
                           <div className="flex items-center gap-4">
@@ -1565,38 +1579,67 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                             <p className="text-sm font-bold text-white">Preferred Location</p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-500 font-bold">Bangalore, India</span>
+                            <span className="text-xs text-gray-500 font-bold truncate max-w-[120px]">{prefLocation || "Global"}</span>
                             <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] transition-transform" />
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* ── SUB-VIEW: CATEGORIES ── */}
+                    {/* ── SUB-VIEW: CATEGORIES (Now with 20 Hubs & Scrolling!) ── */}
                     {prefView === 'categories' && (
-                      <div className="animate-in slide-in-from-right-4 duration-300">
-                        <p className="text-xs text-gray-400 mb-4 font-medium">Select the types of properties or nodes you want to see in your feed.</p>
-                        <div className="grid grid-cols-2 gap-3 mb-6">
+                      <div className="animate-in slide-in-from-right-4 duration-300 flex flex-col h-full">
+                        <p className="text-xs text-gray-400 mb-4 font-medium">Select the hubs you want to see in your personalized feed.</p>
+                        
+                        {/* 🚨 Scrollable Container so it fits perfectly on Mobile */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6 max-h-[50vh] overflow-y-auto pr-2 no-scrollbar">
                           {[
-                            { name: 'Residential', icon: '🏠', active: true },
-                            { name: 'Commercial', icon: '🏢', active: false },
-                            { name: 'Plots/Land', icon: '🗺️', active: false },
-                            { name: 'PG / Co-living', icon: '🛌', active: true },
-                            { name: 'Food & Dining', icon: '🍔', active: true },
-                            { name: 'Services', icon: '💼', active: false },
-                          ].map((cat, i) => (
-                            <div key={i} className={`p-4 rounded-[20px] border cursor-pointer transition-all flex flex-col gap-2 ${cat.active ? 'bg-[#00F0FF]/10 border-[#00F0FF]/50 shadow-[0_0_15px_rgba(0,240,255,0.1)]' : 'bg-[#0B0F19] border-[#1E2532] hover:border-gray-500'}`}>
-                              <div className="flex justify-between items-center">
-                                <span className="text-2xl">{cat.icon}</span>
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${cat.active ? 'bg-[#00F0FF] border-[#00F0FF]' : 'border-gray-600'}`}>
-                                  {cat.active && <IoMdCheckmark size={14} className="text-black" />}
+                            { name: 'Social', icon: '📸' },
+                            { name: 'Sale Hub', icon: '🏠' },
+                            { name: 'Rents', icon: '🔑' },
+                            { name: 'PGs & Hostels', icon: '🛏️' },
+                            { name: 'Services', icon: '🛠️' },
+                            { name: 'Jobs', icon: '💼' },
+                            { name: 'Education', icon: '🎓' },
+                            { name: 'Market', icon: '🛍️' },
+                            { name: 'Motors', icon: '🚗' },
+                            { name: 'Food', icon: '🍔' },
+                            { name: 'Events', icon: '🎟️' },
+                            { name: 'Cinema', icon: '🍿' },
+                            { name: 'Travel', icon: '✈️' },
+                            { name: 'Fitness', icon: '💪' },
+                            { name: 'Sports', icon: '⚽' },
+                            { name: 'Fashion', icon: '👗' },
+                            { name: 'Beauty', icon: '💅' },
+                            { name: 'Tech', icon: '💻' },
+                            { name: 'Pets', icon: '🐾' },
+                            { name: 'Kids', icon: '🧸' }
+                          ].map((cat, i) => {
+                            const isActive = prefCategories.includes(cat.name);
+                            return (
+                              <div 
+                                key={i} 
+                                onClick={() => {
+                                  if (isActive) {
+                                    setPrefCategories(prefCategories.filter(c => c !== cat.name));
+                                  } else {
+                                    setPrefCategories([...prefCategories, cat.name]);
+                                  }
+                                }}
+                                className={`p-4 rounded-[20px] border cursor-pointer transition-all flex flex-col gap-2 shrink-0 ${isActive ? 'bg-[#00F0FF]/10 border-[#00F0FF]/50 shadow-[0_0_15px_rgba(0,240,255,0.1)]' : 'bg-[#0B0F19] border-[#1E2532] hover:border-gray-500'}`}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="text-2xl drop-shadow-md">{cat.icon}</span>
+                                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isActive ? 'bg-[#00F0FF] border-[#00F0FF]' : 'border-gray-600'}`}>
+                                    {isActive && <IoMdCheckmark size={14} className="text-black" />}
+                                  </div>
                                 </div>
+                                <span className={`text-[11px] md:text-sm font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-white' : 'text-gray-400'}`}>{cat.name}</span>
                               </div>
-                              <span className={`text-sm font-bold ${cat.active ? 'text-white' : 'text-gray-400'}`}>{cat.name}</span>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
-                        <button className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all">Save Categories</button>
+                        <button onClick={() => setPrefView('main')} className="w-full mt-auto py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95 shadow-[0_-20px_20px_#05070A]">Save Hubs</button>
                       </div>
                     )}
 
@@ -1605,19 +1648,28 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                       <div className="animate-in slide-in-from-right-4 duration-300">
                         <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-6">
                           <p className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase text-center mb-6">Maximum Monthly Budget</p>
-                          <h1 className="text-4xl font-black text-center text-white tracking-tight mb-8">₹50,000</h1>
+                          <h1 className="text-4xl font-black text-center text-white tracking-tight mb-8">
+                            {prefBudget >= 1000000 ? "₹10,00,000+" : `₹${prefBudget.toLocaleString('en-IN')}`}
+                          </h1>
                           
-                          {/* Visual Fake Slider */}
-                          <div className="relative w-full h-2 bg-[#1E2532] rounded-full mb-4">
-                            <div className="absolute top-0 left-0 h-full w-[40%] bg-gradient-to-r from-[#0057FF] to-[#00F0FF] rounded-full shadow-[0_0_10px_#00F0FF]" />
-                            <div className="absolute top-1/2 left-[40%] -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full border-[3px] border-[#00F0FF] shadow-lg cursor-grab" />
+                          <div className="mb-4">
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="1000000" 
+                              step="5000"
+                              value={prefBudget}
+                              onChange={(e) => setPrefBudget(Number(e.target.value))}
+                              className="w-full h-2 bg-[#1E2532] rounded-lg appearance-none cursor-pointer accent-[#00F0FF]"
+                            />
                           </div>
+                          
                           <div className="flex justify-between text-[10px] font-bold text-gray-500">
                             <span>₹0</span>
-                            <span>₹100K+</span>
+                            <span>₹10L+</span>
                           </div>
                         </div>
-                        <button className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all">Update Budget</button>
+                        <button onClick={() => setPrefView('main')} className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95">Update Budget</button>
                       </div>
                     )}
 
@@ -1631,22 +1683,23 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                             </div>
                             <input 
                               type="text" 
-                              defaultValue="Bangalore, India" 
+                              value={prefLocation}
+                              onChange={(e) => setPrefLocation(e.target.value)}
                               className="w-full bg-[#0B0F19] border border-[#1E2532] rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors" 
-                              placeholder="Search city or area..." 
+                              placeholder="Search global city or area..." 
                             />
                           </div>
                           
                           <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[20px] p-2">
-                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase px-3 py-2 block">Suggested Hubs</span>
-                            {['Mumbai, India', 'Delhi NCR, India', 'Pune, India'].map((city, i) => (
-                              <div key={i} className="flex items-center gap-3 p-3 hover:bg-[#151A25] rounded-xl cursor-pointer transition-colors text-sm font-bold text-gray-400 hover:text-white">
+                            <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase px-3 py-2 block">Global Hubs</span>
+                            {['Dubai, UAE', 'New York, USA', 'Mumbai, India', 'London, UK'].map((city, i) => (
+                              <div key={i} onClick={() => setPrefLocation(city)} className="flex items-center gap-3 p-3 hover:bg-[#151A25] rounded-xl cursor-pointer transition-colors text-sm font-bold text-gray-400 hover:text-white">
                                 <IoMdPin size={16} /> {city}
                               </div>
                             ))}
                           </div>
                         </div>
-                        <button className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all">Set Location</button>
+                        <button onClick={() => setPrefView('main')} className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95">Set Global Location</button>
                       </div>
                     )}
 

@@ -65,6 +65,7 @@ export default function ProfilePage() {
   const [prefCategories, setPrefCategories] = useState(['Social', 'Sale Hub', 'Food']);
   const [prefBudget, setPrefBudget] = useState(50000);
   const [prefLocation, setPrefLocation] = useState('Bangalore, India');
+  const [prefStatus, setPrefStatus] = useState({ error: '', success: '', loading: false });
   
   // 🚨 NEW: Smart Budget Logic (Only these categories trigger the money slider!)
   const budgetApplicableCategories = ['Sale Hub', 'Rents', 'PGs & Hostels', 'Motors', 'Market'];
@@ -587,7 +588,7 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     }
   };
 
-  // 👇 🚨 ADD THE NEW SAVE FUNCTION HERE 👇
+  // ── 🚨 SAVE PREFERENCES TO DATABASE ──
   const savePreferences = async () => {
     try {
       const payload = {
@@ -596,18 +597,23 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
         preferredLocation: prefLocation
       };
 
-      // Reuse your existing powerful update route!
+      // 1. Send to Backend
       await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
       
-      // Update the local user object so it reflects instantly without refreshing
+      // 2. Update Local State
       setUser(prev => ({ ...prev, ...payload }));
       
-      // Go back to the main preferences menu
+      // 3. Return to Main Menu & Show Beautiful Success Message!
       setPrefView('main');
-      alert("Preferences Secured! 🛡️");
+      setPrefStatus({ error: '', success: 'Preferences Secured & Updated! 🛡️', loading: false });
+      
+      // 4. Auto-hide the message after 3 seconds
+      setTimeout(() => setPrefStatus({ error: '', success: '', loading: false }), 3000);
+
     } catch (err) {
       console.error("Failed to save preferences:", err);
-      alert("Failed to save. Check your connection.");
+      setPrefStatus({ error: 'Failed to save. Check your connection.', success: '', loading: false });
+      setTimeout(() => setPrefStatus({ error: '', success: '', loading: false }), 3000);
     }
   };
 
@@ -1555,6 +1561,17 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                         <p className="text-sm text-gray-400 font-medium mt-1">Customize your experience across the app.</p>
                       </div>
                     </div>
+                    {/* 👇 ✨ THE NEW CUSTOM NODEXA NOTIFICATION ✨ 👇 */}
+                    {prefStatus.success && (
+                      <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold text-center flex items-center justify-center gap-2 animate-in slide-in-from-top-2 duration-300">
+                        <IoMdCheckmarkCircle size={18} /> {prefStatus.success}
+                      </div>
+                    )}
+                    {prefStatus.error && (
+                      <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold text-center flex items-center justify-center gap-2 animate-in slide-in-from-top-2 duration-300">
+                        <IoMdClose size={18} /> {prefStatus.error}
+                      </div>
+                    )}
 
                     {/* 🔙 SUB-MENU BACK BUTTON */}
                     {prefView !== 'main' && (

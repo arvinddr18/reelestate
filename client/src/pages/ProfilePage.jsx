@@ -587,6 +587,30 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     }
   };
 
+  // 👇 🚨 ADD THE NEW SAVE FUNCTION HERE 👇
+  const savePreferences = async () => {
+    try {
+      const payload = {
+        preferredCategories: prefCategories,
+        budgetMax: prefBudget,
+        preferredLocation: prefLocation
+      };
+
+      // Reuse your existing powerful update route!
+      await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
+      
+      // Update the local user object so it reflects instantly without refreshing
+      setUser(prev => ({ ...prev, ...payload }));
+      
+      // Go back to the main preferences menu
+      setPrefView('main');
+      alert("Preferences Secured! 🛡️");
+    } catch (err) {
+      console.error("Failed to save preferences:", err);
+      alert("Failed to save. Check your connection.");
+    }
+  };
+
   const trustScore = Math.min(98, 70 + (userPosts.length * 2)); 
 
  return (
@@ -1638,10 +1662,14 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                               </div>
                             );
                           })}
-                        </div>
-                        <button onClick={() => setPrefView('main')} className="w-full mt-auto py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95 shadow-[0_-20px_20px_#05070A]">Save Hubs</button>
-                      </div>
-                    )}
+  </div>
+  <button onClick={savePreferences} className="w-full mt-auto py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95 shadow-[0_-20px_20px_#05070A]">
+    Save Hubs
+  </button>
+</div>
+)}
+                          
+                        
 
                     {/* ── SUB-VIEW: BUDGET ── */}
                     {prefView === 'budget' && (

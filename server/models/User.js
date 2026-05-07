@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
 
+    
     // 🚨 ADD THIS NEW FIELD RIGHT HERE 🚨
     isPrivate: { 
       type: Boolean, 
@@ -107,7 +108,21 @@ transactions: [{
   status: String,
   razorpay_payment_id: String,
   date: { type: Date, default: Date.now }
-}]
+}],
+// 👇 ⚙️ PREFERENCES FIELDS 👇
+  preferredCategories: {
+    type: [String],
+    default: ['Social', 'Sale Hub', 'Food'] 
+  },
+  budgetMax: {
+    type: Number,
+    default: 50000
+  },
+  preferredLocation: {
+    type: String,
+    default: 'Global'
+  }
+
 
   },
   { timestamps: true, strict: false }

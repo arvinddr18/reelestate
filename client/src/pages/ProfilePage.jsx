@@ -525,6 +525,10 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
 
+        if (userData.preferredCategories) setPrefCategories(userData.preferredCategories);
+        if (userData.budgetMax !== undefined) setPrefBudget(userData.budgetMax);
+        if (userData.preferredLocation) setPrefLocation(userData.preferredLocation);
+
         if (canEditProfile) {
           try {
             const savedRes = await axios.get(getApiUrl('/api/posts/saved'), getAuthConfig());

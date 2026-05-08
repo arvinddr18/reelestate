@@ -63,10 +63,10 @@ const createPost = async (req, res) => {
   }
 };
 
-// ─── Get Feed (Infinite Scroll) ───────────────────────────────────────────────
+// ─── Get Feed (Infinite Scroll & AI Engine) ───────────────────────────────────
 /**
  * GET /api/posts/feed?page=1&limit=10
- * Returns paginated posts, sorted by newest first.
+ * Returns paginated posts, filtered by AI preferences or manual queries.
  */
 const getFeed = async (req, res) => {
   try {
@@ -74,31 +74,61 @@ const getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Build filter from query params
+    // Base filter: Only show active posts
     const filter = { isActive: true };
   
-    // ── NEW SMART FILTERING (ADD THIS HERE) ──
+    // ─── 🧠 NODEXA AI FILTERING ENGINE ───
+    // If the user is logged in, grab their saved preferences!
+    if (req.user) {
+      const user = await User.findById(req.user._id);
+      
+      if (user) {
+        // Filter 1: Hubs (Only apply if they aren't manually clicking a specific Hub tab)
+        if (!req.query.mainCategory || req.query.mainCategory === 'All') {
+          if (user.preferredCategories && user.preferredCategories.length > 0) {
+            filter.mainCategory = { $in: user.preferredCategories }; 
+          }
+        }
+
+        // Filter 2: Budget Fencing (Only applies if they like high-ticket hubs)
+        const budgetHubs = ['Sale Hub', 'Rents', 'PGs & Hostels', 'Motors', 'Market'];
+        const hasBudgetHubs = user.preferredCategories?.some(cat => budgetHubs.includes(cat));
+        
+        if (hasBudgetHubs && user.budgetMax) {
+          filter.price = { $lte: user.budgetMax }; 
+        }
+
+        // Filter 3: Global Location (Searches inside the location.address object)
+        if (user.preferredLocation && user.preferredLocation !== 'Global') {
+          // Extracts "London" from "London, UK" for broader matching
+          const citySearch = user.preferredLocation.split(',')[0].trim();
+          filter['location.address'] = new RegExp(citySearch, 'i'); 
+        }
+      }
+    }
+    // ─────────────────────────────────────
+
+    // ── MANUAL OVERRIDES (If the user searches or clicks specific filters) ──
     if (req.query.mainCategory && req.query.mainCategory !== 'All') {
       filter.mainCategory = req.query.mainCategory;
     }
     if (req.query.subCategory && req.query.subCategory !== 'All') {
       filter.subCategory = req.query.subCategory;
     }
-    // ─────────────────────────────────────────
-
-    if (req.query.propertyType) filter.propertyType = req.query.propertyType;
-    // ... the rest of your code follows ...
     if (req.query.propertyType) filter.propertyType = req.query.propertyType;
     if (req.query.state) filter.state = new RegExp(req.query.state, 'i');
     if (req.query.district) filter.district = new RegExp(req.query.district, 'i');
     if (req.query.taluk) filter.taluk = new RegExp(req.query.taluk, 'i');
     if (req.query.country) filter.country = new RegExp(req.query.country, 'i');
+    
+    // Manual price overrides from search bar
     if (req.query.minPrice || req.query.maxPrice) {
-      filter.price = {};
+      filter.price = filter.price || {}; // Keep AI budget if it exists, otherwise create new
       if (req.query.minPrice) filter.price.$gte = Number(req.query.minPrice);
       if (req.query.maxPrice) filter.price.$lte = Number(req.query.maxPrice);
     }
 
+    // ── FETCH DATA ──
     const [posts, total] = await Promise.all([
       Post.find(filter)
         .populate('author', 'username profilePhoto isVerified role phone')
@@ -109,7 +139,7 @@ const getFeed = async (req, res) => {
       Post.countDocuments(filter),
     ]);
 
-    // If user is authenticated, attach their like/save status to each post
+    // Attach user's like/save status to each post
     if (req.user) {
       const postIds = posts.map(p => p._id);
       const [likes, saves] = await Promise.all([
@@ -134,7 +164,6 @@ const getFeed = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 // ─── Get Single Post ──────────────────────────────────────────────────────────
 const getPost = async (req, res) => {
   try {

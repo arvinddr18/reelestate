@@ -623,6 +623,27 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
 
   const trustScore = Math.min(98, 70 + (userPosts.length * 2)); 
 
+  // ── 🚨 REAL ANALYTICS ENGINE ──
+  let totalLikes = 0;
+  let totalComments = 0;
+  let totalViews = 0;
+
+  // Loop through every post and tally up the stats!
+  userPosts.forEach(post => {
+    totalLikes += (post.likesCount || 0);
+    totalComments += (post.commentsCount || 0);
+    totalViews += (post.viewsCount || 0); 
+  });
+
+  // Reach = Your Followers + Every time someone viewed a post
+  const realReach = (user?.followersCount || 0) + totalViews;
+  
+  // Engagement Rate = (Likes + Comments) / Views * 100
+  const realEngagementRate = totalViews > 0 
+    ? (((totalLikes + totalComments) / totalViews) * 100).toFixed(1) 
+    : "0.0";
+  // ──────────────────────────────
+
  return (
     <div className="min-h-screen bg-[#05070A] text-white font-sans pb-24 overflow-x-hidden relative">
       
@@ -1864,33 +1885,41 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                       </div>
                     </div>
 
-                    {/* Top Stats Grid */}
+                    {/* Top Stats Grid (NOW WIRING REAL DATA!) */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+                      
+                      {/* Box 1: Total Post Views */}
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-5 relative overflow-hidden group hover:border-[#00F0FF]/50 transition-colors">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-[#00F0FF]/5 rounded-full blur-[30px] pointer-events-none" />
                         <IoMdPerson size={20} className="text-[#00F0FF] mb-3" />
-                        <h3 className="text-3xl font-black text-white mb-1">{(user?.followersCount * 14 + 124).toLocaleString()}</h3>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Profile Views</p>
-                        <span className="absolute top-5 right-5 text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">+12%</span>
+                        <h3 className="text-3xl font-black text-white mb-1">{totalViews.toLocaleString()}</h3>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Post Views</p>
+                        {totalViews > 0 && <span className="absolute top-5 right-5 text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">Live</span>}
                       </div>
 
+                      {/* Box 2: Total Reach */}
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-5 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-[30px] pointer-events-none" />
                         <MdOutlineDoubleArrow size={20} className="text-purple-400 mb-3" />
-                        <h3 className="text-3xl font-black text-white mb-1">{(userPosts.length * 342 + 890).toLocaleString()}</h3>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Reach</p>
-                        <span className="absolute top-5 right-5 text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">+24%</span>
+                        <h3 className="text-3xl font-black text-white mb-1">{realReach.toLocaleString()}</h3>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Network Reach</p>
+                        {realReach > 0 && <span className="absolute top-5 right-5 text-[10px] font-black text-purple-400 bg-purple-500/10 px-2 py-1 rounded-lg">Active</span>}
                       </div>
 
+                      {/* Box 3: Engagement Rate */}
                       <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-5 relative overflow-hidden group hover:border-[#F5A623]/50 transition-colors col-span-2 md:col-span-1">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-[#F5A623]/5 rounded-full blur-[30px] pointer-events-none" />
                         <IoMdHeart size={20} className="text-[#F5A623] mb-3" />
-                        <h3 className="text-3xl font-black text-white mb-1">4.8%</h3>
+                        <h3 className="text-3xl font-black text-white mb-1">{realEngagementRate}%</h3>
                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Engagement Rate</p>
-                        <span className="absolute top-5 right-5 text-[10px] font-black text-red-400 bg-red-500/10 px-2 py-1 rounded-lg">-1.2%</span>
+                        {parseFloat(realEngagementRate) > 5 ? (
+                          <span className="absolute top-5 right-5 text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">High!</span>
+                        ) : (
+                          <span className="absolute top-5 right-5 text-[10px] font-black text-gray-400 bg-gray-500/10 px-2 py-1 rounded-lg">Avg</span>
+                        )}
                       </div>
+                      
                     </div>
-
                     {/* Visual Chart Area (Pure CSS!) */}
                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-6">
                       <div className="flex items-center justify-between mb-6">

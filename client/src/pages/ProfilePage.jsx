@@ -1718,7 +1718,9 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                             <span>₹10L+</span>
                           </div>
                         </div>
-                        <button onClick={() => setPrefView('main')} className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95">Update Budget</button>
+                        <button onClick={savePreferences} className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95 shadow-[0_-20px_20px_#05070A]">
+  Update Budget
+</button>
                       </div>
                     )}
 
@@ -1748,7 +1750,9 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                             ))}
                           </div>
                         </div>
-                        <button onClick={() => setPrefView('main')} className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95">Set Global Location</button>
+                        <button onClick={savePreferences} className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95 shadow-[0_-20px_20px_#05070A]">
+  Set Global Location
+</button>
                       </div>
                     )}
 

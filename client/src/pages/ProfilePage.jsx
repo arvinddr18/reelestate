@@ -1850,8 +1850,95 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                   </div>
                 )}
 
+                {/* ── TAB: ACTIVITY & ANALYTICS ── */}
+                {settingsTab === 'activity' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    {/* Header */}
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdAnalytics size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Activity & Analytics</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Track your reach, engagement, and network growth.</p>
+                      </div>
+                    </div>
+
+                    {/* Top Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+                      <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-5 relative overflow-hidden group hover:border-[#00F0FF]/50 transition-colors">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-[#00F0FF]/5 rounded-full blur-[30px] pointer-events-none" />
+                        <IoMdPerson size={20} className="text-[#00F0FF] mb-3" />
+                        <h3 className="text-3xl font-black text-white mb-1">{(user?.followersCount * 14 + 124).toLocaleString()}</h3>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Profile Views</p>
+                        <span className="absolute top-5 right-5 text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">+12%</span>
+                      </div>
+
+                      <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-5 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-[30px] pointer-events-none" />
+                        <MdOutlineDoubleArrow size={20} className="text-purple-400 mb-3" />
+                        <h3 className="text-3xl font-black text-white mb-1">{(userPosts.length * 342 + 890).toLocaleString()}</h3>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Reach</p>
+                        <span className="absolute top-5 right-5 text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">+24%</span>
+                      </div>
+
+                      <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-5 relative overflow-hidden group hover:border-[#F5A623]/50 transition-colors col-span-2 md:col-span-1">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-[#F5A623]/5 rounded-full blur-[30px] pointer-events-none" />
+                        <IoMdHeart size={20} className="text-[#F5A623] mb-3" />
+                        <h3 className="text-3xl font-black text-white mb-1">4.8%</h3>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Engagement Rate</p>
+                        <span className="absolute top-5 right-5 text-[10px] font-black text-red-400 bg-red-500/10 px-2 py-1 rounded-lg">-1.2%</span>
+                      </div>
+                    </div>
+
+                    {/* Visual Chart Area (Pure CSS!) */}
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-sm font-bold text-white">Audience Growth (Last 7 Days)</h3>
+                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Nodes / Nods</span>
+                      </div>
+                      
+                      {/* Fake CSS Bar Chart */}
+                      <div className="h-32 flex items-end justify-between gap-2 md:gap-4">
+                        {[40, 60, 45, 80, 55, 90, 100].map((val, i) => (
+                          <div key={i} className="w-full bg-[#151A25] rounded-t-lg overflow-hidden relative group h-full flex items-end">
+                            <div 
+                              style={{ height: `${val}%` }} 
+                              className={`w-full rounded-t-lg transition-all duration-700 delay-${i * 100} ${i === 6 ? 'bg-gradient-to-t from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'bg-[#1E2532] group-hover:bg-gray-600'}`}
+                            ></div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span className="text-[#00F0FF]">Sun</span>
+                      </div>
+                    </div>
+
+                    {/* Recent Network Activity Log */}
+                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2">Recent Network Log</h3>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden">
+                      {[
+                        { title: 'New Node Discovered', desc: '@vijetha nodded at your profile.', time: '2 hours ago', icon: <MdAutoAwesome size={16} />, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                        { title: 'High Engagement Alert', desc: 'Your recent Sale Hub post crossed 500 views.', time: '5 hours ago', icon: <IoMdAnalytics size={16} />, color: 'text-[#00F0FF]', bg: 'bg-[#00F0FF]/10' },
+                        { title: 'Security Log', desc: 'New login detected from Windows PC.', time: '1 day ago', icon: <MdShield size={16} />, color: 'text-gray-400', bg: 'bg-[#1E2532]' },
+                      ].map((log, i) => (
+                        <div key={i} className="flex items-start gap-4 p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors last:border-0">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${log.bg} ${log.color}`}>
+                            {log.icon}
+                          </div>
+                          <div className="flex-1 pt-1">
+                            <p className="text-sm font-bold text-white mb-0.5">{log.title}</p>
+                            <p className="text-xs text-gray-400">{log.desc}</p>
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-600 whitespace-nowrap pt-1">{log.time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* ── FALLBACK FOR REMAINING TABS ── */}
-                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && (
+                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && (
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in fade-in duration-500">
                     <IoMdSettings size={64} className="text-[#1E2532] mb-4 animate-[spin_10s_linear_infinite]" />
                     <h3 className="text-xl font-black text-white capitalize">{settingsTab.replace('-', ' ')}</h3>

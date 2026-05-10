@@ -61,39 +61,6 @@ export default function ProfilePage() {
  // 👇 ⚙️ PREFERENCES STATE 👇
   const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
 
-
- // 👇 🚫 REAL-TIME BLOCKED USERS STATE 👇
- const [blockedUsers, setBlockedUsers] = useState([]); // Start empty!
-
- // Fetch the real list from MongoDB whenever they click the "Blocked Users" tab
- useEffect(() => {
-   const fetchBlocked = async () => {
-     if (settingsTab === 'blocked') {
-       try {
-         const res = await axios.get(getApiUrl('/api/users/settings/blocked'), getAuthConfig());
-         setBlockedUsers(res.data.data || []);
-       } catch (err) {
-         console.error("Failed to fetch blocked users:", err);
-       }
-     }
-   };
-   fetchBlocked();
- }, [settingsTab]);
-
- const handleUnblock = async (targetId) => {
-   // 1. Optimistic UI: Instantly remove them from the screen so it feels fast
-   setBlockedUsers(prev => prev.filter(u => u._id !== targetId));
-   
-   try {
-     // 2. The Real API Call!
-     await axios.post(getApiUrl(`/api/users/${targetId}/unblock`), {}, getAuthConfig());
-     alert("User unblocked! 🛡️ They can now view your profile.");
-   } catch (err) {
-     console.error("Failed to unblock:", err);
-     alert("Failed to unblock. Check your connection.");
-   }
- };
- // 👆 🚫 👆
  
  // 🚨 NEW: Updated Default Categories
   
@@ -496,6 +463,34 @@ useEffect(() => {
   });
 
   const canEditProfile = !userId || String(userId) === String(currentUser?._id);
+
+  // 👇 🚨 PASTE IT EXACTLY HERE, RIGHT BELOW CANEDITPROFILE! 🚨 👇
+  const [blockedUsers, setBlockedUsers] = useState([]); 
+
+  useEffect(() => {
+    const fetchBlocked = async () => {
+      if (settingsTab === 'blocked') {
+        try {
+          const res = await axios.get(getApiUrl('/api/users/settings/blocked'), getAuthConfig());
+          setBlockedUsers(res.data.data || []);
+        } catch (err) {
+          console.error("Failed to fetch blocked users:", err);
+        }
+      }
+    };
+    fetchBlocked();
+  }, [settingsTab]);
+
+  const handleUnblock = async (targetId) => {
+    setBlockedUsers(prev => prev.filter(u => u._id !== targetId));
+    try {
+      await axios.post(getApiUrl(`/api/users/${targetId}/unblock`), {}, getAuthConfig());
+      alert("User unblocked! 🛡️ They can now view your profile.");
+    } catch (err) {
+      console.error("Failed to unblock:", err);
+      alert("Failed to unblock. Check your connection.");
+    }
+  };
 
 // ─── 🚨 REAL-TIME LIVE NODE RADAR (AUTO-CONNECTING) ───
   useEffect(() => {

@@ -61,8 +61,6 @@ export default function ProfilePage() {
  // 👇 ⚙️ PREFERENCES STATE 👇
   const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
 
- // 👇 ⚙️ PREFERENCES STATE 👇
- const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
 
  // 👇 🚫 REAL-TIME BLOCKED USERS STATE 👇
  const [blockedUsers, setBlockedUsers] = useState([]); // Start empty!

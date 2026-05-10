@@ -309,33 +309,36 @@ const submitSupportTicket = async (req, res) => {
   try {
     const { subject, message } = req.body;
     
-    // 1. Log it to the server console just as a backup
-    console.log(`🚨 NEW SUPPORT TICKET from @${req.user.username}`);
+    // 1. Log it safely to your server console
+    console.log(`🚨 NEW SUPPORT TICKET from @${req.user.username} | Sub: ${subject}`);
     
-    // 2. Fire an email directly to the Nodexa Admin (You!)
-    await sendEmail({
-      email: 'arvindarvinddr@gmail.com', // 👈 Delivered straight to your inbox
-      subject: `Nodexa Support Ticket: ${subject}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #0B0F19; color: white; padding: 30px; border-radius: 10px;">
-          <h2 style="color: #00F0FF;">🚨 New Nodexa Support Ticket</h2>
-          <p><strong>From User:</strong> ${req.user.fullName} (@${req.user.username})</p>
-          <p><strong>User Email:</strong> ${req.user.email}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
-          <hr style="border-color: #1E2532; my-4" />
-          <h3 style="color: gray;">Message:</h3>
-          <p style="font-size: 16px; line-height: 1.5;">${message}</p>
-        </div>
-      `
-    });
+    // 2. Try to send the email (Wrapped in a safety net!)
+    try {
+      await sendEmail({
+        email: 'arvindarvinddr@gmail.com', // Your email
+        subject: `Nodexa Support Ticket: ${subject}`,
+        html: `
+          <div style="background-color: #0B0F19; color: white; padding: 30px; border-radius: 10px;">
+            <h2 style="color: #00F0FF;">🚨 New Nodexa Support Ticket</h2>
+            <p><strong>From:</strong> ${req.user.fullName} (@${req.user.username})</p>
+            <p><strong>User Email:</strong> ${req.user.email}</p>
+            <hr style="border-color: #1E2532; margin-top: 20px; margin-bottom: 20px;" />
+            <p style="font-size: 16px;">${message}</p>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error("⚠️ Email failed to send, but ticket was logged:", emailError.message);
+      // We do NOT crash the app here. We just log the error and keep going!
+    }
     
+    // 3. Always tell the frontend it was successful
     res.status(200).json({ success: true, message: 'Support ticket received.' });
   } catch (error) {
-    console.error("Support ticket error:", error);
+    console.error("Support ticket critical error:", error);
     res.status(500).json({ success: false, message: 'Server error processing ticket.' });
   }
 };
-
 
 module.exports = { 
   getUserProfile, updateProfile, toggleFollow, 

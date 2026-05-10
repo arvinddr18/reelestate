@@ -121,7 +121,11 @@ transactions: [{
   preferredLocation: {
     type: String,
     default: 'Global'
-  }
+  },
+  blockedUsers: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }],
 
 
   },

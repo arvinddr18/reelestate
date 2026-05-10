@@ -61,19 +61,43 @@ export default function ProfilePage() {
  // 👇 ⚙️ PREFERENCES STATE 👇
   const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
 
-  // 👇 🚫 BLOCKED USERS STATE 👇
-  const [blockedUsers, setBlockedUsers] = useState([
-    { _id: 'mock1', username: 'toxic_bot_99', fullName: 'Spammer Account', profilePhoto: null },
-    { _id: 'mock2', username: 'crypto_scammer', fullName: 'Fake Guru', profilePhoto: null }
-  ]);
+ // 👇 ⚙️ PREFERENCES STATE 👇
+ const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
 
-  const handleUnblock = (targetId) => {
-    // 1. Instantly remove them from the UI
-    setBlockedUsers(prev => prev.filter(u => u._id !== targetId));
-    alert("User unblocked! They can now view your profile and send messages.");
-    // 2. Future Backend Call: await api.post(`/users/${targetId}/unblock`);
-  };
-  // 👆 🚫 👆
+ // 👇 🚫 REAL-TIME BLOCKED USERS STATE 👇
+ const [blockedUsers, setBlockedUsers] = useState([]); // Start empty!
+
+ // Fetch the real list from MongoDB whenever they click the "Blocked Users" tab
+ useEffect(() => {
+   const fetchBlocked = async () => {
+     if (settingsTab === 'blocked') {
+       try {
+         const res = await axios.get(getApiUrl('/api/users/settings/blocked'), getAuthConfig());
+         setBlockedUsers(res.data.data || []);
+       } catch (err) {
+         console.error("Failed to fetch blocked users:", err);
+       }
+     }
+   };
+   fetchBlocked();
+ }, [settingsTab]);
+
+ const handleUnblock = async (targetId) => {
+   // 1. Optimistic UI: Instantly remove them from the screen so it feels fast
+   setBlockedUsers(prev => prev.filter(u => u._id !== targetId));
+   
+   try {
+     // 2. The Real API Call!
+     await axios.post(getApiUrl(`/api/users/${targetId}/unblock`), {}, getAuthConfig());
+     alert("User unblocked! 🛡️ They can now view your profile.");
+   } catch (err) {
+     console.error("Failed to unblock:", err);
+     alert("Failed to unblock. Check your connection.");
+   }
+ };
+ // 👆 🚫 👆
+ 
+ // 🚨 NEW: Updated Default Categories
   
   // 🚨 NEW: Updated Default Categories
   const [prefCategories, setPrefCategories] = useState(['Social', 'Sale Hub', 'Food']);

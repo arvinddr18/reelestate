@@ -277,7 +277,31 @@ const verify2FA = async (req, res) => {
   }
 };
 
+// ─── Get Blocked Users ────────────────────────────────────────────────────────
+const getBlockedUsers = async (req, res) => {
+  try {
+    // Finds the user and populates the details of the people they blocked
+    const user = await User.findById(req.user.id).populate('blockedUsers', 'username fullName profilePhoto avatar');
+    res.status(200).json({ success: true, data: user.blockedUsers || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error fetching blocked list.' });
+  }
+};
+
+// ─── Unblock User ─────────────────────────────────────────────────────────────
+const unblockUser = async (req, res) => {
+  try {
+    // $pull removes the specific user ID from the blocked array
+    await User.findByIdAndUpdate(req.user.id, { 
+      $pull: { blockedUsers: req.params.id } 
+    });
+    res.status(200).json({ success: true, message: 'User successfully unblocked.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error during unblock.' });
+  }
+};
+
 module.exports = { 
   getUserProfile, updateProfile, toggleFollow, 
-  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA  // ✅ ALL exported
+  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA, getBlockedUsers, unblockUser  // ✅ ALL exported
 };

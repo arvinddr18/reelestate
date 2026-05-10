@@ -644,6 +644,58 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     : "0.0";
   // ──────────────────────────────
 
+  const networkLogs = [];
+  
+  // 1. High Engagement Alert (Finds your most viewed post dynamically!)
+  const topPost = userPosts.reduce((prev, current) => ((prev.viewsCount || 0) > (current.viewsCount || 0)) ? prev : current, {});
+  if (topPost && topPost.viewsCount > 0) {
+    networkLogs.push({
+      title: 'High Engagement Alert',
+      desc: `Your post in ${topPost.mainCategory || 'Feed'} has ${topPost.viewsCount} views!`,
+      time: 'Active Now',
+      icon: <IoMdAnalytics size={16} />,
+      color: 'text-[#00F0FF]',
+      bg: 'bg-[#00F0FF]/10'
+    });
+  }
+
+  // 2. Network Growth (Tracks your followers)
+  if (user?.followersCount > 0) {
+    networkLogs.push({
+      title: 'Network Growth',
+      desc: `You have ${user.followersCount} total nodes in your network.`,
+      time: 'Recent',
+      icon: <MdAutoAwesome size={16} />,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10'
+    });
+  }
+
+  // 3. Security Log (Grabs your absolute latest login session)
+  if (user?.activeSessions?.length > 0) {
+    const lastSession = user.activeSessions[user.activeSessions.length - 1];
+    networkLogs.push({
+      title: 'Security Log',
+      desc: `Login detected from ${lastSession.deviceInfo}.`,
+      time: lastSession.time || 'Recently',
+      icon: <MdShield size={16} />,
+      color: 'text-gray-400',
+      bg: 'bg-[#1E2532]'
+    });
+  }
+
+  // 4. Fallback (If it's a brand new account with zero activity)
+  if (networkLogs.length === 0) {
+    networkLogs.push({ 
+      title: 'System Online', 
+      desc: 'Awaiting new network activity...', 
+      time: 'Now', 
+      icon: <IoMdAnalytics size={16} />, 
+      color: 'text-gray-500', 
+      bg: 'bg-[#1E2532]' 
+    });
+  }
+
  return (
     <div className="min-h-screen bg-[#05070A] text-white font-sans pb-24 overflow-x-hidden relative">
       
@@ -1946,11 +1998,9 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                     {/* Recent Network Activity Log */}
                     <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2">Recent Network Log</h3>
                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden">
-                      {[
-                        { title: 'New Node Discovered', desc: '@vijetha nodded at your profile.', time: '2 hours ago', icon: <MdAutoAwesome size={16} />, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-                        { title: 'High Engagement Alert', desc: 'Your recent Sale Hub post crossed 500 views.', time: '5 hours ago', icon: <IoMdAnalytics size={16} />, color: 'text-[#00F0FF]', bg: 'bg-[#00F0FF]/10' },
-                        { title: 'Security Log', desc: 'New login detected from Windows PC.', time: '1 day ago', icon: <MdShield size={16} />, color: 'text-gray-400', bg: 'bg-[#1E2532]' },
-                      ].map((log, i) => (
+                      
+                      {/* 👇 🚨 SWAP TO DYNAMIC ENGINE 👇 */}
+                      {networkLogs.map((log, i) => (
                         <div key={i} className="flex items-start gap-4 p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors last:border-0">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${log.bg} ${log.color}`}>
                             {log.icon}
@@ -1962,6 +2012,8 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                           <span className="text-[10px] font-bold text-gray-600 whitespace-nowrap pt-1">{log.time}</span>
                         </div>
                       ))}
+                      {/* 👆 🚨 👆 */}
+
                     </div>
                   </div>
                 )}

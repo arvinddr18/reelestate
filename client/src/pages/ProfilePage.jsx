@@ -696,6 +696,33 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     });
   }
 
+  // 1. Get the last 7 days
+  const last7Days = [...Array(7)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d;
+  });
+
+  // 2. Map activity to those days
+  const dynamicChartData = last7Days.map(date => {
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+    let dailyActivity = 0;
+    
+    // Check every post to see if it was created or had activity on this day
+    userPosts.forEach(post => {
+      const postDate = new Date(post.createdAt);
+      if (postDate.toDateString() === date.toDateString()) {
+        // Base score for posting, plus their views and likes
+         dailyActivity += 10 + (post.viewsCount || 0) + (post.likesCount || 0); 
+      }
+    });
+    return { day: dayName, value: dailyActivity };
+  });
+
+  // 3. Find the highest day to scale the bars properly (prevent breaking out of the box)
+  const maxChartValue = Math.max(...dynamicChartData.map(d => d.value), 1); 
+  // ────────────────────────────────
+
  return (
     <div className="min-h-screen bg-[#05070A] text-white font-sans pb-24 overflow-x-hidden relative">
       
@@ -1979,19 +2006,26 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                         <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Nodes / Nods</span>
                       </div>
                       
-                      {/* Fake CSS Bar Chart */}
+                      {/* 👇 🚨 DYNAMIC CSS BAR CHART 👇 */}
                       <div className="h-32 flex items-end justify-between gap-2 md:gap-4">
-                        {[40, 60, 45, 80, 55, 90, 100].map((val, i) => (
-                          <div key={i} className="w-full bg-[#151A25] rounded-t-lg overflow-hidden relative group h-full flex items-end">
-                            <div 
-                              style={{ height: `${val}%` }} 
-                              className={`w-full rounded-t-lg transition-all duration-700 delay-${i * 100} ${i === 6 ? 'bg-gradient-to-t from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'bg-[#1E2532] group-hover:bg-gray-600'}`}
-                            ></div>
-                          </div>
-                        ))}
+                        {dynamicChartData.map((data, i) => {
+                          // Calculate percentage height based on the highest activity day
+                          const heightPercent = (data.value / maxChartValue) * 100;
+                          
+                          return (
+                            <div key={i} className="w-full bg-[#151A25] rounded-t-lg overflow-hidden relative group h-full flex items-end">
+                              <div 
+                                style={{ height: `${heightPercent}%`, minHeight: data.value > 0 ? '5%' : '0%' }} 
+                                className={`w-full rounded-t-lg transition-all duration-700 delay-${i * 100} ${i === 6 ? 'bg-gradient-to-t from-[#0057FF] to-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'bg-[#1E2532] group-hover:bg-gray-600'}`}
+                              ></div>
+                            </div>
+                          );
+                        })}
                       </div>
                       <div className="flex justify-between mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span className="text-[#00F0FF]">Sun</span>
+                        {dynamicChartData.map((data, i) => (
+                          <span key={i} className={i === 6 ? "text-[#00F0FF]" : ""}>{data.day}</span>
+                        ))}
                       </div>
                     </div>
 

@@ -60,6 +60,20 @@ export default function ProfilePage() {
   const [paymentView, setPaymentView] = useState('main'); // 'main', 'methods', 'history', 'wallet', 'refunds'
  // 👇 ⚙️ PREFERENCES STATE 👇
   const [prefView, setPrefView] = useState('main'); // 'main', 'categories', 'budget', 'location'
+
+  // 👇 🚫 BLOCKED USERS STATE 👇
+  const [blockedUsers, setBlockedUsers] = useState([
+    { _id: 'mock1', username: 'toxic_bot_99', fullName: 'Spammer Account', profilePhoto: null },
+    { _id: 'mock2', username: 'crypto_scammer', fullName: 'Fake Guru', profilePhoto: null }
+  ]);
+
+  const handleUnblock = (targetId) => {
+    // 1. Instantly remove them from the UI
+    setBlockedUsers(prev => prev.filter(u => u._id !== targetId));
+    alert("User unblocked! They can now view your profile and send messages.");
+    // 2. Future Backend Call: await api.post(`/users/${targetId}/unblock`);
+  };
+  // 👆 🚫 👆
   
   // 🚨 NEW: Updated Default Categories
   const [prefCategories, setPrefCategories] = useState(['Social', 'Sale Hub', 'Food']);
@@ -2052,8 +2066,59 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                   </div>
                 )}
 
+                {/* ── TAB: BLOCKED USERS ── */}
+                {settingsTab === 'blocked' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <MdBlock size={28} className="text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Blocked Users</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Manage accounts restricted from viewing your network.</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                      {blockedUsers.length > 0 ? (
+                        blockedUsers.map((blockedUser) => (
+                          <div key={blockedUser._id} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors last:border-b-0 group">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center overflow-hidden border border-white/10 group-hover:border-red-500/50 transition-colors">
+                                {blockedUser.profilePhoto ? (
+                                  <img src={resolveMediaUrl(blockedUser.profilePhoto)} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                  <IoMdPerson size={20} className="text-gray-500 group-hover:text-red-400 transition-colors" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-white leading-tight">{blockedUser.fullName}</p>
+                                <p className="text-xs text-gray-500">@{blockedUser.username}</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => handleUnblock(blockedUser._id)}
+                              className="px-4 py-2 bg-[#1E2532] hover:bg-red-500/10 border border-[#1E2532] hover:border-red-500/30 text-gray-400 hover:text-red-500 text-xs font-bold rounded-xl transition-all active:scale-95"
+                            >
+                              Unblock
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-10 flex flex-col items-center justify-center text-center">
+                          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                            <MdShield size={28} className="text-emerald-500" />
+                          </div>
+                          <p className="text-white font-bold mb-1">Your network is clear!</p>
+                          <p className="text-xs text-gray-500">You haven't blocked any users yet.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* ── FALLBACK FOR REMAINING TABS ── */}
-                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && (
+                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && settingsTab !== 'blocked' && (
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in fade-in duration-500">
                     <IoMdSettings size={64} className="text-[#1E2532] mb-4 animate-[spin_10s_linear_infinite]" />
                     <h3 className="text-xl font-black text-white capitalize">{settingsTab.replace('-', ' ')}</h3>

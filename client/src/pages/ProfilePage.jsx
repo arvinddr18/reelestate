@@ -597,6 +597,11 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
       const payload = { ...formData, loginAlerts: newValue, profilePhoto: avatarPreview };
       await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
     } catch (err) {
+      // 4. If the server fails, flip the toggle back and warn the user
+      alert("Failed to save setting. Please check your connection.");
+      setFormData(prev => ({ ...prev, loginAlerts: !newValue }));
+    }
+  };
 
       // ── 🚨 AUTO-SAVE: AI SETTINGS ──
   const handleToggleAI = async (field) => {
@@ -611,11 +616,7 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
       setFormData(prev => ({ ...prev, [field]: !newValue })); // Revert on failure
     }
   };
-      // 4. If the server fails, flip the toggle back and warn the user
-      alert("Failed to save setting. Please check your connection.");
-      setFormData(prev => ({ ...prev, loginAlerts: !newValue }));
-    }
-  };
+      
 
  const handleUpdate = async () => {
     try {

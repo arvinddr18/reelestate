@@ -459,7 +459,9 @@ useEffect(() => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [formData, setFormData] = useState({ 
     fullName: '', bio: '', location: '', phone: '', website: '',
-    isPrivate: false, hideActivity: false, emailAlerts: true, loginAlerts: true
+    isPrivate: false, hideActivity: false, emailAlerts: true, loginAlerts: true,
+    personalizedFeed: true, 
+    smartRecommendations: true
   });
 
   const canEditProfile = !userId || String(userId) === String(currentUser?._id);
@@ -553,6 +555,8 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
           hideActivity: userData.hideActivity !== undefined ? userData.hideActivity : false,
           emailAlerts: userData.emailAlerts !== false,
           loginAlerts: userData.loginAlerts !== false,
+          personalizedFeed: userData.personalizedFeed !== false,
+          smartRecommendations: userData.smartRecommendations !== false,
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
 
@@ -593,6 +597,20 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
       const payload = { ...formData, loginAlerts: newValue, profilePhoto: avatarPreview };
       await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
     } catch (err) {
+
+      // ── 🚨 AUTO-SAVE: AI SETTINGS ──
+  const handleToggleAI = async (field) => {
+    const newValue = !formData[field]; // Flip the toggle
+    setFormData(prev => ({ ...prev, [field]: newValue })); // Instant UI update
+
+    try {
+      const payload = { ...formData, [field]: newValue, profilePhoto: avatarPreview };
+      await axios.put(getApiUrl('/api/users/update'), payload, getAuthConfig());
+    } catch (err) {
+      alert("Failed to update AI setting. Check connection.");
+      setFormData(prev => ({ ...prev, [field]: !newValue })); // Revert on failure
+    }
+  };
       // 4. If the server fails, flip the toggle back and warn the user
       alert("Failed to save setting. Please check your connection.");
       setFormData(prev => ({ ...prev, loginAlerts: !newValue }));
@@ -1954,6 +1972,8 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                     </div>
                     <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
                       <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                       {/* Toggle 1: Personalized Feed */}
+                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
                         <div className="flex items-center gap-4">
                           <IoMdGrid size={22} className="text-gray-400" />
                           <div>
@@ -1961,10 +1981,16 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                             <p className="text-xs text-gray-500 mt-0.5">Show content tailored to your interests</p>
                           </div>
                         </div>
-                        <button className="w-12 h-6 rounded-full bg-[#0057FF] relative transition-colors shadow-inner border border-[#0057FF]">
-                          <div className="w-5 h-5 rounded-full bg-white absolute top-[1px] right-[2px] shadow-sm transition-all" />
+                        {/* 👇 THE REAL TOGGLE 👇 */}
+                        <button 
+                          onClick={() => handleToggleAI('personalizedFeed')}
+                          className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.personalizedFeed ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                        >
+                          <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.personalizedFeed ? 'right-[2px]' : 'left-[2px]'}`} />
                         </button>
                       </div>
+
+                      {/* Toggle 2: Smart Recommendations */}
                       <div className="flex items-center justify-between p-5 hover:bg-[#151A25] transition-colors">
                         <div className="flex items-center gap-4">
                           <MdAutoAwesome size={22} className="text-gray-400" />
@@ -1973,9 +1999,14 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                             <p className="text-xs text-gray-500 mt-0.5">Get AI-powered suggestions</p>
                           </div>
                         </div>
-                        <button className="w-12 h-6 rounded-full bg-[#0057FF] relative transition-colors shadow-inner border border-[#0057FF]">
-                          <div className="w-5 h-5 rounded-full bg-white absolute top-[1px] right-[2px] shadow-sm transition-all" />
+                        {/* 👇 THE REAL TOGGLE 👇 */}
+                        <button 
+                          onClick={() => handleToggleAI('smartRecommendations')}
+                          className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.smartRecommendations ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                        >
+                          <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.smartRecommendations ? 'right-[2px]' : 'left-[2px]'}`} />
                         </button>
+                      </div>
                       </div>
                     </div>
                   </div>

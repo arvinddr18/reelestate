@@ -58,7 +58,8 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
 
-    
+    personalizedFeed: { type: Boolean, default: true },
+    smartRecommendations: { type: Boolean, default: true },
     // 🚨 ADD THIS NEW FIELD RIGHT HERE 🚨
     isPrivate: { 
       type: Boolean, 
@@ -126,6 +127,7 @@ transactions: [{
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User' 
   }],
+  
 
 
   },

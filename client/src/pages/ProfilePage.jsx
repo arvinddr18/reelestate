@@ -468,6 +468,9 @@ useEffect(() => {
 
   // 👇 🚨 PASTE IT EXACTLY HERE, RIGHT BELOW CANEDITPROFILE! 🚨 👇
   const [blockedUsers, setBlockedUsers] = useState([]); 
+  const [supportData, setSupportData] = useState({ subject: 'General Inquiry', message: '' });
+  const [supportStatus, setSupportStatus] = useState({ loading: false, success: '', error: '' });
+  const [activeFaq, setActiveFaq] = useState(null); // Tracks which FAQ accordion is open
 
   useEffect(() => {
     const fetchBlocked = async () => {
@@ -614,6 +617,29 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     } catch (err) {
       alert("Failed to update AI setting. Check connection.");
       setFormData(prev => ({ ...prev, [field]: !newValue })); // Revert on failure
+    }
+  };
+
+  // ── 🚨 HANDLE SUPPORT TICKET ──
+  const handleSupportSubmit = async (e) => {
+    e.preventDefault();
+    setSupportStatus({ loading: true, success: '', error: '' });
+
+    try {
+      // In a real production app, this sends an email/ticket to your backend!
+      // await axios.post(getApiUrl('/api/support'), supportData, getAuthConfig());
+
+      // For now, we simulate a quick network delay to show the loading state, then succeed!
+      setTimeout(() => {
+        setSupportStatus({ loading: false, success: 'Support ticket submitted successfully! Our team will email you soon.', error: '' });
+        setSupportData({ subject: 'General Inquiry', message: '' }); // Clear the form
+
+        // Auto-hide the success message after 3 seconds
+        setTimeout(() => setSupportStatus({ loading: false, success: '', error: '' }), 3000);
+      }, 1200); 
+
+    } catch (err) {
+      setSupportStatus({ loading: false, success: '', error: 'Failed to submit ticket. Please try again.' });
     }
   };
       
@@ -2166,8 +2192,111 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                   </div>
                 )}
 
+                {/* ── TAB: HELP & SUPPORT ── */}
+                {settingsTab === 'help' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdHelpCircle size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">Help & Support</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">Get assistance and find answers to common questions.</p>
+                      </div>
+                    </div>
+
+                    {/* Support Form */}
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#00F0FF]/5 rounded-full blur-[40px] pointer-events-none" />
+                      <h3 className="text-[15px] font-bold text-white mb-6 flex items-center gap-2">
+                        <IoMdMail className="text-[#00F0FF]" /> Contact Support Team
+                      </h3>
+
+                      {supportStatus.success && (
+                        <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold text-center flex items-center justify-center gap-2 animate-in slide-in-from-top-2 duration-300">
+                          <IoMdCheckmarkCircle size={18} /> {supportStatus.success}
+                        </div>
+                      )}
+                      {supportStatus.error && (
+                        <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold text-center flex items-center justify-center gap-2 animate-in slide-in-from-top-2 duration-300">
+                          <IoMdClose size={18} /> {supportStatus.error}
+                        </div>
+                      )}
+
+                      <form onSubmit={handleSupportSubmit} className="space-y-4 relative z-10">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Subject</label>
+                          <select 
+                            value={supportData.subject}
+                            onChange={(e) => setSupportData({...supportData, subject: e.target.value})}
+                            className="w-full bg-[#151A25] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors appearance-none"
+                          >
+                            <option>General Inquiry</option>
+                            <option>Billing Issue</option>
+                            <option>Technical Bug</option>
+                            <option>Report a User</option>
+                            <option>Feature Request</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase ml-1">Message</label>
+                          <textarea 
+                            required
+                            value={supportData.message}
+                            onChange={(e) => setSupportData({...supportData, message: e.target.value})}
+                            rows="4"
+                            className="w-full bg-[#151A25] border border-[#1E2532] rounded-2xl py-3 px-4 text-sm font-bold text-white outline-none focus:border-[#00F0FF]/50 transition-colors resize-none"
+                            placeholder="Describe your issue in detail..."
+                          ></textarea>
+                        </div>
+                        <button 
+                          type="submit" 
+                          disabled={supportStatus.loading || !supportData.message.trim()} 
+                          className="w-full py-3.5 bg-[#1E2532] text-[#00F0FF] border border-[#00F0FF]/30 rounded-xl font-bold tracking-wide hover:bg-[#00F0FF]/10 transition-all active:scale-95 shadow-[0_-10px_20px_#05070A] disabled:opacity-50 mt-2"
+                        >
+                          {supportStatus.loading ? 'Sending...' : 'Send Message'}
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* FAQs */}
+                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2">Frequently Asked Questions</h3>
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden">
+                      {[
+                        { q: "How does the Trust Score work?", a: "Your trust score increases as you post authentic content, gain followers, and verify your identity. It helps keep the Nodexa network safe." },
+                        { q: "Can I retrieve a deleted post?", a: "Once a post is permanently deleted, it is removed from our servers and cannot be recovered. Please use the 'Archive' feature instead if you aren't sure." },
+                        { q: "How do I withdraw wallet credits?", a: "Go to the Payments tab, select 'Wallet & Credits', and click 'Withdraw'. Funds usually process within 2-3 business days to your saved UPI or Bank Account." }
+                      ].map((faq, index) => (
+                        <div key={index} className="border-b border-[#1E2532] last:border-0">
+                          <button 
+                            onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                            className="w-full flex items-center justify-between p-5 text-left hover:bg-[#151A25] transition-colors"
+                          >
+                            <span className="text-sm font-bold text-white">{faq.q}</span>
+                            <IoMdArrowDropdown size={20} className={`text-gray-400 transition-transform duration-300 ${activeFaq === index ? 'rotate-180 text-[#00F0FF]' : ''}`} />
+                          </button>
+                          <AnimatePresence>
+                            {activeFaq === index && (
+                              <motion.div 
+                                initial={{ height: 0, opacity: 0 }} 
+                                animate={{ height: 'auto', opacity: 1 }} 
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="p-5 pt-0 text-sm text-gray-400 leading-relaxed border-t border-white/5 bg-[#151A25]/30">
+                                  {faq.a}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* ── FALLBACK FOR REMAINING TABS ── */}
-                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && settingsTab !== 'blocked' && (
+                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && settingsTab !== 'blocked' && settingsTab !== 'help' &&(
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in fade-in duration-500">
                     <IoMdSettings size={64} className="text-[#1E2532] mb-4 animate-[spin_10s_linear_infinite]" />
                     <h3 className="text-xl font-black text-white capitalize">{settingsTab.replace('-', ' ')}</h3>

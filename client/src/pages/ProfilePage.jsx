@@ -1970,44 +1970,44 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                         <p className="text-sm text-gray-400 font-medium mt-1">Control your personalized experience.</p>
                       </div>
                     </div>
-                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
-                       {/* Toggle 1: Personalized Feed */}
-                      <div className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
-                        <div className="flex items-center gap-4">
-                          <IoMdGrid size={22} className="text-gray-400" />
-                          <div>
+
+                    {/* 🚨 ADDED "flex-col" AND "w-full" TO FORCE 1-BY-1 STACKING 🚨 */}
+                    <div className="flex flex-col w-full bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                      
+                      {/* Toggle 1: Personalized Feed */}
+                      <div className="flex flex-row items-center justify-between w-full p-4 md:p-5 border-b border-[#1E2532] hover:bg-[#151A25] transition-colors">
+                        <div className="flex items-center gap-3 md:gap-4 pr-4">
+                          <IoMdGrid size={22} className="text-gray-400 shrink-0" />
+                          <div className="flex flex-col">
                             <p className="text-sm font-bold text-white">Personalized Feed</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Show content tailored to your interests</p>
+                            <p className="text-[11px] md:text-xs text-gray-500 mt-0.5 leading-tight">Show content tailored to your interests</p>
                           </div>
                         </div>
-                        {/* 👇 THE REAL TOGGLE 👇 */}
                         <button 
                           onClick={() => handleToggleAI('personalizedFeed')}
-                          className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.personalizedFeed ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                          className={`shrink-0 w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.personalizedFeed ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
                         >
                           <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.personalizedFeed ? 'right-[2px]' : 'left-[2px]'}`} />
                         </button>
                       </div>
 
                       {/* Toggle 2: Smart Recommendations */}
-                      <div className="flex items-center justify-between p-5 hover:bg-[#151A25] transition-colors">
-                        <div className="flex items-center gap-4">
-                          <MdAutoAwesome size={22} className="text-gray-400" />
-                          <div>
+                      <div className="flex flex-row items-center justify-between w-full p-4 md:p-5 hover:bg-[#151A25] transition-colors">
+                        <div className="flex items-center gap-3 md:gap-4 pr-4">
+                          <MdAutoAwesome size={22} className="text-gray-400 shrink-0" />
+                          <div className="flex flex-col">
                             <p className="text-sm font-bold text-white">Smart Recommendations</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Get AI-powered suggestions</p>
+                            <p className="text-[11px] md:text-xs text-gray-500 mt-0.5 leading-tight">Get AI-powered suggestions</p>
                           </div>
                         </div>
-                        {/* 👇 THE REAL TOGGLE 👇 */}
                         <button 
                           onClick={() => handleToggleAI('smartRecommendations')}
-                          className={`w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.smartRecommendations ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
+                          className={`shrink-0 w-12 h-6 rounded-full relative transition-colors shadow-inner border ${formData.smartRecommendations ? 'bg-[#0057FF] border-[#0057FF]' : 'bg-[#1E2532] border-[#2A3441]'}`}
                         >
                           <div className={`w-5 h-5 rounded-full bg-white absolute top-[1px] shadow-sm transition-all duration-300 ${formData.smartRecommendations ? 'right-[2px]' : 'left-[2px]'}`} />
                         </button>
                       </div>
-                      </div>
+
                     </div>
                   </div>
                 )}

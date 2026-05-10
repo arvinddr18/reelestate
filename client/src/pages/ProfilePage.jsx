@@ -620,25 +620,24 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     }
   };
 
-  // ── 🚨 HANDLE SUPPORT TICKET ──
+  // ── 🚨 HANDLE SUPPORT TICKET (REAL TIME) ──
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
     setSupportStatus({ loading: true, success: '', error: '' });
 
     try {
-      // In a real production app, this sends an email/ticket to your backend!
-      // await axios.post(getApiUrl('/api/support'), supportData, getAuthConfig());
+      // 1. Send the actual data to the backend!
+      await axios.post(getApiUrl('/api/users/support'), supportData, getAuthConfig());
 
-      // For now, we simulate a quick network delay to show the loading state, then succeed!
-      setTimeout(() => {
-        setSupportStatus({ loading: false, success: 'Support ticket submitted successfully! Our team will email you soon.', error: '' });
-        setSupportData({ subject: 'General Inquiry', message: '' }); // Clear the form
+      // 2. Show success and clear the form
+      setSupportStatus({ loading: false, success: 'Support ticket submitted successfully! Our team will email you soon.', error: '' });
+      setSupportData({ subject: 'General Inquiry', message: '' }); 
 
-        // Auto-hide the success message after 3 seconds
-        setTimeout(() => setSupportStatus({ loading: false, success: '', error: '' }), 3000);
-      }, 1200); 
+      // 3. Auto-hide the success message after 3 seconds
+      setTimeout(() => setSupportStatus({ loading: false, success: '', error: '' }), 3000);
 
     } catch (err) {
+      console.error("Support Error:", err);
       setSupportStatus({ loading: false, success: '', error: 'Failed to submit ticket. Please try again.' });
     }
   };

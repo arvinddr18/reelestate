@@ -303,7 +303,24 @@ const unblockUser = async (req, res) => {
   }
 };
 
+// ─── Submit Support Ticket ───────────────────────────────────────────────────
+const submitSupportTicket = async (req, res) => {
+  try {
+    const { subject, message } = req.body;
+    
+    // For now, we log it to your server console. 
+    // Later, you can use your sendEmail() function here to email it to admin@nodexa.com!
+    console.log(`🚨 NEW SUPPORT TICKET from @${req.user.username} | Subject: ${subject} | Message: ${message}`);
+    
+    res.status(200).json({ success: true, message: 'Support ticket received.' });
+  } catch (error) {
+    console.error("Support ticket error:", error);
+    res.status(500).json({ success: false, message: 'Server error processing ticket.' });
+  }
+};
+
+
 module.exports = { 
   getUserProfile, updateProfile, toggleFollow, 
-  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA, getBlockedUsers, unblockUser  // ✅ ALL exported
+  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA, getBlockedUsers, unblockUser, submitSupportTicket  // ✅ ALL exported
 };

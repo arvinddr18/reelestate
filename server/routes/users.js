@@ -8,7 +8,7 @@ const { protect } = require('../middleware/auth');
 const {
   getUserProfile, updateProfile,
   toggleFollow, getFollowers, getFollowing,
-  searchUsers, getAllUsers, setup2FA, verify2FA,getBlockedUsers, unblockUser 
+  searchUsers, getAllUsers, setup2FA, verify2FA,getBlockedUsers, unblockUser, submitSupportTicket 
 } = require('../controllers/userController');
 
 const sendEmail = require('../utils/sendEmail');
@@ -50,6 +50,7 @@ router.post('/test-email', protect, async (req, res) => {
 router.put('/update', protect, updateProfile);
 router.get('/settings/blocked', protect, getBlockedUsers);
 router.post('/:id/unblock', protect, unblockUser);
+router.post('/support', protect, submitSupportTicket);
 
 // ✅ DYNAMIC /:id ROUTES LAST
 router.get('/:id', protect, getUserProfile);

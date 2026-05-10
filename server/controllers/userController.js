@@ -9,6 +9,7 @@ const { Follow } = require('../models/index');
 const { deleteFromCloudinary } = require('../middleware/upload');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
+const sendEmail = require('../utils/sendEmail');
 
 const cloudinary = require('cloudinary').v2;
 
@@ -308,9 +309,25 @@ const submitSupportTicket = async (req, res) => {
   try {
     const { subject, message } = req.body;
     
-    // For now, we log it to your server console. 
-    // Later, you can use your sendEmail() function here to email it to admin@nodexa.com!
-    console.log(`🚨 NEW SUPPORT TICKET from @${req.user.username} | Subject: ${subject} | Message: ${message}`);
+    // 1. Log it to the server console just as a backup
+    console.log(`🚨 NEW SUPPORT TICKET from @${req.user.username}`);
+    
+    // 2. Fire an email directly to the Nodexa Admin (You!)
+    await sendEmail({
+      email: 'arvindarvinddr@gmail.com', // 👈 Delivered straight to your inbox
+      subject: `Nodexa Support Ticket: ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; background-color: #0B0F19; color: white; padding: 30px; border-radius: 10px;">
+          <h2 style="color: #00F0FF;">🚨 New Nodexa Support Ticket</h2>
+          <p><strong>From User:</strong> ${req.user.fullName} (@${req.user.username})</p>
+          <p><strong>User Email:</strong> ${req.user.email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <hr style="border-color: #1E2532; my-4" />
+          <h3 style="color: gray;">Message:</h3>
+          <p style="font-size: 16px; line-height: 1.5;">${message}</p>
+        </div>
+      `
+    });
     
     res.status(200).json({ success: true, message: 'Support ticket received.' });
   } catch (error) {

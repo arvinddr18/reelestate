@@ -461,7 +461,9 @@ useEffect(() => {
     fullName: '', bio: '', location: '', phone: '', website: '',
     isPrivate: false, hideActivity: false, emailAlerts: true, loginAlerts: true,
     personalizedFeed: true, 
-    smartRecommendations: true
+    smartRecommendations: true,
+    theme: 'dark',
+    accentColor: '#00F0FF'
   });
 
   const canEditProfile = !userId || String(userId) === String(currentUser?._id);
@@ -560,6 +562,8 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
           loginAlerts: userData.loginAlerts !== false,
           personalizedFeed: userData.personalizedFeed !== false,
           smartRecommendations: userData.smartRecommendations !== false,
+          theme: userData.theme || 'dark',
+          accentColor: userData.accentColor || '#00F0FF',
         });
         setAvatarPreview(userData.profilePhoto || userData.avatar || null);
 
@@ -1986,6 +1990,19 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                           <button className="px-4 py-1.5 rounded-full text-xs font-bold text-gray-500">Large</button>
                         </div>
                       </div>
+                    </div>
+                    <div className="p-4 mt-2">
+                      <button 
+                        onClick={handleUpdate} 
+                        style={{ 
+                          color: formData.accentColor, 
+                          borderColor: `${formData.accentColor}50`, 
+                          boxShadow: `0 -10px 20px #05070A, 0 0 15px ${formData.accentColor}20` 
+                        }}
+                        className="w-full py-3.5 bg-[#1E2532] border rounded-xl font-bold tracking-wide transition-all active:scale-95"
+                      >
+                        Apply Appearance
+                      </button>
                     </div>
                   </div>
                 )}

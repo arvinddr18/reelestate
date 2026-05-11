@@ -127,6 +127,10 @@ transactions: [{
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User' 
   }],
+  theme: { type: String, default: 'dark' },
+  accentColor: { type: String, default: '#00F0FF' },
+
+
   
 
 

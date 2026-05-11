@@ -6,7 +6,7 @@ import importedLogo from '../assets/nodexa-logo.png'; // 👈 Your exact file!
 import PostCard from '../components/feed/PostCard'; 
 import ReelSwiper from '../components/reels/ReelSwiper';
 import api from '../services/api';
-import NotificationSheet from '../components/NotificationSheet';
+import NotificationsPanel from '../components/NotificationsPanel'; // 🚨 Updated import
 import toast from 'react-hot-toast';
 
 
@@ -286,10 +286,9 @@ export default function FeedPage() {
           <div className="ml-auto flex items-center">
             <button 
               onClick={(e) => {
-                e.stopPropagation(); // 🚨 Stops other layers from stealing the click
-                console.log("Opening notifications..."); 
-                setIsNotifOpen(true);
-              }} 
+                e.stopPropagation(); 
+                setIsNotifOpen(!isNotifOpen); // 🚨 Toggles it open and closed!
+              }}
               className="relative w-11 h-11 rounded-full flex items-center justify-center group z-50 cursor-pointer outline-none"
             >
               {/* 1. Orbiting Energy Rings */}
@@ -523,14 +522,21 @@ export default function FeedPage() {
         />
       )}
 
-      {/* 🚨 THE NOTIFICATION SHEET 🚨 */}
-      <NotificationSheet 
-        isOpen={isNotifOpen} 
-        onClose={() => setIsNotifOpen(false)} 
-      />
-
-
-
+      {/* 🚨 THE NEW GLASSMORPHISM NOTIFICATION PANEL 🚨 */}
+      {isNotifOpen && (
+        <>
+          {/* Invisible backdrop to close it when you click outside */}
+          <div 
+            className="fixed inset-0 z-[190]" 
+            onClick={() => setIsNotifOpen(false)} 
+          />
+          
+          <div className="fixed top-20 right-4 md:right-8 z-[200] w-full max-w-sm animate-in slide-in-from-right-8 duration-300">
+            <NotificationsPanel />
+          </div>
+        </>
+      )}
     </div>
   );
 }
+     

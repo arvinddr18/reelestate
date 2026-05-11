@@ -309,25 +309,17 @@ const submitSupportTicket = async (req, res) => {
   try {
     const { subject, message } = req.body;
     
-    console.log(`🚨 NEW SUPPORT TICKET from @${req.user.username} | Sub: ${subject}`);
+    // 1. Safely log the ticket to your server terminal so you can read it!
+    console.log(`\n=========================================`);
+    console.log(`🚨 NEW SUPPORT TICKET 🚨`);
+    console.log(`From: @${req.user.username} (${req.user.email})`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Message: ${message}`);
+    console.log(`=========================================\n`);
     
-    // 👇 FIRE AND FORGET: Notice there is NO "await" here! 
-    // This allows the server to send the success message instantly without waiting for Gmail.
-    sendEmail({
-      email: 'arvindarvinddr@gmail.com', // Your email
-      subject: `Nodexa Support Ticket: ${subject}`,
-      html: `
-        <div style="background-color: #0B0F19; color: white; padding: 30px; border-radius: 10px;">
-          <h2 style="color: #00F0FF;">🚨 New Nodexa Support Ticket</h2>
-          <p><strong>From:</strong> ${req.user.fullName} (@${req.user.username})</p>
-          <p><strong>User Email:</strong> ${req.user.email}</p>
-          <hr style="border-color: #1E2532; margin-top: 20px; margin-bottom: 20px;" />
-          <p style="font-size: 16px;">${message}</p>
-        </div>
-      `
-    }).catch(err => console.error("Background email failed:", err.message));
+    // 🚨 We removed sendEmail() here because Render's free tier blocks Gmail.
     
-    // 👇 The server instantly replies to your frontend so the button stops spinning!
+    // 2. Instantly reply to the frontend so the button stops spinning!
     res.status(200).json({ success: true, message: 'Support ticket received.' });
     
   } catch (error) {

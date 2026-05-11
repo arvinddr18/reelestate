@@ -473,6 +473,8 @@ useEffect(() => {
   const [supportData, setSupportData] = useState({ subject: 'General Inquiry', message: '' });
   const [supportStatus, setSupportStatus] = useState({ loading: false, success: '', error: '' });
   const [activeFaq, setActiveFaq] = useState(null); // Tracks which FAQ accordion is open
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [legalDocTitle, setLegalDocTitle] = useState('');
 
   useEffect(() => {
     const fetchBlocked = async () => {
@@ -2354,7 +2356,15 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                         { title: 'Community Guidelines', icon: '🤝' },
                         { title: 'Open Source Licenses', icon: '💻' }
                       ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors last:border-0 group">
+                        <div 
+                          key={i} 
+                          // 🚨 ADDED THE ONCLICK HERE!
+                          onClick={() => {
+                            setLegalDocTitle(item.title);
+                            setShowLegalModal(true);
+                          }}
+                          className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors last:border-0 group"
+                        >
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-lg group-hover:scale-110 transition-transform duration-300 shadow-inner">
                               {item.icon}
@@ -2781,6 +2791,89 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                   {twoFactorStatus.loading ? 'Verifying...' : 'Verify & Enable'}
                 </button>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── ⚖️ LEGAL DOCUMENT READER MODAL ─── */}
+      <AnimatePresence>
+        {showLegalModal && (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 md:p-8 bg-[#05070A]/90 backdrop-blur-lg">
+            <motion.div 
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="w-full max-w-2xl h-[80vh] md:h-[70vh] flex flex-col bg-[#0B0F19] border border-[#1E2532] rounded-[32px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.9)] relative"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-[#1E2532] flex justify-between items-center bg-[#151A25]/80 backdrop-blur-md relative z-10 shrink-0">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center text-[#00F0FF] shadow-inner">
+                    <IoMdInformationCircle size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-black text-xl tracking-tight">{legalDocTitle}</h3>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Last Updated: May 2026</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowLegalModal(false)} 
+                  className="w-10 h-10 rounded-full bg-[#0B0F19] border border-[#1E2532] flex items-center justify-center text-gray-500 hover:text-white hover:border-[#00F0FF]/50 transition-all active:scale-95"
+                >
+                  <IoMdClose size={20} />
+                </button>
+              </div>
+
+              {/* Document Content (Scrollable) */}
+              <div className="flex-1 p-6 md:p-8 overflow-y-auto no-scrollbar relative">
+                {/* Background glow just for looks */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#00F0FF]/5 rounded-full blur-[80px] pointer-events-none" />
+                
+                <div className="space-y-6 text-sm text-gray-400 leading-relaxed font-medium relative z-10">
+                  <p>
+                    <span className="text-[#00F0FF] font-black text-lg">W</span>elcome to the official <strong className="text-white">{legalDocTitle}</strong> for the Nodexa platform. By accessing or using our Super-App network, you agree to be bound by the protocols outlined in this document.
+                  </p>
+                  
+                  <h4 className="text-white font-black text-base pt-4 border-t border-[#1E2532]/50">1. Introduction & Scope</h4>
+                  <p>
+                    Nodexa is a decentralized, high-performance social marketplace. The provisions detailed here apply to all active nodes (users), transactions, and media distributions occurring within the encrypted boundaries of the application.
+                  </p>
+
+                  <h4 className="text-white font-black text-base pt-4 border-t border-[#1E2532]/50">2. User Responsibilities</h4>
+                  <p>
+                    As an active participant in the network, you are expected to maintain the integrity of your node. This includes securing your Two-Factor Authentication (2FA) keys, respecting the boundaries of Blocked users, and refraining from distributing malicious code or spam within the Feed or Chat protocols.
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2 text-gray-500 marker:text-[#00F0FF]">
+                    <li>Ensure your Trust Score remains above the critical threshold.</li>
+                    <li>Verify all transactions inside the Wallet module before confirming.</li>
+                    <li>Report any anomalies to the Help & Support command center immediately.</li>
+                  </ul>
+
+                  <h4 className="text-white font-black text-base pt-4 border-t border-[#1E2532]/50">3. Data & Privacy</h4>
+                  <p>
+                    Your data is secured using military-grade encryption. Information collected via Smart Recommendations or the Personalized Feed algorithm is never sold to third-party tracking networks. You retain absolute control over your visibility via the Privacy Command Center.
+                  </p>
+
+                  <div className="mt-10 p-5 rounded-2xl border border-dashed border-[#1E2532] bg-[#151A25]/50 text-center">
+                    <p className="text-xs text-gray-500 italic">
+                      Disclaimer: This is a simulated legal document for the Nodexa Beta Environment. Official binding documents will be provided upon full commercial release.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-[#1E2532] bg-[#0B0F19] shrink-0">
+                <button 
+                  onClick={() => setShowLegalModal(false)}
+                  className="w-full py-4 bg-[#1E2532] text-white hover:text-[#00F0FF] hover:border-[#00F0FF]/30 border border-transparent rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95"
+                >
+                  I Understand & Agree
+                </button>
+              </div>
+
             </motion.div>
           </div>
         )}

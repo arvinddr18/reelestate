@@ -620,14 +620,15 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
     }
   };
 
-  // ── 🚨 HANDLE SUPPORT TICKET (REAL TIME) ──
+  // ── 🚨 HANDLE SUPPORT TICKET (WITH KILL SWITCH) ──
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
     setSupportStatus({ loading: true, success: '', error: '' });
 
     try {
-      // 1. Send the actual data to the backend!
-      await axios.post(getApiUrl('/api/users/support'), supportData, getAuthConfig());
+      // 1. Send the data to the backend, but GIVE UP after 8 seconds if it ignores us!
+      const config = { ...getAuthConfig(), timeout: 8000 };
+      await axios.post(getApiUrl('/api/users/support'), supportData, config);
 
       // 2. Show success and clear the form
       setSupportStatus({ loading: false, success: 'Support ticket submitted successfully! Our team will email you soon.', error: '' });
@@ -638,7 +639,12 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
 
     } catch (err) {
       console.error("Support Error:", err);
-      setSupportStatus({ loading: false, success: '', error: 'Failed to submit ticket. Please try again.' });
+      // 4. If it times out or fails, turn off the spinner and show the error!
+      setSupportStatus({ 
+        loading: false, 
+        success: '', 
+        error: err.code === 'ECONNABORTED' ? 'Server took too long to respond. Try again.' : 'Failed to submit ticket. Check connection.' 
+      });
     }
   };
       

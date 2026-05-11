@@ -114,7 +114,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// ─── Toggle Follow ────────────────────────────────────────────────────────────
+// ─── Toggle Follow (Nod) ────────────────────────────────────────────────────────────
 const toggleFollow = async (req, res) => {
   try {
     const targetUserId = req.params.id;
@@ -126,17 +126,30 @@ const toggleFollow = async (req, res) => {
     const existing = await Follow.findOne({ follower: req.user._id, following: targetUserId });
 
     if (existing) {
-      // Unfollow
+      // Unfollow (Un-nod)
       await existing.deleteOne();
       await User.findByIdAndUpdate(req.user._id, { $inc: { followingCount: -1 } });
       await User.findByIdAndUpdate(targetUserId, { $inc: { followersCount: -1 } });
       return res.json({ success: true, following: false });
     }
 
-    // Follow
+    // Follow (Nod)
     await Follow.create({ follower: req.user._id, following: targetUserId });
     await User.findByIdAndUpdate(req.user._id, { $inc: { followingCount: 1 } });
     await User.findByIdAndUpdate(targetUserId, { $inc: { followersCount: 1 } });
+
+    // 👇 🚨 THE NEW NOTIFICATION TRIGGER 🚨 👇
+    const Notification = require('../models/Notification'); // Ensure the model is loaded
+    await Notification.create({
+      recipient: targetUserId,     // The person getting Nodded at
+      sender: req.user._id,        // You!
+      type: 'nod',                 // Tells the frontend to use the cyan glowing icon
+      content: 'nodded at your profile. Connect back to expand your network.',
+      onModel: 'User',
+      linkId: req.user._id
+    });
+    // 👆 ────────────────────────────────── 👆
+
     res.json({ success: true, following: true });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

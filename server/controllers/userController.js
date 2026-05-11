@@ -330,7 +330,36 @@ const submitSupportTicket = async (req, res) => {
   }
 };
 
+const Notification = require('../models/Notification'); // 🚨 Put this at the very top of the file!
+
+// ─── Get User Notifications ───────────────────────────────────────────────────
+const getNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({ recipient: req.user._id })
+      .populate('sender', 'username fullName profilePhoto')
+      .sort({ createdAt: -1 })
+      .limit(50);
+      
+    res.status(200).json({ success: true, data: notifications });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch notifications.' });
+  }
+};
+
+// ─── Mark Notifications as Read ───────────────────────────────────────────────
+const markNotificationsRead = async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { recipient: req.user._id, isRead: false },
+      { $set: { isRead: true } }
+    );
+    res.status(200).json({ success: true, message: 'Cleared notification badges.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to clear badges.' });
+  }
+};
+
 module.exports = { 
   getUserProfile, updateProfile, toggleFollow, 
-  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA, getBlockedUsers, unblockUser, submitSupportTicket  // ✅ ALL exported
+  getFollowers, getFollowing, searchUsers, getAllUsers, setup2FA, verify2FA, getBlockedUsers, unblockUser, submitSupportTicket, getNotifications, markNotificationsRead  
 };

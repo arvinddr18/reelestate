@@ -57,5 +57,7 @@ router.get('/:id', protect, getUserProfile);
 router.post('/:id/follow', protect, toggleFollow);
 router.get('/:id/followers', getFollowers);
 router.get('/:id/following', getFollowing);
+router.get('/notifications/all', protect, getNotifications);
+router.post('/notifications/mark-read', protect, markNotificationsRead);
 
 module.exports = router;

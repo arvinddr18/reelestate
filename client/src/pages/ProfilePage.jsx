@@ -2317,8 +2317,69 @@ const res = await axios.get(getApiUrl(`/api/users/${id}?timestamp=${Date.now()}`
                   </div>
                 )}
 
+                {/* ── TAB: ABOUT ── */}
+                {settingsTab === 'about' && (
+                  <div className="animate-in fade-in duration-500 pb-20">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-14 h-14 rounded-2xl bg-[#151A25] border border-[#1E2532] flex items-center justify-center shadow-inner">
+                        <IoMdInformationCircle size={28} className="text-[#00F0FF] drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-white">About Nodexa</h2>
+                        <p className="text-sm text-gray-400 font-medium mt-1">System information and legal resources.</p>
+                      </div>
+                    </div>
+
+                    {/* App Version Card */}
+                    <div className="bg-gradient-to-br from-[#151A25] to-[#0B0F19] border border-[#1E2532] rounded-[32px] p-8 text-center relative overflow-hidden mb-6 shadow-lg">
+                      <div className="absolute top-[-50%] left-1/2 -translate-x-1/2 w-64 h-64 bg-[#00F0FF]/10 rounded-full blur-[60px] pointer-events-none" />
+                      
+                      <div className="w-20 h-20 mx-auto bg-[#0B0F19] border-2 border-[#00F0FF]/50 rounded-3xl flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(0,240,255,0.2)] transform rotate-3 hover:rotate-0 transition-transform duration-500 cursor-default">
+                        <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 italic">N</span>
+                      </div>
+                      
+                      <h1 className="text-2xl font-black text-white tracking-tight mb-1">Nodexa Super-App</h1>
+                      <p className="text-xs font-bold text-[#00F0FF] tracking-[0.2em] uppercase mb-4">Version 2.0.50 (Beta)</p>
+                      
+                      <p className="text-sm text-gray-400 max-w-md mx-auto leading-relaxed">
+                        The next-generation social marketplace. Connect, discover, and transact seamlessly across the global network.
+                      </p>
+                    </div>
+
+                    {/* Legal Links List */}
+                    <div className="bg-[#0B0F19] border border-[#1E2532] rounded-[24px] overflow-hidden shadow-sm">
+                      {[
+                        { title: 'Terms of Service', icon: '📄' },
+                        { title: 'Privacy Policy', icon: '🛡️' },
+                        { title: 'Community Guidelines', icon: '🤝' },
+                        { title: 'Open Source Licenses', icon: '💻' }
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-5 border-b border-[#1E2532] hover:bg-[#151A25] cursor-pointer transition-colors last:border-0 group">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-[#1E2532] flex items-center justify-center text-lg group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                              {item.icon}
+                            </div>
+                            <p className="text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors">{item.title}</p>
+                          </div>
+                          <IoMdArrowBack size={18} className="text-gray-500 rotate-180 group-hover:text-[#00F0FF] group-hover:translate-x-1 transition-all" />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Developer Credit Footer */}
+                    <div className="mt-10 text-center space-y-2">
+                      <p className="text-[10px] font-black text-gray-500 tracking-widest uppercase">
+                        Developed & Engineered by <span className="text-white">Aravind D R</span>
+                      </p>
+                      <p className="text-[10px] font-bold text-gray-600 tracking-wider">
+                        © 2026 Nodexa Inc. All rights reserved.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* ── FALLBACK FOR REMAINING TABS ── */}
-                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && settingsTab !== 'blocked' && settingsTab !== 'help' &&(
+                {settingsTab !== 'security' && settingsTab !== 'personal' && settingsTab !== 'privacy' && settingsTab !== 'notifications' && settingsTab !== 'payments' && settingsTab !== 'preferences' && settingsTab !== 'appearance' && settingsTab !== 'ai' && settingsTab !== 'activity' && settingsTab !== 'blocked' && settingsTab !== 'help' && settingsTab !== 'about' && (
                   <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in fade-in duration-500">
                     <IoMdSettings size={64} className="text-[#1E2532] mb-4 animate-[spin_10s_linear_infinite]" />
                     <h3 className="text-xl font-black text-white capitalize">{settingsTab.replace('-', ' ')}</h3>

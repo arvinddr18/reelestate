@@ -310,59 +310,23 @@ const unblockUser = async (req, res) => {
 const submitSupportTicket = async (req, res) => {
   try {
     const { subject, message } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ success: false, message: 'Message is required.' });
-    }
-
-    // ✅ Respond to frontend IMMEDIATELY - don't wait for email!
-    res.status(200).json({ success: true, message: 'Support ticket submitted successfully!' });
-
-    // ✅ Send emails in background AFTER responding (won't cause timeout)
-    setImmediate(async () => {
-      try {
-        // Email to YOU
-        await sendEmail({
-          email: process.env.EMAIL_USER,
-          subject: `[Nodexa Support] ${subject || 'General Inquiry'} - from @${req.user.username}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
-              <h2 style="color: #00F0FF; margin-top: 0;">New Support Ticket</h2>
-              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px; line-height: 1.8;">
-                <b style="color: white;">From:</b> @${req.user.username} (${req.user.email})<br/>
-                <b style="color: white;">Subject:</b> ${subject}<br/>
-                <b style="color: white;">Message:</b><br/>${message}
-              </div>
-            </div>
-          `
-        });
-
-        // Email to USER
-        await sendEmail({
-          email: req.user.email,
-          subject: `✅ We received your message - Nodexa Support`,
-          html: `
-            <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
-              <h2 style="color: #00F0FF; margin-top: 0;">We got your message!</h2>
-              <p style="color: #D1D5DB;">Hello <b>@${req.user.username}</b>,</p>
-              <p style="color: #D1D5DB;">Your support ticket has been received. Our team will get back to you within 24 hours.</p>
-              <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 25px 0; color: #9CA3AF; font-size: 14px; line-height: 1.8;">
-                <b style="color: white;">Subject:</b> ${subject}<br/>
-                <b style="color: white;">Message:</b><br/>${message}
-              </div>
-            </div>
-          `
-        });
-
-        console.log(`✅ Support emails sent for @${req.user.username}`);
-      } catch (emailErr) {
-        console.error("Background email failed:", emailErr.message);
-      }
-    });
-
+    
+    // 1. Safely log the ticket to your server terminal so you can read it!
+    console.log(`\n=========================================`);
+    console.log(`🚨 NEW SUPPORT TICKET 🚨`);
+    console.log(`From: @${req.user?.username || 'User'}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Message: ${message}`);
+    console.log(`=========================================\n`);
+    
+    // 🚨 Notice: NO sendEmail() here! We completely removed it.
+    
+    // 2. Instantly reply to the frontend!
+    return res.status(200).json({ success: true, message: 'Support ticket received.' });
+    
   } catch (error) {
-    console.error("Support ticket error:", error);
-    res.status(500).json({ success: false, message: 'Failed to process ticket.' });
+    console.error("Support ticket critical error:", error);
+    return res.status(500).json({ success: false, message: 'Server error processing ticket.' });
   }
 };
 

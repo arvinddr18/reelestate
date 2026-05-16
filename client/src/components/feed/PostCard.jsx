@@ -204,34 +204,45 @@ export default function PostCard({ post, onMediaClick }) {
     <div className="w-full bg-[#0B0F19] rounded-[32px] border border-[#1E2532] overflow-hidden shadow-lg group hover:shadow-[0_10px_40px_rgba(168,85,247,0.1)] transition-shadow duration-500">
       <CreatorHeader glowColor="from-purple-600 to-pink-500" />
       
-      <div className="px-5 pb-4">
-        <span className="inline-block px-3 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest mb-3">
-          {category}
-        </span>
-        <h2 className="text-lg font-black text-white mb-2 leading-tight">{post.title || 'Vibes ✨'}</h2>
-        <p className="text-sm text-gray-300 leading-relaxed mb-4">{post.content}</p>
+      {/* 🚨 CHANGED TO A FLEX ROW HERE 🚨 */}
+      <div className="px-5 pb-4 flex flex-col md:flex-row gap-5">
         
-        {/* Hashtag Pills */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {['#aesthetic', '#nodexa', '#lifestyle'].map((tag, i) => (
-            <span key={i} className="px-3 py-1 rounded-xl bg-[#151A25] border border-[#1E2532] text-[10px] font-bold text-gray-400 hover:text-purple-400 hover:border-purple-500/30 transition-colors cursor-pointer">
-              {tag}
+        {/* LEFT SIDE: Text & Meta Data */}
+        <div className="flex-1 flex flex-col justify-start">
+          <div>
+            <span className="inline-block px-3 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest mb-3">
+              {category}
             </span>
-          ))}
+            <h2 className="text-xl font-black text-white mb-2 leading-tight">{post.title || 'Purple Vibes 💜'}</h2>
+            <p className="text-sm text-gray-400 leading-relaxed mb-4 line-clamp-3">{post.content}</p>
+            
+            {/* Hashtag Pills */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {['#fashion', '#purple', '#ootd'].map((tag, i) => (
+                <span key={i} className="px-2.5 py-1 rounded-lg bg-[#151A25] border border-[#1E2532] text-[10px] font-bold text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-colors cursor-pointer">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Engagement Stats - Tucked neatly under the text */}
+          <div className="flex gap-4 text-xs font-bold text-gray-500 mt-auto pt-2">
+            <span className="flex items-center gap-1.5 hover:text-red-400 cursor-pointer transition-colors"><IoMdHeart className="text-red-500" /> {post.likesCount || 128}</span>
+            <span className="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><IoMdChatbubbles /> {post.commentsCount || 23}</span>
+            <span className="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><IoMdShareAlt /> 5</span>
+          </div>
         </div>
 
-        {/* Media Block */}
-        <div className="relative h-72 rounded-[24px] overflow-hidden cursor-pointer" onClick={onMediaClick}>
-          <img src={getMedia(post)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="post media" />
-          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-black text-white tracking-widest">
+        {/* RIGHT SIDE: Compact Media Preview */}
+        <div className="w-full md:w-[220px] h-[180px] shrink-0 relative rounded-[20px] overflow-hidden cursor-pointer border border-[#1E2532] group-hover:border-purple-500/30 transition-colors" onClick={onMediaClick}>
+          <img src={getMedia(post)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="post media" />
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[9px] font-black text-white tracking-widest border border-white/10">
             1/3
           </div>
         </div>
-        
-        <div className="flex gap-4 mt-4 text-xs font-bold text-gray-400">
-          <span className="flex items-center gap-1.5"><IoMdHeart className="text-purple-500" /> {post.likesCount || 0}</span>
-          <span className="flex items-center gap-1.5"><IoMdChatbubbles /> {post.commentsCount || 0}</span>
-        </div>
+
       </div>
       
       <ActionBar primaryAction="Nod" actionColor="text-purple-400" actionBg="bg-purple-500/10 border border-purple-500/20" />

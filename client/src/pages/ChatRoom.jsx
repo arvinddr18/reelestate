@@ -42,6 +42,11 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // 🚨 Add this new line!
 
+  // 🌟 NOTIFICATION SETTINGS STATE 🌟
+  const [muteOption, setMuteOption] = useState('Off');
+  const [priorityMode, setPriorityMode] = useState(false);
+  const [smartAlerts, setSmartAlerts] = useState(true); // Default to on (yellow glow)
+
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
@@ -1577,39 +1582,59 @@ const executeSmartDelete = async (action, targetMsg) => {
               {/* 🔔 NOTIFICATIONS TAB */}
               {activeSettingTab === 'notifications' && (
                 <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 fade-in duration-300">
-                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-[#ffbb00]">🔔</span> Notifications</h3>
+                  <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2">
+                    <span className="text-[#ffbb00] drop-shadow-[0_0_8px_rgba(255,187,0,0.6)]">🔔</span> 
+                    Notifications
+                  </h3>
                   
                   <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     
+                     {/* MUTE DROPDOWN */}
                      <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                        <div>
                          <p className="text-white font-bold text-sm">Mute Notifications</p>
                          <p className="text-gray-500 text-xs">Disable alerts for this chat</p>
                        </div>
-                       <select className="bg-black/50 border border-white/10 text-white text-xs rounded-lg px-3 py-1.5 outline-none">
-                          <option>Off</option>
-                          <option>1 Hour</option>
-                          <option>8 Hours</option>
-                          <option>Always</option>
+                       <select 
+                         value={muteOption}
+                         onChange={(e) => setMuteOption(e.target.value)}
+                         className="bg-[#151A25] border border-white/10 text-white font-bold text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer hover:border-gray-500 transition-colors"
+                       >
+                          <option value="Off">Off</option>
+                          <option value="1 Hour">1 Hour</option>
+                          <option value="8 Hours">8 Hours</option>
+                          <option value="Always">Always</option>
                        </select>
                      </div>
-                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+
+                     {/* PRIORITY MODE TOGGLE */}
+                     <div 
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer group"
+                       onClick={() => setPriorityMode(!priorityMode)}
+                     >
                        <div>
                          <p className="text-white font-bold text-sm">Priority Mode</p>
                          <p className="text-gray-500 text-xs">Bypass DND settings</p>
                        </div>
-                       <div className="w-11 h-6 bg-white/10 rounded-full relative border border-white/20 cursor-pointer">
-                         <div className="w-4 h-4 bg-gray-400 rounded-full absolute top-[3px] left-1"></div>
+                       <div className={`w-11 h-6 rounded-full relative transition-colors duration-300 border ${priorityMode ? 'bg-[#bc00dd] border-[#bc00dd] shadow-[0_0_10px_rgba(188,0,221,0.4)]' : 'bg-white/10 border-white/20'}`}>
+                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all duration-300 shadow-sm ${priorityMode ? 'bg-white right-1' : 'bg-gray-400 left-1'}`}></div>
                        </div>
                      </div>
-                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+
+                     {/* SMART ALERTS TOGGLE */}
+                     <div 
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer group"
+                       onClick={() => setSmartAlerts(!smartAlerts)}
+                     >
                        <div>
                          <p className="text-white font-bold text-sm">Smart Alerts</p>
                          <p className="text-gray-500 text-xs">Only notify on keywords (e.g. "urgent")</p>
                        </div>
-                       <div className="w-11 h-6 bg-[#ffbb00]/20 rounded-full relative border border-[#ffbb00]/50 cursor-pointer shadow-[0_0_10px_rgba(255,187,0,0.2)]">
-                         <div className="w-4 h-4 bg-[#ffbb00] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#ffbb00]"></div>
+                       <div className={`w-11 h-6 rounded-full relative transition-colors duration-300 border ${smartAlerts ? 'bg-[#ffbb00] border-[#ffbb00] shadow-[0_0_10px_rgba(255,187,0,0.4)]' : 'bg-white/10 border-white/20'}`}>
+                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all duration-300 shadow-sm ${smartAlerts ? 'bg-black right-1' : 'bg-gray-400 left-1'}`}></div>
                        </div>
                      </div>
+
                   </div>
                 </div>
               )}

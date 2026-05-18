@@ -42,10 +42,26 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // 🚨 Add this new line!
 
-  // 🌟 NOTIFICATION SETTINGS STATE 🌟
-  const [muteOption, setMuteOption] = useState('Off');
-  const [priorityMode, setPriorityMode] = useState(false);
-  const [smartAlerts, setSmartAlerts] = useState(true); // Default to on (yellow glow)
+  // 🌟 NOTIFICATION SETTINGS STATE (WITH LOCAL STORAGE MEMORY) 🌟
+  const [muteOption, setMuteOption] = useState(() => {
+    return localStorage.getItem('nodexa_muteOption') || 'Off';
+  });
+  
+  const [priorityMode, setPriorityMode] = useState(() => {
+    const saved = localStorage.getItem('nodexa_priorityMode');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+  
+  const [smartAlerts, setSmartAlerts] = useState(() => {
+    const saved = localStorage.getItem('nodexa_smartAlerts');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Auto-save to the browser instantly whenever you click a toggle
+  useEffect(() => localStorage.setItem('nodexa_muteOption', muteOption), [muteOption]);
+  useEffect(() => localStorage.setItem('nodexa_priorityMode', JSON.stringify(priorityMode)), [priorityMode]);
+  useEffect(() => localStorage.setItem('nodexa_smartAlerts', JSON.stringify(smartAlerts)), [smartAlerts]);
+  
 
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);

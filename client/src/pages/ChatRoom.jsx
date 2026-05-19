@@ -709,20 +709,20 @@ const executeSmartDelete = async (action, targetMsg) => {
     } catch (err) { console.error(err); }
   };
 
- if (!chatUser) {
+ // 🛡️ ULTIMATE FAIL-SAFE GUARDRAIL (Prevents blank screen crashes)
+  if (!chatUser || !chatUser.username || !room) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center text-center p-8 bg-[#05070A] z-10">
-        <div className="w-24 h-24 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,240,255,0.05)]">
-          <IoMdChatboxes size={40} className="text-[#00F0FF]" />
+        <div className="relative w-12 h-12 mb-6">
+          <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#00f0ff] animate-spin shadow-[0_0_15px_rgba(0,240,255,0.5)]"></div>
         </div>
-        <h2 className="text-2xl font-black text-white tracking-tight mb-2">Secure Communications</h2>
-        <p className="text-sm text-gray-500 font-medium max-w-sm">
-          Select a node from your network to establish an end-to-end encrypted connection.
+        <h2 className="text-xl font-black text-white tracking-tight mb-2">Establishing Link...</h2>
+        <p className="text-xs text-gray-500 font-medium max-w-sm">
+          Connecting to secure quantum node network parameters. Please hold...
         </p>
       </div>
     );
   }
-
 
   return (
     <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">

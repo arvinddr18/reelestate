@@ -42,25 +42,35 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // 🚨 Add this new line!
 
-  // 🌟 NOTIFICATION SETTINGS STATE (WITH LOCAL STORAGE MEMORY) 🌟
-  const [muteOption, setMuteOption] = useState(() => {
-    return localStorage.getItem('nodexa_muteOption') || 'Off';
-  });
-  
-  const [priorityMode, setPriorityMode] = useState(() => {
-    const saved = localStorage.getItem('nodexa_priorityMode');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
-  
-  const [smartAlerts, setSmartAlerts] = useState(() => {
-    const saved = localStorage.getItem('nodexa_smartAlerts');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
+  // 🌟 NOTIFICATION SETTINGS LIVE DATABASE STATE 🌟
+  const [muteOption, setMuteOption] = useState('Off');
+  const [priorityMode, setPriorityMode] = useState(false);
+  const [smartAlerts, setSmartAlerts] = useState(true);
 
-  // Auto-save to the browser instantly whenever you click a toggle
-  useEffect(() => localStorage.setItem('nodexa_muteOption', muteOption), [muteOption]);
-  useEffect(() => localStorage.setItem('nodexa_priorityMode', JSON.stringify(priorityMode)), [priorityMode]);
-  useEffect(() => localStorage.setItem('nodexa_smartAlerts', JSON.stringify(smartAlerts)), [smartAlerts]);
+  // Fetch customized link settings from database on chat initialization
+  useEffect(() => {
+    if (!room) return;
+    
+    const fetchRoomSettings = async () => {
+      try {
+        const token = localStorage.getItem('nodexa_token');
+        const res = await axios.get(`${API_URL}/api/messages/settings/${room}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.data?.success && res.data.data) {
+          const { muteOption: dbMute, priorityMode: dbPriority, smartAlerts: dbSmart } = res.data.data;
+          setMuteOption(dbMute || 'Off');
+          setPriorityMode(!!dbPriority);
+          setSmartAlerts(dbSmart !== false); // Defaults to true if empty
+        }
+      } catch (err) {
+        console.error("Failed to fetch custom room link settings:", err);
+      }
+    };
+
+    fetchRoomSettings();
+  }, [room]);
   
 
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
@@ -1611,9 +1621,15 @@ const executeSmartDelete = async (action, targetMsg) => {
                          <p className="text-white font-bold text-sm">Mute Notifications</p>
                          <p className="text-gray-500 text-xs">Disable alerts for this chat</p>
                        </div>
+                       {/* MUTE DROPDOWN */}
                        <select 
                          value={muteOption}
-                         onChange={(e) => setMuteOption(e.target.value)}
+                         onChange={async (e) => {
+                           const val = e.target.value;
+                           setMuteOption(val);
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption: val, priorityMode, smartAlerts }, { headers: { Authorization: `Bearer ${token}` } });
+                         }}
                          className="bg-[#151A25] border border-white/10 text-white font-bold text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer hover:border-gray-500 transition-colors"
                        >
                           <option value="Off">Off</option>
@@ -1626,7 +1642,12 @@ const executeSmartDelete = async (action, targetMsg) => {
                      {/* PRIORITY MODE TOGGLE */}
                      <div 
                        className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer group"
-                       onClick={() => setPriorityMode(!priorityMode)}
+                       onClick={async () => {
+                         const nextVal = !priorityMode;
+                         setPriorityMode(nextVal);
+                         const token = localStorage.getItem('nodexa_token');
+                         await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode: nextVal, smartAlerts }, { headers: { Authorization: `Bearer ${token}` } });
+                       }}
                      >
                        <div>
                          <p className="text-white font-bold text-sm">Priority Mode</p>
@@ -1640,7 +1661,12 @@ const executeSmartDelete = async (action, targetMsg) => {
                      {/* SMART ALERTS TOGGLE */}
                      <div 
                        className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer group"
-                       onClick={() => setSmartAlerts(!smartAlerts)}
+                       onClick={async () => {
+                         const nextVal = !smartAlerts;
+                         setSmartAlerts(nextVal);
+                         const token = localStorage.getItem('nodexa_token');
+                         await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts: nextVal }, { headers: { Authorization: `Bearer ${token}` } });
+                       }}
                      >
                        <div>
                          <p className="text-white font-bold text-sm">Smart Alerts</p>
@@ -1650,7 +1676,6 @@ const executeSmartDelete = async (action, targetMsg) => {
                          <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all duration-300 shadow-sm ${smartAlerts ? 'bg-black right-1' : 'bg-gray-400 left-1'}`}></div>
                        </div>
                      </div>
-
                   </div>
                 </div>
               )}

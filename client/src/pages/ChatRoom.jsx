@@ -709,7 +709,19 @@ const executeSmartDelete = async (action, targetMsg) => {
     } catch (err) { console.error(err); }
   };
 
-  if (!chatUser) return null;
+ if (!chatUser) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-center p-8 bg-[#05070A] z-10">
+        <div className="w-24 h-24 rounded-full bg-[#151A25] border border-[#1E2532] flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,240,255,0.05)]">
+          <IoMdChatboxes size={40} className="text-[#00F0FF]" />
+        </div>
+        <h2 className="text-2xl font-black text-white tracking-tight mb-2">Secure Communications</h2>
+        <p className="text-sm text-gray-500 font-medium max-w-sm">
+          Select a node from your network to establish an end-to-end encrypted connection.
+        </p>
+      </div>
+    );
+  }
 
 
   return (

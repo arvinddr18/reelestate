@@ -42,18 +42,20 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // 🚨 Add this new line!
 
-  // 🌟 NOTIFICATION SETTINGS LIVE DATABASE STATE 🌟
+ // 🌟 NOTIFICATION SETTINGS LIVE DATABASE STATE 🌟
   const [muteOption, setMuteOption] = useState('Off');
   const [priorityMode, setPriorityMode] = useState(false);
   const [smartAlerts, setSmartAlerts] = useState(true);
 
-  // Fetch customized link settings from database on chat initialization
+  // Fetch customized link settings from database safely on chat initialization
   useEffect(() => {
-    if (!room) return;
+    if (!room || !myId || !friendId) return;
     
     const fetchRoomSettings = async () => {
       try {
         const token = localStorage.getItem('nodexa_token');
+        if (!token) return;
+
         const res = await axios.get(`${API_URL}/api/messages/settings/${room}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -62,7 +64,7 @@ export default function ChatRoom({ chatUser, onBack }) {
           const { muteOption: dbMute, priorityMode: dbPriority, smartAlerts: dbSmart } = res.data.data;
           setMuteOption(dbMute || 'Off');
           setPriorityMode(!!dbPriority);
-          setSmartAlerts(dbSmart !== false); // Defaults to true if empty
+          setSmartAlerts(dbSmart !== false); 
         }
       } catch (err) {
         console.error("Failed to fetch custom room link settings:", err);
@@ -70,7 +72,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     };
 
     fetchRoomSettings();
-  }, [room]);
+  }, [room, myId, friendId]);
   
 
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
@@ -1627,8 +1629,11 @@ const executeSmartDelete = async (action, targetMsg) => {
                          onChange={async (e) => {
                            const val = e.target.value;
                            setMuteOption(val);
-                           const token = localStorage.getItem('nodexa_token');
-                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption: val, priorityMode, smartAlerts }, { headers: { Authorization: `Bearer ${token}` } });
+                           if (!room) return; // 🛡️ Safety Guardrail
+                           try {
+                             const token = localStorage.getItem('nodexa_token');
+                             await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption: val, priorityMode, smartAlerts }, { headers: { Authorization: `Bearer ${token}` } });
+                           } catch (err) { console.error("Sync failed", err); }
                          }}
                          className="bg-[#151A25] border border-white/10 text-white font-bold text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer hover:border-gray-500 transition-colors"
                        >
@@ -1645,8 +1650,11 @@ const executeSmartDelete = async (action, targetMsg) => {
                        onClick={async () => {
                          const nextVal = !priorityMode;
                          setPriorityMode(nextVal);
-                         const token = localStorage.getItem('nodexa_token');
-                         await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode: nextVal, smartAlerts }, { headers: { Authorization: `Bearer ${token}` } });
+                         if (!room) return; // 🛡️ Safety Guardrail
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode: nextVal, smartAlerts }, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) { console.error("Sync failed", err); }
                        }}
                      >
                        <div>
@@ -1658,14 +1666,17 @@ const executeSmartDelete = async (action, targetMsg) => {
                        </div>
                      </div>
 
-                     {/* SMART ALERTS TOGGLE */}
+                    {/* SMART ALERTS TOGGLE */}
                      <div 
                        className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer group"
                        onClick={async () => {
                          const nextVal = !smartAlerts;
                          setSmartAlerts(nextVal);
-                         const token = localStorage.getItem('nodexa_token');
-                         await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts: nextVal }, { headers: { Authorization: `Bearer ${token}` } });
+                         if (!room) return; // 🛡️ Safety Guardrail
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts: nextVal }, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) { console.error("Sync failed", err); }
                        }}
                      >
                        <div>

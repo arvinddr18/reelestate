@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { protect } = require('../middleware/auth'); 
+const ChatSetting = require('../models/ChatSetting');
 
 // ─── THE FIX: UPDATED HOLOMESSAGE MODEL ───
 const holoMessageSchema = new mongoose.Schema({
@@ -138,6 +139,45 @@ router.delete('/:id', protect, async (req, res) => {
     res.status(200).json({ message: "Message deleted permanently" });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET CHAT ROOM SPECIFIC SETTINGS ────────────────────────────────────
+router.get('/settings/:room', protect, async (req, res) => {
+  try {
+    let settings = await ChatSetting.findOne({ userId: req.user._id, room: req.params.room });
+
+    // If no custom settings exist yet, return standard system defaults
+    if (!settings) {
+      settings = { muteOption: 'Off', priorityMode: false, smartAlerts: true };
+    }
+
+    res.status(200).json({ success: true, data: settings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
+router.post('/settings/:room', protect, async (req, res) => {
+  try {
+    const { muteOption, priorityMode, smartAlerts } = req.body;
+
+    const updatedSettings = await ChatSetting.findOneAndUpdate(
+      { userId: req.user._id, room: req.params.room },
+      { 
+        $set: { 
+          muteOption, 
+          priorityMode, 
+          smartAlerts 
+        } 
+      },
+      { new: true, upsert: true } // Creates it automatically if it doesn't exist yet
+    );
+
+    res.status(200).json({ success: true, data: updatedSettings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

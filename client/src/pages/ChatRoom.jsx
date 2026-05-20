@@ -252,7 +252,7 @@ export default function ChatRoom({ chatUser, onBack }) {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setMessages((prev) => [...prev, messageData]);
-    socket.emit('send_message', messageData);
+    getSocket().emit('send_message', messageData);
     try {
       const token = localStorage.getItem('nodexa_token');
       await axios.post(`${API_URL}/api/messages`, messageData, { headers: { Authorization: `Bearer ${token}` } });
@@ -436,12 +436,12 @@ export default function ChatRoom({ chatUser, onBack }) {
   useEffect(() => {
     if (!room || !myId || !friendId) return;
     
-   socket.emit('join_room', room);
+   getSocket().emit('join_room', room);
     
     // 🚨 FIX: Tell the server we read the chat ONCE when we first open it!
-    socket.emit('mark_as_read', { room, readerId: myId });
+    getSocket().emit('mark_as_read', { room, readerId: myId });
     
-    const onConnect = () => socket.emit('join_room', room);
+    const onConnect = () => getSocket().emit('join_room', room);
     getSocket().on('connect', onConnect);
     
     getSocket().on('receive_message', (data) => {
@@ -477,13 +477,12 @@ export default function ChatRoom({ chatUser, onBack }) {
     });
     
     return () => {
-      socket.off('connect', onConnect);
-socket.off('receive_message');
-socket.off('display_typing');
-socket.off('hide_typing');
-socket.off('message_updated');
-socket.off('messages_read');
- 
+     getSocket().off('connect', onConnect);
+getSocket().off('receive_message');
+getSocket().off('display_typing');
+getSocket().off('hide_typing');
+getSocket().off('message_updated');
+getSocket().off('messages_read');
     };
   }, [room, myId, friendId]);
 
@@ -566,7 +565,7 @@ const executeSmartDelete = async (action, targetMsg) => {
       }));
 
       // Send live update to other user
-      socket.emit('update_message', { room, modifiedMsg });
+      getSocket().emit('update_message', { room, modifiedMsg });
 
       if (modifiedMsg._id) {
         try {
@@ -661,7 +660,7 @@ const executeSmartDelete = async (action, targetMsg) => {
         });
       }
 
-      socket.emit('update_message', { room, modifiedMsg: updatedMsg });
+      getSocket().emit('update_message', { room, modifiedMsg: updatedMsg });
     } catch (err) {
       console.error("❌ Error pinning message:", err);
     }
@@ -679,7 +678,7 @@ const executeSmartDelete = async (action, targetMsg) => {
         const isSameTime = m.timestamp && editingMessage.timestamp && m.timestamp === editingMessage.timestamp;
         return (isSameId || isSameTime) ? modifiedMsg : m;
       }));
-      socket.emit('update_message', { room, modifiedMsg });
+      getSocket().emit('update_message', { room, modifiedMsg });
 
       try {
         await axios.put(`${API_URL}/api/messages/${modifiedMsg._id}`, { text: message, isEdited: true }, {
@@ -711,7 +710,7 @@ const executeSmartDelete = async (action, targetMsg) => {
     setSelectedImage(null);
     setSelectedVideo(null);
     setReplyingTo(null);
-    socket.emit('send_message', messageData);
+    getSocket().emit('send_message', messageData);
     try {
       await axios.post(`${API_URL}/api/messages`, messageData, { headers: { Authorization: `Bearer ${token}` } });
     } catch (err) { console.error(err); }
@@ -1220,9 +1219,10 @@ const executeSmartDelete = async (action, targetMsg) => {
               value={message}
               onChange={(e) => {
                 setMessage(e.target.value);
-                socket.emit('typing', room);
+                getSocket().emit('typing', room);
+
               }}
-              onBlur={() => socket.emit('stop_typing', room)}
+              onBlur={() => getSocket().emit('stop_typing', room)}
               placeholder="Message..."
               className={`flex-1 bg-transparent text-white text-[16px] md:text-[15px] outline-none placeholder-gray-400 font-medium min-w-0 transition-all duration-300 pl-1`}
             />

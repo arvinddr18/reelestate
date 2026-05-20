@@ -9,7 +9,13 @@ import { useAuth } from '../context/AuthContext';
 
 const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
-const socket = io(API_URL);
+let socket;
+const getSocket = () => {
+  if (!socket) {
+    socket = io(API_URL);
+  }
+  return socket;
+};
 
 export default function ChatRoom({ chatUser, onBack }) {
   const { user: currentUser } = useAuth(); 

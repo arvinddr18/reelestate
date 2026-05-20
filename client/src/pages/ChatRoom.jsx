@@ -19,6 +19,9 @@ const getSocket = () => {
 
 export default function ChatRoom({ chatUser, onBack }) {
   const { user: currentUser } = useAuth(); 
+  const myId = currentUser?._id || currentUser?.id;
+  const friendId = chatUser?._id || chatUser?.id;
+  const room = myId && friendId ? [myId, friendId].sort().join('_') : null;
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const galleryInputRef = useRef(null); // 🌟 Strictly for the Gallery app
@@ -111,9 +114,7 @@ export default function ChatRoom({ chatUser, onBack }) {
     { name: 'Dream', css: 'brightness(120%) contrast(90%) saturate(150%)' }
   ];
 
-  const myId = currentUser?._id || currentUser?.id;
-  const friendId = chatUser?._id || chatUser?.id;
-  const room = myId && friendId ? [myId, friendId].sort().join('_') : null;
+  
 
   // Function to add the clicked emoji to your message box
   const handleEmojiClick = (emojiObject) => {

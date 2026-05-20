@@ -22,7 +22,6 @@ import SavedPage from './pages/SavedPage';
 // ─── NEW 2045 MESSAGING COMPONENTS ───
 // To match your actual file name (probably this):
 import Messages from './pages/MessagesPage';
-import ChatRoom from './pages/ChatRoom'; // The Individual Floating Chat
 
 // Layout
 import Layout from './components/common/Layout';
@@ -66,7 +65,6 @@ function AppRoutes() {
         
         {/* ─── SPLIT MESSAGING ROUTES ─── */}
         <Route path="messages" element={<Messages />} />
-        <Route path="messages/:userId" element={<ChatRoom />} />
         
         <Route path="saved" element={<SavedPage />} />
         <Route path="profile/:userId?" element={<ProfilePage />} />

@@ -22,7 +22,12 @@ const chatSettingSchema = new mongoose.Schema({
   smartAlerts: { 
     type: Boolean, 
     default: true 
+  },
+  customKeywords: {
+    type: [String],
+    default: ['urgent', 'emergency', 'broken', 'help'] // Standard system defaults
   }
+
 }, { timestamps: true });
 
 chatSettingSchema.index({ userId: 1, room: 1 }, { unique: true });

@@ -55,6 +55,8 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [muteOption, setMuteOption] = useState('Off');
   const [priorityMode, setPriorityMode] = useState(false);
   const [smartAlerts, setSmartAlerts] = useState(true);
+  const [newKeyword, setNewKeyword] = useState('');
+  const [customKeywords, setCustomKeywords] = useState(['urgent', 'emergency', 'broken', 'help']);
 
   // Fetch customized link settings from database safely on chat initialization
   useEffect(() => {
@@ -70,10 +72,11 @@ export default function ChatRoom({ chatUser, onBack }) {
         });
         
         if (res.data?.success && res.data.data) {
-          const { muteOption: dbMute, priorityMode: dbPriority, smartAlerts: dbSmart } = res.data.data;
+          const { muteOption: dbMute, priorityMode: dbPriority, smartAlerts: dbSmart, customKeywords: dbKeywords } = res.data.data;
           setMuteOption(dbMute || 'Off');
           setPriorityMode(!!dbPriority);
           setSmartAlerts(dbSmart !== false); 
+          if (dbKeywords && dbKeywords.length > 0) setCustomKeywords(dbKeywords);
         }
       } catch (err) {
         console.error("Failed to fetch custom room link settings:", err);
@@ -1707,6 +1710,70 @@ const executeSmartDelete = async (action, targetMsg) => {
                          <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all duration-300 shadow-sm ${smartAlerts ? 'bg-black right-1' : 'bg-gray-400 left-1'}`}></div>
                        </div>
                      </div>
+                     {/* 🌟 PRECIOUS KEYWORDS MANAGEMENT CONTAINER 🌟 */}
+                     {smartAlerts && (
+                       <div className="p-4 bg-black/25 border border-white/5 rounded-2xl mx-4 mb-4 mt-2 animate-in slide-in-from-top-4 duration-300">
+                         <p className="text-white font-bold text-xs mb-1.5 opacity-90">Precious Keyword Triggers</p>
+                         <p className="text-[10px] text-gray-500 mb-3 font-medium">Type a custom keyword to bypass mutes instantly.</p>
+                         
+                         {/* Input Bar */}
+                         <div className="flex gap-2 mb-3">
+                           <input 
+                             type="text"
+                             placeholder="e.g., payment, contract, alert..."
+                             value={newKeyword}
+                             onChange={(e) => setNewKeyword(e.target.value)}
+                             onKeyDown={async (e) => {
+                               if (e.key === 'Enter') {
+                                 e.preventDefault();
+                                 if (!newKeyword.trim() || customKeywords.includes(newKeyword.trim().toLowerCase())) return;
+                                 const updatedList = [...customKeywords, newKeyword.trim().toLowerCase()];
+                                 setCustomKeywords(updatedList);
+                                 setNewKeyword('');
+                                 const token = localStorage.getItem('nodexa_token');
+                                 await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts, customKeywords: updatedList }, { headers: { Authorization: `Bearer ${token}` } });
+                               }
+                             }}
+                             className="flex-1 bg-[#151A25] border border-white/10 text-xs text-white rounded-lg px-3 py-2 outline-none focus:border-[#ffbb00]/50 font-medium"
+                           />
+                           <button 
+                             type="button"
+                             onClick={async () => {
+                               if (!newKeyword.trim() || customKeywords.includes(newKeyword.trim().toLowerCase())) return;
+                               const updatedList = [...customKeywords, newKeyword.trim().toLowerCase()];
+                               setCustomKeywords(updatedList);
+                               setNewKeyword('');
+                               const token = localStorage.getItem('nodexa_token');
+                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts, customKeywords: updatedList }, { headers: { Authorization: `Bearer ${token}` } });
+                             }}
+                             className="bg-[#ffbb00] text-black text-xs font-black px-3 py-2 rounded-lg hover:scale-105 active:scale-95 transition-transform"
+                           >
+                             Add
+                           </button>
+                         </div>
+
+                         {/* Rendered Keyword Pills */}
+                         <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto no-scrollbar">
+                           {customKeywords.map((word, index) => (
+                             <span key={index} className="inline-flex items-center gap-1.5 bg-[#ffbb00]/10 border border-[#ffbb00]/30 text-[#ffbb00] font-bold text-[10px] px-2.5 py-1 rounded-md shadow-sm">
+                               {word}
+                               <button 
+                                 type="button" 
+                                 onClick={async () => {
+                                   const updatedList = customKeywords.filter(w => w !== word);
+                                   setCustomKeywords(updatedList);
+                                   const token = localStorage.getItem('nodexa_token');
+                                   await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts, customKeywords: updatedList }, { headers: { Authorization: `Bearer ${token}` } });
+                                 }}
+                                 className="hover:text-white transition-colors ml-0.5 text-xs font-black"
+                               >
+                                 ×
+                               </button>
+                             </span>
+                           ))}
+                         </div>
+                       </div>
+                     )}
                   </div>
                 </div>
               )}

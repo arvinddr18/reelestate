@@ -57,44 +57,66 @@ router.get('/:room', protect, async (req, res) => {
   }
 });
 
-// ─── 2. SAVE NEW MESSAGE (WITH AUTOMATED MAILMAN) ───
+// ─── 2. SAVE NEW MESSAGE (WITH AUTOMATED MAILMAN & SMART ALERTS) ───
 router.post('/', protect, async (req, res) => {
   try {
     const newMessage = new HoloMessage(req.body);
     const savedMessage = await newMessage.save();
     
-    // 👇 🚨 AUTOMATED SMART EMAIL TRIGGER 👇
+    // 👇 🚨 AUTOMATED SMART EMAIL TRIGGER & SMART SCAN INTERCEPTOR 👇
     try {
-      const User = require('../models/User'); // Adjust path if needed
-      const sendEmail = require('../utils/sendEmail'); // Call the Mailman
+      const User = require('../models/User'); 
+      const sendEmail = require('../utils/sendEmail'); 
       
-      // 1. In HoloMessages, the 'room' string usually looks like "senderId_receiverId". 
-      // We need to figure out who the OTHER person is!
       const ids = req.body.room.split('_');
       const receiverId = ids.find(id => id !== String(req.user._id));
 
       if (receiverId) {
+        // 1. Check Chat Room DB Config Settings for Custom User Triggers
+        let shouldAlert = true;
+        const recipientSettings = await ChatSetting.findOne({ userId: receiverId, room: req.body.room });
+
+        if (recipientSettings) {
+          if (recipientSettings.smartAlerts) {
+            // Read custom precious keywords dynamically from MongoDB
+            const userKeywords = recipientSettings.customKeywords && recipientSettings.customKeywords.length > 0 
+              ? recipientSettings.customKeywords 
+              : ['urgent', 'emergency', 'broken', 'help'];
+
+            // Creates dynamic case-insensitive search rule
+            const customPattern = new RegExp(userKeywords.join('|'), 'i');
+            const matchedPriority = customPattern.test(req.body.text || '');
+
+            if (matchedPriority) {
+              shouldAlert = true;   // 🚨 Alert immediately! Precious keyword found!
+            } else {
+              shouldAlert = false;  // 🌑 Quiet delivery—suppress alert smoothly.
+            }
+          }
+
+          // Final check: If they chose "Always" mute and no precious keyword matched
+          if (recipientSettings.muteOption === 'Always' && !shouldAlert) {
+            shouldAlert = false;
+          }
+        }
+
         // 2. Find the person receiving the message
         const receiver = await User.findById(receiverId);
 
-        // 3. Only send if they exist, want emails, AND are currently offline!
-        if (receiver && receiver.emailAlerts && !receiver.isOnline) {
-          
+        // 3. Only send email alert if system checks pass AND receiver is offline!
+        if (receiver && receiver.emailAlerts && !receiver.isOnline && shouldAlert) {
           await sendEmail({
             email: receiver.email,
             subject: `New Message from ${req.user.username} on Nodexa 💬`,
             html: `
               <div style="font-family: Arial, sans-serif; background-color: #05070A; color: white; padding: 40px; border-radius: 24px; border: 1px solid #1E2532; max-width: 500px; margin: 0 auto;">
                 <h2 style="color: #00F0FF; margin-top: 0; font-weight: 900; letter-spacing: -0.5px;">New Encrypted Node</h2>
-                
                 <p style="color: #D1D5DB; font-size: 15px; line-height: 1.5;">
                   <b>@${req.user.username}</b> sent you a secure message while you were away from the network.
                 </p>
-                
                 <div style="background-color: #151A25; border-left: 4px solid #00F0FF; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 25px 0; font-style: italic; color: #9CA3AF;">
                   "${req.body.text || '📷 Sent an attachment'}"
                 </div>
-                
                 <a href="${process.env.CLIENT_URL || 'https://reelestate-beta.vercel.app'}/messages" 
                    style="display: inline-block; background-color: #00F0FF; color: #05070A; padding: 12px 24px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
                   Reply on Nodexa
@@ -103,11 +125,12 @@ router.post('/', protect, async (req, res) => {
             `
           });
           console.log(`📧 Email notification sent to ${receiver.email}`);
+        } else {
+          console.log("📬 Alert suppressed safely via active user smart configurations.");
         }
       }
     } catch (emailErr) {
-      // If the email fails, the chat still works perfectly!
-      console.error("Failed to send notification email:", emailErr);
+      console.error("Failed to run notification intercept processes:", emailErr);
     }
     // 👆 🚨 ───────────────────────────────── 👆
 
@@ -159,9 +182,10 @@ router.get('/settings/:room', protect, async (req, res) => {
 });
 
 // ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
+// ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
 router.post('/settings/:room', protect, async (req, res) => {
   try {
-    const { muteOption, priorityMode, smartAlerts } = req.body;
+    const { muteOption, priorityMode, smartAlerts, customKeywords } = req.body;
 
     const updatedSettings = await ChatSetting.findOneAndUpdate(
       { userId: req.user._id, room: req.params.room },
@@ -169,7 +193,8 @@ router.post('/settings/:room', protect, async (req, res) => {
         $set: { 
           muteOption, 
           priorityMode, 
-          smartAlerts 
+          smartAlerts,
+          customKeywords // 🌟 Saves the custom keywords array to MongoDB!
         } 
       },
       { new: true, upsert: true } // Creates it automatically if it doesn't exist yet
@@ -180,5 +205,7 @@ router.post('/settings/:room', protect, async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+
 
 module.exports = router;

@@ -799,28 +799,7 @@ const executeSmartDelete = async (action, targetMsg) => {
   return (
   <div className={`flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden transition-all duration-300 ${isAppBlurred ? 'blur-3xl grayscale opacity-20 pointer-events-none' : ''}`}>
     
-    {/* 🔒 LOCK CHAT OVERLAY */}
-    {lockChat && !isUnlocked && (
-      <div className="absolute inset-0 z-[999999] bg-[#05070A]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-8">
-         <div className="w-20 h-20 rounded-full bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-           <span className="text-4xl">🔒</span>
-         </div>
-         <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Chat Locked</h2>
-         <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
-         
-         <div className="flex gap-4 mb-8">
-           {[1, 2, 3, 4].map(i => <div key={i} className="w-4 h-4 rounded-full bg-white/10 border border-white/20"></div>)}
-         </div>
-
-         {/* Mock Unlock Button - Later this maps to your actual PIN/FaceID! */}
-         <button 
-           onClick={() => setIsUnlocked(true)}
-           className="px-8 py-3 rounded-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-[0_0_20px_rgba(0,240,255,0.4)]"
-         >
-           Bypass Lock
-         </button>
-      </div>
-    )}
+    
 
     {/* 🌟 PREMIUM REAL-TIME BACKGROUND 🌟 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center bg-[#05070A]">
@@ -1970,8 +1949,36 @@ const executeSmartDelete = async (action, targetMsg) => {
             </div>
           </div>
         </div>
-     )}
+        )}
+
+      {/* 🔒 LOCK CHAT OVERLAY (AT THE VERY BOTTOM TO COVER EVERYTHING) */}
+      {lockChat && !isUnlocked && (
+        <div className="absolute inset-0 z-[9999999] bg-[#05070A]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-8">
+           <div className="w-20 h-20 rounded-full bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
+             <span className="text-4xl">🔒</span>
+           </div>
+           <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Chat Locked</h2>
+           <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
+           
+           <div className="flex gap-4 mb-8">
+             {[1, 2, 3, 4].map(i => <div key={i} className="w-4 h-4 rounded-full bg-white/10 border border-white/20"></div>)}
+           </div>
+
+           {/* Mock Unlock Button - Later this maps to your actual PIN/FaceID! */}
+           <button 
+             onClick={() => setIsUnlocked(true)}
+             className="px-8 py-3 rounded-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-[0_0_20px_rgba(0,240,255,0.4)]"
+           >
+             Bypass Lock
+           </button>
+        </div>
+      )}
+
     </div>
   );
 }
+
+
+
+   
 

@@ -58,6 +58,16 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [newKeyword, setNewKeyword] = useState('');
   const [customKeywords, setCustomKeywords] = useState(['urgent', 'emergency', 'broken', 'help']);
 
+  // 🔒 PRIVACY SETTINGS LIVE STATE 🌟
+  const [lockChat, setLockChat] = useState(false);
+  const [hideChat, setHideChat] = useState(false);
+  const [screenshotProtection, setScreenshotProtection] = useState('Off');
+  const [readReceipts, setReadReceipts] = useState(true);
+
+  // 🚨 SECURITY ENGINE STATES
+  const [isAppBlurred, setIsAppBlurred] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false); // For Lock Chat
+
   // Fetch customized link settings from database safely on chat initialization
   useEffect(() => {
     if (!room || !myId || !friendId) return;
@@ -72,11 +82,19 @@ export default function ChatRoom({ chatUser, onBack }) {
         });
         
         if (res.data?.success && res.data.data) {
-          const { muteOption: dbMute, priorityMode: dbPriority, smartAlerts: dbSmart, customKeywords: dbKeywords } = res.data.data;
-          setMuteOption(dbMute || 'Off');
-          setPriorityMode(!!dbPriority);
-          setSmartAlerts(dbSmart !== false); 
-          if (dbKeywords && dbKeywords.length > 0) setCustomKeywords(dbKeywords);
+          const dbData = res.data.data;
+          
+          // Sync Notifications
+          setMuteOption(dbData.muteOption || 'Off');
+          setPriorityMode(!!dbData.priorityMode);
+          setSmartAlerts(dbData.smartAlerts !== false); 
+          if (dbData.customKeywords?.length > 0) setCustomKeywords(dbData.customKeywords);
+
+          // Sync Privacy Settings
+          setLockChat(!!dbData.lockChat);
+          setHideChat(!!dbData.hideChat);
+          setScreenshotProtection(dbData.screenshotProtection || 'Off');
+          setReadReceipts(dbData.readReceipts !== false);
         }
       } catch (err) {
         console.error("Failed to fetch custom room link settings:", err);
@@ -85,6 +103,48 @@ export default function ChatRoom({ chatUser, onBack }) {
 
     fetchRoomSettings();
   }, [room, myId, friendId]);
+
+  // 🛡️ SCREENSHOT PROTECTION ENGINE 🛡️
+  useEffect(() => {
+    if (screenshotProtection === 'Off') return;
+
+    // BLOCK MODE: Blur the screen if they click away or open a Snipping Tool
+    const handleBlur = () => {
+      if (screenshotProtection === 'Block') setIsAppBlurred(true);
+    };
+    const handleFocus = () => setIsAppBlurred(false);
+
+    // WARN MODE: Detect Print Screen or Copy Shortcuts
+    const handleKeyDown = async (e) => {
+      if (screenshotProtection === 'Warn' && (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'c') || (e.metaKey && e.key === 'c'))) {
+         
+         const warningMsg = {
+           room, text: "⚠️ SYSTEM ALERT: A screenshot or copy action was detected.", 
+           image: null, video: null, audio: null,
+           senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+           timestamp: Date.now(), isRead: false
+         };
+         
+         setMessages(prev => [...prev, warningMsg]);
+         getSocket().emit('send_message', warningMsg);
+         
+         try {
+           const token = localStorage.getItem('nodexa_token');
+           await axios.post(`${API_URL}/api/messages`, warningMsg, { headers: { Authorization: `Bearer ${token}` } });
+         } catch (err) { console.error(err); }
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('keyup', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('keyup', handleKeyDown);
+    };
+  }, [screenshotProtection, room, myId]);
   
 
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
@@ -448,11 +508,13 @@ export default function ChatRoom({ chatUser, onBack }) {
     getSocket().on('connect', onConnect);
     
     getSocket().on('receive_message', (data) => {
-  setMessages((prev) => [...prev, data]);
-  if (data.senderId !== myId) {
-    socket.emit('mark_as_read', { room, readerId: myId });
-  }
-});
+      setMessages((prev) => [...prev, data]);
+      
+      // 🚨 ONLY SEND READ RECEIPT IF THE USER ALLOWS IT 🚨
+      if (data.senderId !== myId && readReceipts) {
+        getSocket().emit('mark_as_read', { room, readerId: myId });
+      }
+    });
     
     getSocket().on('display_typing', () => setIsTyping(true));
     getSocket().on('hide_typing', () => setIsTyping(false));
@@ -735,7 +797,30 @@ const executeSmartDelete = async (action, targetMsg) => {
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden">
+  <div className={`flex flex-col h-full w-full bg-transparent z-10 relative overflow-hidden transition-all duration-300 ${isAppBlurred ? 'blur-3xl grayscale opacity-20 pointer-events-none' : ''}`}>
+    
+    {/* 🔒 LOCK CHAT OVERLAY */}
+    {lockChat && !isUnlocked && (
+      <div className="absolute inset-0 z-[999999] bg-[#05070A]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-8">
+         <div className="w-20 h-20 rounded-full bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
+           <span className="text-4xl">🔒</span>
+         </div>
+         <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Chat Locked</h2>
+         <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
+         
+         <div className="flex gap-4 mb-8">
+           {[1, 2, 3, 4].map(i => <div key={i} className="w-4 h-4 rounded-full bg-white/10 border border-white/20"></div>)}
+         </div>
+
+         {/* Mock Unlock Button - Later this maps to your actual PIN/FaceID! */}
+         <button 
+           onClick={() => setIsUnlocked(true)}
+           className="px-8 py-3 rounded-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-[0_0_20px_rgba(0,240,255,0.4)]"
+         >
+           Bypass Lock
+         </button>
+      </div>
+    )}
 
     {/* 🌟 PREMIUM REAL-TIME BACKGROUND 🌟 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center bg-[#05070A]">

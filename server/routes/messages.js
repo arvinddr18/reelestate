@@ -182,23 +182,42 @@ router.get('/settings/:room', protect, async (req, res) => {
 });
 
 // ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
-// ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
 router.post('/settings/:room', protect, async (req, res) => {
   try {
-    const { muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, screenshotProtection, readReceipts } = req.body;
-    
-    console.log("Saving for User:", req.user._id, "Room:", req.params.room); // 🚨 DEBUG
+    const { 
+      muteOption, 
+      priorityMode, 
+      smartAlerts, 
+      customKeywords, 
+      lockChat, 
+      hideChat, 
+      screenshotProtection, 
+      readReceipts 
+    } = req.body;
+
+    // 🚨 CHECK YOUR TERMINAL AFTER TOGGLING A SETTING
+    console.log("Saving Settings for Room:", req.params.room, "Data:", req.body);
 
     const updatedSettings = await ChatSetting.findOneAndUpdate(
       { userId: req.user._id, room: req.params.room },
-      { $set: { muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, screenshotProtection, readReceipts } },
+      { 
+        $set: { 
+          muteOption, 
+          priorityMode, 
+          smartAlerts, 
+          customKeywords,
+          lockChat, 
+          hideChat, 
+          screenshotProtection, 
+          readReceipts 
+        } 
+      },
       { new: true, upsert: true }
     );
 
-    console.log("Saved Settings:", updatedSettings); // 🚨 DEBUG
     res.status(200).json({ success: true, data: updatedSettings });
   } catch (error) {
-    console.error("Backend Error:", error);
+    console.error("Save Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

@@ -26,7 +26,11 @@ const chatSettingSchema = new mongoose.Schema({
   customKeywords: {
     type: [String],
     default: ['urgent', 'emergency', 'broken', 'help'] // Standard system defaults
-  }
+  },
+  lockChat: { type: Boolean, default: false },
+  hideChat: { type: Boolean, default: false },
+  screenshotProtection: { type: String, default: 'Off' },
+  readReceipts: { type: Boolean, default: true }
 
 }, { timestamps: true });
 

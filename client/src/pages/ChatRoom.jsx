@@ -63,6 +63,8 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [hideChat, setHideChat] = useState(false);
   const [screenshotProtection, setScreenshotProtection] = useState('Off');
   const [readReceipts, setReadReceipts] = useState(true);
+  const [chatPin, setChatPin] = useState('');
+  const [inputPin, setInputPin] = useState('');
 
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
@@ -94,6 +96,7 @@ export default function ChatRoom({ chatUser, onBack }) {
           setLockChat(!!dbData.lockChat);
           setHideChat(!!dbData.hideChat);
           setScreenshotProtection(dbData.screenshotProtection || 'Off');
+          setChatPin(dbData.chatPin || '');
           setReadReceipts(dbData.readReceipts !== false);
         }
       } catch (err) {
@@ -1734,6 +1737,8 @@ const executeSmartDelete = async (action, targetMsg) => {
                        </div>
                      </div>
 
+
+
                      {/* READ RECEIPTS */}
                      <div 
                        className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
@@ -1758,6 +1763,32 @@ const executeSmartDelete = async (action, targetMsg) => {
                        </div>
                      </div>
                   </div>
+                  {/* 🚨 ADD THIS SET PIN BOX HERE */}
+<div className="p-4 bg-black/30 border-t border-white/5">
+  <p className="text-white font-bold text-sm mb-2">Set Chat PIN</p>
+  <input 
+    type="password" 
+    maxLength="4"
+    placeholder="Enter 4-digit PIN"
+    value={chatPin}
+    className="bg-black/50 border border-white/10 text-white rounded-lg px-3 py-2 w-full mb-2"
+    onChange={async (e) => {
+      const pin = e.target.value;
+      setChatPin(pin);
+      if (pin.length === 4) {
+         try {
+           const token = localStorage.getItem('nodexa_token');
+           // Sending the pin to your database
+           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+             muteOption, priorityMode, smartAlerts, customKeywords,
+             lockChat, hideChat, screenshotProtection, readReceipts, chatPin: pin 
+           }, { headers: { Authorization: `Bearer ${token}` } });
+           setToast("🔒 PIN Updated Successfully!");
+         } catch (err) { console.error("Save failed", err); }
+      }
+    }}
+  />
+</div>
                 </div>
               )}
 
@@ -2028,16 +2059,59 @@ const executeSmartDelete = async (action, targetMsg) => {
            <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
            
            <div className="flex gap-4 mb-8">
-             {[1, 2, 3, 4].map(i => <div key={i} className="w-4 h-4 rounded-full bg-white/10 border border-white/20"></div>)}
-           </div>
+              {[0, 1, 2, 3].map(i => (
+                <div 
+                  key={i} 
+                  className={`w-4 h-4 rounded-full border border-white/20 transition-all duration-300 ${inputPin.length > i ? 'bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]' : 'bg-white/10'}`}
+                ></div>
+              ))}
+            </div>
 
-           {/* Mock Unlock Button - Later this maps to your actual PIN/FaceID! */}
-           <button 
-             onClick={() => setIsUnlocked(true)}
-             className="px-8 py-3 rounded-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-[0_0_20px_rgba(0,240,255,0.4)]"
-           >
-             Bypass Lock
-           </button>
+           {/* 🚨 REPLACED BYPASS BUTTON WITH KEYPAD */}
+           <div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
+             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+               <button 
+                 key={num}
+                 onClick={() => {
+                   if (inputPin.length < 4) {
+                     const newInput = inputPin + num.toString();
+                     setInputPin(newInput);
+                     if (newInput.length === 4 && newInput === chatPin) {
+                        setIsUnlocked(true);
+                     } else if (newInput.length === 4) {
+                        setInputPin(''); // Wrong PIN, reset
+                        setToast("❌ Incorrect PIN");
+                     }
+                   }
+                 }}
+                 className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xl transition-all active:scale-95"
+               >
+                 {num}
+               </button>
+             ))}
+             <div /> {/* Spacer */}
+             <button 
+               onClick={() => {
+                  const newInput = inputPin + '0';
+                  setInputPin(newInput);
+                  if (newInput.length === 4 && newInput === chatPin) {
+                     setIsUnlocked(true);
+                  } else if (newInput.length === 4) {
+                     setInputPin('');
+                     setToast("❌ Incorrect PIN");
+                  }
+               }}
+               className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xl transition-all active:scale-95"
+             >
+               0
+             </button>
+             <button 
+               onClick={() => setInputPin('')} 
+               className="w-16 h-16 rounded-full bg-red-500/20 text-red-500 font-bold text-xs hover:bg-red-500/30 transition-all active:scale-95"
+             >
+               CLEAR
+             </button>
+           </div>
         </div>
       )}
 

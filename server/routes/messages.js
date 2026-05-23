@@ -185,41 +185,22 @@ router.get('/settings/:room', protect, async (req, res) => {
 // ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
 router.post('/settings/:room', protect, async (req, res) => {
   try {
-    // 🚨 Extracting all notification AND privacy/security fields
-    const { 
-      muteOption, 
-      priorityMode, 
-      smartAlerts, 
-      customKeywords,
-      lockChat, 
-      hideChat, 
-      screenshotProtection, 
-      readReceipts 
-    } = req.body;
+    const { muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, screenshotProtection, readReceipts } = req.body;
+    
+    console.log("Saving for User:", req.user._id, "Room:", req.params.room); // 🚨 DEBUG
 
     const updatedSettings = await ChatSetting.findOneAndUpdate(
       { userId: req.user._id, room: req.params.room },
-      { 
-        $set: { 
-          muteOption, 
-          priorityMode, 
-          smartAlerts, 
-          customKeywords,
-          lockChat, 
-          hideChat, 
-          screenshotProtection, 
-          readReceipts // 🚨 Now the database will actually save these!
-        } 
-      },
-      { new: true, upsert: true } // Creates settings if they don't exist
+      { $set: { muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, screenshotProtection, readReceipts } },
+      { new: true, upsert: true }
     );
 
+    console.log("Saved Settings:", updatedSettings); // 🚨 DEBUG
     res.status(200).json({ success: true, data: updatedSettings });
   } catch (error) {
+    console.error("Backend Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
-
-
 
 module.exports = router;

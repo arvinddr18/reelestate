@@ -80,7 +80,7 @@ export default function ChatRoom({ chatUser, onBack }) {
         const res = await axios.get(`${API_URL}/api/messages/settings/${room}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+        console.log("DEBUG - Database Response:", res.data);
         if (res.data?.success && res.data.data) {
           const dbData = res.data.data;
           

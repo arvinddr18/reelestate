@@ -1011,9 +1011,18 @@ const executeSmartDelete = async (action, targetMsg) => {
             </div>
             <span className="text-[10px] font-black tracking-[0.3em] uppercase text-[#00f0ff] animate-pulse drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">Decrypting...</span>
           </div>
+          
+        
+           ) : (
+        /* 🚨 SECURITY WRAPPER STARTS */
+        (lockChat && !isUnlocked) ? (
+          <div className="flex-1 flex flex-col items-center justify-center h-full text-white opacity-50">
+            <span className="text-6xl mb-4">🔒</span>
+            <p className="font-bold tracking-widest uppercase text-xs">Chat Locked</p>
+          </div>
         ) : (
           messages.map((msg, index) => {
-           const isMe = String(msg.senderId) === String(myId);
+            const isMe = String(msg.senderId) === String(myId);
             return (
               <div key={index} id={`msg-${msg._id || msg.timestamp}`} className={`flex w-full group transform transition-all duration-300 p-1 ${isMe ? 'justify-end hover:-translate-x-1' : 'justify-start hover:translate-x-1'}`}>
                 <div className={`max-w-[85%] md:max-w-[65%] flex flex-col relative z-20 ${isMe ? 'items-end' : 'items-start'}`}>
@@ -1104,20 +1113,21 @@ const executeSmartDelete = async (action, targetMsg) => {
       </div>
     ) : (
       // 🌑 UNSEEN: Faded White Ticks
-      <div className="flex -space-x-1.5 opacity-30 px-1">
-        <IoMdCheckmark className="text-white" size={14} />
-        <IoMdCheckmark className="text-white" size={14} />
-      </div>
-    )}
-  </div>
-)}
+                      <div className="flex -space-x-1.5 opacity-30 px-1">
+                        <IoMdCheckmark className="text-white" size={14} />
+                        <IoMdCheckmark className="text-white" size={14} />
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
+            </div>
+          </div>
+        );
+      })
+    ) /* 🚨 SECURITY WRAPPER ENDS HERE */
+  )}
+  <div ref={messagesEndRef} />
       </div>
 
       {/* MEDIA PREVIEW */}

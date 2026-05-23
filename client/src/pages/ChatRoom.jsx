@@ -1658,48 +1658,105 @@ const executeSmartDelete = async (action, targetMsg) => {
                   
                   <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
                      
-                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                     {/* LOCK CHAT */}
+                     <div 
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                       onClick={async () => {
+                         const nextVal = !lockChat;
+                         setLockChat(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords,
+                             lockChat: nextVal, hideChat, screenshotProtection, readReceipts 
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) { console.error("Save failed", err); }
+                       }}
+                     >
                        <div>
                          <p className="text-white font-bold text-sm">Lock Chat</p>
                          <p className="text-gray-500 text-xs">Require Biometric / PIN to open</p>
                        </div>
-                       <div className="w-11 h-6 bg-[#00f0ff]/20 rounded-full relative border border-[#00f0ff]/50 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]">
-                         <div className="w-4 h-4 bg-[#00f0ff] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#00f0ff]"></div>
+                       <div className={`w-11 h-6 rounded-full relative border transition-colors ${lockChat ? 'bg-[#00f0ff]/20 border-[#00f0ff]' : 'bg-white/10 border-white/20'}`}>
+                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all ${lockChat ? 'right-1 bg-[#00f0ff]' : 'left-1 bg-gray-400'}`}></div>
                        </div>
                      </div>
 
-                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                     {/* HIDE CHAT */}
+                     <div 
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                       onClick={async () => {
+                         const nextVal = !hideChat;
+                         setHideChat(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords,
+                             lockChat, hideChat: nextVal, screenshotProtection, readReceipts 
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) { console.error("Save failed", err); }
+                       }}
+                     >
                        <div>
                          <p className="text-white font-bold text-sm">Hide Chat</p>
                          <p className="text-gray-500 text-xs">Move to secret vault</p>
                        </div>
-                       <div className="w-11 h-6 bg-white/10 rounded-full relative border border-white/20 cursor-pointer">
-                         <div className="w-4 h-4 bg-gray-400 rounded-full absolute top-[3px] left-1"></div>
+                       <div className={`w-11 h-6 rounded-full relative border transition-colors ${hideChat ? 'bg-white/20 border-white' : 'bg-white/10 border-white/20'}`}>
+                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all ${hideChat ? 'right-1 bg-white' : 'left-1 bg-gray-400'}`}></div>
                        </div>
                      </div>
 
+                     {/* SCREENSHOT PROTECTION */}
                      <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                        <div>
                          <p className="text-white font-bold text-sm">Screenshot Protection</p>
                          <p className="text-gray-500 text-xs">Block or warn on capture</p>
                        </div>
-                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
-                         <button className="px-3 py-1 rounded-lg text-gray-400 hover:text-white text-[10px] font-bold transition-all">Off</button>
-                         <button className="px-3 py-1 rounded-lg text-gray-400 hover:text-white text-[10px] font-bold transition-all">Warn</button>
-                         <button className="px-3 py-1 rounded-lg bg-red-500/20 border border-red-500 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)] text-[10px] font-bold transition-all">Block</button>
+                       <div className="flex bg-black/50 p-1 rounded-xl border border-white/10 gap-1">
+                         {['Off', 'Warn', 'Block'].map((mode) => (
+                           <button 
+                             key={mode}
+                             onClick={async () => {
+                               setScreenshotProtection(mode);
+                               try {
+                                 const token = localStorage.getItem('nodexa_token');
+                                 await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                                   muteOption, priorityMode, smartAlerts, customKeywords,
+                                   lockChat, hideChat, screenshotProtection: mode, readReceipts 
+                                 }, { headers: { Authorization: `Bearer ${token}` } });
+                               } catch (err) { console.error("Save failed", err); }
+                             }}
+                             className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${screenshotProtection === mode ? 'bg-[#ff3366] text-white' : 'text-gray-400'}`}
+                           >
+                             {mode}
+                           </button>
+                         ))}
                        </div>
                      </div>
 
-                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                     {/* READ RECEIPTS */}
+                     <div 
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                       onClick={async () => {
+                         const nextVal = !readReceipts;
+                         setReadReceipts(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords,
+                             lockChat, hideChat, screenshotProtection, readReceipts: nextVal 
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) { console.error("Save failed", err); }
+                       }}
+                     >
                        <div>
                          <p className="text-white font-bold text-sm">Read Receipts</p>
                          <p className="text-gray-500 text-xs">Show ✓✓ when read</p>
                        </div>
-                       <div className="w-11 h-6 bg-[#bc00dd]/20 rounded-full relative border border-[#bc00dd]/50 cursor-pointer shadow-[0_0_10px_rgba(188,0,221,0.2)]">
-                         <div className="w-4 h-4 bg-[#bc00dd] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#bc00dd]"></div>
+                       <div className={`w-11 h-6 rounded-full relative border transition-colors ${readReceipts ? 'bg-[#bc00dd] border-[#bc00dd]' : 'bg-white/10 border-white/20'}`}>
+                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all ${readReceipts ? 'right-1 bg-white' : 'left-1 bg-gray-400'}`}></div>
                        </div>
                      </div>
-
                   </div>
                 </div>
               )}

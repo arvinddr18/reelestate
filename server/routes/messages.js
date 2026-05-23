@@ -185,7 +185,17 @@ router.get('/settings/:room', protect, async (req, res) => {
 // ─── UPDATE/UPSERT CHAT ROOM SPECIFIC SETTINGS ───────────────────────────
 router.post('/settings/:room', protect, async (req, res) => {
   try {
-    const { muteOption, priorityMode, smartAlerts, customKeywords } = req.body;
+    // 🚨 Extracting all notification AND privacy/security fields
+    const { 
+      muteOption, 
+      priorityMode, 
+      smartAlerts, 
+      customKeywords,
+      lockChat, 
+      hideChat, 
+      screenshotProtection, 
+      readReceipts 
+    } = req.body;
 
     const updatedSettings = await ChatSetting.findOneAndUpdate(
       { userId: req.user._id, room: req.params.room },
@@ -193,11 +203,15 @@ router.post('/settings/:room', protect, async (req, res) => {
         $set: { 
           muteOption, 
           priorityMode, 
-          smartAlerts,
-          customKeywords // 🌟 Saves the custom keywords array to MongoDB!
+          smartAlerts, 
+          customKeywords,
+          lockChat, 
+          hideChat, 
+          screenshotProtection, 
+          readReceipts // 🚨 Now the database will actually save these!
         } 
       },
-      { new: true, upsert: true } // Creates it automatically if it doesn't exist yet
+      { new: true, upsert: true } // Creates settings if they don't exist
     );
 
     res.status(200).json({ success: true, data: updatedSettings });

@@ -2059,13 +2059,13 @@ const executeSmartDelete = async (action, targetMsg) => {
            <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
            
            <div className="flex gap-4 mb-8">
-              {[0, 1, 2, 3].map(i => (
-                <div 
-                  key={i} 
-                  className={`w-4 h-4 rounded-full border border-white/20 transition-all duration-300 ${inputPin.length > i ? 'bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]' : 'bg-white/10'}`}
-                ></div>
-              ))}
-            </div>
+             {[0, 1, 2, 3].map(i => (
+               <div 
+                 key={i} 
+                 className={`w-4 h-4 rounded-full border border-white/20 transition-all duration-300 ${inputPin.length > i ? 'bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]' : 'bg-white/10'}`}
+               ></div>
+             ))}
+           </div>
 
            {/* 🚨 REPLACED BYPASS BUTTON WITH KEYPAD */}
            <div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
@@ -2114,7 +2114,6 @@ const executeSmartDelete = async (action, targetMsg) => {
            </div>
         </div>
       )}
-
     </div>
   );
 }

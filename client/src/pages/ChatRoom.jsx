@@ -65,6 +65,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [readReceipts, setReadReceipts] = useState(true);
   const [chatPin, setChatPin] = useState('');
   const [inputPin, setInputPin] = useState('');
+  const [pinError, setPinError] = useState('');
 
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
@@ -2058,33 +2059,49 @@ const executeSmartDelete = async (action, targetMsg) => {
            <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Chat Locked</h2>
            <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
            
-           <div className="flex gap-4 mb-8">
-             {[0, 1, 2, 3].map(i => (
-               <div 
-                 key={i} 
-                 className={`w-4 h-4 rounded-full border border-white/20 transition-all duration-300 ${inputPin.length > i ? 'bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]' : 'bg-white/10'}`}
-               ></div>
-             ))}
+           <div className="flex flex-col items-center gap-4 mb-8">
+             <div className="flex gap-4">
+               {[0, 1, 2, 3].map(i => (
+                 <div 
+                   key={i} 
+                   className={`w-4 h-4 rounded-full border border-white/20 transition-all duration-300 ${inputPin.length > i ? 'bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]' : 'bg-white/10'}`}
+                 ></div>
+               ))}
+             </div>
+             {pinError && (
+               <p className="text-red-500 text-xs font-bold animate-pulse">{pinError}</p>
+             )}
            </div>
 
            {/* 🚨 REPLACED BYPASS BUTTON WITH KEYPAD */}
            <div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
-             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLEAR', 0].map((num, index) => (
                <button 
-                 key={num}
+                 key={index}
                  onClick={() => {
-                   if (inputPin.length < 4) {
-                     const newInput = inputPin + num.toString();
-                     setInputPin(newInput);
-                     if (newInput.length === 4 && newInput === chatPin) {
-                        setIsUnlocked(true);
-                     } else if (newInput.length === 4) {
-                        setInputPin(''); // Wrong PIN, reset
-                        setToast("❌ Incorrect PIN");
+                   if (num === 'CLEAR') {
+                     setInputPin('');
+                     setPinError('');
+                   } else {
+                     if (inputPin.length < 4) {
+                       setPinError(''); // 🚨 Clear error when typing
+                       const newInput = inputPin + num.toString();
+                       setInputPin(newInput);
+                       
+                       if (newInput.length === 4) {
+                         if (newInput === chatPin) {
+                           setIsUnlocked(true);
+                           setPinError('');
+                         } else {
+                           setInputPin('');
+                           setPinError("Incorrect PIN"); // 🚨 Show error here
+                         }
+                       }
                      }
                    }
                  }}
-                 className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xl transition-all active:scale-95"
+                 className={`w-16 h-16 rounded-full font-bold text-xl transition-all active:scale-95 flex items-center justify-center
+                   ${num === 'CLEAR' ? 'bg-red-500/20 text-red-500 text-xs' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                >
                  {num}
                </button>

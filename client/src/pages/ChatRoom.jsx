@@ -2082,9 +2082,9 @@ const executeSmartDelete = async (action, targetMsg) => {
                    if (num === 'CLEAR') {
                      setInputPin('');
                      setPinError('');
-                   } else {
+                   } else if (num === 0 || typeof num === 'number') {
                      if (inputPin.length < 4) {
-                       setPinError(''); // Clear error when typing
+                       setPinError(''); 
                        const newInput = inputPin + num.toString();
                        setInputPin(newInput);
                        

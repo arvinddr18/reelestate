@@ -93,7 +93,7 @@ export default function ChatRoom({ chatUser, onBack }) {
           if (dbData.customKeywords?.length > 0) setCustomKeywords(dbData.customKeywords);
 
           // Sync Privacy Settings
-          setLockChat(!!dbData.lockChat);
+          setLockChat(!!dbData.lockChat && !!dbData.chatPin && dbData.chatPin.length === 4);
           setHideChat(!!dbData.hideChat);
           setScreenshotProtection(dbData.screenshotProtection || 'Off');
           setChatPin(dbData.chatPin || '');

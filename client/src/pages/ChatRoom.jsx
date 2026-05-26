@@ -2106,35 +2106,12 @@ const executeSmartDelete = async (action, targetMsg) => {
                  {num}
                </button>
              ))}
-             <div /> {/* Spacer */}
-             <button 
-               onClick={() => {
-                  const newInput = inputPin + '0';
-                  setInputPin(newInput);
-                  if (newInput.length === 4 && newInput === chatPin) {
-                     setIsUnlocked(true);
-                  } else if (newInput.length === 4) {
-                     setInputPin('');
-                     setToast("❌ Incorrect PIN");
-                  }
-               }}
-               className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xl transition-all active:scale-95"
-             >
-               0
-             </button>
-             <button 
-               onClick={() => setInputPin('')} 
-               className="w-16 h-16 rounded-full bg-red-500/20 text-red-500 font-bold text-xs hover:bg-red-500/30 transition-all active:scale-95"
-             >
-               CLEAR
-             </button>
            </div>
         </div>
       )}
     </div>
   );
 }
-
 
 
    

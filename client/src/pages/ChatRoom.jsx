@@ -66,6 +66,7 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [chatPin, setChatPin] = useState('');
   const [inputPin, setInputPin] = useState('');
   const [pinError, setPinError] = useState('');
+  const [isOtpMode, setIsOtpMode] = useState(false);
 
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
@@ -2053,18 +2054,31 @@ const executeSmartDelete = async (action, targetMsg) => {
       {/* 🔒 LOCK CHAT OVERLAY (AT THE VERY BOTTOM TO COVER EVERYTHING) */}
       {lockChat && !isUnlocked && (
         <div className="absolute inset-0 z-[9999999] bg-[#05070A]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-8">
-           <div className="w-20 h-20 rounded-full bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-             <span className="text-4xl">🔒</span>
-           </div>
-           <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">Chat Locked</h2>
-           <p className="text-gray-500 text-xs mb-8 text-center max-w-xs">Enter your 4-digit biometric PIN to access this highly encrypted connection.</p>
            
+           <div className={`w-20 h-20 rounded-full border flex items-center justify-center mb-6 transition-all duration-500 ${isOtpMode ? 'bg-[#ffbb00]/10 border-[#ffbb00]/30 shadow-[0_0_30px_rgba(255,187,0,0.2)]' : 'bg-[#00f0ff]/10 border-[#00f0ff]/30 shadow-[0_0_30px_rgba(0,240,255,0.2)]'}`}>
+             <span className="text-4xl">{isOtpMode ? '📩' : '🔒'}</span>
+           </div>
+           
+           <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">
+             {isOtpMode ? "Verify Identity" : "Chat Locked"}
+           </h2>
+           <p className="text-gray-500 text-xs mb-8 text-center max-w-xs transition-opacity duration-300">
+             {isOtpMode 
+               ? "Enter the 4-digit verification code sent to your registered email/mobile." 
+               : "Enter your 4-digit biometric PIN to access this highly encrypted connection."}
+           </p>
+           
+           {/* Dots & Error Message */}
            <div className="flex flex-col items-center gap-4 mb-8">
              <div className="flex gap-4">
                {[0, 1, 2, 3].map(i => (
                  <div 
                    key={i} 
-                   className={`w-4 h-4 rounded-full border border-white/20 transition-all duration-300 ${inputPin.length > i ? 'bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]' : 'bg-white/10'}`}
+                   className={`w-4 h-4 rounded-full border transition-all duration-300 ${
+                     inputPin.length > i 
+                       ? (isOtpMode ? 'bg-[#ffbb00] border-[#ffbb00] shadow-[0_0_10px_#ffbb00]' : 'bg-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_#00f0ff]') 
+                       : 'border-white/20 bg-white/10'
+                   }`}
                  ></div>
                ))}
              </div>
@@ -2073,20 +2087,27 @@ const executeSmartDelete = async (action, targetMsg) => {
              )}
            </div>
 
-           {/* 🚨 REPLACED BYPASS BUTTON WITH KEYPAD */}
+           {/* 🚨 KEYPAD WITH SMART OTP/PIN LOGIC */}
            <div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLEAR', 0, 'FORGOT'].map((num, index) => (
                <button 
                  key={index}
-                 onClick={() => {
+                 onClick={async () => {
                    if (num === 'CLEAR') {
                      setInputPin('');
                      setPinError('');
                    } else if (num === 'FORGOT') {
-                     // 🚨 Trigger your backend SMS/Email API here in the future
-                     setToast("📩 Reset link sent to registered email/mobile.");
-                     setInputPin('');
-                     setPinError('');
+                     // Trigger Verification Mode
+                     setToast("⏳ Sending verification code...");
+                     
+                     // 🚨 Future Backend Step: Replace this setTimeout with an axios.post to send real emails/SMS
+                     setTimeout(() => {
+                       setToast("📩 Code sent! (Use 1234 to test)");
+                       setIsOtpMode(true);
+                       setInputPin('');
+                       setPinError('');
+                     }, 1000);
+                     
                    } else if (num === 0 || typeof num === 'number') {
                      if (inputPin.length < 4) {
                        setPinError(''); 
@@ -2094,12 +2115,37 @@ const executeSmartDelete = async (action, targetMsg) => {
                        setInputPin(newInput);
                        
                        if (newInput.length === 4) {
-                         if (newInput === chatPin) {
-                           setIsUnlocked(true);
-                           setPinError('');
+                         if (isOtpMode) {
+                           // 🌟 VERIFYING OTP
+                           if (newInput === '1234') { // Mock OTP validation
+                             setToast("✅ Verified! Chat Unlocked. Please set a new PIN.");
+                             setIsUnlocked(true);
+                             setPinError('');
+                             setIsOtpMode(false);
+                             
+                             // Security: Auto-remove the broken lock from database so they don't get locked out again
+                             try {
+                               const token = localStorage.getItem('nodexa_token');
+                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                                 muteOption, priorityMode, smartAlerts, customKeywords,
+                                 lockChat: false, hideChat, screenshotProtection, readReceipts, chatPin: '' 
+                               }, { headers: { Authorization: `Bearer ${token}` } });
+                               setLockChat(false);
+                             } catch (err) { console.error(err); }
+                             
+                           } else {
+                             setInputPin('');
+                             setPinError("❌ Invalid Code");
+                           }
                          } else {
-                           setInputPin('');
-                           setPinError("Incorrect PIN");
+                           // 🌟 STANDARD PIN VALIDATION
+                           if (newInput === chatPin) {
+                             setIsUnlocked(true);
+                             setPinError('');
+                           } else {
+                             setInputPin('');
+                             setPinError("Incorrect PIN");
+                           }
                          }
                        }
                      }
@@ -2107,7 +2153,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                  }}
                  className={`w-16 h-16 rounded-full font-bold transition-all active:scale-95 flex items-center justify-center
                    ${num === 'CLEAR' ? 'bg-red-500/20 text-red-500 text-[11px]' : 
-                     num === 'FORGOT' ? 'bg-[#ffbb00]/20 text-[#ffbb00] text-[10px]' : 
+                     num === 'FORGOT' ? 'bg-[#ffbb00]/20 text-[#ffbb00] text-[10px] hover:bg-[#ffbb00]/30' : 
                      'bg-white/10 hover:bg-white/20 text-white text-xl'}`}
                >
                  {num}
@@ -2119,7 +2165,6 @@ const executeSmartDelete = async (action, targetMsg) => {
     </div>
   );
 }
-
 
    
 

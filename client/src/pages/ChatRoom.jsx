@@ -2075,11 +2075,16 @@ const executeSmartDelete = async (action, targetMsg) => {
 
            {/* 🚨 REPLACED BYPASS BUTTON WITH KEYPAD */}
            <div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
-             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLEAR', 0].map((num, index) => (
+             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLEAR', 0, 'FORGOT'].map((num, index) => (
                <button 
                  key={index}
                  onClick={() => {
                    if (num === 'CLEAR') {
+                     setInputPin('');
+                     setPinError('');
+                   } else if (num === 'FORGOT') {
+                     // 🚨 Trigger your backend SMS/Email API here in the future
+                     setToast("📩 Reset link sent to registered email/mobile.");
                      setInputPin('');
                      setPinError('');
                    } else if (num === 0 || typeof num === 'number') {
@@ -2100,8 +2105,10 @@ const executeSmartDelete = async (action, targetMsg) => {
                      }
                    }
                  }}
-                 className={`w-16 h-16 rounded-full font-bold text-xl transition-all active:scale-95 flex items-center justify-center
-                   ${num === 'CLEAR' ? 'bg-red-500/20 text-red-500 text-xs' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                 className={`w-16 h-16 rounded-full font-bold transition-all active:scale-95 flex items-center justify-center
+                   ${num === 'CLEAR' ? 'bg-red-500/20 text-red-500 text-[11px]' : 
+                     num === 'FORGOT' ? 'bg-[#ffbb00]/20 text-[#ffbb00] text-[10px]' : 
+                     'bg-white/10 hover:bg-white/20 text-white text-xl'}`}
                >
                  {num}
                </button>

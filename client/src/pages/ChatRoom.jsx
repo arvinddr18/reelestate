@@ -67,6 +67,8 @@ export default function ChatRoom({ chatUser, onBack }) {
   const [inputPin, setInputPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [isOtpMode, setIsOtpMode] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [newPin, setNewPin] = useState('');
 
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
@@ -2060,12 +2062,12 @@ const executeSmartDelete = async (action, targetMsg) => {
            </div>
            
            <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-2">
-             {isOtpMode ? "Verify Identity" : "Chat Locked"}
+             {isResetMode ? "Set New PIN" : (isOtpMode ? "Verify Identity" : "Chat Locked")}
            </h2>
            <p className="text-gray-500 text-xs mb-8 text-center max-w-xs transition-opacity duration-300">
-             {isOtpMode 
-               ? "Enter the 4-digit verification code sent to your registered email/mobile." 
-               : "Enter your 4-digit biometric PIN to access this highly encrypted connection."}
+             {isResetMode ? "Create your new 4-digit PIN." : 
+              (isOtpMode ? "Enter the 4-digit code sent to your email." : 
+              "Enter your 4-digit biometric PIN to access this highly encrypted connection.")}
            </p>
            
            {/* Dots & Error Message */}

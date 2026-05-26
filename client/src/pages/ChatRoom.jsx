@@ -2099,51 +2099,41 @@ const executeSmartDelete = async (action, targetMsg) => {
                      setInputPin('');
                      setPinError('');
                    } else if (num === 'FORGOT') {
-                     // Trigger Verification Mode
-                     setToast("⏳ Sending verification code...");
-                     
-                     // 🚨 Future Backend Step: Replace this setTimeout with an axios.post to send real emails/SMS
-                     setTimeout(() => {
-                       setToast("📩 Code sent! (Use 1234 to test)");
+                     setToast("📩 Sending code...");
+                     try {
+                       await axios.post(`${API_URL}/api/messages/send-otp`, { email: currentUser.email });
                        setIsOtpMode(true);
+                       setPinError("Enter 4-digit OTP");
                        setInputPin('');
-                       setPinError('');
-                     }, 1000);
-                     
+                     } catch (err) { setToast("❌ Failed to send code."); }
                    } else if (num === 0 || typeof num === 'number') {
                      if (inputPin.length < 4) {
                        setPinError(''); 
-                       const newInput = inputPin + num.toString();
-                       setInputPin(newInput);
-                       
-                       if (newInput.length === 4) {
+                       const val = inputPin + num.toString();
+                       setInputPin(val);
+
+                       if (val.length === 4) {
                          if (isOtpMode) {
-                           // 🌟 VERIFYING OTP
-                           if (newInput === '1234') { // Mock OTP validation
-                             setToast("✅ Verified! Chat Unlocked. Please set a new PIN.");
-                             setIsUnlocked(true);
-                             setPinError('');
+                           try {
+                             await axios.post(`${API_URL}/api/messages/verify-otp`, { email: currentUser.email, otp: val });
                              setIsOtpMode(false);
-                             
-                             // Security: Auto-remove the broken lock from database so they don't get locked out again
-                             try {
-                               const token = localStorage.getItem('nodexa_token');
-                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
-                                 muteOption, priorityMode, smartAlerts, customKeywords,
-                                 lockChat: false, hideChat, screenshotProtection, readReceipts, chatPin: '' 
-                               }, { headers: { Authorization: `Bearer ${token}` } });
-                               setLockChat(false);
-                             } catch (err) { console.error(err); }
-                             
-                           } else {
+                             setIsResetMode(true);
+                             setPinError("Enter New PIN");
                              setInputPin('');
-                             setPinError("❌ Invalid Code");
+                           } catch (err) {
+                             setPinError("❌ Invalid OTP");
+                             setInputPin('');
                            }
+                         } else if (isResetMode) {
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                              chatPin: val 
+                           }, { headers: { Authorization: `Bearer ${localStorage.getItem('nodexa_token')}` } });
+                           setToast("✅ PIN Reset!");
+                           setIsResetMode(false);
+                           setIsUnlocked(true);
                          } else {
-                           // 🌟 STANDARD PIN VALIDATION
-                           if (newInput === chatPin) {
+                           if (val === chatPin) {
                              setIsUnlocked(true);
-                             setPinError('');
                            } else {
                              setInputPin('');
                              setPinError("Incorrect PIN");

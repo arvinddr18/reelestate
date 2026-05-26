@@ -2089,68 +2089,73 @@ const executeSmartDelete = async (action, targetMsg) => {
              )}
            </div>
 
-           {/* 🚨 KEYPAD WITH SMART OTP/PIN LOGIC */}
-           <div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
-             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLEAR', 0, 'FORGOT'].map((num, index) => (
-               <button 
-                 key={index}
-                 onClick={async () => {
-                   if (num === 'CLEAR') {
-                     setInputPin('');
-                     setPinError('');
-                   } else if (num === 'FORGOT') {
-                     setToast("📩 Sending code...");
-                     try {
-                       await axios.post(`${API_URL}/api/messages/send-otp`, { email: currentUser.email });
-                       setIsOtpMode(true);
-                       setPinError("Enter 4-digit OTP");
-                       setInputPin('');
-                     } catch (err) { setToast("❌ Failed to send code."); }
-                   } else if (num === 0 || typeof num === 'number') {
-                     if (inputPin.length < 4) {
-                       setPinError(''); 
-                       const val = inputPin + num.toString();
-                       setInputPin(val);
-
-                       if (val.length === 4) {
-                         if (isOtpMode) {
-                           try {
-                             await axios.post(`${API_URL}/api/messages/verify-otp`, { email: currentUser.email, otp: val });
-                             setIsOtpMode(false);
-                             setIsResetMode(true);
-                             setPinError("Enter New PIN");
-                             setInputPin('');
-                           } catch (err) {
-                             setPinError("❌ Invalid OTP");
-                             setInputPin('');
-                           }
-                         } else if (isResetMode) {
-                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
-                              chatPin: val 
-                           }, { headers: { Authorization: `Bearer ${localStorage.getItem('nodexa_token')}` } });
-                           setToast("✅ PIN Reset!");
-                           setIsResetMode(false);
-                           setIsUnlocked(true);
-                         } else {
-                           if (val === chatPin) {
-                             setIsUnlocked(true);
-                           } else {
-                             setInputPin('');
-                             setPinError("Incorrect PIN");
-                           }
-                         }
-                       }
-                     }
-                   }
-                 }}
-                 className={`w-16 h-16 rounded-full font-bold transition-all active:scale-95 flex items-center justify-center
-                   ${num === 'CLEAR' ? 'bg-red-500/20 text-red-500 text-[11px]' : 
-                     num === 'FORGOT' ? 'bg-[#ffbb00]/20 text-[#ffbb00] text-[10px] hover:bg-[#ffbb00]/30' : 
-                     'bg-white/10 hover:bg-white/20 text-white text-xl'}`}
-               >
-                 {num}
-               </button>
-             ))}
+           {/* 🚨 REPLACED BYPASS BUTTON WITH KEYPAD */}
+<div className="grid grid-cols-3 gap-4 max-w-[250px] mx-auto mt-4">
+  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLEAR', 0, 'FORGOT'].map((num, index) => (
+    <button 
+      key={index}
+      type="button" // 🚨 Added type="button" to prevent form submission
+      onClick={() => {
+        console.log("Button clicked:", num); // 🚨 Check your browser console!
+        
+        if (num === 'CLEAR') {
+          setInputPin('');
+          setPinError('');
+          setIsOtpMode(false); // Reset mode
+        } else if (num === 'FORGOT') {
+          // 🚨 FORGOT LOGIC
+          setToast("📩 Sending code...");
+          axios.post(`${API_URL}/api/messages/send-otp`, { email: currentUser?.email })
+            .then(() => {
+              setToast("📩 Code sent!");
+              setIsOtpMode(true);
+              setPinError("Enter 4-digit OTP");
+              setInputPin('');
+            })
+            .catch(err => {
+              console.error(err);
+              setToast("❌ Failed to send code.");
+            });
+        } else {
+          // NUMBER LOGIC
+          if (inputPin.length < 4) {
+            const val = inputPin + num.toString();
+            setInputPin(val);
+            if (val.length === 4) {
+              if (isOtpMode) {
+                 // Verify OTP logic...
+                 axios.post(`${API_URL}/api/messages/verify-otp`, { email: currentUser?.email, otp: val })
+                  .then(() => {
+                    setIsOtpMode(false);
+                    setIsResetMode(true);
+                    setPinError("Enter New PIN");
+                    setInputPin('');
+                  })
+                  .catch(() => { setPinError("❌ Invalid OTP"); setInputPin(''); });
+              } else if (isResetMode) {
+                 // Set New PIN logic...
+                 axios.post(`${API_URL}/api/messages/settings/${room}`, { chatPin: val }, { headers: { Authorization: `Bearer ${localStorage.getItem('nodexa_token')}` } })
+                  .then(() => {
+                    setToast("✅ PIN Reset!");
+                    setIsResetMode(false);
+                    setIsUnlocked(true);
+                  });
+              } else {
+                if (val === chatPin) setIsUnlocked(true);
+                else { setInputPin(''); setPinError("Incorrect PIN"); }
+              }
+            }
+          }
+        }
+      }}
+      className={`w-16 h-16 rounded-full font-bold transition-all active:scale-95 flex items-center justify-center
+        ${num === 'CLEAR' ? 'bg-red-500/20 text-red-500 text-[11px]' : 
+          num === 'FORGOT' ? 'bg-[#ffbb00]/20 text-[#ffbb00] text-[10px] hover:bg-[#ffbb00]/30' : 
+          'bg-white/10 hover:bg-white/20 text-white text-xl'}`}
+    >
+      {num}
+    </button>
+  ))}
            </div>
         </div>
       )}

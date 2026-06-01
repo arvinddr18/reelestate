@@ -5,7 +5,7 @@ const sendEmail = async (options) => {
     const data = {
       sender: { 
         name: "Nodexa Security", 
-        email: "ad2b94001@smtp-brevo.com" // This must match your Brevo login email exactly
+        email: "arvindarvinddr@gmail.com" // This must match your Brevo login email exactly
       },
       to: [{ email: options.email }],
       subject: options.subject,

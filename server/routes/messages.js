@@ -229,7 +229,7 @@ router.post('/settings/:room', protect, async (req, res) => {
 // ─── 5. OTP FORGOT PIN FLOW ──────────────────────────────────────────
 
 // Route: Send OTP to Email
-router.post('/send-otp', async (req, res) => {
+router.post('/send-otp', protect, async (req, res) => {
   const { email } = req.body;
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
   
@@ -252,7 +252,7 @@ router.post('/send-otp', async (req, res) => {
 });
 
 // Route: Verify OTP
-router.post('/verify-otp', async (req, res) => {
+router.post('/verify-otp', protect, async (req, res) => {
   const { email, otp } = req.body;
   
   try {

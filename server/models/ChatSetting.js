@@ -31,7 +31,7 @@ const chatSettingSchema = new mongoose.Schema({
   hideChat: { type: Boolean, default: false },
   screenshotProtection: { type: String, default: 'Off' },
   readReceipts: { type: Boolean, default: true },
-  chatPin: { type: String, default: null }
+  chatPin: { type: String, default: '' },
 
 }, { timestamps: true });
 

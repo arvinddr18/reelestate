@@ -2105,7 +2105,10 @@ const executeSmartDelete = async (action, targetMsg) => {
         } else if (num === 'FORGOT') {
           // 🚨 FORGOT LOGIC
           setToast("📩 Sending code...");
-          axios.post(`${API_URL}/api/messages/send-otp`, { email: currentUser?.email })
+          axios.post(`${API_URL}/api/messages/send-otp`, 
+  { email: currentUser?.email },
+  { headers: { Authorization: `Bearer ${localStorage.getItem('nodexa_token')}` } }
+)
             .then(() => {
               setToast("📩 Code sent!");
               setIsOtpMode(true);
@@ -2124,7 +2127,10 @@ const executeSmartDelete = async (action, targetMsg) => {
             if (val.length === 4) {
               if (isOtpMode) {
                  // Verify OTP logic...
-                 axios.post(`${API_URL}/api/messages/verify-otp`, { email: currentUser?.email, otp: val })
+                 axios.post(`${API_URL}/api/messages/verify-otp`, 
+  { email: currentUser?.email, otp: val },
+  { headers: { Authorization: `Bearer ${localStorage.getItem('nodexa_token')}` } }
+)
                   .then(() => {
                     setIsOtpMode(false);
                     setIsResetMode(true);

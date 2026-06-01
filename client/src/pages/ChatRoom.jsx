@@ -2103,22 +2103,35 @@ const executeSmartDelete = async (action, targetMsg) => {
           setPinError('');
           setIsOtpMode(false); // Reset mode
         } else if (num === 'FORGOT') {
-          // 🚨 FORGOT LOGIC
-          setToast("📩 Sending code...");
-          axios.post(`${API_URL}/api/messages/send-otp`, 
-  { email: currentUser?.email },
-  { headers: { Authorization: `Bearer ${localStorage.getItem('nodexa_token')}` } }
-)
-            .then(() => {
-              setToast("📩 Code sent!");
-              setIsOtpMode(true);
-              setPinError("Enter 4-digit OTP");
-              setInputPin('');
-            })
-            .catch(err => {
-              console.error(err);
-              setToast("❌ Failed to send code.");
-            });
+  const userEmail = currentUser?.email;
+  console.log("Sending OTP to email:", userEmail);
+  
+  if (!userEmail) {
+    setPinError("❌ No email found for your account");
+    return;
+  }
+
+  setToast("📩 Sending code to your email...");
+  const token = localStorage.getItem('nodexa_token');
+  
+  axios.post(
+    `${API_URL}/api/messages/send-otp`,
+    { email: userEmail },
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  .then((res) => {
+    console.log("OTP sent successfully:", res.data);
+    setToast("✅ Code sent! Check your email.");
+    setTimeout(() => setToast(null), 3000);
+    setIsOtpMode(true);
+    setPinError("Enter the 4-digit code from your email");
+    setInputPin('');
+  })
+  .catch((err) => {
+    console.error("OTP send failed:", err.response?.data || err.message);
+    setPinError("❌ Failed: " + (err.response?.data?.message || err.message));
+    setToast(null);
+  });
         } else {
           // NUMBER LOGIC
           if (inputPin.length < 4) {

@@ -38,6 +38,47 @@ const holoMessageSchema = new mongoose.Schema({
 
 const HoloMessage = mongoose.models.HoloMessage || mongoose.model('HoloMessage', holoMessageSchema);
 
+// Route: Send OTP to Email
+router.post('/send-otp', protect, async (req, res) => {
+  const { email } = req.body;
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  
+  try {
+    // 1. Save OTP to Database
+    await OTP.create({ email, otp });
+
+    // 2. Use your existing sendEmail utility
+    await sendEmail({
+      email: email,
+      subject: "Your Chat Reset Code",
+      html: `<p>Your 4-digit verification code is: <strong>${otp}</strong>. It expires in 5 minutes.</p>`
+    });
+
+    res.status(200).json({ success: true, message: "OTP sent" });
+  } catch (error) {
+    console.error("Email error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Route: Verify OTP
+router.post('/verify-otp', protect, async (req, res) => {
+  const { email, otp } = req.body;
+  
+  try {
+    const entry = await OTP.findOne({ email, otp });
+    
+    if (entry) {
+      await OTP.deleteMany({ email }); // Remove OTP after successful use
+      res.status(200).json({ success: true });
+    } else {
+      res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ─── 1. FETCH CHAT HISTORY (WITH PAGINATION) ───
 router.get('/:room', protect, async (req, res) => {
   try {
@@ -228,46 +269,6 @@ router.post('/settings/:room', protect, async (req, res) => {
 
 // ─── 5. OTP FORGOT PIN FLOW ──────────────────────────────────────────
 
-// Route: Send OTP to Email
-router.post('/send-otp', protect, async (req, res) => {
-  const { email } = req.body;
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
-  
-  try {
-    // 1. Save OTP to Database
-    await OTP.create({ email, otp });
-
-    // 2. Use your existing sendEmail utility
-    await sendEmail({
-      email: email,
-      subject: "Your Chat Reset Code",
-      html: `<p>Your 4-digit verification code is: <strong>${otp}</strong>. It expires in 5 minutes.</p>`
-    });
-
-    res.status(200).json({ success: true, message: "OTP sent" });
-  } catch (error) {
-    console.error("Email error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Route: Verify OTP
-router.post('/verify-otp', protect, async (req, res) => {
-  const { email, otp } = req.body;
-  
-  try {
-    const entry = await OTP.findOne({ email, otp });
-    
-    if (entry) {
-      await OTP.deleteMany({ email }); // Remove OTP after successful use
-      res.status(200).json({ success: true });
-    } else {
-      res.status(400).json({ success: false, message: "Invalid OTP" });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
 
 
 module.exports = router;

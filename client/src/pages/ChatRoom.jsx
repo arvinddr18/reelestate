@@ -547,6 +547,63 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
     fetchChatHistory();
   }, [room, myId, friendId, page]); // <--- 🚨 'page' IS HERE! Now it fetches when you scroll!
 
+  // ==========================================
+  // 🌟 1.5 UNIVERSAL AUTO-SAVE ENGINE (Live & Missed) 🌟
+  // ==========================================
+  useEffect(() => {
+    // Only run if Save to Gallery is ON and we have messages to look at
+    if (!saveToGallery || messages.length === 0) return;
+
+    // 1. Get our local memory bank of already downloaded images
+    const downloadedMemory = JSON.parse(localStorage.getItem('nodexa_saved_media') || '[]');
+    let newlySaved = false;
+
+    // 2. Scan ALL messages currently on screen
+    messages.forEach((msg) => {
+      const msgId = msg._id || msg.timestamp; // Get a unique ID for the message
+      
+      // If it's from the other person, it's an image, and it's NOT in our memory bank yet
+      if (msg.senderId !== myId && msg.image && !downloadedMemory.includes(msgId)) {
+        
+        try {
+          // Download it!
+          fetch(msg.image)
+            .then(res => res.blob())
+            .then(blob => {
+              const blobUrl = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.style.display = 'none';
+              link.href = blobUrl;
+              link.download = `Nodexa_Secure_${Date.now()}.jpg`;
+              
+              document.body.appendChild(link);
+              link.click();
+              
+              setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+              }, 100);
+            })
+            .catch(err => console.error("Blob conversion failed:", err));
+            
+          // Add it to the memory bank so we never download it again!
+          downloadedMemory.push(msgId);
+          newlySaved = true;
+        } catch (err) {
+          console.error("Catch-up Auto-download failed", err);
+        }
+      }
+    });
+
+    // 3. If we grabbed new things, update the memory bank and show a single toast notification
+    if (newlySaved) {
+      localStorage.setItem('nodexa_saved_media', JSON.stringify(downloadedMemory));
+      setToast("📥 New images auto-saved to device!");
+      setTimeout(() => setToast(null), 3000);
+    }
+  }, [messages, saveToGallery, myId]); 
+  // Runs every time 'messages' updates (when history loads OR when a live message arrives)
+
  // ==========================================
   // 🌟 2. LIVE SOCKET CONNECTIONS 🌟
   // ==========================================
@@ -570,37 +627,6 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
       // 🚨 ONLY SEND READ RECEIPT IF THE USER ALLOWS IT 🚨
       if (data.senderId !== myId && readReceipts) {
         getSocket().emit('mark_as_read', { room, readerId: myId });
-      }
-
-      // 🚨 NEW: AUTO-SAVE TO GALLERY ENGINE (UPGRADED BLOB METHOD) 🚨
-      if (data.senderId !== myId && data.image && saveToGallery) {
-        try {
-          // Fetch the image data and convert it to a Blob to bypass browser limits
-          fetch(data.image)
-            .then(res => res.blob())
-            .then(blob => {
-              const blobUrl = window.URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.style.display = 'none';
-              link.href = blobUrl;
-              link.download = `Nodexa_Secure_${Date.now()}.jpg`;
-              
-              document.body.appendChild(link);
-              link.click();
-              
-              // Clean up the memory safely
-              setTimeout(() => {
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-              }, 100);
-              
-              setToast("📥 Image auto-saved to device!");
-              setTimeout(() => setToast(null), 3000);
-            })
-            .catch(err => console.error("Blob conversion failed:", err));
-        } catch (err) {
-          console.error("Auto-download failed", err);
-        }
       }
     });
     

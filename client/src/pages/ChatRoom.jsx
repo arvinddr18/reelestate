@@ -548,7 +548,10 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
    getSocket().emit('join_room', room);
     
     // 🚨 FIX: Tell the server we read the chat ONCE when we first open it!
-    getSocket().emit('mark_as_read', { room, readerId: myId });
+    // 🚨 FIX: Only tell the server we read the chat if Read Receipts are ON!
+    if (readReceipts) {
+      getSocket().emit('mark_as_read', { room, readerId: myId });
+    }
     
     const onConnect = () => getSocket().emit('join_room', room);
     getSocket().on('connect', onConnect);
@@ -1158,7 +1161,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                    {/* 🌟 PREMIUM READ RECEIPTS 🌟 */}
                    {isMe && (
   <div className="ml-0.5 flex items-center transition-all duration-500">
-    {msg.isRead ? (
+    {(msg.isRead && readReceipts) ? (
       // ✅ SEEN: Cyan Glowing Ticks
       <div className="flex items-center gap-1 bg-gradient-to-r from-[#00f0ff]/10 to-transparent border border-[#00f0ff]/30 pl-1.5 pr-2 py-[2px] rounded-full shadow-[0_0_10px_rgba(0,240,255,0.2)]">
         <div className="flex -space-x-1.5">
@@ -1853,16 +1856,22 @@ const executeSmartDelete = async (action, targetMsg) => {
                      <div 
                        className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
                        onClick={async () => {
-                         const nextVal = !readReceipts;
-                         setReadReceipts(nextVal);
-                         try {
-                           const token = localStorage.getItem('nodexa_token');
-                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
-                             muteOption, priorityMode, smartAlerts, customKeywords,
-                             lockChat, hideChat, screenshotProtection, readReceipts: nextVal 
-                           }, { headers: { Authorization: `Bearer ${token}` } });
-                         } catch (err) { console.error("Save failed", err); }
-                       }}
+                               const nextVal = !readReceipts;
+                               setReadReceipts(nextVal);
+                               
+                               // 🚨 REAL-TIME SYNC: If turning ON, instantly mark current chat as read!
+                               if (nextVal) {
+                                 getSocket().emit('mark_as_read', { room, readerId: myId });
+                               }
+                               
+                               try {
+                                 const token = localStorage.getItem('nodexa_token');
+                                 await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                                   muteOption, priorityMode, smartAlerts, customKeywords,
+                                   lockChat, hideChat, vaultKey, screenshotProtection, readReceipts: nextVal 
+                                 }, { headers: { Authorization: `Bearer ${token}` } });
+                               } catch (err) { console.error("Save failed", err); }
+                             }}
                      >
                        <div>
                          <p className="text-white font-bold text-sm">Read Receipts</p>

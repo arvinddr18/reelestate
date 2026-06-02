@@ -71,6 +71,11 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   const [isResetMode, setIsResetMode] = useState(false);
   const [newPin, setNewPin] = useState('');
 
+  // 📁 MEDIA SETTINGS LIVE STATE 🌟
+  const [autoDownload, setAutoDownload] = useState('Wi-Fi Only');
+  const [imageQuality, setImageQuality] = useState('Standard');
+  const [saveToGallery, setSaveToGallery] = useState(false);
+
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false); // For Lock Chat
@@ -104,6 +109,9 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
           setScreenshotProtection(dbData.screenshotProtection || 'Off');
           setChatPin(dbData.chatPin || '');
           setReadReceipts(dbData.readReceipts !== false);
+          setAutoDownload(dbData.autoDownload || 'Wi-Fi Only');
+          setImageQuality(dbData.imageQuality || 'Standard');
+          setSaveToGallery(!!dbData.saveToGallery);
         }
       } catch (err) {
         console.error("Failed to fetch custom room link settings:", err);
@@ -2065,36 +2073,92 @@ const executeSmartDelete = async (action, targetMsg) => {
                   <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-[#00ff9d]">📁</span> Media & Files</h3>
                   
                   <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
+                     
+                     {/* AUTO-DOWNLOAD */}
                      <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                        <div>
                          <p className="text-white font-bold text-sm">Auto-Download Media</p>
                          <p className="text-gray-500 text-xs">Save data usage</p>
                        </div>
-                       <select className="bg-black/50 border border-white/10 text-white text-xs rounded-lg px-3 py-1.5 outline-none">
-                          <option>Wi-Fi Only</option>
-                          <option>Wi-Fi + Cellular</option>
-                          <option>Never</option>
+                       <select 
+                         value={autoDownload}
+                         onChange={async (e) => {
+                           const val = e.target.value;
+                           setAutoDownload(val);
+                           try {
+                             const token = localStorage.getItem('nodexa_token');
+                             await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                               muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin,
+                               autoDownload: val, imageQuality, saveToGallery // 🚨 Included new fields
+                             }, { headers: { Authorization: `Bearer ${token}` } });
+                           } catch (err) { console.error("Save failed", err); }
+                         }}
+                         className="bg-[#151A25] border border-white/10 text-white font-bold text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer hover:border-gray-500 transition-colors"
+                       >
+                          <option value="Wi-Fi Only">Wi-Fi Only</option>
+                          <option value="Wi-Fi + Cellular">Wi-Fi + Cellular</option>
+                          <option value="Never">Never</option>
                        </select>
                      </div>
+
+                     {/* IMAGE QUALITY */}
                      <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                        <div>
                          <p className="text-white font-bold text-sm">Image Quality</p>
                          <p className="text-gray-500 text-xs">Upload resolution</p>
                        </div>
                        <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
-                         <button className="px-3 py-1 rounded-lg text-gray-400 hover:text-white text-[10px] font-bold transition-all">Standard</button>
-                         <button className="px-3 py-1 rounded-lg bg-[#00ff9d]/20 border border-[#00ff9d] text-[#00ff9d] shadow-[0_0_10px_rgba(0,255,157,0.3)] text-[10px] font-bold transition-all">HD Quality</button>
+                         <button 
+                           onClick={async () => {
+                             setImageQuality('Standard');
+                             try {
+                               const token = localStorage.getItem('nodexa_token');
+                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality: 'Standard', saveToGallery }, { headers: { Authorization: `Bearer ${token}` } });
+                             } catch (err) {}
+                           }}
+                           className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${imageQuality === 'Standard' ? 'bg-[#00ff9d]/20 border border-[#00ff9d] text-[#00ff9d] shadow-[0_0_10px_rgba(0,255,157,0.3)]' : 'text-gray-400 hover:text-white border border-transparent'}`}
+                         >
+                           Standard
+                         </button>
+                         <button 
+                           onClick={async () => {
+                             setImageQuality('HD Quality');
+                             try {
+                               const token = localStorage.getItem('nodexa_token');
+                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality: 'HD Quality', saveToGallery }, { headers: { Authorization: `Bearer ${token}` } });
+                             } catch (err) {}
+                           }}
+                           className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${imageQuality === 'HD Quality' ? 'bg-[#00ff9d]/20 border border-[#00ff9d] text-[#00ff9d] shadow-[0_0_10px_rgba(0,255,157,0.3)]' : 'text-gray-400 hover:text-white border border-transparent'}`}
+                         >
+                           HD Quality
+                         </button>
                        </div>
                      </div>
-                     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+
+                     {/* SAVE TO GALLERY */}
+                     <div 
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                       onClick={async () => {
+                         const nextVal = !saveToGallery;
+                         setSaveToGallery(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin,
+                             autoDownload, imageQuality, saveToGallery: nextVal
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) {}
+                       }}
+                     >
                        <div>
                          <p className="text-white font-bold text-sm">Save to Gallery</p>
                          <p className="text-gray-500 text-xs">Auto-save received photos</p>
                        </div>
-                       <div className="w-11 h-6 bg-[#00ff9d]/20 rounded-full relative border border-[#00ff9d]/50 cursor-pointer shadow-[0_0_10px_rgba(0,255,157,0.2)]">
-                         <div className="w-4 h-4 bg-[#00ff9d] rounded-full absolute top-[3px] right-1 shadow-[0_0_10px_#00ff9d]"></div>
+                       <div className={`w-11 h-6 rounded-full relative transition-colors duration-300 border ${saveToGallery ? 'bg-[#00ff9d] border-[#00ff9d] shadow-[0_0_10px_rgba(0,255,157,0.4)]' : 'bg-white/10 border-white/20'}`}>
+                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all duration-300 shadow-sm ${saveToGallery ? 'bg-black right-1' : 'bg-gray-400 left-1'}`}></div>
                        </div>
                      </div>
+
                   </div>
                 </div>
               )}

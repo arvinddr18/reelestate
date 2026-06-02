@@ -33,6 +33,9 @@ const chatSettingSchema = new mongoose.Schema({
   screenshotProtection: { type: String, default: 'Off' },
   readReceipts: { type: Boolean, default: true },
   chatPin: { type: String, default: '' },
+  autoDownload: { type: String, enum: ['Wi-Fi Only', 'Wi-Fi + Cellular', 'Never'], default: 'Wi-Fi Only' },
+  imageQuality: { type: String, enum: ['Standard', 'HD Quality'], default: 'Standard' },
+  saveToGallery: { type: Boolean, default: false }
 
 }, { timestamps: true });
 

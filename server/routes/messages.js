@@ -237,7 +237,8 @@ router.post('/settings/:room', protect, async (req, res) => {
       screenshotProtection, 
       readReceipts,
       chatPin,
-      vaultKey
+      vaultKey,
+      autoDownload, imageQuality, saveToGallery
     } = req.body;
 
     // 🚨 CHECK YOUR TERMINAL AFTER TOGGLING A SETTING
@@ -256,7 +257,8 @@ router.post('/settings/:room', protect, async (req, res) => {
           screenshotProtection, 
           readReceipts,
           chatPin,
-          vaultKey
+          vaultKey,
+          autoDownload, imageQuality, saveToGallery
         } 
       },
       { new: true, upsert: true }

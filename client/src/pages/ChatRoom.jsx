@@ -572,20 +572,32 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
         getSocket().emit('mark_as_read', { room, readerId: myId });
       }
 
-      // 🚨 NEW: AUTO-SAVE TO GALLERY ENGINE 🚨
-      // If it's not our own message, it has an image, and Save to Gallery is ON
+      // 🚨 NEW: AUTO-SAVE TO GALLERY ENGINE (UPGRADED BLOB METHOD) 🚨
       if (data.senderId !== myId && data.image && saveToGallery) {
         try {
-          // Create an invisible link to force the browser to download the file
-          const link = document.createElement('a');
-          link.href = data.image;
-          link.download = `Nodexa_Secure_Image_${Date.now()}.jpg`; // The file name
-          document.body.appendChild(link);
-          link.click(); // Trigger the download
-          document.body.removeChild(link); // Clean up
-          
-          setToast("📥 Image auto-saved to device!");
-          setTimeout(() => setToast(null), 3000);
+          // Fetch the image data and convert it to a Blob to bypass browser limits
+          fetch(data.image)
+            .then(res => res.blob())
+            .then(blob => {
+              const blobUrl = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.style.display = 'none';
+              link.href = blobUrl;
+              link.download = `Nodexa_Secure_${Date.now()}.jpg`;
+              
+              document.body.appendChild(link);
+              link.click();
+              
+              // Clean up the memory safely
+              setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+              }, 100);
+              
+              setToast("📥 Image auto-saved to device!");
+              setTimeout(() => setToast(null), 3000);
+            })
+            .catch(err => console.error("Blob conversion failed:", err));
         } catch (err) {
           console.error("Auto-download failed", err);
         }

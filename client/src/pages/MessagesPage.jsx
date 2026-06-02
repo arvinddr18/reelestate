@@ -133,6 +133,19 @@ export default function Messages() {
 
         <div className="flex-1 overflow-y-auto no-scrollbar pb-20 md:pb-4 px-4 pt-2 relative z-10">
           
+          {/* 🚨 EXIT VAULT INDICATOR 🚨 */}
+          {showHiddenVault && (
+            <div className="flex justify-between items-center bg-[#00F0FF]/10 border border-[#00F0FF]/30 p-3 rounded-xl mb-4 text-xs text-[#00F0FF] backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+              <span className="font-black tracking-widest uppercase">🔒 Secure Vault Active</span>
+              <button 
+                onClick={() => setShowHiddenVault(false)}
+                className="hover:text-white font-bold tracking-wider cursor-pointer transition-colors"
+              >
+                CLOSE VAULT
+              </button>
+            </div>
+          )}
+          
           {/* 🌟 RESTORED: ACTIVE RADAR 🌟 */}
           {!loading && dbUsers.length > 0 && (
             <div className="mb-8">

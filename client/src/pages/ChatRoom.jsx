@@ -1691,65 +1691,80 @@ const executeSmartDelete = async (action, targetMsg) => {
                        </div>
                      </div>
 
-                     {/* HIDE CHAT */}
-                     <div 
-                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
-                       onClick={async () => {
-                         const nextVal = !hideChat;
-                         setHideChat(nextVal);
-                         try {
-                           const token = localStorage.getItem('nodexa_token');
-                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
-                             muteOption, priorityMode, smartAlerts, customKeywords,
-                             lockChat, hideChat: nextVal, screenshotProtection, readReceipts 
-                           }, { headers: { Authorization: `Bearer ${token}` } });
-                           
-                           // 🚨 TELL THE SIDEBAR TO UPDATE INSTANTLY!
-                           if (typeof onChatUpdate === 'function') {
-                             onChatUpdate(chatUser._id || chatUser.id, nextVal);
-                           }
-                           
-                           // 🌟 Show a premium toast confirmation
-                           setToast(nextVal ? "🤫 Chat moved to Secret Vault" : "Chat returned to public network");
-                           setTimeout(() => setToast(null), 3000);
+                     {/* ========================================= */}
+                     {/* 🤫 HIDE CHAT & SECRET WORD SECTION */}
+                     {/* ========================================= */}
+                     <div className="flex flex-col border-b border-white/5">
+                       {/* 1. The Toggle Row */}
+                       <div 
+                         className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                         onClick={async () => {
+                           const nextVal = !hideChat;
+                           setHideChat(nextVal);
+                           try {
+                             const token = localStorage.getItem('nodexa_token');
+                             await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                               muteOption, priorityMode, smartAlerts, customKeywords,
+                               lockChat, hideChat: nextVal, vaultKey, screenshotProtection, readReceipts 
+                             }, { headers: { Authorization: `Bearer ${token}` } });
+                             
+                             // 🚨 Tell the sidebar to update instantly
+                             if (typeof onChatUpdate === 'function') {
+                               onChatUpdate(chatUser._id || chatUser.id, nextVal, vaultKey); 
+                             }
+                             
+                             setToast(nextVal ? "🤫 Chat moved to Secret Vault" : "Chat returned to public network");
+                             setTimeout(() => setToast(null), 3000);
 
-                         } catch (err) { console.error("Save failed", err); }
-                       }}
-                     >
-                       <div>
-                         <p className="text-white font-bold text-sm">Hide Chat</p>
-                         <p className="text-gray-500 text-xs">Move to secret vault</p>
+                           } catch (err) { console.error("Save failed", err); }
+                         }}
+                       >
+                         <div>
+                           <p className="text-white font-bold text-sm">Hide Chat</p>
+                           <p className="text-gray-500 text-xs">Move to secret vault</p>
+                         </div>
+                         <div className={`w-11 h-6 rounded-full relative border transition-colors ${hideChat ? 'bg-[#00f0ff] border-[#00f0ff]' : 'bg-white/10 border-white/20'}`}>
+                           <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all ${hideChat ? 'right-1 bg-black' : 'left-1 bg-gray-400'}`}></div>
+                         </div>
                        </div>
-                       <div className={`w-11 h-6 rounded-full relative border transition-colors ${hideChat ? 'bg-white/20 border-white' : 'bg-white/10 border-white/20'}`}>
-                         <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all ${hideChat ? 'right-1 bg-white' : 'left-1 bg-gray-400'}`}></div>
-                       </div>
-                       {/* 🚨 NEW: SECRET TRIGGER WORD INPUT 🚨 */}
-                     {hideChat && (
-                       <div className="p-4 bg-black/20 border-t border-white/5 animate-in slide-in-from-top-2">
-                         <p className="text-[#00f0ff] font-bold text-xs mb-2 uppercase tracking-widest">Secret Trigger Word</p>
-                         <p className="text-gray-500 text-[10px] mb-2">Type this exact word in the search bar to reveal this chat.</p>
-                         <input 
-                           type="text" 
-                           placeholder="e.g., batman, project-x..."
-                           value={vaultKey}
-                           onChange={(e) => setVaultKey(e.target.value)}
-                           onBlur={async () => {
-                             // Saves automatically when they click away from the typing box
-                             try {
-                               const token = localStorage.getItem('nodexa_token');
-                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
-                                 muteOption, priorityMode, smartAlerts, customKeywords,
-                                 lockChat, hideChat, vaultKey, screenshotProtection, readReceipts 
-                               }, { headers: { Authorization: `Bearer ${token}` } });
-                               setToast("🔑 Secret trigger word saved!");
-                               setTimeout(() => setToast(null), 3000);
-                             } catch (err) { console.error("Save failed", err); }
-                           }}
-                           className="bg-black/50 border border-white/10 focus:border-[#00f0ff]/50 transition-colors text-white rounded-lg px-3 py-2 w-full text-sm outline-none"
-                         />
-                       </div>
-                     )}
-                     </div>
+
+                       {/* 2. The Secret Word Input */}
+                       {hideChat && (
+                         <div 
+                           className="p-4 bg-black/40 border-t border-white/5 animate-in slide-in-from-top-2"
+                           onClick={(e) => e.stopPropagation()} // 🚨 PREVENTS THE TOGGLE BUG!
+                         >
+                           <p className="text-[#00f0ff] font-bold text-xs mb-2 uppercase tracking-widest">Secret Trigger Word</p>
+                           <p className="text-gray-500 text-[10px] mb-3">Type this exact word in the search bar to reveal this chat.</p>
+                           <input 
+                             type="text" 
+                             placeholder="e.g., batman, project-x..."
+                             value={vaultKey}
+                             onChange={(e) => setVaultKey(e.target.value)}
+                             onBlur={async () => {
+                               // Saves automatically when they click away from the typing box
+                               try {
+                                 const token = localStorage.getItem('nodexa_token');
+                                 await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                                   muteOption, priorityMode, smartAlerts, customKeywords,
+                                   lockChat, hideChat, vaultKey, screenshotProtection, readReceipts 
+                                 }, { headers: { Authorization: `Bearer ${token}` } });
+                                 
+                                 // Update parent so the new vault key works instantly in search
+                                 if (typeof onChatUpdate === 'function') {
+                                   onChatUpdate(chatUser._id || chatUser.id, hideChat, vaultKey); 
+                                 }
+
+                                 setToast("🔑 Secret trigger word saved!");
+                                 setTimeout(() => setToast(null), 3000);
+                               } catch (err) { console.error("Save failed", err); }
+                             }}
+                             className="bg-[#121826] border border-white/10 focus:border-[#00f0ff]/50 transition-colors text-white rounded-lg px-3 py-2 w-full text-sm outline-none"
+                           />
+                         </div>
+                       )}
+                     </div> 
+                    
 
                      {/* SCREENSHOT PROTECTION */}
                      <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">

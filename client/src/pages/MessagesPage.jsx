@@ -67,12 +67,12 @@ export default function Messages() {
   const filteredUsers = dbUsers.filter(u => {
     const query = searchQuery.toLowerCase().trim();
 
-    // 1. STEALTH MODE: If the chat is hidden, ONLY show them if the search exactly matches their secret word
+    // 1. STEALTH MODE: If the chat is hidden, ONLY show them if the search exactly matches their secret word!
     if (u.hideChat) {
-      return query && u.vaultKey && query === u.vaultKey.toLowerCase();
+      return query !== "" && u.vaultKey && query === u.vaultKey.toLowerCase();
     }
 
-    // 2. NORMAL MODE: If chat is NOT hidden, just do standard searching
+    // 2. NORMAL MODE: If chat is NOT hidden, do standard name searching
     if (!query) return true; 
     const fullName = (u.fullName || '').toLowerCase();
     const username = (u.username || '').toLowerCase();
@@ -246,11 +246,10 @@ export default function Messages() {
           <ChatRoom 
             chatUser={activeChat} 
             onBack={() => setActiveChat(null)} 
-            // 🚨 THIS LISTENS FOR THE HIDE TOGGLE AND INSTANTLY FILTERS THE SIDEBAR!
-            onChatUpdate={(userId, isHidden) => {
+            onChatUpdate={(userId, isHidden, newVaultKey) => {
               setDbUsers(prev => prev.map(u => 
                 (String(u._id) === String(userId) || String(u.id) === String(userId)) 
-                  ? { ...u, hideChat: isHidden } 
+                  ? { ...u, hideChat: isHidden, vaultKey: newVaultKey || u.vaultKey } 
                   : u
               ));
             }}

@@ -61,6 +61,7 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   // 🔒 PRIVACY SETTINGS LIVE STATE 🌟
   const [lockChat, setLockChat] = useState(false);
   const [hideChat, setHideChat] = useState(false);
+  const [vaultKey, setVaultKey] = useState('');
   const [screenshotProtection, setScreenshotProtection] = useState('Off');
   const [readReceipts, setReadReceipts] = useState(true);
   const [chatPin, setChatPin] = useState('');
@@ -99,6 +100,7 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
           // Sync Privacy Settings
           setLockChat(!!dbData.lockChat && !!dbData.chatPin && dbData.chatPin.length === 4);
           setHideChat(!!dbData.hideChat);
+          setVaultKey(dbData.vaultKey || '');
           setScreenshotProtection(dbData.screenshotProtection || 'Off');
           setChatPin(dbData.chatPin || '');
           setReadReceipts(dbData.readReceipts !== false);
@@ -1721,6 +1723,32 @@ const executeSmartDelete = async (action, targetMsg) => {
                        <div className={`w-11 h-6 rounded-full relative border transition-colors ${hideChat ? 'bg-white/20 border-white' : 'bg-white/10 border-white/20'}`}>
                          <div className={`w-4 h-4 rounded-full absolute top-[3px] transition-all ${hideChat ? 'right-1 bg-white' : 'left-1 bg-gray-400'}`}></div>
                        </div>
+                       {/* 🚨 NEW: SECRET TRIGGER WORD INPUT 🚨 */}
+                     {hideChat && (
+                       <div className="p-4 bg-black/20 border-t border-white/5 animate-in slide-in-from-top-2">
+                         <p className="text-[#00f0ff] font-bold text-xs mb-2 uppercase tracking-widest">Secret Trigger Word</p>
+                         <p className="text-gray-500 text-[10px] mb-2">Type this exact word in the search bar to reveal this chat.</p>
+                         <input 
+                           type="text" 
+                           placeholder="e.g., batman, project-x..."
+                           value={vaultKey}
+                           onChange={(e) => setVaultKey(e.target.value)}
+                           onBlur={async () => {
+                             // Saves automatically when they click away from the typing box
+                             try {
+                               const token = localStorage.getItem('nodexa_token');
+                               await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                                 muteOption, priorityMode, smartAlerts, customKeywords,
+                                 lockChat, hideChat, vaultKey, screenshotProtection, readReceipts 
+                               }, { headers: { Authorization: `Bearer ${token}` } });
+                               setToast("🔑 Secret trigger word saved!");
+                               setTimeout(() => setToast(null), 3000);
+                             } catch (err) { console.error("Save failed", err); }
+                           }}
+                           className="bg-black/50 border border-white/10 focus:border-[#00f0ff]/50 transition-colors text-white rounded-lg px-3 py-2 w-full text-sm outline-none"
+                         />
+                       </div>
+                     )}
                      </div>
 
                      {/* SCREENSHOT PROTECTION */}

@@ -65,20 +65,18 @@ export default function Messages() {
   }, [currentUser]);
 
   const filteredUsers = dbUsers.filter(u => {
-    // 1. Handle normal text searching
     const query = searchQuery.toLowerCase().trim();
+
+    // 1. STEALTH MODE: If the chat is hidden, ONLY show them if the search exactly matches their secret word
+    if (u.hideChat) {
+      return query && u.vaultKey && query === u.vaultKey.toLowerCase();
+    }
+
+    // 2. NORMAL MODE: If chat is NOT hidden, just do standard searching
+    if (!query) return true; 
     const fullName = (u.fullName || '').toLowerCase();
     const username = (u.username || '').toLowerCase();
-    const matchesSearch = !searchQuery || fullName.includes(query) || username.includes(query);
-
-    // 2. Handle Vault Visibility
-    if (showHiddenVault) {
-      // Vault is UNLOCKED: Show ONLY users where hideChat is true
-      return u.hideChat && matchesSearch;
-    } else {
-      // Normal Mode: Show ONLY users where hideChat is false or undefined
-      return !u.hideChat && matchesSearch;
-    }
+    return fullName.includes(query) || username.includes(query);
   });
     
 

@@ -159,31 +159,25 @@ const toggleFollow = async (req, res) => {
 // ─── Get Followers / Following (WITH CHAT SETTINGS INJECTED) ────────────────────────────────────────────────
 const ChatSetting = require('../models/ChatSetting'); // 🚨 Make sure to add this import if it isn't at the top!
 
+// ─── Get Followers / Following ────────────────────────────────────────────────
 const getFollowers = async (req, res) => {
   try {
     const follows = await Follow.find({ following: req.params.id })
       .populate('follower', 'username profilePhoto fullName isVerified');
-    
-    // 🚨 NEW LOGIC: Attach hideChat setting to each follower
+      
+    // 🚨 NEW: Attach hideChat setting to each follower
     const usersWithSettings = await Promise.all(
       follows.map(async (f) => {
         const user = f.follower.toObject ? f.follower.toObject() : f.follower;
         if (!req.user) return user;
 
-        // Construct the room string (matching how your messaging system does it)
-        const roomStr = [req.user._id.toString(), user._id.toString()].sort().join('_');
+        const myId = req.user._id || req.user.id;
+        const friendId = user._id || user.id;
+        const roomStr = [myId.toString(), friendId.toString()].sort().join('_');
         
-        // Look up the specific chat setting
-        const chatSetting = await ChatSetting.findOne({ 
-          userId: req.user._id, 
-          room: roomStr 
-        });
+        const chatSetting = await ChatSetting.findOne({ userId: myId, room: roomStr });
 
-        // Inject the hideChat boolean!
-        return { 
-          ...user, 
-          hideChat: chatSetting ? chatSetting.hideChat : false 
-        };
+        return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false };
       })
     );
 
@@ -197,27 +191,20 @@ const getFollowing = async (req, res) => {
   try {
     const follows = await Follow.find({ follower: req.params.id })
       .populate('following', 'username profilePhoto fullName isVerified');
-    
-    // 🚨 NEW LOGIC: Attach hideChat setting to each person they follow
+      
+    // 🚨 NEW: Attach hideChat setting to each person they follow
     const usersWithSettings = await Promise.all(
       follows.map(async (f) => {
         const user = f.following.toObject ? f.following.toObject() : f.following;
         if (!req.user) return user;
 
-        // Construct the room string
-        const roomStr = [req.user._id.toString(), user._id.toString()].sort().join('_');
+        const myId = req.user._id || req.user.id;
+        const friendId = user._id || user.id;
+        const roomStr = [myId.toString(), friendId.toString()].sort().join('_');
         
-        // Look up the specific chat setting
-        const chatSetting = await ChatSetting.findOne({ 
-          userId: req.user._id, 
-          room: roomStr 
-        });
+        const chatSetting = await ChatSetting.findOne({ userId: myId, room: roomStr });
 
-        // Inject the hideChat boolean!
-        return { 
-          ...user, 
-          hideChat: chatSetting ? chatSetting.hideChat : false 
-        };
+        return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false };
       })
     );
 

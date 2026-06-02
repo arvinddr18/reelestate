@@ -55,8 +55,8 @@ router.post('/support', protect, submitSupportTicket);
 // ✅ DYNAMIC /:id ROUTES LAST
 router.get('/:id', protect, getUserProfile);
 router.post('/:id/follow', protect, toggleFollow);
-router.get('/:id/followers', getFollowers);
-router.get('/:id/following', getFollowing);
+router.get('/:id/followers', protect, getFollowers);
+router.get('/:id/following', protect, getFollowing);
 router.get('/notifications/all', protect, getNotifications);
 router.post('/notifications/mark-read', protect, markNotificationsRead);
 

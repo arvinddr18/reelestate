@@ -117,41 +117,62 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   useEffect(() => {
     if (screenshotProtection === 'Off') return;
 
-    // BLOCK MODE: Blur the screen if they click away or open a Snipping Tool
+    // BLOCK MODE: Blur the screen if they click away or open the OS Snipping Tool
     const handleBlur = () => {
       if (screenshotProtection === 'Block') setIsAppBlurred(true);
     };
     const handleFocus = () => setIsAppBlurred(false);
 
-    // WARN MODE: Detect Print Screen or Copy Shortcuts
+    // WARN & BLOCK MODE: Detect Print Screen or Copy Shortcuts
     const handleKeyDown = async (e) => {
-      if (screenshotProtection === 'Warn' && (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'c') || (e.metaKey && e.key === 'c'))) {
-         
-         const warningMsg = {
-           room, text: "⚠️ SYSTEM ALERT: A screenshot or copy action was detected.", 
-           image: null, video: null, audio: null,
-           senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
-           timestamp: Date.now(), isRead: false
-         };
-         
-         setMessages(prev => [...prev, warningMsg]);
-         getSocket().emit('send_message', warningMsg);
-         
-         try {
-           const token = localStorage.getItem('nodexa_token');
-           await axios.post(`${API_URL}/api/messages`, warningMsg, { headers: { Authorization: `Bearer ${token}` } });
-         } catch (err) { console.error(err); }
+      const isCaptureAction = e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'c') || (e.metaKey && e.key === 'c');
+
+      if (isCaptureAction) {
+        if (screenshotProtection === 'Warn') {
+           const warningMsg = {
+             room, text: "⚠️ SYSTEM ALERT: A screenshot or copy action was detected.", 
+             image: null, video: null, audio: null,
+             senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+             timestamp: Date.now(), isRead: false
+           };
+           
+           setMessages(prev => [...prev, warningMsg]);
+           getSocket().emit('send_message', warningMsg);
+           
+           try {
+             const token = localStorage.getItem('nodexa_token');
+             await axios.post(`${API_URL}/api/messages`, warningMsg, { headers: { Authorization: `Bearer ${token}` } });
+           } catch (err) { console.error(err); }
+           
+        } else if (screenshotProtection === 'Block') {
+           // 🚨 1. PREVENT COPYING: Overwrite clipboard instantly
+           if (e.key !== 'PrintScreen') {
+             e.preventDefault();
+             navigator.clipboard.writeText("🔒 Content protected by Nodexa Quantum Security");
+           }
+           
+           // 🚨 2. PREVENT SCREENSHOT: Instantly blur UI & show error
+           setIsAppBlurred(true);
+           setToast("⛔ SECURITY ALERT: Capture Blocked");
+           
+           // Restore the screen to normal after 2 seconds
+           setTimeout(() => {
+             setIsAppBlurred(false);
+             setToast(null);
+           }, 2000);
+        }
       }
     };
 
     window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
-    window.addEventListener('keyup', handleKeyDown);
+    // 🚨 Changed to 'keydown' so it fires BEFORE the OS takes the picture!
+    window.addEventListener('keydown', handleKeyDown); 
 
     return () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('keyup', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [screenshotProtection, room, myId]);
   

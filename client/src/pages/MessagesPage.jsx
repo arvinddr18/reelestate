@@ -245,7 +245,18 @@ export default function Messages() {
       `}>
         {activeChat ? (
           /* 🚨 We pass the selected user to ChatRoom, and a function to close it! */
-          <ChatRoom chatUser={activeChat} onBack={() => setActiveChat(null)} />
+          <ChatRoom 
+            chatUser={activeChat} 
+            onBack={() => setActiveChat(null)} 
+            // 🚨 THIS LISTENS FOR THE HIDE TOGGLE AND INSTANTLY FILTERS THE SIDEBAR!
+            onChatUpdate={(userId, isHidden) => {
+              setDbUsers(prev => prev.map(u => 
+                (String(u._id) === String(userId) || String(u.id) === String(userId)) 
+                  ? { ...u, hideChat: isHidden } 
+                  : u
+              ));
+            }}
+          />
         ) : (
           <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0" style={{ backgroundImage: 'linear-gradient(rgba(0, 240, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         )}

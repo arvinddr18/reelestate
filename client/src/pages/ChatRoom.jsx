@@ -17,7 +17,7 @@ const getSocket = () => {
   return socket;
 };
 
-export default function ChatRoom({ chatUser, onBack }) {
+export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   const { user: currentUser } = useAuth(); 
   const myId = currentUser?._id || currentUser?.id;
   const friendId = chatUser?._id || chatUser?.id;
@@ -1701,6 +1701,16 @@ const executeSmartDelete = async (action, targetMsg) => {
                              muteOption, priorityMode, smartAlerts, customKeywords,
                              lockChat, hideChat: nextVal, screenshotProtection, readReceipts 
                            }, { headers: { Authorization: `Bearer ${token}` } });
+                           
+                           // 🚨 TELL THE SIDEBAR TO UPDATE INSTANTLY!
+                           if (typeof onChatUpdate === 'function') {
+                             onChatUpdate(chatUser._id || chatUser.id, nextVal);
+                           }
+                           
+                           // 🌟 Show a premium toast confirmation
+                           setToast(nextVal ? "🤫 Chat moved to Secret Vault" : "Chat returned to public network");
+                           setTimeout(() => setToast(null), 3000);
+
                          } catch (err) { console.error("Save failed", err); }
                        }}
                      >

@@ -29,6 +29,7 @@ const chatSettingSchema = new mongoose.Schema({
   },
   lockChat: { type: Boolean, default: false },
   hideChat: { type: Boolean, default: false },
+  vaultKey: { type: String, default: '' },
   screenshotProtection: { type: String, default: 'Off' },
   readReceipts: { type: Boolean, default: true },
   chatPin: { type: String, default: '' },

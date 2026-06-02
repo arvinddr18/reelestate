@@ -177,7 +177,9 @@ const getFollowers = async (req, res) => {
         
         const chatSetting = await ChatSetting.findOne({ userId: myId, room: roomStr });
 
-        return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false };
+        return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false,
+          vaultKey: chatSetting ? chatSetting.vaultKey : ''
+        };
       })
     );
 
@@ -204,7 +206,9 @@ const getFollowing = async (req, res) => {
         
         const chatSetting = await ChatSetting.findOne({ userId: myId, room: roomStr });
 
-        return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false };
+        return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false,
+        vaultKey: chatSetting ? chatSetting.vaultKey : ''
+      };
       })
     );
 

@@ -117,15 +117,21 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   useEffect(() => {
     if (screenshotProtection === 'Off') return;
 
-    // BLOCK MODE: Blur the screen if they click away or open the OS Snipping Tool
+    // BLOCK MODE: Blur the screen if the browser loses focus
     const handleBlur = () => {
       if (screenshotProtection === 'Block') setIsAppBlurred(true);
     };
     const handleFocus = () => setIsAppBlurred(false);
 
-    // WARN & BLOCK MODE: Detect Print Screen or Copy Shortcuts
+    // AGGRESSIVE KEYBOARD INTERCEPTION
     const handleKeyDown = async (e) => {
-      const isCaptureAction = e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'c') || (e.metaKey && e.key === 'c');
+      // 🚨 NOW CATCHES WINDOWS SNIPPING TOOL AND MAC SCREENSHOTS!
+      const isCaptureAction = 
+        e.key === 'PrintScreen' || 
+        (e.ctrlKey && e.key.toLowerCase() === 'c') || 
+        (e.metaKey && e.key.toLowerCase() === 'c') ||
+        (e.metaKey && e.shiftKey && e.key.toLowerCase() === 's') || // Windows Snipping Tool
+        (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)); // Mac Screenshots
 
       if (isCaptureAction) {
         if (screenshotProtection === 'Warn') {
@@ -145,17 +151,18 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
            } catch (err) { console.error(err); }
            
         } else if (screenshotProtection === 'Block') {
-           // 🚨 1. PREVENT COPYING: Overwrite clipboard instantly
-           if (e.key !== 'PrintScreen') {
-             e.preventDefault();
-             navigator.clipboard.writeText("🔒 Content protected by Nodexa Quantum Security");
-           }
+           e.preventDefault(); 
            
-           // 🚨 2. PREVENT SCREENSHOT: Instantly blur UI & show error
+           // 🚨 Instantly blur UI & show error
            setIsAppBlurred(true);
            setToast("⛔ SECURITY ALERT: Capture Blocked");
            
-           // Restore the screen to normal after 2 seconds
+           // 🚨 Overwrite clipboard to protect data
+           try {
+             await navigator.clipboard.writeText("🔒 Content protected by Nodexa Quantum Security");
+           } catch (err) {}
+           
+           // Restore screen after 2 seconds
            setTimeout(() => {
              setIsAppBlurred(false);
              setToast(null);
@@ -164,18 +171,27 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
       }
     };
 
+    // 🚨 EXTRA LAYER: Detect if they switch tabs while Block is on
+    const handleVisibilityChange = () => {
+      if (document.hidden && screenshotProtection === 'Block') {
+        setIsAppBlurred(true);
+      } else if (!document.hidden && screenshotProtection === 'Block') {
+        setIsAppBlurred(false);
+      }
+    };
+
     window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
-    // 🚨 Changed to 'keydown' so it fires BEFORE the OS takes the picture!
-    window.addEventListener('keydown', handleKeyDown); 
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [screenshotProtection, room, myId]);
-  
 
   // 🌟 AUDIO RECORDING STATES (MOVED OUTSIDE USE-EFFECT!) 🌟
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);

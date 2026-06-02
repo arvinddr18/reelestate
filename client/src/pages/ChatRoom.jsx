@@ -536,6 +536,15 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
       }));
     });
 
+    // 🚨 2. LISTEN FOR INCOMING SECURITY PROTOCOL CHANGES
+    getSocket().on('security_update', (data) => {
+      if (data.screenshotProtection !== undefined) {
+        setScreenshotProtection(data.screenshotProtection);
+        setToast(`🛡️ Partner updated security protocol to: ${data.screenshotProtection}`);
+        setTimeout(() => setToast(null), 4000);
+      }
+    });
+
    // 🌟 UNIVERSAL SYNC: Update read status across all devices instantly
     getSocket().on('messages_read', (data) => {
       setMessages((prev) => prev.map((m) => {
@@ -557,6 +566,7 @@ getSocket().off('display_typing');
 getSocket().off('hide_typing');
 getSocket().off('message_updated');
 getSocket().off('messages_read');
+getSocket().off('security_update');
     };
   }, [room, myId, friendId]);
 
@@ -1780,11 +1790,15 @@ const executeSmartDelete = async (action, targetMsg) => {
                              key={mode}
                              onClick={async () => {
                                setScreenshotProtection(mode);
+                               
+                               // 🚨 1. SHOOT THE SIGNAL ACROSS THE NETWORK INSTANTLY!
+                               getSocket().emit('security_update', { room, screenshotProtection: mode });
+                               
                                try {
                                  const token = localStorage.getItem('nodexa_token');
                                  await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
                                    muteOption, priorityMode, smartAlerts, customKeywords,
-                                   lockChat, hideChat, screenshotProtection: mode, readReceipts 
+                                   lockChat, hideChat, vaultKey, screenshotProtection: mode, readReceipts 
                                  }, { headers: { Authorization: `Bearer ${token}` } });
                                } catch (err) { console.error("Save failed", err); }
                              }}

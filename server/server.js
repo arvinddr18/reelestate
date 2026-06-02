@@ -89,6 +89,11 @@ io.on('connection', (socket) => {
       console.error("❌ Error marking messages as read:", err);
     }
   });
+
+  // 🚨 3. BOUNCE THE SECURITY UPDATE TO THE ROOM
+  socket.on('security_update', (data) => {
+    socket.to(data.room).emit('security_update', data);
+  });
   
   // 🚨 3. BULLETPROOF OFFLINE DETECTION
   socket.on('disconnect', async () => {

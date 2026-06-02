@@ -564,12 +564,31 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
     const onConnect = () => getSocket().emit('join_room', room);
     getSocket().on('connect', onConnect);
     
-    getSocket().on('receive_message', (data) => {
+   getSocket().on('receive_message', (data) => {
       setMessages((prev) => [...prev, data]);
       
       // 🚨 ONLY SEND READ RECEIPT IF THE USER ALLOWS IT 🚨
       if (data.senderId !== myId && readReceipts) {
         getSocket().emit('mark_as_read', { room, readerId: myId });
+      }
+
+      // 🚨 NEW: AUTO-SAVE TO GALLERY ENGINE 🚨
+      // If it's not our own message, it has an image, and Save to Gallery is ON
+      if (data.senderId !== myId && data.image && saveToGallery) {
+        try {
+          // Create an invisible link to force the browser to download the file
+          const link = document.createElement('a');
+          link.href = data.image;
+          link.download = `Nodexa_Secure_Image_${Date.now()}.jpg`; // The file name
+          document.body.appendChild(link);
+          link.click(); // Trigger the download
+          document.body.removeChild(link); // Clean up
+          
+          setToast("📥 Image auto-saved to device!");
+          setTimeout(() => setToast(null), 3000);
+        } catch (err) {
+          console.error("Auto-download failed", err);
+        }
       }
     });
     
@@ -616,7 +635,7 @@ getSocket().off('message_updated');
 getSocket().off('messages_read');
 getSocket().off('security_update');
     };
-  }, [room, myId, friendId]);
+  }, [room, myId, friendId, readReceipts, saveToGallery]);
 
   // 🚨 NEW: Tell the server we read the chat history when we first open the room
  

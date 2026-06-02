@@ -1740,9 +1740,16 @@ const executeSmartDelete = async (action, targetMsg) => {
                              type="text" 
                              placeholder="e.g., batman, project-x..."
                              value={vaultKey}
-                             onChange={(e) => setVaultKey(e.target.value)}
+                             onChange={(e) => {
+                               const val = e.target.value;
+                               setVaultKey(val);
+                               // 🚨 INSTANT SYNC: Tells the sidebar the new word immediately!
+                               if (typeof onChatUpdate === 'function') {
+                                 onChatUpdate(chatUser._id || chatUser.id, hideChat, val); 
+                               }
+                             }}
                              onBlur={async () => {
-                               // Saves automatically when they click away from the typing box
+                               // Saves to database when they click away
                                try {
                                  const token = localStorage.getItem('nodexa_token');
                                  await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
@@ -1750,11 +1757,6 @@ const executeSmartDelete = async (action, targetMsg) => {
                                    lockChat, hideChat, vaultKey, screenshotProtection, readReceipts 
                                  }, { headers: { Authorization: `Bearer ${token}` } });
                                  
-                                 // Update parent so the new vault key works instantly in search
-                                 if (typeof onChatUpdate === 'function') {
-                                   onChatUpdate(chatUser._id || chatUser.id, hideChat, vaultKey); 
-                                 }
-
                                  setToast("🔑 Secret trigger word saved!");
                                  setTimeout(() => setToast(null), 3000);
                                } catch (err) { console.error("Save failed", err); }

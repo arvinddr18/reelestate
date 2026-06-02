@@ -17,6 +17,7 @@ export default function Messages() {
   const { user: currentUser } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [showHiddenVault, setShowHiddenVault] = useState(false);
   const [dbUsers, setDbUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
@@ -64,12 +65,22 @@ export default function Messages() {
   }, [currentUser]);
 
   const filteredUsers = dbUsers.filter(u => {
-    if (!searchQuery) return true; 
+    // 1. Handle normal text searching
     const query = searchQuery.toLowerCase().trim();
     const fullName = (u.fullName || '').toLowerCase();
     const username = (u.username || '').toLowerCase();
-    return fullName.includes(query) || username.includes(query);
+    const matchesSearch = !searchQuery || fullName.includes(query) || username.includes(query);
+
+    // 2. Handle Vault Visibility
+    if (showHiddenVault) {
+      // Vault is UNLOCKED: Show ONLY users where hideChat is true
+      return u.hideChat && matchesSearch;
+    } else {
+      // Normal Mode: Show ONLY users where hideChat is false or undefined
+      return !u.hideChat && matchesSearch;
+    }
   });
+    
 
   return (
     <div className="relative w-full h-[100dvh] md:h-full bg-[#05070A] text-white font-sans flex overflow-hidden">
@@ -100,7 +111,23 @@ export default function Messages() {
           </div>
           <div className="bg-white/5 border border-white/10 rounded-full p-1.5 flex items-center shadow-inner focus-within:border-[#00F0FF]/50 transition-colors backdrop-blur-xl">
             <div className="w-10 h-10 flex items-center justify-center text-[#00F0FF]/70"><IoMdSearch size={20} /></div>
-            <input type="text" placeholder="Search your network..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 bg-transparent text-sm text-white font-bold outline-none placeholder-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search your network..." 
+              value={searchQuery} 
+              onChange={(e) => {
+                const val = e.target.value;
+                setSearchQuery(val);
+                
+                // 🚨 SECRET INTERCEPTOR
+                if (val === "/vault" || val === "///lock") {
+                  setSearchQuery(""); // Clear the text instantly
+                  setShowHiddenVault(true); // Open the vault (you will replace this with your PIN modal trigger later)
+                  alert("🔒 Secret Vault Triggered!"); 
+                }
+              }} 
+              className="flex-1 bg-transparent text-sm text-white font-bold outline-none placeholder-gray-400" 
+            />
           </div>
         </header>
 

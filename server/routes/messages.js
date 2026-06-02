@@ -236,7 +236,8 @@ router.post('/settings/:room', protect, async (req, res) => {
       hideChat, 
       screenshotProtection, 
       readReceipts,
-      chatPin
+      chatPin,
+      vaultKey
     } = req.body;
 
     // 🚨 CHECK YOUR TERMINAL AFTER TOGGLING A SETTING
@@ -254,7 +255,8 @@ router.post('/settings/:room', protect, async (req, res) => {
           hideChat, 
           screenshotProtection, 
           readReceipts,
-          chatPin 
+          chatPin,
+          vaultKey
         } 
       },
       { new: true, upsert: true }

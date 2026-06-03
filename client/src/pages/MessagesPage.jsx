@@ -234,6 +234,7 @@ export default function Messages() {
                         {/* 🚨 Instantly display Pin and Star badges in the sidebar! */}
                         {user.isPinnedChat && <span className="ml-2 text-[#00f0ff] text-xs">📌</span>}
                         {user.isImportantChat && <span className="ml-1 text-[#ffbb00] text-xs">⭐</span>}
+                        {u.isBlocked && <span className="ml-1 text-red-500 text-xs animate-pulse">🚫</span>}
                       </h3>
                       <span className="text-[11px] font-bold truncate text-gray-300 block">Tap to open secure channel...</span>
                     </div>
@@ -263,6 +264,7 @@ export default function Messages() {
                   if (type === 'hide') return { ...u, hideChat: val1, vaultKey: val2 };
                   if (type === 'pin') return { ...u, isPinnedChat: val1 };
                   if (type === 'important') return { ...u, isImportantChat: val1 };
+                  if (type === 'block') return { ...u, isBlocked: val1 };
                 }
                 return u;
               }));

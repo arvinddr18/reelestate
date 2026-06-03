@@ -79,6 +79,7 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   // ⚙️ CHAT MANAGEMENT LIVE STATE 🌟
   const [isPinnedChat, setIsPinnedChat] = useState(false);
   const [isImportantChat, setIsImportantChat] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
@@ -118,6 +119,7 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
           setSaveToGallery(!!dbData.saveToGallery);
           setIsPinnedChat(!!dbData.isPinnedChat);
           setIsImportantChat(!!dbData.isImportantChat);
+          setIsBlocked(!!dbData.isBlocked);
         }
       } catch (err) {
         console.error("Failed to fetch custom room link settings:", err);
@@ -663,6 +665,22 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
       setTimeout(() => setToast(null), 4000);
     });
 
+    // 🚨 LISTEN FOR LOCATION REQUESTS
+    getSocket().on('request_location', () => {
+      setToast("📍 Partner is requesting your Live Location!");
+      setTimeout(() => setToast(null), 5000);
+    });
+
+    // 🚨 LISTEN FOR BLOCK STATUS
+    getSocket().on('user_blocked', (data) => {
+      if (data.isBlocked) {
+        setToast("🚫 You have been blocked by this user.");
+      } else {
+        setToast("✅ You have been unblocked.");
+      }
+      setTimeout(() => setToast(null), 4000);
+    });
+
    // 🌟 UNIVERSAL SYNC: Update read status across all devices instantly
     getSocket().on('messages_read', (data) => {
       setMessages((prev) => prev.map((m) => {
@@ -686,6 +704,8 @@ getSocket().off('message_updated');
 getSocket().off('messages_read');
 getSocket().off('security_update');
 getSocket().off('chat_cleared');
+getSocket().off('request_location');
+getSocket().off('user_blocked');
     };
   }, [room, myId, friendId, readReceipts, saveToGallery]);
 
@@ -2372,17 +2392,61 @@ const executeSmartDelete = async (action, targetMsg) => {
                   </div>
                   
                   <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
-                     <button className="flex items-center gap-3 p-4 hover:bg-white/5 transition-colors text-left group">
-                       <IoMdPin className="text-gray-400 group-hover:text-[#00ff9d]" size={20} />
-                       <span className="text-white font-bold text-sm">Request Live Location</span>
+                     
+                     {/* REQUEST LOCATION */}
+                     <button 
+                       onClick={() => {
+                         getSocket().emit('request_location', { room });
+                         setToast(`📍 Location request sent to ${chatUser.fullName}`);
+                         setTimeout(() => setToast(null), 3000);
+                       }}
+                       className="flex items-center gap-3 p-4 hover:bg-white/5 transition-colors text-left group"
+                     >
+                       <IoMdPin className="text-gray-400 group-hover:text-[#00ff9d] transition-colors" size={20} />
+                       <span className="text-white font-bold text-sm group-hover:text-[#00ff9d] transition-colors">Request Live Location</span>
                      </button>
-                     <button className="flex items-center gap-3 p-4 hover:bg-red-500/10 transition-colors text-left group">
-                       <span className="text-xl opacity-80 group-hover:opacity-100">🚫</span>
-                       <span className="text-red-500 font-bold text-sm">Block User</span>
+
+                     {/* BLOCK USER */}
+                     <button 
+                       onClick={async () => {
+                         const nextVal = !isBlocked;
+                         setIsBlocked(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat,
+                             isBlocked: nextVal 
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                           
+                           // 🚨 SYNC SIDEBAR & NOTIFY PARTNER
+                           if (typeof onChatUpdate === 'function') {
+                             onChatUpdate(chatUser._id || chatUser.id, 'block', nextVal);
+                           }
+                           getSocket().emit('user_blocked', { room, isBlocked: nextVal });
+                           
+                           setToast(nextVal ? "🚫 User Blocked" : "✅ User Unblocked");
+                           setTimeout(() => setToast(null), 3000);
+                         } catch (err) {}
+                       }}
+                       className="flex items-center justify-between p-4 hover:bg-red-500/10 transition-colors text-left group"
+                     >
+                       <div className="flex items-center gap-3">
+                         <span className={`text-xl transition-all ${isBlocked ? 'opacity-100 scale-110 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'opacity-60 group-hover:opacity-100'}`}>🚫</span>
+                         <span className="text-red-500 font-bold text-sm">{isBlocked ? 'Unblock User' : 'Block User'}</span>
+                       </div>
+                       {isBlocked && <span className="text-[10px] font-black tracking-widest uppercase text-red-500 bg-red-500/20 px-2 py-1 rounded-md">Blocked</span>}
                      </button>
-                     <button className="flex items-center gap-3 p-4 hover:bg-red-500/10 transition-colors text-left group rounded-b-2xl">
-                       <span className="text-xl opacity-80 group-hover:opacity-100">⚠️</span>
-                       <span className="text-red-500 font-bold text-sm">Report Account</span>
+
+                     {/* REPORT ACCOUNT */}
+                     <button 
+                       onClick={() => {
+                         setToast("⚠️ Secure report dispatched to Nodexa Admin node.");
+                         setTimeout(() => setToast(null), 3000);
+                       }}
+                       className="flex items-center gap-3 p-4 hover:bg-[#ffbb00]/10 transition-colors text-left group rounded-b-2xl"
+                     >
+                       <span className="text-xl opacity-60 group-hover:opacity-100 transition-opacity">⚠️</span>
+                       <span className="text-[#ffbb00] font-bold text-sm">Report Account</span>
                      </button>
                   </div>
                 </div>

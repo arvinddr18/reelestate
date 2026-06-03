@@ -1571,7 +1571,7 @@ const executeSmartDelete = async (action, targetMsg) => {
       )}
       {/* 🌟 CUSTOM TOAST NOTIFICATION 🌟 */}
       {toast && (
-        <div className="absolute top-24 md:top-32 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 bg-[#1A1F2E]/95 border border-[#00f0ff]/50 rounded-full shadow-[0_0_20px_rgba(0,240,255,0.4)] backdrop-blur-xl text-white text-sm font-bold tracking-wide flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300">
+        <div className="absolute top-24 md:top-32 left-1/2 -translate-x-1/2 z-[9999999] px-6 py-3 bg-[#1A1F2E]/95 border border-[#00f0ff]/50 rounded-full shadow-[0_0_20px_rgba(0,240,255,0.4)] backdrop-blur-xl text-white text-sm font-bold tracking-wide flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300">
           {toast}
         </div>
       )}

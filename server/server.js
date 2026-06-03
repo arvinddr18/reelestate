@@ -94,6 +94,11 @@ io.on('connection', (socket) => {
   socket.on('security_update', (data) => {
     socket.to(data.room).emit('security_update', data);
   });
+
+  // 🚨 BOUNCE THE CLEAR CHAT SIGNAL
+  socket.on('chat_cleared', (data) => {
+    socket.to(data.room).emit('chat_cleared');
+  });
   
   // 🚨 3. BULLETPROOF OFFLINE DETECTION
   socket.on('disconnect', async () => {

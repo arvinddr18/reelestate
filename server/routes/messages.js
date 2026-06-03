@@ -238,7 +238,7 @@ router.post('/settings/:room', protect, async (req, res) => {
       readReceipts,
       chatPin,
       vaultKey,
-      autoDownload, imageQuality, saveToGallery
+      autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat
     } = req.body;
 
     // 🚨 CHECK YOUR TERMINAL AFTER TOGGLING A SETTING
@@ -258,7 +258,7 @@ router.post('/settings/:room', protect, async (req, res) => {
           readReceipts,
           chatPin,
           vaultKey,
-          autoDownload, imageQuality, saveToGallery
+          autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat
         } 
       },
       { new: true, upsert: true }
@@ -272,6 +272,17 @@ router.post('/settings/:room', protect, async (req, res) => {
 });
 
 // ─── 5. OTP FORGOT PIN FLOW ──────────────────────────────────────────
+
+// ─── CLEAR ENTIRE CHAT HISTORY ───────────────────────────
+router.delete('/room/:room', protect, async (req, res) => {
+  try {
+    const HoloMessage = mongoose.models.HoloMessage || mongoose.model('Message');
+    await HoloMessage.deleteMany({ room: req.params.room });
+    res.status(200).json({ success: true, message: "Chat wiped securely." });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 
 

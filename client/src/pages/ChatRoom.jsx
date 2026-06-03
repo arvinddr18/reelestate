@@ -76,6 +76,10 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
   const [imageQuality, setImageQuality] = useState('Standard');
   const [saveToGallery, setSaveToGallery] = useState(false);
 
+  // ⚙️ CHAT MANAGEMENT LIVE STATE 🌟
+  const [isPinnedChat, setIsPinnedChat] = useState(false);
+  const [isImportantChat, setIsImportantChat] = useState(false);
+
   // 🚨 SECURITY ENGINE STATES
   const [isAppBlurred, setIsAppBlurred] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false); // For Lock Chat
@@ -112,6 +116,8 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
           setAutoDownload(dbData.autoDownload || 'Wi-Fi Only');
           setImageQuality(dbData.imageQuality || 'Standard');
           setSaveToGallery(!!dbData.saveToGallery);
+          setIsPinnedChat(!!dbData.isPinnedChat);
+          setIsImportantChat(!!dbData.isImportantChat);
         }
       } catch (err) {
         console.error("Failed to fetch custom room link settings:", err);
@@ -650,6 +656,13 @@ export default function ChatRoom({ chatUser, onBack, onChatUpdate }) {
       }
     });
 
+    // 🚨 LISTEN FOR PARTNER CLEARING THE CHAT
+    getSocket().on('chat_cleared', () => {
+      setMessages([]);
+      setToast("⚠️ Partner wiped the chat history.");
+      setTimeout(() => setToast(null), 4000);
+    });
+
    // 🌟 UNIVERSAL SYNC: Update read status across all devices instantly
     getSocket().on('messages_read', (data) => {
       setMessages((prev) => prev.map((m) => {
@@ -672,6 +685,7 @@ getSocket().off('hide_typing');
 getSocket().off('message_updated');
 getSocket().off('messages_read');
 getSocket().off('security_update');
+getSocket().off('chat_cleared');
     };
   }, [room, myId, friendId, readReceipts, saveToGallery]);
 
@@ -2226,26 +2240,108 @@ const executeSmartDelete = async (action, targetMsg) => {
                   <h3 className="text-2xl font-black text-white tracking-wide mb-2 flex items-center gap-2"><span className="text-white">⚙️</span> Chat Management</h3>
                   
                   <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col divide-y divide-white/5">
-                     <button className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group">
+                     
+                     {/* PIN CHAT */}
+                     <button 
+                       onClick={async () => {
+                         const nextVal = !isPinnedChat;
+                         setIsPinnedChat(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality, saveToGallery, isImportantChat,
+                             isPinnedChat: nextVal 
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                           
+                           setToast(nextVal ? "📌 Chat Pinned to Top!" : "Chat Unpinned.");
+                           setTimeout(() => setToast(null), 3000);
+                         } catch (err) {}
+                       }}
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group"
+                     >
                        <div>
-                         <p className="text-white font-bold text-sm group-hover:text-[#00f0ff] transition-colors">📌 Pin Chat</p>
+                         <p className={`font-bold text-sm transition-colors ${isPinnedChat ? 'text-[#00f0ff]' : 'text-white group-hover:text-[#00f0ff]'}`}>📌 Pin Chat</p>
                          <p className="text-gray-500 text-xs">Keep at top of list</p>
                        </div>
+                       {isPinnedChat && <div className="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_10px_#00f0ff]"></div>}
                      </button>
-                     <button className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group">
+
+                     {/* MARK IMPORTANT */}
+                     <button 
+                       onClick={async () => {
+                         const nextVal = !isImportantChat;
+                         setIsImportantChat(nextVal);
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages/settings/${room}`, { 
+                             muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality, saveToGallery, isPinnedChat,
+                             isImportantChat: nextVal 
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+                           
+                           setToast(nextVal ? "⭐ Marked as Important!" : "Importance removed.");
+                           setTimeout(() => setToast(null), 3000);
+                         } catch (err) {}
+                       }}
+                       className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left group"
+                     >
                        <div>
-                         <p className="text-white font-bold text-sm group-hover:text-[#ffbb00] transition-colors">⭐ Mark as Important</p>
+                         <p className={`font-bold text-sm transition-colors ${isImportantChat ? 'text-[#ffbb00]' : 'text-white group-hover:text-[#ffbb00]'}`}>⭐ Mark as Important</p>
                          <p className="text-gray-500 text-xs">Highlight in inbox</p>
                        </div>
+                       {isImportantChat && <div className="w-2 h-2 rounded-full bg-[#ffbb00] shadow-[0_0_10px_#ffbb00]"></div>}
                      </button>
+
+                     {/* EXPORT CHAT */}
                      <div className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                        <div>
                          <p className="text-white font-bold text-sm">Export Chat</p>
-                         <p className="text-gray-500 text-xs">Download history</p>
+                         <p className="text-gray-500 text-xs">Download history securely</p>
                        </div>
-                       <button className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[10px] font-bold transition-all">Format: PDF</button>
+                       <button 
+                         onClick={() => {
+                           if (messages.length === 0) return setToast("No messages to export.");
+                           const chatText = messages.map(m => `[${m.time}] ${m.senderId === myId ? 'Me' : chatUser.fullName}: ${m.text || (m.image ? '[Secure Image]' : (m.video ? '[Secure Video]' : '[Audio Note]'))}`).join('\n');
+                           const blob = new Blob([`--- NODEXA SECURE LOG ---\nChat with: ${chatUser.fullName}\n\n${chatText}`], { type: 'text/plain' });
+                           const url = window.URL.createObjectURL(blob);
+                           const a = document.createElement('a');
+                           a.href = url;
+                           a.download = `Nodexa_Log_${chatUser.username}.txt`;
+                           a.click();
+                           window.URL.revokeObjectURL(url);
+                           setToast("📄 Log Exported Successfully!");
+                           setTimeout(() => setToast(null), 3000);
+                         }}
+                         className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-[#00f0ff]/20 border border-white/20 hover:border-[#00f0ff]/50 text-white hover:text-[#00f0ff] text-[10px] font-bold transition-all shadow-sm"
+                       >
+                         Format: TXT
+                       </button>
                      </div>
-                     <button className="flex items-center justify-between p-4 hover:bg-red-500/10 transition-colors text-left group">
+
+                     {/* CLEAR CHAT HISTORY */}
+                     <button 
+                       onClick={async () => {
+                         if(!window.confirm(`Are you sure you want to permanently obliterate the chat history with ${chatUser.fullName}? This cannot be undone.`)) return;
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           // 1. Delete from DB
+                           await axios.delete(`${API_URL}/api/messages/room/${room}`, { headers: { Authorization: `Bearer ${token}` } });
+                           
+                           // 2. Clear Screen Instantly
+                           setMessages([]);
+                           
+                           // 3. Shoot Quantum Signal to wipe partner's screen
+                           getSocket().emit('chat_cleared', { room });
+                           
+                           setToast("🧹 Chat history obliterated.");
+                           setTimeout(() => setToast(null), 3000);
+                         } catch (err) {
+                           console.error("Clear failed", err);
+                           setToast("❌ Failed to clear chat.");
+                           setTimeout(() => setToast(null), 3000);
+                         }
+                       }}
+                       className="flex items-center justify-between p-4 hover:bg-red-500/10 transition-colors text-left group"
+                     >
                        <div>
                          <p className="text-red-500 font-bold text-sm drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">🧹 Clear Chat History</p>
                          <p className="text-red-500/60 text-xs">Permanently delete all messages</p>

@@ -180,7 +180,8 @@ const getFollowers = async (req, res) => {
         return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false,
           vaultKey: chatSetting ? chatSetting.vaultKey : '',
           isPinnedChat: chatSetting ? chatSetting.isPinnedChat : false,     // 🚨 ADD THIS
-          isImportantChat: chatSetting ? chatSetting.isImportantChat : false
+          isImportantChat: chatSetting ? chatSetting.isImportantChat : false,
+          isBlocked: chatSetting ? chatSetting.isBlocked : false
         };
       })
     );
@@ -211,7 +212,8 @@ const getFollowing = async (req, res) => {
         return { ...user, hideChat: chatSetting ? chatSetting.hideChat : false,
         vaultKey: chatSetting ? chatSetting.vaultKey : '',
         isPinnedChat: chatSetting ? chatSetting.isPinnedChat : false,     // 🚨 ADD THIS
-        isImportantChat: chatSetting ? chatSetting.isImportantChat : false
+        isImportantChat: chatSetting ? chatSetting.isImportantChat : false,
+        isBlocked: chatSetting ? chatSetting.isBlocked : false
       };
       })
     );

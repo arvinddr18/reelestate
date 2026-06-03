@@ -67,16 +67,21 @@ export default function Messages() {
   const filteredUsers = dbUsers.filter(u => {
     const query = searchQuery.toLowerCase().trim();
 
-    // 1. STEALTH MODE: If the chat is hidden, ONLY show them if the search exactly matches their secret word!
+    // 1. STEALTH MODE
     if (u.hideChat) {
       return query !== "" && u.vaultKey && query === u.vaultKey.toLowerCase();
     }
 
-    // 2. NORMAL MODE: If chat is NOT hidden, do standard name searching
+    // 2. NORMAL MODE
     if (!query) return true; 
     const fullName = (u.fullName || '').toLowerCase();
     const username = (u.username || '').toLowerCase();
     return fullName.includes(query) || username.includes(query);
+  }).sort((a, b) => {
+    // 🚨 MAGIC SORTING: PINNED CHATS ALWAYS FLOAT TO THE TOP!
+    if (a.isPinnedChat && !b.isPinnedChat) return -1;
+    if (!a.isPinnedChat && b.isPinnedChat) return 1;
+    return 0;
   });
     
 
@@ -216,15 +221,20 @@ export default function Messages() {
                     <div className="flex-1 min-w-0">
                       
                       {/* Clickable Name (Opens Profile). Added 'inline-block max-w-full' so clicking empty space opens chat! */}
-                      <h3 
-                        className={`text-sm font-black truncate inline-block max-w-full cursor-pointer hover:underline relative z-20 ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/profile/${user._id}`);
-                        }}
-                      >
-                        {user.fullName || `@${user.username}`}
-                      </h3>
+                      {/* Clickable Name & Badges */}
+                      <h3 
+                        className={`text-sm font-black truncate flex items-center cursor-pointer hover:underline relative z-20 ${activeChat?._id === user._id ? 'text-[#00F0FF]' : 'text-white'}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/profile/${user._id}`);
+                        }}
+                      >
+                        <span>{user.fullName || `@${user.username}`}</span>
+                        
+                        {/* 🚨 Instantly display Pin and Star badges in the sidebar! */}
+                        {user.isPinnedChat && <span className="ml-2 text-[#00f0ff] text-xs">📌</span>}
+                        {user.isImportantChat && <span className="ml-1 text-[#ffbb00] text-xs">⭐</span>}
+                      </h3>
                       <span className="text-[11px] font-bold truncate text-gray-300 block">Tap to open secure channel...</span>
                     </div>
                   </div>
@@ -246,12 +256,16 @@ export default function Messages() {
           <ChatRoom 
             chatUser={activeChat} 
             onBack={() => setActiveChat(null)} 
-            onChatUpdate={(userId, isHidden, newVaultKey) => {
-              setDbUsers(prev => prev.map(u => 
-                (String(u._id) === String(userId) || String(u.id) === String(userId)) 
-                  ? { ...u, hideChat: isHidden, vaultKey: newVaultKey || u.vaultKey } 
-                  : u
-              ));
+            onChatUpdate={(userId, type, val1, val2) => {
+              setDbUsers(prev => prev.map(u => {
+                if (String(u._id) === String(userId) || String(u.id) === String(userId)) {
+                  // Apply the exact setting that was changed
+                  if (type === 'hide') return { ...u, hideChat: val1, vaultKey: val2 };
+                  if (type === 'pin') return { ...u, isPinnedChat: val1 };
+                  if (type === 'important') return { ...u, isImportantChat: val1 };
+                }
+                return u;
+              }));
             }}
           />
         ) : (

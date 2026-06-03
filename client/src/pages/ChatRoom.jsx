@@ -1839,7 +1839,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                              
                              // 🚨 Tell the sidebar to update instantly
                              if (typeof onChatUpdate === 'function') {
-                               onChatUpdate(chatUser._id || chatUser.id, nextVal, vaultKey); 
+                               onChatUpdate(chatUser._id || chatUser.id, 'hide', nextVal, vaultKey); 
                              }
                              
                              setToast(nextVal ? "🤫 Chat moved to Secret Vault" : "Chat returned to public network");
@@ -1870,13 +1870,13 @@ const executeSmartDelete = async (action, targetMsg) => {
                              placeholder="e.g., batman, project-x..."
                              value={vaultKey}
                              onChange={(e) => {
-                               const val = e.target.value;
-                               setVaultKey(val);
-                               // 🚨 INSTANT SYNC: Tells the sidebar the new word immediately!
-                               if (typeof onChatUpdate === 'function') {
-                                 onChatUpdate(chatUser._id || chatUser.id, hideChat, val); 
-                               }
-                             }}
+                               const val = e.target.value;
+                               setVaultKey(val);
+                               // 🚨 INSTANT SYNC: Tells the sidebar the new word immediately!
+                               if (typeof onChatUpdate === 'function') {
+                                 onChatUpdate(chatUser._id || chatUser.id, 'hide', hideChat, val); 
+                               }
+                             }}
                              onBlur={async () => {
                                // Saves to database when they click away
                                try {
@@ -2252,6 +2252,10 @@ const executeSmartDelete = async (action, targetMsg) => {
                              muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality, saveToGallery, isImportantChat,
                              isPinnedChat: nextVal 
                            }, { headers: { Authorization: `Bearer ${token}` } });
+                           // 🚨 REAL-TIME SYNC TO SIDEBAR
+                          if (typeof onChatUpdate === 'function') {
+                            onChatUpdate(chatUser._id || chatUser.id, 'pin', nextVal);
+                         }
                            
                            setToast(nextVal ? "📌 Chat Pinned to Top!" : "Chat Unpinned.");
                            setTimeout(() => setToast(null), 3000);
@@ -2277,6 +2281,10 @@ const executeSmartDelete = async (action, targetMsg) => {
                              muteOption, priorityMode, smartAlerts, customKeywords, lockChat, hideChat, vaultKey, screenshotProtection, readReceipts, chatPin, autoDownload, imageQuality, saveToGallery, isPinnedChat,
                              isImportantChat: nextVal 
                            }, { headers: { Authorization: `Bearer ${token}` } });
+                           // 🚨 REAL-TIME SYNC TO SIDEBAR
+    if (typeof onChatUpdate === 'function') {
+      onChatUpdate(chatUser._id || chatUser.id, 'important', nextVal);
+    }
                            
                            setToast(nextVal ? "⭐ Marked as Important!" : "Importance removed.");
                            setTimeout(() => setToast(null), 3000);

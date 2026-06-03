@@ -99,6 +99,16 @@ io.on('connection', (socket) => {
   socket.on('chat_cleared', (data) => {
     socket.to(data.room).emit('chat_cleared');
   });
+
+  // 🚨 BOUNCE LOCATION REQUEST
+  socket.on('request_location', (data) => {
+    socket.to(data.room).emit('request_location', data);
+  });
+
+  // 🚨 BOUNCE BLOCK SIGNAL
+  socket.on('user_blocked', (data) => {
+    socket.to(data.room).emit('user_blocked', data);
+  });
   
   // 🚨 3. BULLETPROOF OFFLINE DETECTION
   socket.on('disconnect', async () => {

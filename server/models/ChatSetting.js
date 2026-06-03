@@ -37,7 +37,8 @@ const chatSettingSchema = new mongoose.Schema({
   imageQuality: { type: String, enum: ['Standard', 'HD Quality'], default: 'Standard' },
   saveToGallery: { type: Boolean, default: false },
   isPinnedChat: { type: Boolean, default: false },
-  isImportantChat: { type: Boolean, default: false }
+  isImportantChat: { type: Boolean, default: false },
+  isBlocked: { type: Boolean, default: false }
 
 }, { timestamps: true });
 

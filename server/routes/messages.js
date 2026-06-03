@@ -238,7 +238,7 @@ router.post('/settings/:room', protect, async (req, res) => {
       readReceipts,
       chatPin,
       vaultKey,
-      autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat
+      autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat, isBlocked
     } = req.body;
 
     // 🚨 CHECK YOUR TERMINAL AFTER TOGGLING A SETTING
@@ -258,7 +258,7 @@ router.post('/settings/:room', protect, async (req, res) => {
           readReceipts,
           chatPin,
           vaultKey,
-          autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat
+          autoDownload, imageQuality, saveToGallery, isPinnedChat, isImportantChat, isBlocked
         } 
       },
       { new: true, upsert: true }

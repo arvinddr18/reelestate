@@ -209,7 +209,7 @@ export default function Messages() {
               <div className="text-center py-10 text-gray-400 font-bold text-sm">No networked users found.</div>
             ) : (
              /* 🚨 THE FIX 2: Filter blocked users out of the main list! */
-             filteredUsers.filter(u => !u.isBlocked).map(user => (
+             filteredUsers.map(user => (
                 <div key={user._id || user.id} onClick={() => setActiveChat(user)} className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-white/10 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] scale-[1.02]' : 'bg-[#121826]/40 border-transparent hover:bg-white/5 hover:border-white/10 hover:-translate-y-1'}`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className="relative shrink-0">

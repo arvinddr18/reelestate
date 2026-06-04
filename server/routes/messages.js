@@ -284,6 +284,26 @@ router.post('/settings/:room', protect, async (req, res) => {
       { new: true, upsert: true }
     );
 
+    // 🚨 NEW: GLOBAL BLOCK LIST SYNC 🚨
+    if (isBlocked !== undefined) {
+      const User = require('../models/User');
+      
+      // Figure out who the other person is
+      const ids = req.params.room.split('_');
+      const friendId = ids.find(id => id !== String(req.user._id));
+
+      if (friendId) {
+        if (isBlocked === true) {
+          // Add them to the global Blocked list
+          await User.findByIdAndUpdate(req.user._id, { $addToSet: { blockedUsers: friendId } });
+        } else {
+          // Remove them from the global Blocked list
+          await User.findByIdAndUpdate(req.user._id, { $pull: { blockedUsers: friendId } });
+        }
+      }
+    }
+    
+
     res.status(200).json({ success: true, data: updatedSettings });
   } catch (error) {
     console.error("Save Error:", error);

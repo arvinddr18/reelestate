@@ -1329,8 +1329,13 @@ const executeSmartDelete = async (action, targetMsg) => {
         </div>
 
         {/* 🌟 DYNAMIC INPUT BAR / RECORDING DASHBOARD 🌟 */}
-        {isRecordingAudio ? (
-          <div className="relative w-full max-w-3xl mx-auto flex items-center justify-between bg-[#ff3366]/10 backdrop-blur-2xl border border-[#ff3366]/30 p-1 md:p-1.5 rounded-full shadow-[0_0_40px_rgba(255,51,102,0.2)] animate-in slide-in-from-right-10 duration-300">
+        {isBlocked ? (
+          <div className="w-full max-w-3xl mx-auto p-4 mb-2 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(239,68,68,0.2)] animate-in slide-in-from-bottom-2">
+            <span className="text-xl">🚫</span>
+            <p className="text-red-500 font-bold text-sm tracking-wide">You have blocked this user. Unblock to send messages.</p>
+          </div>
+        ) : isRecordingAudio ? (
+          <div className="relative w-full max-w-3xl mx-auto flex items-center justify-between bg-[#ff3366]/10 backdrop-blur-2xl border border-[#ff3366]/30 p-1 md:p-1.5 rounded-full shadow-[0_0_40px_rgba(255,51,102,0.2)] animate-in slide-in-from-right-10 duration-300">
             <button type="button" onClick={cancelAudioRecording} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-500 transition-all hover:scale-110 ml-1">
               <IoMdTrash size={20} />
             </button>

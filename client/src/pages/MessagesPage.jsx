@@ -161,7 +161,8 @@ export default function Messages() {
               
               <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 snap-x">
                 
-                {dbUsers.slice(0, 10).map(user => (
+                {/* 🚨 THE FIX 1: Filter blocked users out of Active Radar! */}
+                {dbUsers.filter(u => !u.isBlocked).slice(0, 10).map(user => (
                   <div key={user._id || user.id} onClick={() => setActiveChat(user)} className="snap-start shrink-0 flex flex-col items-center gap-2 group cursor-pointer">
                     <div className="relative">
                       <div className="absolute -inset-1 rounded-full border border-dashed border-[#00F0FF] animate-[spin_10s_linear_infinite] group-hover:rotate-180 transition-transform duration-[3000ms]" />
@@ -207,7 +208,8 @@ export default function Messages() {
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-10 text-gray-400 font-bold text-sm">No networked users found.</div>
             ) : (
-             filteredUsers.map(user => (
+             /* 🚨 THE FIX 2: Filter blocked users out of the main list! */
+             filteredUsers.filter(u => !u.isBlocked).map(user => (
                 <div key={user._id || user.id} onClick={() => setActiveChat(user)} className={`block p-4 rounded-[24px] backdrop-blur-md transition-all duration-300 cursor-pointer group relative overflow-hidden border ${activeChat?._id === user._id ? 'bg-white/10 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] scale-[1.02]' : 'bg-[#121826]/40 border-transparent hover:bg-white/5 hover:border-white/10 hover:-translate-y-1'}`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className="relative shrink-0">

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { MdAutoAwesome, MdMessage, MdOutlineAlternateEmail } from 'react-icons/md';
 import { IoMdChatbubbles, IoMdInformationCircle } from 'react-icons/io';
 import io from 'socket.io-client';
+import { useAuth } from '../context/AuthContext'; // 🚨 1. ADD THIS IMPORT
+
 
 // 🚨 1. SETUP SOCKET CONNECTION FOR THIS FILE
 const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
@@ -14,8 +16,9 @@ const getSocket = () => {
 };
 
 export default function NotificationsPanel() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user: currentUser } = useAuth(); // 🚨 2. GRAB THE USER
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null); // 🚨 Added Toast State
 
   // 1. Initial Load
@@ -23,23 +26,31 @@ export default function NotificationsPanel() {
     fetchNotifications();
   }, []);
 
+  
   // 🚨 2. LISTEN FOR REAL-TIME GLOBAL NOTIFICATIONS
-  useEffect(() => {
-    const socket = getSocket(); 
-    
-    socket.on('new_notification', () => {
-      // Re-fetch notifications from the database instantly!
-      fetchNotifications(); 
-      
-      // Show a quick popup!
-      setToast("🔔 New Notification Received!");
-      setTimeout(() => setToast(null), 3000);
-    });
+  useEffect(() => {
+    const socket = getSocket(); 
+    
+    // 🚨 3. TELL THE BACKEND WHO IS LISTENING!
+    if (currentUser) {
+      const myId = currentUser._id || currentUser.id;
+      socket.emit('iam_online', myId);
+    }
 
-    return () => {
-      socket.off('new_notification');
-    };
-  }, []);
+    socket.on('new_notification', () => {
+      // Re-fetch notifications from the database instantly!
+      fetchNotifications(); 
+      
+      // Show a quick popup!
+      setToast("🔔 New Notification Received!");
+      setTimeout(() => setToast(null), 3000);
+    });
+
+    return () => {
+      socket.off('new_notification');
+    };
+  // 🚨 4. ADD currentUser AS A DEPENDENCY SO IT RUNS WHEN THEY LOG IN
+  }, [currentUser]);
 
   const fetchNotifications = async () => {
     try {

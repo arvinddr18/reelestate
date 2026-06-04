@@ -57,12 +57,12 @@ export default function NotificationsPanel() {
       const token = localStorage.getItem('nodexa_token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      // Fetch alerts from your new backend route
-      const res = await axios.get('https://reelestate-backend.onrender.com/api/users/notifications/all', config);
+      // 🚨 THE FIX: Use API_URL instead of the hardcoded Render link!
+      const res = await axios.get(`${API_URL}/api/users/notifications/all`, config);
       setNotifications(res.data.data);
       
       // Silently mark them as read in the background
-      await axios.post('https://reelestate-backend.onrender.com/api/users/notifications/mark-read', {}, config);
+      await axios.post(`${API_URL}/api/users/notifications/mark-read`, {}, config);
     } catch (error) {
       console.error("Failed to load alerts", error);
     } finally {

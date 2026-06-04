@@ -285,20 +285,23 @@ router.post('/settings/:room', protect, async (req, res) => {
     );
 
     // 🚨 NEW: GLOBAL BLOCK LIST SYNC 🚨
-    if (isBlocked !== undefined) {
+   if (isBlocked !== undefined) {
       const User = require('../models/User');
       
       // Figure out who the other person is
       const ids = req.params.room.split('_');
-      const friendId = ids.find(id => id !== String(req.user._id));
+      const friendIdStr = ids.find(id => id !== String(req.user._id));
 
-      if (friendId) {
+      if (friendIdStr) {
+        // Convert string ID to actual MongoDB ObjectId so $addToSet works flawlessly!
+        const friendObjectId = new mongoose.Types.ObjectId(friendIdStr);
+
         if (isBlocked === true) {
-          // Add them to the global Blocked list
-          await User.findByIdAndUpdate(req.user._id, { $addToSet: { blockedUsers: friendId } });
+          console.log(`🚫 Syncing Block: Adding ${friendIdStr} to ${req.user.username}'s block list.`);
+          await User.findByIdAndUpdate(req.user._id, { $addToSet: { blockedUsers: friendObjectId } });
         } else {
-          // Remove them from the global Blocked list
-          await User.findByIdAndUpdate(req.user._id, { $pull: { blockedUsers: friendId } });
+          console.log(`✅ Syncing Unblock: Removing ${friendIdStr} from ${req.user.username}'s block list.`);
+          await User.findByIdAndUpdate(req.user._id, { $pull: { blockedUsers: friendObjectId } });
         }
       }
     }

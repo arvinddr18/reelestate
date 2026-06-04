@@ -105,6 +105,26 @@ router.post('/', protect, async (req, res) => {
   try {
     const newMessage = new HoloMessage(req.body);
     const savedMessage = await newMessage.save();
+
+    // 🚨 NEW: GLOBAL NOTIFICATION GENERATOR FOR LOCATION REQUESTS 🚨
+    if (req.body.isLocationRequest) {
+      const Notification = require('../models/Notification');
+      
+      // Figure out who the other person in the room is
+      const users = req.body.room.split('_');
+      const recipientId = users.find(id => id !== String(req.user._id));
+
+      if (recipientId) {
+        await Notification.create({
+          recipient: recipientId,
+          sender: req.user._id,
+          type: 'location', // You can use this to render a special map icon in your panel!
+          content: 'is requesting your Live Location in a secure chat.',
+          onModel: 'User',
+          linkId: req.user._id
+        });
+      }
+    }
     
     // 👇 🚨 AUTOMATED SMART EMAIL TRIGGER & SMART SCAN INTERCEPTOR 👇
     try {

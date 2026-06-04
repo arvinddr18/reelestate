@@ -109,6 +109,17 @@ io.on('connection', (socket) => {
   socket.on('user_blocked', (data) => {
     socket.to(data.room).emit('user_blocked', data);
   });
+
+  // 🚨 GLOBAL NOTIFICATION BOUNCER (Works across the whole app!)
+  socket.on('send_global_notification', (data) => {
+    // Search our active map to see if the target user is online anywhere!
+    for (let [socketId, activeUserId] of activeSockets.entries()) {
+      if (activeUserId === String(data.targetUserId)) {
+        // Shoot a ping directly to their specific device
+        io.to(socketId).emit('new_notification');
+      }
+    }
+  });
   
   // 🚨 3. BULLETPROOF OFFLINE DETECTION
   socket.on('disconnect', async () => {

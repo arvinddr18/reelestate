@@ -354,16 +354,40 @@ const getBlockedUsers = async (req, res) => {
 };
 
 // ─── Unblock User ─────────────────────────────────────────────────────────────
+// ─── Unblock User ─────────────────────────────────────────────────────────────
 const unblockUser = async (req, res) => {
-  try {
-    // $pull removes the specific user ID from the blocked array
-    await User.findByIdAndUpdate(req.user.id, { 
-      $pull: { blockedUsers: req.params.id } 
-    });
-    res.status(200).json({ success: true, message: 'User successfully unblocked.' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error during unblock.' });
-  }
+  try {
+    const friendId = req.params.id;
+
+    // 1. Remove them from the global User profile block list
+    await User.findByIdAndUpdate(req.user._id || req.user.id, { 
+      $pull: { blockedUsers: friendId } 
+    });
+
+    // 🚨 2. THE FIX: CROSS-SYNC & OBLITERATE THE CHAT ROOM BLOCK STATUS 🚨
+    const ChatSetting = require('../models/ChatSetting');
+    
+    // Generate the exact room parameter possibilities string combinations
+    const myId = String(req.user._id || req.user.id);
+    const roomOption1 = `${myId}_${friendId}`;
+    const roomOption2 = `${friendId}_${myId}`;
+
+    // Find the chat setting configuration for this specific room and reset it smoothly
+    await ChatSetting.updateMany(
+      { 
+        userId: myId, 
+        room: { $in: [roomOption1, roomOption2] } 
+      },
+      { $set: { isBlocked: false } }
+    );
+    
+    console.log(`✨ Global Sync complete: Chat settings unblocked for partner connection.`);
+
+    res.status(200).json({ success: true, message: 'User successfully unblocked.' });
+  } catch (error) {
+    console.error("Unblock Error:", error);
+    res.status(500).json({ success: false, message: 'Server error during unblock.' });
+  }
 };
 
 // ─── Submit Support Ticket ───────────────────────────────────────────────────

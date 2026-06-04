@@ -2,13 +2,43 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MdAutoAwesome, MdMessage, MdOutlineAlternateEmail } from 'react-icons/md';
 import { IoMdChatbubbles, IoMdInformationCircle } from 'react-icons/io';
+import io from 'socket.io-client';
+
+// 🚨 1. SETUP SOCKET CONNECTION FOR THIS FILE
+const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+const API_URL = RAW_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
+let socket;
+const getSocket = () => {
+  if (!socket) socket = io(API_URL);
+  return socket;
+};
 
 export default function NotificationsPanel() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null); // 🚨 Added Toast State
 
+  // 1. Initial Load
   useEffect(() => {
     fetchNotifications();
+  }, []);
+
+  // 🚨 2. LISTEN FOR REAL-TIME GLOBAL NOTIFICATIONS
+  useEffect(() => {
+    const socket = getSocket(); 
+    
+    socket.on('new_notification', () => {
+      // Re-fetch notifications from the database instantly!
+      fetchNotifications(); 
+      
+      // Show a quick popup!
+      setToast("🔔 New Notification Received!");
+      setTimeout(() => setToast(null), 3000);
+    });
+
+    return () => {
+      socket.off('new_notification');
+    };
   }, []);
 
   const fetchNotifications = async () => {
@@ -44,6 +74,12 @@ export default function NotificationsPanel() {
 
   return (
     <div className="w-full max-w-md mx-auto bg-[#0B0F19] border border-[#1E2532] rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+      {/* 🌟 NOTIFICATION TOAST POPUP 🌟 */}
+      {toast && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-full shadow-[0_0_20px_rgba(0,240,255,0.3)] backdrop-blur-xl text-[#00f0ff] text-xs font-black tracking-widest uppercase flex items-center gap-2 animate-in slide-in-from-top-2 fade-in duration-300">
+          {toast}
+        </div>
+      )}
       
       {/* HEADER */}
       <div className="p-6 border-b border-[#1E2532] bg-[#151A25]/50 flex justify-between items-center">

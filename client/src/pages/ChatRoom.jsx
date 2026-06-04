@@ -1238,9 +1238,22 @@ const executeSmartDelete = async (action, targetMsg) => {
                         </div>
                       )}
 
-                      {msg.text && (
+                     {msg.text && (
                         <span className={`relative transition-all duration-500 block ${msg.isBlurred ? 'blur-md opacity-60' : ''}`}>
                           {msg.text}
+                          
+                          {/* 🚨 THE MAGIC INJECTION: If it's a location request from the other person, show the pulsing action button! */}
+                          {msg.text.includes("requesting your Live Location") && !isMe && (
+                            <button 
+                              onClick={() => {
+                                alert("Live Location hardware API integration coming soon!");
+                                // Here you will eventually trigger the phone's GPS and send coordinates back!
+                              }}
+                              className="mt-3 w-full block py-2.5 rounded-xl bg-[#00ff9d]/10 border border-[#00ff9d]/50 text-[#00ff9d] font-black text-[10px] uppercase tracking-widest animate-[pulse_2s_infinite] hover:bg-[#00ff9d]/30 transition-all shadow-[0_0_15px_rgba(0,255,157,0.2)] active:scale-95"
+                            >
+                              📍 Share Current Location
+                            </button>
+                          )}
                         </span>
                       )}
                     </AnimatedMessageBubble>
@@ -2395,8 +2408,32 @@ const executeSmartDelete = async (action, targetMsg) => {
                      
                      {/* REQUEST LOCATION */}
                      <button 
-                       onClick={() => {
-                         getSocket().emit('request_location', { room });
+                       onClick={async () => {
+                         // 🚨 1. CREATE A SPECIAL LOCATION REQUEST MESSAGE
+                         const locationReqMsg = {
+                           room, 
+                           text: "📍 I am requesting your Live Location. Please share it securely.", 
+                           isLocationRequest: true, // Special flag for the UI
+                           image: null, video: null, audio: null,
+                           senderId: myId, 
+                           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+                           timestamp: Date.now(), 
+                           isRead: false
+                         };
+                         
+                         // 🚨 2. RENDER ON MY SCREEN AND SEND TO PARTNER
+                         setMessages(prev => [...prev, locationReqMsg]);
+                         getSocket().emit('send_message', locationReqMsg);
+                         
+                         // 🚨 3. SHOOT A PING TO THEIR FEED PAGE!
+                         getSocket().emit('send_global_notification', { targetUserId: friendId });
+                         
+                         // 🚨 4. SAVE TO DATABASE SO IT PERSISTS FOREVER
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           await axios.post(`${API_URL}/api/messages`, locationReqMsg, { headers: { Authorization: `Bearer ${token}` } });
+                         } catch (err) { console.error(err); }
+
                          setToast(`📍 Location request sent to ${chatUser.fullName}`);
                          setTimeout(() => setToast(null), 3000);
                        }}

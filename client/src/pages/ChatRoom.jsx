@@ -2413,7 +2413,7 @@ const executeSmartDelete = async (action, targetMsg) => {
                          const locationReqMsg = {
                            room, 
                            text: "📍 I am requesting your Live Location. Please share it securely.", 
-                           isLocationRequest: true, // Special flag for the UI
+                           isLocationRequest: true, 
                            image: null, video: null, audio: null,
                            senderId: myId, 
                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
@@ -2421,17 +2421,18 @@ const executeSmartDelete = async (action, targetMsg) => {
                            isRead: false
                          };
                          
-                         // 🚨 2. RENDER ON MY SCREEN AND SEND TO PARTNER
+                         // 🚨 2. RENDER ON MY SCREEN AND SEND TO CHAT
                          setMessages(prev => [...prev, locationReqMsg]);
                          getSocket().emit('send_message', locationReqMsg);
                          
-                         // 🚨 3. SHOOT A PING TO THEIR FEED PAGE!
-                         getSocket().emit('send_global_notification', { targetUserId: friendId });
-                         
-                         // 🚨 4. SAVE TO DATABASE SO IT PERSISTS FOREVER
+                         // 🚨 3. SAVE TO DATABASE FIRST!
                          try {
                            const token = localStorage.getItem('nodexa_token');
                            await axios.post(`${API_URL}/api/messages`, locationReqMsg, { headers: { Authorization: `Bearer ${token}` } });
+                           
+                           // 🚨 4. SHOOT THE PING *AFTER* THE DATABASE FINISHES SAVING!
+                           getSocket().emit('send_global_notification', { targetUserId: friendId });
+                           
                          } catch (err) { console.error(err); }
 
                          setToast(`📍 Location request sent to ${chatUser.fullName}`);

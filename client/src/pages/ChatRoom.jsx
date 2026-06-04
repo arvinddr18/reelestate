@@ -2482,9 +2482,24 @@ const executeSmartDelete = async (action, targetMsg) => {
 
                      {/* REPORT ACCOUNT */}
                      <button 
-                       onClick={() => {
-                         setToast("⚠️ Secure report dispatched to Nodexa Admin node.");
-                         setTimeout(() => setToast(null), 3000);
+                       onClick={async () => {
+                         try {
+                           const token = localStorage.getItem('nodexa_token');
+                           
+                           // 🚨 SENDING THE EXACT IDS TO THE LEDGER
+                           await axios.post(`${API_URL}/api/users/support`, {
+                             subject: "🚨 URGENT: USER REPORT",
+                             message: `User violated community guidelines in secure chat.`,
+                             reportedUserId: chatUser._id || chatUser.id // Explicitly linking the bad actor!
+                           }, { headers: { Authorization: `Bearer ${token}` } });
+
+                           setToast("⚠️ Secure report dispatched to Nodexa Admin node.");
+                           setTimeout(() => setToast(null), 3000);
+                         } catch (error) {
+                           console.error("Report failed:", error);
+                           setToast("❌ Failed to dispatch report.");
+                           setTimeout(() => setToast(null), 3000);
+                         }
                        }}
                        className="flex items-center gap-3 p-4 hover:bg-[#ffbb00]/10 transition-colors text-left group rounded-b-2xl"
                      >

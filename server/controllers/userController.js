@@ -10,6 +10,7 @@ const { deleteFromCloudinary } = require('../middleware/upload');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const sendEmail = require('../utils/sendEmail');
+const AdminReport = require('../models/AdminReport'); 
 
 const cloudinary = require('cloudinary').v2;
 
@@ -390,27 +391,33 @@ const unblockUser = async (req, res) => {
   }
 };
 
-// ─── Submit Support Ticket ───────────────────────────────────────────────────
+// ─── Submit Support Ticket / User Report ──────────────────────────────────
 const submitSupportTicket = async (req, res) => {
   try {
-    const { subject, message } = req.body;
+    const { subject, message, reportedUserId } = req.body;
     
-    // 1. Safely log the ticket to your server terminal so you can read it!
+    // 1. Create the official record in the database
+    const newReport = await AdminReport.create({
+      reporterId: req.user._id || req.user.id,
+      reportedUserId: reportedUserId,
+      subject: subject,
+      message: message,
+      status: 'Pending'
+    });
+
+    // 2. Keep the Terminal Log for instant Admin awareness!
     console.log(`\n=========================================`);
-    console.log(`🚨 NEW SUPPORT TICKET 🚨`);
-    console.log(`From: @${req.user?.username || 'User'}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Message: ${message}`);
+    console.log(`🚨 OFFICIAL REPORT FILED IN LEDGER (ID: ${newReport._id}) 🚨`);
+    console.log(`Reporter: ${req.user.username}`);
+    console.log(`Reported User ID: ${reportedUserId}`);
+    console.log(`Status: PENDING ADMIN REVIEW`);
     console.log(`=========================================\n`);
     
-    // 🚨 Notice: NO sendEmail() here! We completely removed it.
-    
-    // 2. Instantly reply to the frontend!
-    return res.status(200).json({ success: true, message: 'Support ticket received.' });
+    return res.status(200).json({ success: true, message: 'Report saved to secure database.' });
     
   } catch (error) {
-    console.error("Support ticket critical error:", error);
-    return res.status(500).json({ success: false, message: 'Server error processing ticket.' });
+    console.error("Report saving error:", error);
+    return res.status(500).json({ success: false, message: 'Server error processing report.' });
   }
 };
 

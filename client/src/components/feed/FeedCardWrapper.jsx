@@ -12,8 +12,8 @@ const GLOW_MAP = {
 const BENTO_MAP = {
   small: 'col-span-1 min-h-[250px]',
   tall: 'col-span-1 row-span-2 min-h-[500px]',
-  // 🚨 Spans 4 columns and locks the height so it looks perfectly sleek like the picture!
-  large: 'col-span-1 md:col-span-2 xl:col-span-4 min-h-[350px] md:max-h-[420px]', 
+  // 🚨 REMOVED md:max-h so the cards fit their content perfectly!
+  large: 'col-span-1 md:col-span-2 xl:col-span-4 min-h-[200px]', 
 };
 
 export default function FeedCardWrapper({ variant, size = 'large', children }) {

@@ -486,23 +486,53 @@ export default function FeedPage() {
           posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
               
-              {/* 🌟 NODEXA QUANTUM FEED INJECTION 🌟 */}
-              {SAMPLE_FEED_DATA.map((postData) => {
-                switch (postData.type) {
-                  case 'SOCIAL':
-                    return <SocialCard key={postData.id} data={postData} />;
-                  case 'MARKETPLACE':
-                    return <MarketplaceCard key={postData.id} data={postData} />;
-                  case 'REAL_ESTATE':
-                    return <PropertyCard key={postData.id} data={postData} />;
-                  case 'SERVICES':
-                    return <ServiceCard key={postData.id} data={postData} />;
-                  case 'EVENTS':
-                    return <EventCard key={postData.id} data={postData} />;
-                  default:
-                    return <SocialCard key={postData.id} data={postData} />;
-                }
-              })}
+              {/* 🌟 NODEXA QUANTUM FEED INJECTION (WITH HORIZONTAL EVENTS) 🌟 */}
+              {(() => {
+                // 1. Separate Events from the normal feed
+                const regularPosts = SAMPLE_FEED_DATA.filter(post => post.type !== 'EVENTS');
+                const eventPosts = SAMPLE_FEED_DATA.filter(post => post.type === 'EVENTS');
+
+                // 2. Reusable card renderer
+                const renderPost = (postData) => {
+                  switch (postData.type) {
+                    case 'SOCIAL': return <SocialCard key={postData.id} data={postData} />;
+                    case 'MARKETPLACE': return <MarketplaceCard key={postData.id} data={postData} />;
+                    case 'REAL_ESTATE': return <PropertyCard key={postData.id} data={postData} />;
+                    case 'SERVICES': return <ServiceCard key={postData.id} data={postData} />;
+                    default: return <SocialCard key={postData.id} data={postData} />;
+                  }
+                };
+
+                return (
+                  <>
+                    {/* TOP 2 POSTS (Before the scroll) */}
+                    {regularPosts.slice(0, 2).map(renderPost)}
+
+                    {/* 🎟️ THE HORIZONTAL EVENT SCROLLER (Spans all 4 columns!) 🎟️ */}
+                    {eventPosts.length > 0 && (
+                      <div className="col-span-1 md:col-span-2 xl:col-span-4 w-full py-2 my-4">
+                        <div className="flex items-center justify-between mb-4 px-2">
+                          <h3 className="text-white font-black text-xl flex items-center gap-2">
+                            <span className="text-pink-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]">🎟️</span> 
+                            Trending Events
+                          </h3>
+                        </div>
+                        {/* THE SWIPEABLE TRACK */}
+                        <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar snap-x pb-6 px-2 w-full">
+                          {eventPosts.map(postData => (
+                            <div key={postData.id} className="w-[280px] md:w-[320px] shrink-0 snap-start">
+                              <EventCard data={postData} size="small" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* THE REST OF THE GRID POSTS */}
+                    {regularPosts.slice(2).map(renderPost)}
+                  </>
+                );
+              })()}
 
             </div>
           ) : (

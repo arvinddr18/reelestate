@@ -43,5 +43,16 @@ export const SAMPLE_FEED_DATA = [
     id: '9', type: 'SOCIAL', size: 'small',
     user: { name: 'Travel Bug', handle: 'travel.with.k', avatar: 'https://i.pravatar.cc/150?img=7' },
     post: { title: 'Sunsets never get old. 🌅', time: '5h ago', media: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop', stats: { likes: 53, comments: 9 } }
+  },
+// ... your existing data ...
+  {
+    id: '10', type: 'EVENTS', size: 'small',
+    user: { name: 'Tech Startup', handle: 'startup.blr', avatar: 'https://i.pravatar.cc/150?img=12' },
+    event: { title: 'Founders Mixer', schedule: '28 May 2026 • 7:00 PM', media: 'https://images.unsplash.com/photo-1556761175-5973dc0f32b7?q=80&w=400&auto=format&fit=crop', isLive: true }
+  },
+  {
+    id: '11', type: 'EVENTS', size: 'small',
+    user: { name: 'Live Music', handle: 'indie.live', avatar: 'https://i.pravatar.cc/150?img=15' },
+    event: { title: 'Indie Rock Night', schedule: '30 May 2026 • 8:30 PM', media: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=400&auto=format&fit=crop', isLive: false }
   }
 ];

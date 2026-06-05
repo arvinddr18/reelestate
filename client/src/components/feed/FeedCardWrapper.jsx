@@ -10,9 +10,10 @@ const GLOW_MAP = {
 };
 
 const BENTO_MAP = {
-  small: 'col-span-1 min-h-[300px]',
-  tall: 'col-span-1 row-span-2 min-h-[450px]',
-  large: 'col-span-1 md:col-span-2 xl:col-span-3 min-h-[350px]', // 🚨 Full width for big cards!
+  small: 'col-span-1 min-h-[250px]',
+  tall: 'col-span-1 row-span-2 min-h-[500px]',
+  // 🚨 Spans 4 columns and locks the height so it looks perfectly sleek like the picture!
+  large: 'col-span-1 md:col-span-2 xl:col-span-4 min-h-[350px] md:max-h-[420px]', 
 };
 
 export default function FeedCardWrapper({ variant, size = 'large', children }) {
@@ -26,7 +27,7 @@ export default function FeedCardWrapper({ variant, size = 'large', children }) {
       viewport={{ once: true, margin: '-20px' }} 
       transition={{ duration: 0.5 }} 
       whileHover={{ y: -4 }} 
-      className={`${bentoClass} ${glowClass} relative w-full rounded-[2.5rem] bg-[#0d121f]/90 border border-white/[0.08] backdrop-blur-2xl p-6 md:p-8 flex flex-col justify-between transition-all duration-500 overflow-hidden group`}
+      className={`${bentoClass} ${glowClass} relative w-full rounded-[2.5rem] bg-[#0d121f]/90 border border-white/[0.08] backdrop-blur-2xl p-6 flex flex-col justify-between transition-all duration-500 overflow-hidden group`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-[2.5rem]" />
       <div className="relative z-10 flex flex-col h-full justify-between gap-4 w-full">

@@ -492,14 +492,29 @@ export default function FeedPage() {
                 const regularPosts = SAMPLE_FEED_DATA.filter(post => post.type !== 'EVENTS');
                 const eventPosts = SAMPLE_FEED_DATA.filter(post => post.type === 'EVENTS');
 
-                // 2. Reusable card renderer
+                // 2. Reusable card renderer (Groups 20 Hubs into 5 Master Layouts)
                 const renderPost = (postData) => {
-                  switch (postData.type) {
-                    case 'SOCIAL': return <SocialCard key={postData.id} data={postData} />;
-                    case 'MARKETPLACE': return <MarketplaceCard key={postData.id} data={postData} />;
-                    case 'REAL_ESTATE': return <PropertyCard key={postData.id} data={postData} />;
-                    case 'SERVICES': return <ServiceCard key={postData.id} data={postData} />;
-                    default: return <SocialCard key={postData.id} data={postData} />;
+                  const type = postData.type;
+                  
+                  // MARKETPLACE STYLE: Shows Price, Condition, Location grids
+                  if (['MARKETPLACE', 'SALE_HUB', 'MOTORS', 'TECH'].includes(type)) {
+                    return <MarketplaceCard key={postData.id} data={postData} />;
+                  }
+                  // PROPERTY STYLE: Shows Area, Security, BHK specs
+                  else if (['REAL_ESTATE', 'RENTS', 'PGS'].includes(type)) {
+                    return <PropertyCard key={postData.id} data={postData} />;
+                  }
+                  // SERVICES STYLE: Shows Hourly Rate, Fast "Hire" Buttons
+                  else if (['SERVICES', 'JOBS', 'EDUCATION', 'FOOD'].includes(type)) {
+                    return <ServiceCard key={postData.id} data={postData} />;
+                  }
+                  // EVENT STYLE: For the horizontal scroller
+                  else if (['EVENTS'].includes(type)) {
+                    return <EventCard key={postData.id} data={postData} />;
+                  }
+                  // SOCIAL STYLE: Used for Social, Fashion, Travel, Fitness, Pets, etc.
+                  else {
+                    return <SocialCard key={postData.id} data={postData} />;
                   }
                 };
 

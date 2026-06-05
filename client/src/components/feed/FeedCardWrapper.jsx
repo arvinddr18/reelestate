@@ -3,10 +3,25 @@ import { motion } from 'framer-motion';
 
 const GLOW_MAP = {
   SOCIAL: 'hover:border-purple-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
-  MARKETPLACE: 'hover:border-cyan-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
-  REAL_ESTATE: 'hover:border-emerald-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  SALE_HUB: 'hover:border-emerald-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  RENTS: 'hover:border-teal-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  PGS: 'hover:border-cyan-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
   SERVICES: 'hover:border-amber-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
-  EVENTS: 'hover:border-pink-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]'
+  JOBS: 'hover:border-blue-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  EDUCATION: 'hover:border-indigo-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  MARKETPLACE: 'hover:border-cyan-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  MOTORS: 'hover:border-red-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  FOOD: 'hover:border-orange-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  EVENTS: 'hover:border-pink-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  CINEMA: 'hover:border-rose-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  TRAVEL: 'hover:border-sky-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  FITNESS: 'hover:border-lime-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  SPORTS: 'hover:border-blue-400/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  FASHION: 'hover:border-fuchsia-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  BEAUTY: 'hover:border-pink-400/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  TECH: 'hover:border-slate-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  PETS: 'hover:border-yellow-500/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]',
+  KIDS: 'hover:border-teal-400/50 shadow-[0_0_40px_rgba(0,0,0,0.6)]'
 };
 
 const BENTO_MAP = {

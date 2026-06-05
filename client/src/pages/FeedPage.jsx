@@ -3,7 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineDoubleArrow, MdShield } from 'react-icons/md'; 
 import { IoMdSearch, IoMdAdd, IoMdNotifications } from 'react-icons/io';
 import importedLogo from '../assets/nodexa-logo.png'; // 👈 Your exact file!
-import PostCard from '../components/feed/PostCard'; 
+import SocialCard from '../components/feed/SocialCard';
+import MarketplaceCard from '../components/feed/MarketplaceCard';
+import PropertyCard from '../components/feed/PropertyCard';
+import ServiceCard from '../components/feed/ServiceCard';
+import EventCard from '../components/feed/EventCard';
+import { SAMPLE_FEED_DATA } from '../components/feed/feedData';
 import ReelSwiper from '../components/reels/ReelSwiper';
 import api from '../services/api';
 import NotificationsPanel from '../components/NotificationsPanel'; // 🚨 Updated import
@@ -480,13 +485,25 @@ export default function FeedPage() {
         ) : (
           posts.length > 0 ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              {posts.map((post) => (
-                <PostCard 
-                  key={post._id} 
-                  post={post} 
-                  onMediaClick={() => setShowReels(true)} 
-                />
-              ))}
+              
+              {/* 🌟 NODEXA QUANTUM FEED INJECTION 🌟 */}
+              {SAMPLE_FEED_DATA.map((postData) => {
+                switch (postData.type) {
+                  case 'SOCIAL':
+                    return <SocialCard key={postData.id} data={postData} />;
+                  case 'MARKETPLACE':
+                    return <MarketplaceCard key={postData.id} data={postData} />;
+                  case 'REAL_ESTATE':
+                    return <PropertyCard key={postData.id} data={postData} />;
+                  case 'SERVICES':
+                    return <ServiceCard key={postData.id} data={postData} />;
+                  case 'EVENTS':
+                    return <EventCard key={postData.id} data={postData} />;
+                  default:
+                    return <SocialCard key={postData.id} data={postData} />;
+                }
+              })}
+
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-center mt-20 animate-in zoom-in-95 duration-500">

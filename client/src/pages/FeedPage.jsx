@@ -413,7 +413,7 @@ export default function FeedPage() {
       </header>
 
       {/* ─── MAIN FEED CONTENT ─── */}
-      <main className="max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl w-full mx-auto px-1 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6">
         
         {/* ─── ⚡ NEXT-GEN STORY PORTALS (Only on 'For You') ─── */}
         {activeCategory === 'All' && (
@@ -484,7 +484,7 @@ export default function FeedPage() {
           </div>
         ) : (
           posts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
               
               {/* 🌟 NODEXA QUANTUM FEED INJECTION 🌟 */}
               {SAMPLE_FEED_DATA.map((postData) => {

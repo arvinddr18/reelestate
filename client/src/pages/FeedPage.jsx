@@ -217,74 +217,86 @@ export default function FeedPage() {
       setLoading(true);
       const params = {};
 
-      if (activeCategory !== 'All') {
-        params.mainCategory = activeCategory; 
-      }
-      
-      if (activeSub !== 'All' && activeSub !== 'None') {
-        params.subCategory = activeSub;
-      }
+      if (activeCategory !== 'All') params.mainCategory = activeCategory; 
+      if (activeSub !== 'All' && activeSub !== 'None') params.subCategory = activeSub;
 
+      // 1. Fetch real data from your backend
       const res = await api.get('/posts', { params });
-      
-      // 🚨 TEMPORARY DUMMY DATA FOR TESTING THE UI 🚨
-      // If the database is empty, we will inject these fake posts so you can see the design!
-      const dummyPosts = [
-        {
-          _id: 'dummy1',
-          mainCategory: 'Social',
-          creator: { username: 'gahana', profilePhoto: 'https://i.pravatar.cc/150?img=5' },
-          createdAt: new Date().toISOString(),
-          location: 'Bangalore',
-          title: 'Purple Vibes 💜',
-          content: 'Simple days, beautiful vibes and a happy soul ✨',
-          image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=400&fit=crop',
-          likesCount: 128,
-          commentsCount: 23
-        },
-        {
-          _id: 'dummy2',
-          mainCategory: 'Marketplace',
-          creator: { username: 'househub', profilePhoto: 'https://i.pravatar.cc/150?img=11' },
-          createdAt: new Date().toISOString(),
-          location: 'Whitefield',
-          title: '2BHK Apartment in Whitefield',
-          price: 6800000,
-          image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop',
-          likesCount: 69,
-          commentsCount: 11
-        },
-        {
-          _id: 'dummy3',
-          mainCategory: 'Travel',
-          creator: { username: 'rohit_shots', profilePhoto: 'https://i.pravatar.cc/150?img=33' },
-          createdAt: new Date().toISOString(),
-          location: 'Gokarna',
-          title: 'Sunset at Gokarna Beach 🌊❤️',
-          image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
-          likesCount: 315,
-          commentsCount: 42
-        },
-        {
-          _id: 'dummy4',
-          mainCategory: 'Education',
-          creator: { username: 'learnwithdev', profilePhoto: 'https://i.pravatar.cc/150?img=68' },
-          createdAt: new Date().toISOString(),
-          title: 'Master UI/UX in 30 Days',
-          content: 'Day 12 — Wireframing Basics. We are covering the fundamentals of layout architecture today!',
-          image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600&h=400&fit=crop',
-          likesCount: 96,
-          commentsCount: 12
-        }
-      ];
+      const realDatabasePosts = res.data.data || [];
 
-      // If database has posts, use them. If not, use the dummy posts!
-      const realPosts = res.data.data || [];
-      
-      // We filter the dummy posts so the top category buttons still work!
-      const displayPosts = realPosts.length > 0 ? realPosts : dummyPosts.filter(p => activeCategory === 'All' || p.mainCategory === activeCategory);
-      
-      setPosts(displayPosts);
+      // 2. Fallback to mock data if the database is empty
+      if (realDatabasePosts.length === 0) {
+        const filteredDummies = activeCategory === 'All' 
+          ? SAMPLE_FEED_DATA 
+          : SAMPLE_FEED_DATA.filter(p => p.type === activeCategory.toUpperCase().replace(/ & /g, '_').replace(/ /g, '_'));
+        setPosts(filteredDummies);
+        return;
+      }
+
+      // ====================================================================
+      // 🌟 THE NODEXA DATA ADAPTER: Translates DB Schema to UI Cards 🌟
+      // ====================================================================
+      const formattedPosts = realDatabasePosts.map((dbPost) => {
+        
+        // A. Standardize User Info from Populated Author
+        const user = {
+          name: dbPost.author?.username || 'Nodexa User',
+          handle: dbPost.author?.username?.toLowerCase().replace(' ', '') || 'user',
+          avatar: dbPost.author?.profilePhoto || 'https://i.pravatar.cc/150?img=5'
+        };
+
+        // B. Secure Media Extraction (Handles both Image arrays and Video URLs)
+        let media = null;
+        if (dbPost.mediaType === 'video' && dbPost.videoUrl) {
+          media = dbPost.videoUrl;
+        } else if (dbPost.images && dbPost.images.length > 0) {
+          media = dbPost.images[0].url; 
+        }
+
+        // C. Standardize Category String for Glow Colors
+        const glowType = dbPost.mainCategory?.toUpperCase().replace(/ & /g, '_').replace(/ /g, '_') || 'SOCIAL';
+
+        // ---------------------------------------------------------
+        // ROUTE 1: THE "ACTIVITY" (SOCIAL) POST
+        // Matches the form fields from CreatePostPage.jsx precisely
+        // ---------------------------------------------------------
+        if (dbPost.postType === 'Social' || (!dbPost.price && !dbPost.monthlyRent && !dbPost.salary && !dbPost.startingPrice)) {
+          return {
+            id: dbPost._id, 
+            type: glowType, 
+            size: 'large', 
+            user,
+            post: { 
+              title: dbPost.title || 'Community Update', 
+              description: dbPost.description || '', 
+              time: 'Just now', // Can be updated to formatDistanceToNow(new Date(dbPost.createdAt))
+              location: dbPost.locationTag || (dbPost.location ? dbPost.location.address : null), 
+              media: media, 
+              tags: dbPost.hashtags || [],
+              music: dbPost.music,
+              taggedUsers: dbPost.taggedUsers || [],
+              isLive: dbPost.isActive,
+              stats: { 
+                likes: dbPost.likesCount || 0, 
+                comments: dbPost.commentsCount || 0, 
+                shares: dbPost.savesCount || 0 
+              } 
+            }
+          };
+        }
+
+        // ---------------------------------------------------------
+        // ROUTE 2: FALLBACK FOR BUSINESS LISTINGS
+        // (We will expand this in the next steps for Real Estate, Market, etc.)
+        // ---------------------------------------------------------
+        return {
+          id: dbPost._id, type: 'SOCIAL', size: 'large', user,
+          post: { title: dbPost.title, description: dbPost.description, time: 'Just now', media, stats: { likes: 0, comments: 0 } }
+        };
+      });
+
+      // 3. Inject Formatted Data into the Feed
+      setPosts(formattedPosts);
 
     } catch (err) {
       console.error("Fetch Error:", err);

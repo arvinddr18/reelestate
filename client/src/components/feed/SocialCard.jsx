@@ -26,22 +26,48 @@ export default function SocialCard({ data, onAction }) {
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-white font-black text-base">{user.name}</span>
-                  <span className="text-gray-500 text-xs">@{user.handle} • {post.time} • {post.location}</span>
+                  <span className="text-gray-500 text-xs">@{user.handle} • {post.time} {post.location && `• 📍 ${post.location}`}</span>
                 </div>
               </div>
               
               <div className="flex flex-col gap-2 mt-2">
                 <h3 className="text-white font-black text-2xl tracking-tight">“{post.title}”</h3>
-                <p className="text-gray-300 text-sm leading-relaxed">{post.description}</p>
+                {post.description && <p className="text-gray-300 text-sm leading-relaxed">{post.description}</p>}
               </div>
 
-              {!isGridItem && post.tags && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {post.tags.map((tag, idx) => (
-                    <span key={idx} className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold shadow-[0_0_10px_rgba(168,85,247,0.1)]">
-                      #{tag}
-                    </span>
-                  ))}
+              {!isGridItem && (
+                <div className="flex flex-col gap-3 mt-2">
+                  
+                  {/* 🎵 EXTRA SOCIAL CONTEXT: Music & Tagged Users 👤 */}
+                  {(post.music || (post.taggedUsers && post.taggedUsers.length > 0)) && (
+                    <div className="flex flex-wrap gap-2">
+                      {post.music && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#151A25]/80 border border-white/5 backdrop-blur-md">
+                          <span className="text-purple-400 animate-pulse">🎵</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">{post.music}</span>
+                        </div>
+                      )}
+                      {post.taggedUsers && post.taggedUsers.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#151A25]/80 border border-white/5 backdrop-blur-md">
+                          <span className="text-indigo-400">👤</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
+                            {post.taggedUsers.length} Tagged
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* HASHTAGS */}
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags.map((tag, idx) => (
+                        <span key={idx} className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] uppercase font-black tracking-wider shadow-[0_0_10px_rgba(168,85,247,0.1)]">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

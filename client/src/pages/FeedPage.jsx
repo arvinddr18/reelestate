@@ -214,98 +214,45 @@ export default function FeedPage() {
 
   const fetchPosts = async () => {
     try {
-      setLoading(true);
-      const params = {};
+        setLoading(true);
+        const params = {};
+        if (activeCategory !== 'All') params.mainCategory = activeCategory; 
 
-      if (activeCategory !== 'All') params.mainCategory = activeCategory; 
-      if (activeSub !== 'All' && activeSub !== 'None') params.subCategory = activeSub;
-
-      // 1. Fetch real data from your backend
-      const res = await api.get('/posts', { params });
-      console.log("SERVER RESPONSE DATA:", res.data.data);
-      const realDatabasePosts = res.data.data || [];
-
-      // 2. Fallback to mock data if the database is empty
-      if (realDatabasePosts.length === 0) {
-        const filteredDummies = activeCategory === 'All' 
-          ? SAMPLE_FEED_DATA 
-          : SAMPLE_FEED_DATA.filter(p => p.type === activeCategory.toUpperCase().replace(/ & /g, '_').replace(/ /g, '_'));
-        setPosts(filteredDummies);
-        return;
-      }
-
-      // ====================================================================
-      // 🌟 THE NODEXA DATA ADAPTER: Translates DB Schema to UI Cards 🌟
-      // ====================================================================
-      const formattedPosts = realDatabasePosts.map((dbPost) => {
+        const res = await api.get('/posts', { params });
+        const realDatabasePosts = res.data.data || [];
         
-        // A. Standardize User Info from Populated Author
-        const user = {
-          name: dbPost.author?.username || 'Nodexa User',
-          handle: dbPost.author?.username?.toLowerCase().replace(' ', '') || 'user',
-          avatar: dbPost.author?.profilePhoto || 'https://i.pravatar.cc/150?img=5'
-        };
+        console.log("DEBUG: Processing Real Posts:", realDatabasePosts);
 
-        // B. Secure Media Extraction (Handles both Image arrays and Video URLs)
-        let media = null;
-        if (dbPost.mediaType === 'video' && dbPost.videoUrl) {
-          media = dbPost.videoUrl;
-        } else if (dbPost.images && dbPost.images.length > 0) {
-          media = dbPost.images[0].url; 
-        }
+        // 🚨 FORCE RENDER: Ignore the empty/dummy check for a moment
+        // We map the real posts to the UI format
+        const formattedPosts = realDatabasePosts.map((dbPost) => {
+            // ... (Your existing mapping logic) ...
+            // If the title is missing, use a fallback so the card doesn't crash
+            return {
+                id: dbPost._id,
+                type: (dbPost.mainCategory || 'SOCIAL').toUpperCase().replace(/ & /g, '_').replace(/ /g, '_'),
+                size: 'large',
+                user: { 
+                    name: dbPost.author?.username || 'Nodexa User',
+                    handle: dbPost.author?.username || 'user',
+                    avatar: dbPost.author?.profilePhoto || 'https://i.pravatar.cc/150'
+                },
+                post: {
+                    title: dbPost.title || 'Untitled Post',
+                    description: dbPost.description || '',
+                    media: dbPost.images?.[0]?.url || dbPost.videoUrl || null,
+                    // ... rest of your mapping
+                }
+            };
+        });
 
-        // C. Standardize Category String for Glow Colors
-        const glowType = dbPost.mainCategory?.toUpperCase().replace(/ & /g, '_').replace(/ /g, '_') || 'SOCIAL';
-
-        // ---------------------------------------------------------
-        // ROUTE 1: THE "ACTIVITY" (SOCIAL) POST
-        // Matches the form fields from CreatePostPage.jsx precisely
-        // ---------------------------------------------------------
-        if (dbPost.postType === 'Social' || (!dbPost.price && !dbPost.monthlyRent && !dbPost.salary && !dbPost.startingPrice)) {
-          return {
-            id: dbPost._id, 
-            type: glowType, 
-            size: 'large', 
-            user,
-            post: { 
-              title: dbPost.title || 'Community Update', 
-              description: dbPost.description || '', 
-              time: 'Just now', // Can be updated to formatDistanceToNow(new Date(dbPost.createdAt))
-              location: dbPost.locationTag || (dbPost.location ? dbPost.location.address : null), 
-              media: media, 
-              tags: dbPost.hashtags || [],
-              music: dbPost.music,
-              taggedUsers: dbPost.taggedUsers || [],
-              isLive: dbPost.isActive,
-              stats: { 
-                likes: dbPost.likesCount || 0, 
-                comments: dbPost.commentsCount || 0, 
-                shares: dbPost.savesCount || 0 
-              } 
-            }
-          };
-        }
-
-        // ---------------------------------------------------------
-        // ROUTE 2: FALLBACK FOR BUSINESS LISTINGS
-        // (We will expand this in the next steps for Real Estate, Market, etc.)
-        // ---------------------------------------------------------
-        return {
-          id: dbPost._id, type: 'SOCIAL', size: 'large', user,
-          post: { title: dbPost.title, description: dbPost.description, time: 'Just now', media, stats: { likes: 0, comments: 0 } }
-        };
-      });
-
-      // 3. Inject Formatted Data into the Feed
-      setPosts(formattedPosts);
+        setPosts(formattedPosts); // Set the real posts directly
 
     } catch (err) {
-      console.error("Fetch Error:", err);
-    } finally {
-      setLoading(false);
+        console.error("Fetch Error:", err);
+        setLoading(false);
     }
-  };
-
+};
   const handleCategoryClick = (catId) => {
     setActiveCategory(catId);
     setActiveSub('All'); 

@@ -222,6 +222,7 @@ export default function FeedPage() {
 
       // 1. Fetch real data from your backend
       const res = await api.get('/posts', { params });
+      console.log("SERVER RESPONSE DATA:", res.data.data);
       const realDatabasePosts = res.data.data || [];
 
       // 2. Fallback to mock data if the database is empty

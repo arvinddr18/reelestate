@@ -6,6 +6,7 @@ import CategoryBadge from './CategoryBadge';
 import ActionButtons from './ActionButtons';
 import api from '../../services/api'; // 👈 Added API import
 import toast from 'react-hot-toast';  // 👈 Added Toast import
+import { IoHeartOutline, IoHeart, IoChatbubbleOutline, IoBookmarkOutline, IoBookmark, IoShareSocialOutline } from 'react-icons/io5';
 
 export default function SocialCard({ data, onAction }) {
   const { user, post, size } = data;
@@ -129,25 +130,46 @@ export default function SocialCard({ data, onAction }) {
             {!isGridItem && (
               <div className="flex flex-col gap-4 mt-8 w-full">
                 
-                {/* 🚨 WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
-                <div className="flex items-center gap-5 text-sm font-bold text-gray-400">
-                  <button onClick={handleLike} className={`flex items-center gap-2 cursor-pointer transition-all active:scale-75 ${isLiked ? 'text-pink-500' : 'hover:text-pink-500'}`}>
-                    <span className={isLiked ? "drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" : ""}>
-                      {isLiked ? '❤️' : '🤍'}
-                    </span> 
-                    {likesCount}
+                {/* 🚨 PREMIUM WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
+                <div className="flex items-center gap-3 text-sm font-bold text-gray-400">
+                  
+                  {/* LIKE BUTTON */}
+                  <button 
+                    onClick={handleLike} 
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 active:scale-95 ${
+                      isLiked 
+                        ? 'bg-[#FF007A]/10 text-[#FF007A] shadow-[0_0_15px_rgba(255,0,122,0.15)] border border-[#FF007A]/20' 
+                        : 'bg-transparent border border-transparent hover:bg-white/5 hover:text-[#FF007A]'
+                    }`}
+                  >
+                    {isLiked ? <IoHeart size={20} className="drop-shadow-[0_0_8px_rgba(255,0,122,0.8)]" /> : <IoHeartOutline size={20} />}
+                    <span className="font-black tracking-wider">{likesCount}</span>
                   </button>
                   
-                  <button className="flex items-center gap-2 hover:text-[#00F0FF] cursor-pointer transition-all active:scale-75">
-                    💬 {post.stats?.comments}
+                  {/* COMMENT BUTTON */}
+                  <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-transparent border border-transparent transition-all duration-300 active:scale-95 hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]">
+                    <IoChatbubbleOutline size={20} />
+                    <span className="font-black tracking-wider">{post.stats?.comments}</span>
                   </button>
                   
-                  <button onClick={handleSave} className={`flex items-center gap-2 cursor-pointer transition-all active:scale-75 ${isSaved ? 'text-[#0057FF]' : 'hover:text-[#0057FF]'}`}>
-                    <span className={isSaved ? "drop-shadow-[0_0_8px_rgba(0,87,255,0.8)]" : ""}>
-                      {isSaved ? '🚀' : '🔖'}
-                    </span> 
-                    {savesCount}
+                  {/* SAVE BUTTON */}
+                  <button 
+                    onClick={handleSave} 
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 active:scale-95 ${
+                      isSaved 
+                        ? 'bg-[#0057FF]/10 text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.15)] border border-[#0057FF]/30' 
+                        : 'bg-transparent border border-transparent hover:bg-white/5 hover:text-[#0057FF]'
+                    }`}
+                  >
+                    {isSaved ? <IoBookmark size={20} className="drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" /> : <IoBookmarkOutline size={20} />}
+                    <span className="font-black tracking-wider">{savesCount}</span>
                   </button>
+
+                  {/* SHARE BUTTON (Visual Only) */}
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-transparent border border-transparent transition-all duration-300 active:scale-95 hover:bg-purple-500/10 hover:text-purple-400 ml-auto">
+                    <IoShareSocialOutline size={20} />
+                  </button>
+
                 </div>
 
                 <ActionButtons variant="SOCIAL" onAction={onAction} />
@@ -163,13 +185,32 @@ export default function SocialCard({ data, onAction }) {
           )}
 
           {isGridItem && (
-            // 🚨 WIRED UP SMALL GRID CARD ENGAGEMENT ROW 🚨
-            <div className="flex items-center gap-4 text-xs font-bold text-gray-500 mt-auto pt-4 border-t border-white/5 w-full">
-              <button onClick={handleLike} className={`flex items-center gap-1.5 transition-all active:scale-75 ${isLiked ? 'text-pink-500' : 'hover:text-pink-500'}`}>
-                {isLiked ? '❤️' : '🤍'} {likesCount}
-              </button>
-              <button className="flex items-center gap-1.5 hover:text-[#00F0FF] transition-all active:scale-75">
-                💬 {post.stats?.comments}
+            // 🚨 PREMIUM SMALL GRID CARD ENGAGEMENT ROW 🚨
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5 w-full">
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={handleLike} 
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs ${
+                    isLiked ? 'bg-[#FF007A]/10 text-[#FF007A]' : 'hover:bg-white/5 text-gray-400 hover:text-[#FF007A]'
+                  }`}
+                >
+                  {isLiked ? <IoHeart size={16} /> : <IoHeartOutline size={16} />}
+                  <span className="font-black">{likesCount}</span>
+                </button>
+
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs text-gray-400 hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]">
+                  <IoChatbubbleOutline size={16} />
+                  <span className="font-black">{post.stats?.comments}</span>
+                </button>
+              </div>
+
+              <button 
+                  onClick={handleSave} 
+                  className={`p-2 rounded-full transition-all duration-300 active:scale-95 ${
+                    isSaved ? 'text-[#00F0FF]' : 'text-gray-400 hover:text-[#00F0FF] hover:bg-white/5'
+                  }`}
+                >
+                  {isSaved ? <IoBookmark size={16} /> : <IoBookmarkOutline size={16} />}
               </button>
             </div>
           )}

@@ -225,25 +225,23 @@ export default function FeedPage() {
 
         // 🌟 HARDENED DATA ADAPTER 🌟
       const formattedPosts = realDatabasePosts.map((dbPost) => {
-        // Fallbacks to prevent crashes
         const author = dbPost.author || {};
         const title = dbPost.title || 'Untitled Post';
         const description = dbPost.description || '';
         
-        // Ensure media exists, even if empty
-        const media = (dbPost.images && dbPost.images[0]?.url) ? dbPost.images[0].url : (dbPost.videoUrl || null);
+        const media = (dbPost.images && dbPost.images.length > 0 && dbPost.images[0].url) 
+            ? dbPost.images[0].url 
+            : (dbPost.videoUrl || null);
 
-        // Normalize Category
         const glowType = (dbPost.mainCategory || 'SOCIAL').toUpperCase().replace(/ & /g, '_').replace(/ /g, '_');
 
-        // Create the standardized object
         return {
           id: dbPost._id,
           type: glowType,
           size: 'large',
           user: {
             name: author.username || 'Nodexa User',
-            handle: author.username || 'user',
+            handle: author.username?.toLowerCase().replace(' ', '') || 'user',
             avatar: author.profilePhoto || 'https://i.pravatar.cc/150'
           },
           post: {
@@ -255,7 +253,7 @@ export default function FeedPage() {
             tags: dbPost.hashtags || [],
             music: dbPost.music || null,
             taggedUsers: dbPost.taggedUsers || [],
-            isLive: dbPost.isActive !== false, // Defaults to true
+            isLive: dbPost.isActive !== false,
             stats: {
               likes: dbPost.likesCount || 0,
               comments: dbPost.commentsCount || 0,
@@ -265,15 +263,16 @@ export default function FeedPage() {
         };
       });
 
-      // 🚨 CRITICAL: Log what we are trying to set into state
       console.log("DEBUG: Final Formatted Posts to be set in state:", formattedPosts);
       setPosts(formattedPosts);
+      setLoading(false); // 🚨 FIX 1: THIS STOPS THE INFINITE LOADING
       
     } catch (err) {
         console.error("Fetch Error:", err);
         setLoading(false);
     }
-};
+  };
+  
   const handleCategoryClick = (catId) => {
     setActiveCategory(catId);
     setActiveSub('All'); 
@@ -464,38 +463,39 @@ export default function FeedPage() {
             ))}
           </div>
         ) : (
+
           posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
               
-              {/* 🌟 NODEXA QUANTUM FEED INJECTION (WITH HORIZONTAL EVENTS) 🌟 */}
+              {/* 🌟 NODEXA QUANTUM FEED INJECTION 🌟 */}
               {(() => {
-                // 1. Separate Events from the normal feed
-                const regularPosts = SAMPLE_FEED_DATA.filter(post => post.type !== 'EVENTS');
-                const eventPosts = SAMPLE_FEED_DATA.filter(post => post.type === 'EVENTS');
+                // 🚨 FIX 2: THIS NOW USES THE REAL 'posts' STATE, NOT SAMPLE_FEED_DATA
+                const regularPosts = posts.filter(post => post.type !== 'EVENTS');
+                const eventPosts = posts.filter(post => post.type === 'EVENTS');
 
-                // 2. Reusable card renderer (Groups 20 Hubs into 5 Master Layouts)
+                // 🚨 FIX 3: CRASH-PROOF RENDERER
                 const renderPost = (postData) => {
-                  const type = postData.type;
-                  
-                  // MARKETPLACE STYLE: Shows Price, Condition, Location grids
-                  if (['MARKETPLACE', 'SALE_HUB', 'MOTORS', 'TECH'].includes(type)) {
-                    return <MarketplaceCard key={postData.id} data={postData} />;
-                  }
-                  // PROPERTY STYLE: Shows Area, Security, BHK specs
-                  else if (['REAL_ESTATE', 'RENTS', 'PGS'].includes(type)) {
-                    return <PropertyCard key={postData.id} data={postData} />;
-                  }
-                  // SERVICES STYLE: Shows Hourly Rate, Fast "Hire" Buttons
-                  else if (['SERVICES', 'JOBS', 'EDUCATION', 'FOOD'].includes(type)) {
-                    return <ServiceCard key={postData.id} data={postData} />;
-                  }
-                  // EVENT STYLE: For the horizontal scroller
-                  else if (['EVENTS'].includes(type)) {
-                    return <EventCard key={postData.id} data={postData} />;
-                  }
-                  // SOCIAL STYLE: Used for Social, Fashion, Travel, Fitness, Pets, etc.
-                  else {
+                  try {
+                    if (!postData || !postData.type) return null;
+                    const type = postData.type;
+                    
+                    if (['MARKETPLACE', 'SALE_HUB', 'MOTORS', 'TECH', 'PETS', 'KIDS', 'FASHION', 'TRAVEL'].includes(type)) {
+                      return <MarketplaceCard key={postData.id} data={postData} />;
+                    }
+                    if (['REAL_ESTATE', 'RENTS', 'PGS_HOSTELS'].includes(type)) {
+                      return <PropertyCard key={postData.id} data={postData} />;
+                    }
+                    if (['SERVICES', 'JOBS', 'EDUCATION', 'FOOD', 'FITNESS', 'SPORTS', 'BEAUTY'].includes(type)) {
+                      return <ServiceCard key={postData.id} data={postData} />;
+                    }
+                    if (['EVENTS'].includes(type)) {
+                      return <EventCard key={postData.id} data={postData} />;
+                    }
+                    // Fallback to Social Card
                     return <SocialCard key={postData.id} data={postData} />;
+                  } catch (err) {
+                    console.error("Card Silently Crashed:", err);
+                    return null; // Feed survives even if a card breaks!
                   }
                 };
 
@@ -504,7 +504,7 @@ export default function FeedPage() {
                     {/* TOP 2 POSTS (Before the scroll) */}
                     {regularPosts.slice(0, 2).map(renderPost)}
 
-                    {/* 🎟️ THE HORIZONTAL EVENT SCROLLER (Spans all 4 columns!) 🎟️ */}
+                    {/* 🎟️ THE HORIZONTAL EVENT SCROLLER 🎟️ */}
                     {eventPosts.length > 0 && (
                       <div className="col-span-1 md:col-span-2 xl:col-span-4 w-full py-2 my-4">
                         <div className="flex items-center justify-between mb-4 px-2">
@@ -513,7 +513,6 @@ export default function FeedPage() {
                             Trending Events
                           </h3>
                         </div>
-                        {/* THE SWIPEABLE TRACK */}
                         <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar snap-x pb-6 px-2 w-full">
                           {eventPosts.map(postData => (
                             <div key={postData.id} className="w-[280px] md:w-[320px] shrink-0 snap-start">

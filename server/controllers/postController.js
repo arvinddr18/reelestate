@@ -85,57 +85,15 @@ const getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // ─── GET FEED (TEMPORARY DEBUGGING VERSION) ───
-const getFeed = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    // --- TEMPORARY FIX: FETCH ALL POSTS WITHOUT FILTERS ---
-    const posts = await Post.find({}) 
-        .populate('author', 'username profilePhoto isVerified role phone')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(20)
-        .lean();
-
-    const total = await Post.countDocuments({});
-
-    console.log("DEBUG: Total posts in DB:", total);
-    if (posts.length > 0) {
-        console.log("DEBUG: First post in DB:", posts[0].title, "| Category:", posts[0].mainCategory);
-    } else {
-        console.log("DEBUG: Database returned zero posts.");
-    }
-    // ──────────────────────────────────────────────────────────────
-
-    // Attach user's like/save status to each post (Keep this logic)
-    if (req.user) {
-      const postIds = posts.map(p => p._id);
-      const [likes, saves] = await Promise.all([
-        Like.find({ user: req.user._id, post: { $in: postIds } }).select('post'),
-        SavedProperty.find({ user: req.user._id, post: { $in: postIds } }).select('post'),
-      ]);
-      const likedSet = new Set(likes.map(l => l.post.toString()));
-      const savedSet = new Set(saves.map(s => s.post.toString()));
-
-      posts.forEach(p => {
-        p.isLiked = likedSet.has(p._id.toString());
-        p.isSaved = savedSet.has(p._id.toString());
-      });
+    // Build filter simply
+    let filter = { isActive: true };
+    
+    // Add manual category filter only if provided
+    if (req.query.mainCategory && req.query.mainCategory !== 'All') {
+      filter.mainCategory = req.query.mainCategory;
     }
 
-    res.json({
-      success: true,
-      data: posts,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
+    // Fetch posts without the complex AI user preference logic for now
     const [posts, total] = await Promise.all([
       Post.find(filter)
         .populate('author', 'username profilePhoto isVerified role phone')
@@ -146,31 +104,18 @@ const getFeed = async (req, res) => {
       Post.countDocuments(filter),
     ]);
 
-    // Attach user's like/save status to each post
-    if (req.user) {
-      const postIds = posts.map(p => p._id);
-      const [likes, saves] = await Promise.all([
-        Like.find({ user: req.user._id, post: { $in: postIds } }).select('post'),
-        SavedProperty.find({ user: req.user._id, post: { $in: postIds } }).select('post'),
-      ]);
-      const likedSet = new Set(likes.map(l => l.post.toString()));
-      const savedSet = new Set(saves.map(s => s.post.toString()));
-
-      posts.forEach(p => {
-        p.isLiked = likedSet.has(p._id.toString());
-        p.isSaved = savedSet.has(p._id.toString());
-      });
-    }
-
     res.json({
       success: true,
       data: posts,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
+    console.error("DEBUG FEED ERROR:", error); // This will show in your terminal!
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+    
 // ─── Get Single Post ──────────────────────────────────────────────────────────
 const getPost = async (req, res) => {
   try {

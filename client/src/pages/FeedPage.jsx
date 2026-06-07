@@ -214,62 +214,99 @@ export default function FeedPage() {
 
   const fetchPosts = async () => {
     try {
-        setLoading(true);
-        const params = {};
-        if (activeCategory !== 'All') params.mainCategory = activeCategory; 
+      setLoading(true);
+      const params = {};
+      if (activeCategory !== 'All') params.mainCategory = activeCategory; 
 
-        const res = await api.get('/posts', { params });
-        const realDatabasePosts = res.data.data || [];
-        
-        console.log("DEBUG: Processing Real Posts:", realDatabasePosts);
+      const res = await api.get('/posts', { params });
+      const realDatabasePosts = res.data.data || [];
+      
+      console.log("DEBUG: Processing Real Posts:", realDatabasePosts);
 
-        // 🌟 HARDENED DATA ADAPTER 🌟
+      // ====================================================================
+      // 🌟 THE ULTIMATE CRASH-PROOF DATA ADAPTER 🌟
+      // ====================================================================
       const formattedPosts = realDatabasePosts.map((dbPost) => {
+        // 1. Safe Fallbacks
         const author = dbPost.author || {};
         const title = dbPost.title || 'Untitled Post';
         const description = dbPost.description || '';
-        
         const media = (dbPost.images && dbPost.images.length > 0 && dbPost.images[0].url) 
             ? dbPost.images[0].url 
             : (dbPost.videoUrl || null);
+        
+        let glowType = (dbPost.mainCategory || 'SOCIAL').toUpperCase().replace(/ & /g, '_').replace(/ /g, '_');
+        if (glowType === 'LOCAL_EVENTS') glowType = 'EVENTS'; // Ensure events route to the horizontal track
 
-        const glowType = (dbPost.mainCategory || 'SOCIAL').toUpperCase().replace(/ & /g, '_').replace(/ /g, '_');
-
-        return {
-          id: dbPost._id,
-          type: glowType,
-          size: 'large',
-          user: {
-            name: author.username || 'Nodexa User',
-            handle: author.username?.toLowerCase().replace(' ', '') || 'user',
-            avatar: author.profilePhoto || 'https://i.pravatar.cc/150'
-          },
-          post: {
+        // 2. Build ONE Universal Payload containing all possible fields
+        const universalPayload = {
             title: title,
             description: description,
             time: 'Just now',
-            location: dbPost.locationTag || 'Online',
+            location: dbPost.locationTag || (dbPost.location?.address) || 'Online',
             media: media,
             tags: dbPost.hashtags || [],
             music: dbPost.music || null,
             taggedUsers: dbPost.taggedUsers || [],
             isLive: dbPost.isActive !== false,
-            stats: {
-              likes: dbPost.likesCount || 0,
-              comments: dbPost.commentsCount || 0,
-              shares: dbPost.savesCount || 0
-            }
-          }
+            stats: { 
+                likes: dbPost.likesCount || 0, 
+                comments: dbPost.commentsCount || 0, 
+                shares: dbPost.savesCount || 0 
+            },
+            
+            // 🏠 Property Specific
+            price: dbPost.price ? `₹${dbPost.price}` : 'Free',
+            specs: { 
+                Type: dbPost.propertyType || '-', 
+                Area: dbPost.area ? `${dbPost.area} sqft` : null, 
+                BHK: dbPost.bedrooms || null, 
+                Rooms: dbPost.rooms || null 
+            },
+            
+            // 🛍️ Marketplace / Motors / Pets Specific
+            metadata: { 
+                Condition: dbPost.condition, 
+                Brand: dbPost.brand, 
+                KM: dbPost.mileage, 
+                Warranty: dbPost.warranty,
+                Breed: dbPost.breed
+            },
+            
+            // 💼 Services / Jobs Specific
+            rate: dbPost.salary || dbPost.startingPrice || (dbPost.price ? `₹${dbPost.price}` : 'TBA'),
+            
+            // 🎟️ Events Specific
+            schedule: dbPost.eventDate ? `${dbPost.eventDate} ${dbPost.eventTime || ''}` : 'Upcoming'
+        };
+
+        // 3. Return the fully mapped object
+        return {
+          id: dbPost._id,
+          type: glowType,
+          size: glowType === 'EVENTS' ? 'small' : 'large',
+          user: {
+            name: author.username || 'Nodexa User',
+            handle: author.username?.toLowerCase().replace(' ', '') || 'user',
+            avatar: author.profilePhoto || 'https://i.pravatar.cc/150'
+          },
+          // 🚨 THE MAGIC TRICK: Attach the payload to every expected key!
+          post: universalPayload,
+          property: universalPayload,
+          product: universalPayload,
+          service: universalPayload,
+          event: universalPayload
         };
       });
 
       console.log("DEBUG: Final Formatted Posts to be set in state:", formattedPosts);
       setPosts(formattedPosts);
-      setLoading(false); // 🚨 FIX 1: THIS STOPS THE INFINITE LOADING
-      
+      setLoading(false); 
+
+    // 👇 THIS IS WHAT WAS MISSING! 👇
     } catch (err) {
-        console.error("Fetch Error:", err);
-        setLoading(false);
+      console.error("Fetch Error:", err);
+      setLoading(false);
     }
   };
   

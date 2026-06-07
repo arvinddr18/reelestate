@@ -34,7 +34,7 @@ export default function SocialCard({ data, onAction }) {
 
     try {
       // Send to backend
-      await api.post(`/posts/${data.id}/like`);
+      await api.put(`/posts/${data.id}/like`);
     } catch (error) {
       // If it fails, restore the EXACT previous state
       setIsLiked(prevLiked);
@@ -55,7 +55,7 @@ export default function SocialCard({ data, onAction }) {
     setSavesCount(prevSaved ? Math.max(0, prevCount - 1) : prevCount + 1);
 
     try {
-      await api.post(`/posts/${data.id}/save`);
+      await api.put(`/posts/${data.id}/save`);
     } catch (error) {
       setIsSaved(prevSaved);
       setSavesCount(prevCount);

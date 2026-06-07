@@ -85,63 +85,56 @@ const getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Base filter: Only show active posts
-    const filter = { isActive: true };
-  
-    // ─── 🧠 NODEXA AI FILTERING ENGINE ───
-    // If the user is logged in, grab their saved preferences!
+    // ─── GET FEED (TEMPORARY DEBUGGING VERSION) ───
+const getFeed = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // --- TEMPORARY FIX: FETCH ALL POSTS WITHOUT FILTERS ---
+    const posts = await Post.find({}) 
+        .populate('author', 'username profilePhoto isVerified role phone')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(20)
+        .lean();
+
+    const total = await Post.countDocuments({});
+
+    console.log("DEBUG: Total posts in DB:", total);
+    if (posts.length > 0) {
+        console.log("DEBUG: First post in DB:", posts[0].title, "| Category:", posts[0].mainCategory);
+    } else {
+        console.log("DEBUG: Database returned zero posts.");
+    }
+    // ──────────────────────────────────────────────────────────────
+
+    // Attach user's like/save status to each post (Keep this logic)
     if (req.user) {
-      const user = await User.findById(req.user._id);
-      
-      if (user) {
-        // Filter 1: Hubs (Only apply if they aren't manually clicking a specific Hub tab)
-        if (!req.query.mainCategory || req.query.mainCategory === 'All') {
-          if (user.preferredCategories && user.preferredCategories.length > 0) {
-            filter.mainCategory = { $in: user.preferredCategories }; 
-          }
-        }
+      const postIds = posts.map(p => p._id);
+      const [likes, saves] = await Promise.all([
+        Like.find({ user: req.user._id, post: { $in: postIds } }).select('post'),
+        SavedProperty.find({ user: req.user._id, post: { $in: postIds } }).select('post'),
+      ]);
+      const likedSet = new Set(likes.map(l => l.post.toString()));
+      const savedSet = new Set(saves.map(s => s.post.toString()));
 
-        // Filter 2: Budget Fencing (Only applies if they like high-ticket hubs)
-        const budgetHubs = ['Sale Hub', 'Rents', 'PGs & Hostels', 'Motors', 'Market'];
-        const hasBudgetHubs = user.preferredCategories?.some(cat => budgetHubs.includes(cat));
-        
-        if (hasBudgetHubs && user.budgetMax) {
-          filter.price = { $lte: user.budgetMax }; 
-        }
-
-        // Filter 3: Global Location (Searches inside the location.address object)
-        if (user.preferredLocation && user.preferredLocation !== 'Global') {
-          // Extracts "London" from "London, UK" for broader matching
-          const citySearch = user.preferredLocation.split(',')[0].trim();
-          filter['location.address'] = new RegExp(citySearch, 'i'); 
-        }
-      }
-    }
-    // ─────────────────────────────────────
-
-    // ── MANUAL OVERRIDES (If the user searches or clicks specific filters) ──
-    if (req.query.mainCategory && req.query.mainCategory !== 'All') {
-      filter.mainCategory = req.query.mainCategory;
-    }
-    if (req.query.subCategory && req.query.subCategory !== 'All') {
-      filter.subCategory = req.query.subCategory;
-    }
-    if (req.query.propertyType) filter.propertyType = req.query.propertyType;
-    if (req.query.state) filter.state = new RegExp(req.query.state, 'i');
-    if (req.query.district) filter.district = new RegExp(req.query.district, 'i');
-    if (req.query.taluk) filter.taluk = new RegExp(req.query.taluk, 'i');
-    if (req.query.country) filter.country = new RegExp(req.query.country, 'i');
-    
-    // Manual price overrides from search bar
-    if (req.query.minPrice || req.query.maxPrice) {
-      filter.price = filter.price || {}; // Keep AI budget if it exists, otherwise create new
-      if (req.query.minPrice) filter.price.$gte = Number(req.query.minPrice);
-      if (req.query.maxPrice) filter.price.$lte = Number(req.query.maxPrice);
+      posts.forEach(p => {
+        p.isLiked = likedSet.has(p._id.toString());
+        p.isSaved = savedSet.has(p._id.toString());
+      });
     }
 
-    // ── FETCH DATA ──
-    // 🚨 INSERT THE DEBUG LOG HERE 🚨
-    console.log("DEBUG: Final Filter Object being sent to MongoDB:", JSON.stringify(filter, null, 2));
+    res.json({
+      success: true,
+      data: posts,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
     const [posts, total] = await Promise.all([
       Post.find(filter)

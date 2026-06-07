@@ -25,16 +25,27 @@ const createPost = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Title and media type are required.' });
     }
 
+    // Inside createPost function (around line 26):
+
     let postData = {
       author: req.user._id,
-      title, description, price: Number(price),
-      priceUnit, propertyType, area,
-      mainCategory: mainCategory || 'Sale Hub', // 👈 ADDED HERE
-      subCategory: subCategory || 'All',       // 👈 ADDED HERE
-      postType: postType || 'Real Estate',     // 👈 ADDED HERE
+      title, 
+      description, 
+      price: Number(price) || 0,
+      priceUnit, 
+      propertyType, 
+      area,
+      mainCategory: mainCategory || 'Social', // 👈 Standardized for your feed
+      subCategory: subCategory || 'All', 
+      postType: postType || 'Social',        
+      isActive: true,                        // 👈 CRITICAL: This ensures your post shows up
       bedrooms: bedrooms ? Number(bedrooms) : undefined,
       bathrooms: bathrooms ? Number(bathrooms) : undefined,
-      taluk, district, state, country, phone,
+      taluk, 
+      district, 
+      state, 
+      country, 
+      phone,
       mediaType,
       hashtags: hashtags ? JSON.parse(hashtags).map(h => h.toLowerCase().replace('#', '')) : [],
       location: (lat && lng) ? { lat: parseFloat(lat), lng: parseFloat(lng), address } : undefined,
@@ -129,6 +140,9 @@ const getFeed = async (req, res) => {
     }
 
     // ── FETCH DATA ──
+    // 🚨 INSERT THE DEBUG LOG HERE 🚨
+    console.log("DEBUG: Final Filter Object being sent to MongoDB:", JSON.stringify(filter, null, 2));
+
     const [posts, total] = await Promise.all([
       Post.find(filter)
         .populate('author', 'username profilePhoto isVerified role phone')

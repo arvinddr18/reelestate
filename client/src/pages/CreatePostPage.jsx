@@ -130,14 +130,20 @@ export default function CreatePostPage() {
     const formData = new FormData();
     let safeForm = { ...form };
     
-    // Auto-Format based on the route chosen
+    // 1. Force the Main Category to match exactly what FeedPage expects
+    const getFormattedCategory = (catName) => {
+        // This maps the UI name to the ID in FEED_CATEGORIES
+        const mapping = { 'Sale Hub': 'Sale Hub', 'Rents': 'Rents', 'PGs & Co-Living': 'PGs & Co-Living', 'Services': 'Home Services', 'Jobs': 'Jobs & Gigs', 'Education': 'Education', 'Market': 'Marketplace', 'Motors': 'Auto & Motors', 'Food': 'Food & Cafes', 'Events': 'Local Events' };
+        return mapping[catName] || catName || 'Social';
+    };
+
     if (createMode === 'social' || postIntent === 'activity') {
       safeForm.price = 0; 
       safeForm.propertyType = 'other';
-      safeForm.mainCategory = createMode === 'social' ? 'Social' : selectedHub;
-      safeForm.title = safeForm.description ? `${safeForm.description.substring(0, 20)}...` : 'Community Update';
+      safeForm.mainCategory = 'Social'; // 👈 Explicitly "Social"
+      safeForm.title = safeForm.title || (safeForm.description ? `${safeForm.description.substring(0, 20)}...` : 'Community Update');
     } else {
-      safeForm.mainCategory = selectedHub; // Use the hub they clicked
+      safeForm.mainCategory = getFormattedCategory(selectedHub); // 👈 Maps to the correct ID
       if (!safeForm.price || isNaN(safeForm.price)) safeForm.price = 0;
       if (!safeForm.propertyType) safeForm.propertyType = 'other';
     }

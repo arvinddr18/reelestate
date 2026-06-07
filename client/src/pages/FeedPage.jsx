@@ -223,31 +223,52 @@ export default function FeedPage() {
         
         console.log("DEBUG: Processing Real Posts:", realDatabasePosts);
 
-        // 🚨 FORCE RENDER: Ignore the empty/dummy check for a moment
-        // We map the real posts to the UI format
-        const formattedPosts = realDatabasePosts.map((dbPost) => {
-            // ... (Your existing mapping logic) ...
-            // If the title is missing, use a fallback so the card doesn't crash
-            return {
-                id: dbPost._id,
-                type: (dbPost.mainCategory || 'SOCIAL').toUpperCase().replace(/ & /g, '_').replace(/ /g, '_'),
-                size: 'large',
-                user: { 
-                    name: dbPost.author?.username || 'Nodexa User',
-                    handle: dbPost.author?.username || 'user',
-                    avatar: dbPost.author?.profilePhoto || 'https://i.pravatar.cc/150'
-                },
-                post: {
-                    title: dbPost.title || 'Untitled Post',
-                    description: dbPost.description || '',
-                    media: dbPost.images?.[0]?.url || dbPost.videoUrl || null,
-                    // ... rest of your mapping
-                }
-            };
-        });
+        // 🌟 HARDENED DATA ADAPTER 🌟
+      const formattedPosts = realDatabasePosts.map((dbPost) => {
+        // Fallbacks to prevent crashes
+        const author = dbPost.author || {};
+        const title = dbPost.title || 'Untitled Post';
+        const description = dbPost.description || '';
+        
+        // Ensure media exists, even if empty
+        const media = (dbPost.images && dbPost.images[0]?.url) ? dbPost.images[0].url : (dbPost.videoUrl || null);
 
-        setPosts(formattedPosts); // Set the real posts directly
+        // Normalize Category
+        const glowType = (dbPost.mainCategory || 'SOCIAL').toUpperCase().replace(/ & /g, '_').replace(/ /g, '_');
 
+        // Create the standardized object
+        return {
+          id: dbPost._id,
+          type: glowType,
+          size: 'large',
+          user: {
+            name: author.username || 'Nodexa User',
+            handle: author.username || 'user',
+            avatar: author.profilePhoto || 'https://i.pravatar.cc/150'
+          },
+          post: {
+            title: title,
+            description: description,
+            time: 'Just now',
+            location: dbPost.locationTag || 'Online',
+            media: media,
+            tags: dbPost.hashtags || [],
+            music: dbPost.music || null,
+            taggedUsers: dbPost.taggedUsers || [],
+            isLive: dbPost.isActive !== false, // Defaults to true
+            stats: {
+              likes: dbPost.likesCount || 0,
+              comments: dbPost.commentsCount || 0,
+              shares: dbPost.savesCount || 0
+            }
+          }
+        };
+      });
+
+      // 🚨 CRITICAL: Log what we are trying to set into state
+      console.log("DEBUG: Final Formatted Posts to be set in state:", formattedPosts);
+      setPosts(formattedPosts);
+      
     } catch (err) {
         console.error("Fetch Error:", err);
         setLoading(false);

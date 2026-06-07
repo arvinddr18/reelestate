@@ -1,13 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { IoMdMore } from 'react-icons/io';
 import FeedCardWrapper from './FeedCardWrapper';
 import CategoryBadge from './CategoryBadge';
 import ActionButtons from './ActionButtons';
+import api from '../../services/api'; // 👈 Added API import
+import toast from 'react-hot-toast';  // 👈 Added Toast import
 
 export default function SocialCard({ data, onAction }) {
   const { user, post, size } = data;
   const isGridItem = size === 'small';
+
+  // 1. Initialize State for interactivity
+  const [isLiked, setIsLiked] = useState(post.isLiked || false);
+  const [likesCount, setLikesCount] = useState(post.stats?.likes || 0);
+  
+  const [isSaved, setIsSaved] = useState(post.isSaved || false);
+  const [savesCount, setSavesCount] = useState(post.stats?.shares || 0);
+
+  // 2. Like Function (Optimistic Update)
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation(); 
+    
+    setIsLiked(!isLiked);
+    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+
+    try {
+      await api.post(`/posts/${data.id}/like`);
+    } catch (error) {
+      setIsLiked(isLiked);
+      setLikesCount(isLiked ? likesCount + 1 : likesCount - 1);
+      toast.error("Failed to like post");
+    }
+  };
+
+  // 3. Save Function (Optimistic Update)
+  const handleSave = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsSaved(!isSaved);
+    setSavesCount(prev => isSaved ? prev - 1 : prev + 1);
+
+    try {
+      await api.post(`/posts/${data.id}/save`);
+    } catch (error) {
+      setIsSaved(isSaved);
+      setSavesCount(isSaved ? savesCount + 1 : savesCount - 1);
+      toast.error("Failed to save post");
+    }
+  };
 
   return (
     <FeedCardWrapper variant="SOCIAL" size={size}>
@@ -74,11 +117,28 @@ export default function SocialCard({ data, onAction }) {
 
             {!isGridItem && (
               <div className="flex flex-col gap-4 mt-8 w-full">
+                
+                {/* 🚨 WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
                 <div className="flex items-center gap-5 text-sm font-bold text-gray-400">
-                  <span className="flex items-center gap-2 hover:text-purple-400 cursor-pointer transition-colors"><span className="text-red-500">❤️</span> {post.stats?.likes}</span>
-                  <span className="flex items-center gap-2 hover:text-purple-400 cursor-pointer transition-colors">💬 {post.stats?.comments}</span>
-                  <span className="flex items-center gap-2 hover:text-purple-400 cursor-pointer transition-colors">🚀 {post.stats?.shares}</span>
+                  <button onClick={handleLike} className={`flex items-center gap-2 cursor-pointer transition-all active:scale-75 ${isLiked ? 'text-pink-500' : 'hover:text-pink-500'}`}>
+                    <span className={isLiked ? "drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" : ""}>
+                      {isLiked ? '❤️' : '🤍'}
+                    </span> 
+                    {likesCount}
+                  </button>
+                  
+                  <button className="flex items-center gap-2 hover:text-[#00F0FF] cursor-pointer transition-all active:scale-75">
+                    💬 {post.stats?.comments}
+                  </button>
+                  
+                  <button onClick={handleSave} className={`flex items-center gap-2 cursor-pointer transition-all active:scale-75 ${isSaved ? 'text-[#0057FF]' : 'hover:text-[#0057FF]'}`}>
+                    <span className={isSaved ? "drop-shadow-[0_0_8px_rgba(0,87,255,0.8)]" : ""}>
+                      {isSaved ? '🚀' : '🔖'}
+                    </span> 
+                    {savesCount}
+                  </button>
                 </div>
+
                 <ActionButtons variant="SOCIAL" onAction={onAction} />
               </div>
             )}
@@ -92,9 +152,14 @@ export default function SocialCard({ data, onAction }) {
           )}
 
           {isGridItem && (
+            // 🚨 WIRED UP SMALL GRID CARD ENGAGEMENT ROW 🚨
             <div className="flex items-center gap-4 text-xs font-bold text-gray-500 mt-auto pt-4 border-t border-white/5 w-full">
-              <span className="flex items-center gap-1.5"><span className="text-red-500">❤️</span> {post.stats?.likes}</span>
-              <span className="flex items-center gap-1.5">💬 {post.stats?.comments}</span>
+              <button onClick={handleLike} className={`flex items-center gap-1.5 transition-all active:scale-75 ${isLiked ? 'text-pink-500' : 'hover:text-pink-500'}`}>
+                {isLiked ? '❤️' : '🤍'} {likesCount}
+              </button>
+              <button className="flex items-center gap-1.5 hover:text-[#00F0FF] transition-all active:scale-75">
+                💬 {post.stats?.comments}
+              </button>
             </div>
           )}
         </div>

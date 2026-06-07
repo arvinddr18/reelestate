@@ -19,35 +19,46 @@ export default function SocialCard({ data, onAction }) {
   const [savesCount, setSavesCount] = useState(post.stats?.shares || 0);
 
   // 2. Like Function (Optimistic Update)
+  // 2. Like Function (Bulletproof Optimistic Update)
   const handleLike = async (e) => {
     e.preventDefault();
     e.stopPropagation(); 
+
+    // Lock in the exact previous state before we change anything
+    const prevLiked = isLiked;
+    const prevCount = likesCount;
     
-    setIsLiked(!isLiked);
-    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+    // Instantly update UI (and explicitly prevent negative numbers)
+    setIsLiked(!prevLiked);
+    setLikesCount(prevLiked ? Math.max(0, prevCount - 1) : prevCount + 1);
 
     try {
+      // Send to backend
       await api.post(`/posts/${data.id}/like`);
     } catch (error) {
-      setIsLiked(isLiked);
-      setLikesCount(isLiked ? likesCount + 1 : likesCount - 1);
+      // If it fails, restore the EXACT previous state
+      setIsLiked(prevLiked);
+      setLikesCount(prevCount);
       toast.error("Failed to like post");
     }
   };
 
-  // 3. Save Function (Optimistic Update)
+  // 3. Save Function (Bulletproof Optimistic Update)
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    setIsSaved(!isSaved);
-    setSavesCount(prev => isSaved ? prev - 1 : prev + 1);
+    const prevSaved = isSaved;
+    const prevCount = savesCount;
+
+    setIsSaved(!prevSaved);
+    setSavesCount(prevSaved ? Math.max(0, prevCount - 1) : prevCount + 1);
 
     try {
       await api.post(`/posts/${data.id}/save`);
     } catch (error) {
-      setIsSaved(isSaved);
-      setSavesCount(isSaved ? savesCount + 1 : savesCount - 1);
+      setIsSaved(prevSaved);
+      setSavesCount(prevCount);
       toast.error("Failed to save post");
     }
   };

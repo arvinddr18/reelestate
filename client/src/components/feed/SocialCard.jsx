@@ -107,16 +107,16 @@ export default function SocialCard({ data, onAction }) {
         </div>
         
         {/* 🚨 DYNAMIC LAYOUT: Side-by-side if large, stacked if small */}
-        <div className={`flex ${isGridItem ? 'flex-col' : 'flex-col md:flex-row'} gap-8 items-start justify-between w-full h-full mt-2`}>
+        {/* LAYOUT: CSS Grid Magic for perfect Mobile & Desktop ordering */}
+        <div className={`grid grid-cols-1 ${!isGridItem ? 'md:grid-cols-2' : ''} gap-x-8 gap-y-4 w-full h-full mt-2`}>
           
-          <div className="flex flex-col flex-1 justify-between h-full min-w-0 w-full">
-            <div className="flex flex-col gap-4 w-full">
+          {/* 1. TEXT SECTION (Top on mobile, Top-Left on desktop) */}
+          <div className="flex flex-col gap-4 w-full min-w-0 order-1 md:col-start-1 md:row-start-1">
               <div className="flex items-center gap-3">
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-white font-black text-base">{user.name}</span>
                   <span className="text-gray-500 text-xs">@{user.handle} • {post.time} {post.location && `• 📍 ${post.location}`}</span>
-                </div>
               </div>
               
               <div className="flex flex-col gap-2 mt-2">
@@ -162,7 +162,7 @@ export default function SocialCard({ data, onAction }) {
             </div>
 
             {!isGridItem && (
-              <div className="flex flex-col gap-4 mt-8 w-full">
+            <div className="flex flex-col gap-4 w-full order-3 md:col-start-1 md:row-start-2 self-end mt-2 md:mt-4">
                 
                 {/* 🚨 PREMIUM WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-400">
@@ -268,8 +268,7 @@ export default function SocialCard({ data, onAction }) {
           </div>
 
           {post.media && (
-            <div className={`${isGridItem ? 'w-full aspect-video' : 'w-full md:w-[50%] lg:w-[45%] aspect-square md:aspect-auto md:h-full'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0`}>
-              <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
+            <div className={`${isGridItem ? 'w-full aspect-video' : 'w-full aspect-square md:aspect-auto md:h-full md:col-start-2 md:row-start-1 md:row-span-2'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 order-2`}>
               <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
             </div>
           )}

@@ -6,8 +6,7 @@ import CategoryBadge from './CategoryBadge';
 import ActionButtons from './ActionButtons';
 import api from '../../services/api'; // 👈 Added API import
 import toast from 'react-hot-toast';  // 👈 Added Toast import
-import { IoHeartOutline, IoHeart, IoChatbubbleOutline, IoBookmarkOutline, IoBookmark, IoShareSocialOutline } from 'react-icons/io5';
-
+import { IoHeartOutline, IoHeart, IoChatbubbleOutline, IoBookmarkOutline, IoBookmark, IoShareSocialOutline, IoSend } from 'react-icons/io5';
 export default function SocialCard({ data, onAction }) {
   const { user, post, size } = data;
   const isGridItem = size === 'small';
@@ -18,6 +17,41 @@ export default function SocialCard({ data, onAction }) {
   
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
   const [savesCount, setSavesCount] = useState(post.stats?.shares || 0);
+
+  // ─── COMMENT STATE & LOGIC ───
+  const [comments, setComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch comments when card loads
+  React.useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const res = await api.get(`/posts/${data.id}/comments`);
+        if (res.data.success) setComments(res.data.data);
+      } catch (error) { console.error("Failed to fetch comments"); }
+    };
+    fetchComments();
+  }, [data.id]);
+
+  // Handle posting a new comment
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setIsSubmitting(true);
+    try {
+      const res = await api.post(`/posts/${data.id}/comments`, { text: newComment });
+      if (res.data.success) {
+        setComments([res.data.data, ...comments]); // Add to top
+        setNewComment('');
+      }
+    } catch (error) {
+      toast.error("Failed to post comment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // 2. Like Function (Optimistic Update)
   // 2. Like Function (Bulletproof Optimistic Update)
@@ -147,10 +181,13 @@ export default function SocialCard({ data, onAction }) {
                   </button>
                   
                   {/* COMMENT BUTTON */}
-                  <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-transparent border border-transparent transition-all duration-300 active:scale-95 hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]">
-                    <IoChatbubbleOutline size={20} />
-                    <span className="font-black tracking-wider">{post.stats?.comments}</span>
-                  </button>
+  <button 
+    onClick={() => setShowComments(!showComments)} 
+    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 active:scale-95 ${showComments ? 'bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/20' : 'bg-transparent border border-transparent hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]'}`}
+  >
+    <IoChatbubbleOutline size={20} />
+    <span className="font-black tracking-wider">{post.stats?.comments + (comments.length > (post.stats?.comments || 0) ? comments.length - (post.stats?.comments || 0) : 0)}</span>
+  </button>
                   
                   {/* SAVE BUTTON */}
                   <button 
@@ -172,7 +209,60 @@ export default function SocialCard({ data, onAction }) {
 
                 </div>
 
-                <ActionButtons variant="SOCIAL" onAction={onAction} />
+                {/* 💬 TOP COMMENT PREVIEW (Shows when collapsed) */}
+    {comments.length > 0 && !showComments && (
+      <div onClick={() => setShowComments(true)} className="group cursor-pointer rounded-2xl p-3 bg-white/5 border border-white/5 hover:border-white/10 transition-colors mt-2">
+        <div className="flex gap-3 items-center">
+          <img src={comments[0].author?.profilePhoto || 'https://i.pravatar.cc/150'} className="w-6 h-6 rounded-full object-cover" alt="" />
+          <div className="text-sm truncate flex-1">
+            <span className="font-bold text-white mr-2">{comments[0].author?.username || 'User'}</span>
+            <span className="text-gray-400">{comments[0].text}</span>
+          </div>
+        </div>
+        {comments.length > 1 && (
+          <p className="text-[#00F0FF] text-[10px] font-black uppercase tracking-widest mt-2 ml-9 group-hover:underline">
+            View all {comments.length} comments
+          </p>
+        )}
+      </div>
+    )}
+
+    {/* 💬 EXPANDED COMMENT SECTION */}
+    {showComments && (
+      <div className="flex flex-col gap-4 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+        {/* Comment Input */}
+        <form onSubmit={handleCommentSubmit} className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Write a comment..."
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="flex-1 bg-[#151A25] border border-[#1E2532] rounded-full px-5 py-2.5 text-sm text-white outline-none focus:border-[#00F0FF]/50 transition-colors shadow-inner"
+          />
+          <button 
+            type="submit" 
+            disabled={!newComment.trim() || isSubmitting}
+            className="p-2.5 rounded-full bg-gradient-to-r from-[#0057FF] to-[#00F0FF] text-white disabled:opacity-50 hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+          >
+            <IoSend size={16} className="ml-0.5" />
+          </button>
+        </form>
+
+        {/* Scrollable Comment List */}
+        <div className="flex flex-col gap-3 max-h-48 overflow-y-auto pr-2 no-scrollbar">
+          {comments.map((c) => (
+            <div key={c._id} className="flex gap-3">
+              <img src={c.author?.profilePhoto || 'https://i.pravatar.cc/150'} className="w-8 h-8 rounded-full object-cover shrink-0" alt="" />
+              <div className="flex flex-col bg-[#151A25] border border-[#1E2532] rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[85%]">
+                <span className="font-bold text-white text-xs mb-0.5">{c.author?.username || 'User'}</span>
+                <span className="text-gray-300 text-sm leading-snug">{c.text}</span>
+              </div>
+            </div>
+          ))}
+          {comments.length === 0 && <p className="text-center text-xs text-gray-500 py-4">No comments yet. Be the first!</p>}
+        </div>
+      </div>
+    )}
               </div>
             )}
           </div>

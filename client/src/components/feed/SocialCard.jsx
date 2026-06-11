@@ -113,15 +113,18 @@ export default function SocialCard({ data, onAction }) {
           {/* LEFT COLUMN: User Info, Text, Engagement */}
           <div className="flex flex-col flex-1 justify-between h-full min-w-0 w-full">
             
-            <div className="flex flex-col gap-4 w-full"></div>
+            <div className="flex flex-col gap-4 w-full">
+              
+              {/* 1. USER PROFILE ROW */}
               <div className="flex items-center gap-3">
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-white font-black text-base">{user.name}</span>
                   <span className="text-gray-500 text-xs">@{user.handle} • {post.time} {post.location && `• 📍 ${post.location}`}</span>
-                
-              </div> {/* 🚨 THIS MISSING DIV NOW CLOSES THE ROW 🚨 */}
+                </div>
+              </div> 
               
+              {/* 2. POST TITLE & DESCRIPTION (Now safely on a new line) */}
               <div className="flex flex-col gap-2 mt-2">
                 <h3 className="text-white font-black text-2xl tracking-tight">“{post.title}”</h3>
                 {post.description && <p className="text-gray-300 text-sm leading-relaxed">{post.description}</p>}

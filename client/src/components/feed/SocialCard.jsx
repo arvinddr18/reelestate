@@ -107,14 +107,13 @@ export default function SocialCard({ data, onAction }) {
         </div>
         
         
-        {/* 🚨 DYNAMIC LAYOUT: Flawless Flexbox (Desktop & Mobile) */}
-        <div className={`flex ${isGridItem ? 'flex-col' : 'flex-col md:flex-row'} gap-4 md:gap-8 items-start justify-between w-full h-full mt-2`}>
+        {/* 🚨 DYNAMIC LAYOUT: Flawless Responsive Structure */}
+        <div className={`flex ${isGridItem ? 'flex-col' : 'flex-col md:flex-row'} gap-8 items-start justify-between w-full h-full mt-2`}>
           
-          {/* LEFT COLUMN (Uses 'contents' on mobile to allow reordering, normal column on desktop) */}
-          <div className="contents md:flex md:flex-col md:flex-1 md:justify-between h-full min-w-0 w-full">
+          {/* LEFT COLUMN: User Info, Text, Engagement */}
+          <div className="flex flex-col flex-1 justify-between h-full min-w-0 w-full">
             
-            {/* 1. TEXT SECTION (Order 1 on mobile) */}
-            <div className="flex flex-col gap-4 w-full min-w-0 order-1 md:order-none"></div>
+            <div className="flex flex-col gap-4 w-full"></div>
               <div className="flex items-center gap-3">
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
@@ -164,9 +163,17 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-            {/* 3. ENGAGEMENT & COMMENTS SECTION (Order 3 on mobile) */}
+            {/* 💻 LAPTOP IMAGE (Visible only on laptops, hidden on mobile) */}
+          {post.media && (
+            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%] aspect-auto h-full'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0`}>
+              <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
+              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+            </div>
+          )}
+
+            {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (
-              <div className="flex flex-col gap-4 mt-2 w-full self-end order-3 md:order-none">
+              <div className="flex flex-col gap-4 mt-2 w-full self-end">
                 {/* 🚨 PREMIUM WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-400">
                   

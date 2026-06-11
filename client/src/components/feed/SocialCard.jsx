@@ -275,40 +275,35 @@ export default function SocialCard({ data, onAction }) {
     )}
               </div>
             )}
-          </div>
+          </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          
+          {/* 💻 LAPTOP IMAGE (Visible only on laptops, hidden on mobile) */}
+          {post.media && (
+            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%] h-full min-h-[300px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0`}>
+              <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
+              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+            </div>
+          )}
 
+          {/* GRID LAYOUT ENGAGEMENT ROW (For small cards only) */}
           {isGridItem && (
-            // 🚨 PREMIUM SMALL GRID CARD ENGAGEMENT ROW 🚨
             <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5 w-full">
               <div className="flex items-center gap-1">
-                <button 
-                  onClick={handleLike} 
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs ${
-                    isLiked ? 'bg-[#FF007A]/10 text-[#FF007A]' : 'hover:bg-white/5 text-gray-400 hover:text-[#FF007A]'
-                  }`}
-                >
+                <button onClick={handleLike} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs ${isLiked ? 'bg-[#FF007A]/10 text-[#FF007A]' : 'hover:bg-white/5 text-gray-400 hover:text-[#FF007A]'}`}>
                   {isLiked ? <IoHeart size={16} /> : <IoHeartOutline size={16} />}
                   <span className="font-black">{likesCount}</span>
                 </button>
-
                 <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs text-gray-400 hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]">
                   <IoChatbubbleOutline size={16} />
                   <span className="font-black">{post.stats?.comments}</span>
                 </button>
               </div>
-
-              <button 
-                  onClick={handleSave} 
-                  className={`p-2 rounded-full transition-all duration-300 active:scale-95 ${
-                    isSaved ? 'text-[#00F0FF]' : 'text-gray-400 hover:text-[#00F0FF] hover:bg-white/5'
-                  }`}
-                >
-                  {isSaved ? <IoBookmark size={16} /> : <IoBookmarkOutline size={16} />}
+              <button onClick={handleSave} className={`p-2 rounded-full transition-all duration-300 active:scale-95 ${isSaved ? 'text-[#00F0FF]' : 'text-gray-400 hover:text-[#00F0FF] hover:bg-white/5'}`}>
+                {isSaved ? <IoBookmark size={16} /> : <IoBookmarkOutline size={16} />}
               </button>
             </div>
           )}
+
         </div>
       </div>
     </FeedCardWrapper>

@@ -161,9 +161,17 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-            {/* 3. ENGAGEMENT & COMMENTS SECTION (Pushed to bottom on mobile!) */}
+            {/* 📸 MOVED MEDIA SECTION HERE SO IT ALWAYS SITS IN THE MIDDLE ON MOBILE! */}
+            {post.media && (
+              <div className={`${isGridItem ? 'w-full aspect-video' : 'w-full aspect-square md:aspect-auto md:h-full md:col-start-2 md:row-start-1 md:row-span-2'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 mb-2 md:mb-0`}>
+                <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
+                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            {/* 3. ENGAGEMENT & COMMENTS SECTION (Now naturally at the bottom!) */}
             {!isGridItem && (
-              <div className="flex flex-col gap-4 mt-4 w-full row-start-3 md:col-start-1 md:row-start-2 self-end">
+              <div className="flex flex-col gap-4 mt-2 w-full md:col-start-1 md:row-start-2 self-end">
                 
                 {/* 🚨 PREMIUM WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-400">
@@ -268,11 +276,7 @@ export default function SocialCard({ data, onAction }) {
             )}
           </div>
 
-          {post.media && (
-            <div className={`${isGridItem ? 'w-full aspect-video' : 'w-full aspect-square md:aspect-auto md:h-full md:col-start-2 md:row-start-1 md:row-span-2'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 row-start-2`}>
-              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
-            </div>
-          )}
+          
 
           {isGridItem && (
             // 🚨 PREMIUM SMALL GRID CARD ENGAGEMENT ROW 🚨

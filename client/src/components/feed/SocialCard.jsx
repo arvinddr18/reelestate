@@ -107,11 +107,14 @@ export default function SocialCard({ data, onAction }) {
         </div>
         
         
-        {/* 🚨 DYNAMIC LAYOUT: CSS Grid Magic */}
-        <div className={`grid grid-cols-1 ${!isGridItem ? 'md:grid-cols-2' : ''} gap-x-8 gap-y-4 w-full h-full mt-2`}>
+        {/* 🚨 DYNAMIC LAYOUT: Flawless Flexbox (Desktop & Mobile) */}
+        <div className={`flex ${isGridItem ? 'flex-col' : 'flex-col md:flex-row'} gap-4 md:gap-8 items-start justify-between w-full h-full mt-2`}>
           
-          {/* 1. TEXT SECTION */}
-          <div className="flex flex-col gap-4 w-full min-w-0 row-start-1 md:col-start-1 md:row-start-1">
+          {/* LEFT COLUMN (Uses 'contents' on mobile to allow reordering, normal column on desktop) */}
+          <div className="contents md:flex md:flex-col md:flex-1 md:justify-between h-full min-w-0 w-full">
+            
+            {/* 1. TEXT SECTION (Order 1 on mobile) */}
+            <div className="flex flex-col gap-4 w-full min-w-0 order-1 md:order-none"></div>
               <div className="flex items-center gap-3">
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
@@ -161,18 +164,9 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-            {/* 📸 MOVED MEDIA SECTION HERE SO IT ALWAYS SITS IN THE MIDDLE ON MOBILE! */}
-            {post.media && (
-              <div className={`${isGridItem ? 'w-full aspect-video' : 'w-full aspect-square md:aspect-auto md:h-full md:col-start-2 md:row-start-1 md:row-span-2'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 mb-2 md:mb-0`}>
-                <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
-              </div>
-            )}
-
-            {/* 3. ENGAGEMENT & COMMENTS SECTION (Now naturally at the bottom!) */}
+            {/* 3. ENGAGEMENT & COMMENTS SECTION (Order 3 on mobile) */}
             {!isGridItem && (
-              <div className="flex flex-col gap-4 mt-2 w-full md:col-start-1 md:row-start-2 self-end">
-                
+              <div className="flex flex-col gap-4 mt-2 w-full self-end order-3 md:order-none">
                 {/* 🚨 PREMIUM WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-400">
                   

@@ -119,7 +119,8 @@ export default function SocialCard({ data, onAction }) {
                 <div className="flex flex-col min-w-0">
                   <span className="text-white font-black text-base">{user.name}</span>
                   <span className="text-gray-500 text-xs">@{user.handle} • {post.time} {post.location && `• 📍 ${post.location}`}</span>
-              </div>
+                
+              </div> {/* 🚨 THIS MISSING DIV NOW CLOSES THE ROW 🚨 */}
               
               <div className="flex flex-col gap-2 mt-2">
                 <h3 className="text-white font-black text-2xl tracking-tight">“{post.title}”</h3>

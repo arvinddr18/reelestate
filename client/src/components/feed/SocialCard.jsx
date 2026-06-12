@@ -24,6 +24,7 @@ const [showFullscreen, setShowFullscreen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Fetch comments when card loads
   React.useEffect(() => {
@@ -194,68 +195,61 @@ const [showFullscreen, setShowFullscreen] = useState(false);
               )}
             </div> {/* Closes Text Section */}
 
-{/* 📱 MOBILE MEDIA */}
-{post.media && (
-  <div className="md:hidden w-full my-4 -mx-4" style={{ width: 'calc(100% + 2rem)' }}>
-    <div className={`relative border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+              {/* 📱 MOBILE MEDIA (Custom React Fullscreen Modal) */}
+            {post.media && (
+              <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
+                <div className={`border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+                  
+                  {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
+                    
+                    /* 👇 THIS WRAPPER BECOMES FIXED TO THE SCREEN WHEN FULLSCREEN IS TRUE 👇 */
+                    <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative"}>
+                      
+                      <video 
+                        src={post.media} 
+                        className={isFullscreen ? "w-full h-full object-contain" : "w-full h-auto max-h-[55vh] object-contain block bg-[#05070A] relative z-50"} 
+                        muted={!isFullscreen} 
+                        loop playsInline controls={isFullscreen}
+                        onClick={(e) => {
+                          if (!isFullscreen) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsFullscreen(true);
+                          }
+                        }}
+                      />
 
-      {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-        <>
-          {/* INLINE PREVIEW VIDEO */}
-          <video
-            ref={mobileVideoRef}
-            src={post.media}
-            className="w-full max-h-[55vh] bg-[#05070A] block"
-            muted
-            loop
-            playsInline
-            onClick={() => setShowFullscreen(true)}
-          />
+                      {/* 👇 EXPLICIT CLOSE BUTTON (Only shows during Fullscreen) 👇 */}
+                      {isFullscreen && (
+                        <button 
+                          className="absolute top-8 right-6 z-[100000] bg-black/60 text-white px-5 py-2.5 rounded-full border border-white/20 backdrop-blur-md font-bold shadow-lg"
+                          onClick={(e) => { 
+                            e.preventDefault();
+                            e.stopPropagation(); 
+                            setIsFullscreen(false); 
+                          }}
+                        >
+                          ✕ Close
+                        </button>
+                      )}
 
-          {/* TAP HINT */}
-          <div
-            className="absolute bottom-3 right-3 z-40 bg-black/50 rounded-full px-3 py-1 flex items-center gap-1 cursor-pointer"
-            onClick={() => setShowFullscreen(true)}
-          >
-            <span className="text-white text-[10px] font-bold">⛶ Tap to expand</span>
-          </div>
+                    </div>
 
-          {/* FULLSCREEN MODAL */}
-          {showFullscreen && (
-            <div
-              className="fixed inset-0 bg-black z-[9999] flex items-center justify-center"
-              style={{ touchAction: 'none' }}
-            >
-              <video
-                src={post.media}
-                className="w-full h-full object-contain"
-                autoPlay
-                loop
-                playsInline
-                controls
-                style={{ maxHeight: '100dvh' }}
-              />
-              <button
-                onClick={() => setShowFullscreen(false)}
-                className="absolute top-6 right-4 z-[10000] bg-black/60 rounded-full w-10 h-10 flex items-center justify-center text-white text-xl font-bold"
-              >
-                ✕
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <motion.img
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.7 }}
-          src={post.media}
-          className="w-full object-cover object-top block max-h-[55vh]"
-        />
-      )}
-
-    </div>
-  </div>
-)}
+                  ) : (
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
+                      <motion.img
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ duration: 0.7 }}
+                        src={post.media}
+                        className="w-full object-cover object-top block max-h-[55vh]"
+                      />
+                    </div>
+                  )}
+                  
+                </div>
+              </div>
+            )}
 
             {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (

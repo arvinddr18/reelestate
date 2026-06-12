@@ -200,7 +200,7 @@ export default function SocialCard({ data, onAction }) {
       <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
       
       {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-        <video ref={mobileVideoRef} src={post.media} className="w-full object-cover object-center block max-h-[55vh] relative z-0" muted loop playsInline controls />
+        <video ref={mobileVideoRef} src={post.media} className="w-full object-cover object-center block max-h-[55vh] relative z-20" muted loop playsInline controls />
       ) : (
         <motion.img
           whileHover={{ scale: 1.02 }}
@@ -327,7 +327,7 @@ export default function SocialCard({ data, onAction }) {
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
                 
                 {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-                  <video ref={desktopVideoRef} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-0" muted loop playsInline controls />
+                  <video ref={desktopVideoRef} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-20" muted loop playsInline controls />
                 ) : (
                   <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-0" />
                 )}

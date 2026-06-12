@@ -120,7 +120,7 @@ export default function SocialCard({ data, onAction }) {
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-white font-black text-base">{user.name}</span>
-                  <span className="text-gray-500 text-xs">@{user.handle} • {post.time} {post.location && `• 📍 ${post.location}`}</span>
+                  <span className="text-gray-500 text-xs">@{user.handle}</span>
                 </div>
               </div> 
               

@@ -194,25 +194,25 @@ export default function SocialCard({ data, onAction }) {
             </div> {/* Closes Text Section */}
 
 {/* 📱 MOBILE MEDIA (Supports Video & Image, full bleed edge-to-edge) */}
-{post.media && (
-  <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
-    <div className={`relative overflow-hidden border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
-      <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
-      
-      {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-        <video ref={mobileVideoRef} src={post.media} className="w-full object-cover object-center block max-h-[55vh] relative z-20" muted loop playsInline controls />
-      ) : (
-        <motion.img
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.7 }}
-          src={post.media}
-          className="w-full object-cover object-top block max-h-[55vh] relative z-0"
-        />
-      )}
-      
-    </div>
-  </div>
-)}
+            {post.media && (
+              <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
+                <div className={`relative border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+                  <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
+                  
+                  {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
+                    <video ref={mobileVideoRef} src={post.media} className="w-full h-auto max-h-[55vh] object-contain block relative z-30 bg-[#05070A]" muted loop playsInline controls />
+                  ) : (
+                    <motion.img
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.7 }}
+                      src={post.media}
+                      className="w-full object-cover object-top block max-h-[55vh] relative z-0"
+                    />
+                  )}
+                  
+                </div>
+              </div>
+            )}
 
             {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (

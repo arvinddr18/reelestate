@@ -168,17 +168,23 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-            {/* 📱 MOBILE IMAGE (Instagram-style: full bleed, edge-to-edge) */}
+{/* 📱 MOBILE MEDIA (Supports Video & Image, full bleed edge-to-edge) */}
 {post.media && (
-  <div className="md:hidden w-full my-4 -mx-4" style={{ width: 'calc(100% + 2rem)' }}>
+  <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
     <div className={`relative overflow-hidden border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
       <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
-      <motion.img
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.7 }}
-        src={post.media}
-        className="w-full object-cover object-top block max-h-[55vh]"
-      />
+      
+      {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
+        <video src={post.media} className="w-full object-cover object-center block max-h-[55vh] relative z-0" autoPlay muted loop playsInline controls />
+      ) : (
+        <motion.img
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.7 }}
+          src={post.media}
+          className="w-full object-cover object-top block max-h-[55vh] relative z-0"
+        />
+      )}
+      
     </div>
   </div>
 )}
@@ -289,12 +295,18 @@ export default function SocialCard({ data, onAction }) {
             )}
           </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          {/* 💻 LAPTOP IMAGE (Edge-to-Edge Column Fill) */}
+          {/* 💻 LAPTOP MEDIA (Supports Video & Image) */}
           {post.media && (
             <div className={`hidden md:flex shrink-0 ml-auto ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%]'}`}>
-              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-full max-h-[600px]">
+              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-full max-h-[600px] bg-[#05070A]">
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block" />
+                
+                {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
+                  <video src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-0" autoPlay muted loop playsInline controls />
+                ) : (
+                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-0" />
+                )}
+                
               </div>
             </div>
           )}

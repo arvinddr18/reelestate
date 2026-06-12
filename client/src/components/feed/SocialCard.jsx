@@ -17,6 +17,7 @@ export default function SocialCard({ data, onAction }) {
   
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
   const [savesCount, setSavesCount] = useState(post.stats?.shares || 0);
+const [showFullscreen, setShowFullscreen] = useState(false);
 
   // ─── COMMENT STATE & LOGIC ───
   const [comments, setComments] = useState([]);
@@ -193,36 +194,68 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-{/* 📱 MOBILE MEDIA (Supports Video & Image, full bleed edge-to-edge) */}
-            {post.media && (
-              <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
-                <div className={`border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
-                  
-                  {/* Clean string check instead of Regex to prevent VS Code syntax errors */}
-                  {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
-                    <video 
-                      src={post.media} 
-                      className="w-full h-auto max-h-[55vh] object-contain block bg-[#05070A] relative z-50" 
-                      muted loop playsInline controls 
-                      onClick={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
-                      <motion.img
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ duration: 0.7 }}
-                        src={post.media}
-                        className="w-full object-cover object-top block max-h-[55vh]"
-                      />
-                    </div>
-                  )}
-                  
-                </div>
-              </div>
-            )}
+{/* 📱 MOBILE MEDIA */}
+{post.media && (
+  <div className="md:hidden w-full my-4 -mx-4" style={{ width: 'calc(100% + 2rem)' }}>
+    <div className={`relative border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+
+      {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
+        <>
+          {/* INLINE PREVIEW VIDEO */}
+          <video
+            ref={mobileVideoRef}
+            src={post.media}
+            className="w-full max-h-[55vh] bg-[#05070A] block"
+            muted
+            loop
+            playsInline
+            onClick={() => setShowFullscreen(true)}
+          />
+
+          {/* TAP HINT */}
+          <div
+            className="absolute bottom-3 right-3 z-40 bg-black/50 rounded-full px-3 py-1 flex items-center gap-1 cursor-pointer"
+            onClick={() => setShowFullscreen(true)}
+          >
+            <span className="text-white text-[10px] font-bold">⛶ Tap to expand</span>
+          </div>
+
+          {/* FULLSCREEN MODAL */}
+          {showFullscreen && (
+            <div
+              className="fixed inset-0 bg-black z-[9999] flex items-center justify-center"
+              style={{ touchAction: 'none' }}
+            >
+              <video
+                src={post.media}
+                className="w-full h-full object-contain"
+                autoPlay
+                loop
+                playsInline
+                controls
+                style={{ maxHeight: '100dvh' }}
+              />
+              <button
+                onClick={() => setShowFullscreen(false)}
+                className="absolute top-6 right-4 z-[10000] bg-black/60 rounded-full w-10 h-10 flex items-center justify-center text-white text-xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <motion.img
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.7 }}
+          src={post.media}
+          className="w-full object-cover object-top block max-h-[55vh]"
+        />
+      )}
+
+    </div>
+  </div>
+)}
 
             {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (

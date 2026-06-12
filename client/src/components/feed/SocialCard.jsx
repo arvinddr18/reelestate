@@ -102,7 +102,7 @@ export default function SocialCard({ data, onAction }) {
     <FeedCardWrapper variant="SOCIAL" size={size}>
       <div className="flex flex-col gap-4 w-full h-full justify-between">
         <div className="flex items-center justify-between w-full">
-          <CategoryBadge type="SOCIAL" isLive={post.isLive} />
+          <CategoryBadge type="SOCIAL" />
           <button className="text-gray-400 hover:text-white"><IoMdMore size={20} /></button>
         </div>
         

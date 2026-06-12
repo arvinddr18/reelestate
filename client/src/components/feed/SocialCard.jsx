@@ -198,12 +198,15 @@ export default function SocialCard({ data, onAction }) {
               <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
                 <div className={`border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
                   
-                  {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
+                  {/* Clean string check instead of Regex to prevent VS Code syntax errors */}
+                  {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
                     <video 
-                      ref={mobileVideoRef} 
                       src={post.media} 
-                      className="w-full h-auto max-h-[55vh] object-contain block bg-[#05070A]" 
+                      className="w-full h-auto max-h-[55vh] object-contain block bg-[#05070A] relative z-50" 
                       muted loop playsInline controls 
+                      onClick={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <div className="relative">

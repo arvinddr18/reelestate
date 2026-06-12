@@ -130,6 +130,7 @@ export default function SocialCard({ data, onAction }) {
                 {post.description && <p className="text-gray-300 text-sm leading-relaxed">{post.description}</p>}
               </div>
 
+
               {!isGridItem && (
                 <div className="flex flex-col gap-3 mt-2">
                   
@@ -169,9 +170,9 @@ export default function SocialCard({ data, onAction }) {
 
             {/* 📱 MOBILE IMAGE (Hidden on Laptops) */}
             {post.media && (
-              <div className={`md:hidden ${isGridItem ? 'w-full aspect-video' : 'w-full aspect-square'} rounded-[2rem] overflow-hidden relative shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 my-4`}>
+              <div className={`md:hidden ${isGridItem ? 'w-full aspect-video' : 'w-full aspect-square'} rounded-[2rem] overflow-hidden relative shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 my-4 bg-[#05070A] flex items-center justify-center`}>
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-contain" />
               </div>
             )}
 
@@ -281,11 +282,11 @@ export default function SocialCard({ data, onAction }) {
             )}
           </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          {/* 💻 LAPTOP IMAGE (Hidden on Mobile) */}
+          {/* 💻 LAPTOP IMAGE (Visible only on laptops, hidden on mobile) */}
           {post.media && (
-            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%] h-full min-h-[300px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0`}>
+            <div className={`hidden md:flex items-center justify-center ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%] h-full min-h-[300px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0 bg-[#05070A]`}>
               <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-contain" />
             </div>
           )}
 

@@ -196,11 +196,31 @@ export default function SocialCard({ data, onAction }) {
 {/* 📱 MOBILE MEDIA (Supports Video & Image, full bleed edge-to-edge) */}
             {post.media && (
               <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
-                <div className={`relative border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+                <div className={`relative border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`} style={{ overflow: 'visible' }}>
                   <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
                   
                   {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-                    <video ref={mobileVideoRef} src={post.media} className="w-full h-auto max-h-[55vh] object-contain block relative z-30 bg-[#05070A]" muted loop playsInline controls />
+                    <video
+  ref={mobileVideoRef}
+  src={post.media}
+  className="w-full h-auto max-h-[55vh] object-contain block relative z-30 bg-[#05070A]"
+  muted
+  loop
+  playsInline
+  controls
+  onDoubleClick={() => {
+    const vid = mobileVideoRef.current;
+    if (!vid) return;
+    if (vid.requestFullscreen) vid.requestFullscreen();
+    else if (vid.webkitRequestFullscreen) vid.webkitRequestFullscreen(); // Safari/iOS
+    else if (vid.webkitEnterFullscreen) vid.webkitEnterFullscreen();     // iOS fallback
+  }}
+  onClick={(e) => {
+    const vid = mobileVideoRef.current;
+    if (!vid) return;
+    vid.paused ? vid.play() : vid.pause();
+  }}
+/>
                   ) : (
                     <motion.img
                       whileHover={{ scale: 1.02 }}

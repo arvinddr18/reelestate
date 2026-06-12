@@ -168,15 +168,20 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-            {/* 📱 MOBILE IMAGE (Shrink-Wrapped Border, 0% Cropping) */}
-            {post.media && (
-              <div className="md:hidden flex justify-center w-full my-4">
-                <div className={`relative overflow-hidden rounded-[2rem] shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 ${isGridItem ? 'w-full aspect-video' : 'w-fit h-fit max-w-full'}`}>
-                  <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-auto h-auto max-w-full max-h-[500px] object-contain block" />
-                </div>
-              </div>
-            )}
+            {/* 📱 MOBILE IMAGE (Instagram-style: full bleed, edge-to-edge) */}
+{post.media && (
+  <div className="md:hidden w-full my-4 -mx-4" style={{ width: 'calc(100% + 2rem)' }}>
+    <div className={`relative overflow-hidden border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+      <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
+      <motion.img
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.7 }}
+        src={post.media}
+        className="w-full h-auto object-cover block"
+      />
+    </div>
+  </div>
+)}
 
             {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (

@@ -168,11 +168,11 @@ export default function SocialCard({ data, onAction }) {
               )}
             </div> {/* Closes Text Section */}
 
-            {/* 📱 MOBILE IMAGE (Hidden on Laptops) */}
+            {/* 📱 MOBILE IMAGE (100% Fill Inside Glowing Border) */}
             {post.media && (
-              <div className={`md:hidden ${isGridItem ? 'w-full aspect-video' : 'w-fit max-w-full h-fit mx-auto'} rounded-[2rem] overflow-hidden relative shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 my-4`}>
+              <div className={`md:hidden ${isGridItem ? 'w-full aspect-video' : 'w-full aspect-[4/5] max-h-[400px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 my-4`}>
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-auto max-h-[350px] object-contain" />
+                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover object-center" />
               </div>
             )}
 
@@ -282,11 +282,11 @@ export default function SocialCard({ data, onAction }) {
             )}
           </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          {/* 💻 LAPTOP IMAGE (Visible only on laptops, hidden on mobile) */}
+          {/* 💻 LAPTOP IMAGE (100% Fill Inside Glowing Border) */}
           {post.media && (
-            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-auto max-w-[50%] lg:max-w-[45%] h-fit'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0 ml-auto`}>
+            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%] aspect-[4/5] max-h-[450px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0 ml-auto`}>
               <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-auto h-auto max-h-[350px] object-contain" />
+              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover object-center" />
             </div>
           )}
 

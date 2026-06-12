@@ -177,7 +177,7 @@ export default function SocialCard({ data, onAction }) {
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.7 }}
         src={post.media}
-        className="w-full h-auto object-cover block"
+        className="w-full object-cover block" style={{ maxHeight: '55vh' }}
       />
     </div>
   </div>

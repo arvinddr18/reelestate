@@ -35,6 +35,31 @@ export default function SocialCard({ data, onAction }) {
     fetchComments();
   }, [data.id]);
 
+  // ─── VIDEO AUTO-PAUSE/PLAY ON SCROLL ───
+  const mobileVideoRef = React.useRef(null);
+  const desktopVideoRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleVideoScroll = (entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+        // If 60% of the video is visible on screen, play it. Otherwise, pause it.
+        if (entry.isIntersecting) {
+          video.play().catch(e => console.log("Autoplay prevented:", e));
+        } else {
+          video.pause();
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleVideoScroll, { threshold: 0.6 });
+
+    if (mobileVideoRef.current) observer.observe(mobileVideoRef.current);
+    if (desktopVideoRef.current) observer.observe(desktopVideoRef.current);
+
+    return () => observer.disconnect();
+  }, [post.media]);
+
   // Handle posting a new comment
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -175,7 +200,7 @@ export default function SocialCard({ data, onAction }) {
       <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
       
       {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-        <video src={post.media} className="w-full object-cover object-center block max-h-[55vh] relative z-0" autoPlay muted loop playsInline controls />
+        <video ref={mobileVideoRef} src={post.media} className="w-full object-cover object-center block max-h-[55vh] relative z-0" muted loop playsInline controls />
       ) : (
         <motion.img
           whileHover={{ scale: 1.02 }}

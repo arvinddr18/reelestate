@@ -284,12 +284,12 @@ export default function SocialCard({ data, onAction }) {
             )}
           </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          {/* 💻 LAPTOP IMAGE (Shrink-Wrapped Border, 0% Cropping) */}
+          {/* 💻 LAPTOP IMAGE (Edge-to-Edge Column Fill) */}
           {post.media && (
-            <div className={`hidden md:flex justify-end shrink-0 ml-auto ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%]'}`}>
-              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-fit h-fit max-w-full">
+            <div className={`hidden md:flex shrink-0 ml-auto ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%]'}`}>
+              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-full max-h-[600px]">
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-auto h-auto max-w-full max-h-[500px] object-contain block" />
+                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block" />
               </div>
             </div>
           )}

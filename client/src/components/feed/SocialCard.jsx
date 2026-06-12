@@ -170,12 +170,11 @@ export default function SocialCard({ data, onAction }) {
 
             {/* 📱 MOBILE IMAGE (Hidden on Laptops) */}
             {post.media && (
-              <div className={`md:hidden ${isGridItem ? 'w-full aspect-video' : 'w-full aspect-[4/5] max-h-[500px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 my-4`}>
+              <div className={`md:hidden ${isGridItem ? 'w-full aspect-video' : 'w-fit max-w-full h-fit mx-auto'} rounded-[2rem] overflow-hidden relative shadow-[0_0_30px_rgba(168,85,247,0.15)] border-[3px] border-purple-500/40 my-4`}>
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+                <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-auto max-h-[500px] object-contain" />
               </div>
             )}
-
             {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (
               <div className="flex flex-col gap-4 mt-2 w-full self-end">
@@ -284,9 +283,9 @@ export default function SocialCard({ data, onAction }) {
 
           {/* 💻 LAPTOP IMAGE (Visible only on laptops, hidden on mobile) */}
           {post.media && (
-            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%] h-full min-h-[400px] max-h-[600px]'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0`}>
+            <div className={`hidden md:block ${isGridItem ? 'w-full aspect-video' : 'w-auto max-w-[50%] lg:max-w-[45%] h-fit'} rounded-[2rem] overflow-hidden relative shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 shrink-0 ml-auto`}>
               <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
-              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover" />
+              <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-auto h-auto max-h-[600px] object-contain" />
             </div>
           )}
 

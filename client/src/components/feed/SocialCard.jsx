@@ -202,12 +202,12 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                   
                   {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
                     
-                    /* 👇 THIS WRAPPER BECOMES FIXED TO THE SCREEN WHEN FULLSCREEN IS TRUE 👇 */
                     <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative"}>
                       
                       <video 
                         src={post.media} 
-                        className={isFullscreen ? "w-full h-full object-contain" : "w-full h-auto max-h-[55vh] object-contain block bg-[#05070A] relative z-50"} 
+                        /* 👇 CHANGED: aspect-[4/5] and object-cover forces it edge-to-edge in the feed 👇 */
+                        className={isFullscreen ? "w-full h-full object-contain" : "w-full aspect-[4/5] max-h-[55vh] object-cover object-center block bg-[#05070A] relative z-50"} 
                         muted={!isFullscreen} 
                         loop playsInline controls={isFullscreen}
                         onClick={(e) => {
@@ -219,7 +219,6 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                         }}
                       />
 
-                      {/* 👇 EXPLICIT CLOSE BUTTON (Only shows during Fullscreen) 👇 */}
                       {isFullscreen && (
                         <button 
                           className="absolute top-8 right-6 z-[100000] bg-black/60 text-white px-5 py-2.5 rounded-full border border-white/20 backdrop-blur-md font-bold shadow-lg"

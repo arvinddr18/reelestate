@@ -13,7 +13,7 @@ export default function SocialCard({ data, onAction }) {
   const isGridItem = size === 'small';
   const navigate = useNavigate(); // 👈 Initialize navigation
 
-  // ─── BULLETPROOF SHARE FUNCTION ───
+  /// ─── INVINCIBLE SHARE FUNCTION ───
   const handleShare = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -25,24 +25,49 @@ export default function SocialCard({ data, onAction }) {
       url: postUrl,
     };
     
-    // 1. Try to open the native mobile share sheet
+    // 1. Try Native Mobile Share First
     if (navigator.share) {
       try {
         await navigator.share(shareData);
+        return; // Success! Exit function.
       } catch (error) { 
-        // 2. If the user cancels, do nothing. But if the browser BLOCKS it, fallback to copy!
-        if (error.name !== 'AbortError') {
-          navigator.clipboard.writeText(postUrl);
-          toast.success("Link copied to clipboard!");
-        }
+        // If user just closed the menu, stop. Otherwise, trigger fallback!
+        if (error.name === 'AbortError' || error.message.includes('abort')) return;
       }
-    } else {
-      // 3. Normal fallback for laptops
-      navigator.clipboard.writeText(postUrl);
-      toast.success("Link copied to clipboard!");
+    }
+
+    // 2. Modern Clipboard Fallback (For Laptops & standard browsers)
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copied to clipboard!");
+        return;
+      }
+    } catch (error) {
+      console.log("Modern clipboard blocked, trying old school method...");
+    }
+
+    // 3. Old School Ultimate Fallback (For strict Mobile In-App Browsers like Snapchat/IG)
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = postUrl;
+      textArea.style.position = "absolute";
+      textArea.style.left = "-999999px"; // Hide it way off screen
+      document.body.prepend(textArea);
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      textArea.remove(); // Clean up
+      
+      if (successful) {
+        toast.success("Link copied to clipboard!");
+      } else {
+        toast.error("Could not copy link");
+      }
+    } catch (err) {
+      toast.error("Share feature blocked by this browser");
     }
   };
-
   // 1. Initialize State for interactivity
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
   const [likesCount, setLikesCount] = useState(post.stats?.likes || 0);

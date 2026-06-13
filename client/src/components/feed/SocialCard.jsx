@@ -6,10 +6,36 @@ import CategoryBadge from './CategoryBadge';
 import ActionButtons from './ActionButtons';
 import api from '../../services/api'; // 👈 Added API import
 import toast from 'react-hot-toast';  // 👈 Added Toast import
+import { useNavigate } from 'react-router-dom'; // 👈 Added for profile navigation
 import { IoHeartOutline, IoHeart, IoChatbubbleOutline, IoBookmarkOutline, IoBookmark, IoShareSocialOutline, IoSend } from 'react-icons/io5';
 export default function SocialCard({ data, onAction }) {
   const { user, post, size } = data;
   const isGridItem = size === 'small';
+  const navigate = useNavigate(); // 👈 Initialize navigation
+
+  // ─── SHARE FUNCTION ───
+  const handleShare = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Create a shareable link (adjust the /post/ path if your route is different)
+    const postUrl = `${window.location.origin}/post/${data.id}`;
+    
+    if (navigator.share) {
+      // Triggers the native mobile Share Menu (WhatsApp, Instagram, etc.)
+      try {
+        await navigator.share({
+          title: `Post by ${user.name} on Nodexa`,
+          text: `Check out "${post.title}" on Nodexa!`,
+          url: postUrl,
+        });
+      } catch (error) { console.log("Share canceled"); }
+    } else {
+      // Fallback for laptops: Copy to clipboard
+      navigator.clipboard.writeText(postUrl);
+      toast.success("Link copied to clipboard!");
+    }
+  };
 
   // 1. Initialize State for interactivity
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
@@ -156,11 +182,19 @@ const [showFullscreen, setShowFullscreen] = useState(false);
             {/* 👇 Reduced gap-4 to gap-2 here 👇 */}
             <div className="flex flex-col gap-2 w-full">
               
-              {/* 1. USER PROFILE ROW (Strict: No 'Online' or 'Just now') */}
-              <div className="flex items-center gap-3">
-                <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
+              {/* 1. USER PROFILE ROW (Clickable Profile Navigation) */}
+              <div 
+                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // 👇 Navigates to the user's profile URL. Adjust the path if yours is different! 👇
+                  navigate(`/profile/${user.handle || user.id}`);
+                }}
+              >
+                <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.1)]" alt="" />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-white font-black text-base leading-tight">{user.name}</span>
+                  <span className="text-white font-black text-base leading-tight hover:underline decoration-purple-500/50 underline-offset-2">{user.name}</span>
                   <span className="text-gray-400 text-xs font-medium mt-0.5">{user.bio || `@${user.handle}`}</span>
                 </div>
               </div> 
@@ -312,8 +346,11 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                     <span className="font-black tracking-wider">{savesCount}</span>
                   </button>
 
-                  {/* SHARE BUTTON (Visual Only) */}
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-transparent border border-transparent transition-all duration-300 active:scale-95 hover:bg-purple-500/10 hover:text-purple-400 ml-auto">
+                  {/* SHARE BUTTON (Now Fully Functional) */}
+                  <button 
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-3 py-2 rounded-full bg-transparent border border-transparent transition-all duration-300 active:scale-95 hover:bg-purple-500/10 hover:text-purple-400 ml-auto"
+                  >
                     <IoShareSocialOutline size={20} />
                   </button>
 

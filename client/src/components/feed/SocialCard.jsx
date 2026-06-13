@@ -150,19 +150,21 @@ const [showFullscreen, setShowFullscreen] = useState(false);
           {/* LEFT COLUMN: User Info, Text, Engagement */}
           <div className="flex flex-col flex-1 justify-between h-full min-w-0 w-full">
             
-            <div className="flex flex-col gap-4 w-full">
+            {/* 👇 Reduced gap-4 to gap-2 here 👇 */}
+            <div className="flex flex-col gap-2 w-full">
               
-              {/* 1. USER PROFILE ROW */}
+              {/* 1. USER PROFILE ROW (Strict: No 'Online' or 'Just now') */}
               <div className="flex items-center gap-3">
                 <img src={user.avatar} className="w-12 h-12 rounded-full object-cover border border-purple-500/30" alt="" />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-white font-black text-base">{user.name}</span>
-                  <span className="text-gray-500 text-xs">@{user.handle}</span>
+                  <span className="text-white font-black text-base leading-tight">{user.name}</span>
+                  <span className="text-gray-400 text-xs font-medium mt-0.5">{user.bio || `@${user.handle}`}</span>
                 </div>
               </div> 
               
-              {/* 2. POST TITLE & DESCRIPTION (Now safely on a new line) */}
-              <div className="flex flex-col gap-2 mt-2">
+              {/* 2. POST TITLE & DESCRIPTION */}
+              {/* 👇 Removed mt-2 and reduced gap to gap-1 👇 */}
+              <div className="flex flex-col gap-1">
                 <h3 className="text-white font-black text-2xl tracking-tight">“{post.title}”</h3>
                 {post.description && <p className="text-gray-300 text-sm leading-relaxed">{post.description}</p>}
               </div>
@@ -205,24 +207,26 @@ const [showFullscreen, setShowFullscreen] = useState(false);
               )}
             </div> {/* Closes Text Section */}
 
-              {/* 📱 MOBILE MEDIA (Zero Cropping for Image & Video) */}
+              {/* 📱 MOBILE MEDIA (Tighter Margins & Bigger Screen Fill) */}
             {post.media && (
-              <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
+              /* 👇 Changed my-4 to my-2 to remove empty vertical space 👇 */
+              <div className="md:hidden w-full my-2 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
                 <div className={`border-y border-purple-500/30 flex items-center justify-center bg-[#05070A] ${isGridItem ? 'aspect-video' : ''}`}>
                   
                   {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
                     
                     <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative w-full"}>
                       
-                     <video 
+                      <video 
                         ref={mobileVideoRef}
                         src={post.media} 
-                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[60vh] object-cover object-center block bg-[#05070A] relative z-50"} 
+                        /* 👇 Changed max-h-[60vh] to max-h-[75vh] so video is HUGE 👇 */
+                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[75vh] object-cover object-center block bg-[#05070A] relative z-50"} 
                         muted={!isFullscreen} 
                         loop 
                         playsInline={true} 
                         preload="auto" 
-                        controls /* 👈 CHANGED: Now controls are always visible! */
+                        controls 
                         autoPlay={!isFullscreen} 
                         onClick={(e) => {
                           if (!isFullscreen) {
@@ -255,7 +259,8 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.7 }}
                         src={post.media}
-                        className="w-full aspect-[4/5] max-h-[60vh] object-cover object-center block relative z-0"
+                        /* 👇 Changed max-h-[60vh] to max-h-[75vh] so image is HUGE 👇 */
+                        className="w-full aspect-[4/5] max-h-[75vh] object-cover object-center block relative z-0"
                       />
                     </div>
                   )}
@@ -266,7 +271,8 @@ const [showFullscreen, setShowFullscreen] = useState(false);
 
             {/* 💬 ENGAGEMENT & COMMENTS SECTION */}
             {!isGridItem && (
-              <div className="flex flex-col gap-4 mt-2 w-full self-end">
+              /* 👇 Reduced gap-4 to gap-2 and removed mt-2 👇 */
+              <div className="flex flex-col gap-2 w-full self-end">
                 {/* 🚨 PREMIUM WIRED UP LARGE CARD ENGAGEMENT ROW 🚨 */}
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-400">
                   

@@ -135,9 +135,8 @@ const [showFullscreen, setShowFullscreen] = useState(false);
   };
 
  return (
-    <div className={`w-full ${!isGridItem ? 'md:max-w-[850px] mx-auto' : ''}`}>
-      <FeedCardWrapper variant="SOCIAL" size={size}>
-        <div className="flex flex-col gap-4 w-full h-full justify-between">
+    <FeedCardWrapper variant="SOCIAL" size={size}>
+      <div className="flex flex-col gap-4 w-full h-full justify-between">
         <div className="flex items-center justify-between w-full">
           <CategoryBadge type="SOCIAL" />
           <button className="text-gray-400 hover:text-white"><IoMdMore size={20} /></button>
@@ -146,7 +145,7 @@ const [showFullscreen, setShowFullscreen] = useState(false);
         
         
         {/* 🚨 DYNAMIC LAYOUT: Flawless Responsive Structure */}
-        <div className={`flex ${isGridItem ? 'flex-col' : 'flex-col md:flex-row'} gap-8 items-start justify-between w-full h-full mt-2`}>
+        <div className={`flex ${isGridItem ? 'flex-col' : 'flex-col md:flex-row'} gap-4 md:gap-6 items-start justify-between w-full h-full mt-2`}>
           
           {/* LEFT COLUMN: User Info, Text, Engagement */}
           <div className="flex flex-col flex-1 justify-between h-full min-w-0 w-full">
@@ -371,17 +370,17 @@ const [showFullscreen, setShowFullscreen] = useState(false);
             )}
           </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          {/* 💻 LAPTOP MEDIA (Supports Video & Image with ZERO Cropping) */}
+          {/* 💻 LAPTOP MEDIA (Fixed Grid Bug & Zero Cropping) */}
           {post.media && (
-            <div className={`hidden md:flex shrink-0 ml-auto justify-end ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%]'}`}>
+            <div className={`hidden md:flex ${isGridItem ? 'w-full aspect-video mt-2' : 'w-[45%] shrink-0 ml-auto'}`}>
               
-              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-fit h-fit max-w-full bg-[#05070A]">
+              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-full max-h-[500px] bg-[#05070A] flex items-center justify-center">
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
                 
                 {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
-                  <video ref={desktopVideoRef} src={post.media} className="w-auto h-auto max-w-full max-h-[600px] object-contain object-center block relative z-20" muted loop playsInline controls />
+                  <video ref={desktopVideoRef} src={post.media} className="w-full h-full object-contain block relative z-20" muted loop playsInline controls />
                 ) : (
-                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-auto h-auto max-w-full max-h-[600px] object-contain object-center block relative z-0" />
+                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-contain block relative z-0" />
                 )}
                 
               </div>
@@ -410,6 +409,5 @@ const [showFullscreen, setShowFullscreen] = useState(false);
         </div>
       </div>
     </FeedCardWrapper>
-    </div> 
   );
 }

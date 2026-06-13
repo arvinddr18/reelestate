@@ -41,16 +41,19 @@ const [showFullscreen, setShowFullscreen] = useState(false);
   const mobileVideoRef = React.useRef(null);
   const desktopVideoRef = React.useRef(null);
 
- React.useEffect(() => {
+ // ─── VIDEO AUTO-PAUSE/PLAY ON SCROLL SENSOR (Default Unmuted) ───
+  React.useEffect(() => {
     const handleVideoScroll = (entries) => {
       entries.forEach((entry) => {
         const video = entry.target;
         if (entry.isIntersecting) {
-          video.muted = true; // 👈 AGGRESSIVE OVERRIDE: Forces mobile to trust the mute state
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(e => console.log("Mobile autoplay blocked:", e));
-          }
+          
+          // 👇 FORCE UNMUTED DEFAULT 👇
+          video.muted = false; 
+          video.play().catch(e => {
+            console.log("Waiting for user to tap screen to unlock audio...");
+          });
+
         } else {
           video.pause();
         }
@@ -222,12 +225,10 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                         src={post.media} 
                         /* 👇 Changed max-h-[60vh] to max-h-[75vh] so video is HUGE 👇 */
                         className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[75vh] object-cover object-center block bg-[#05070A] relative z-50"} 
-                        muted={!isFullscreen} 
                         loop 
                         playsInline={true} 
                         preload="auto" 
                         controls 
-                        autoPlay={!isFullscreen} 
                         onClick={(e) => {
                           if (!isFullscreen) {
                             e.preventDefault();

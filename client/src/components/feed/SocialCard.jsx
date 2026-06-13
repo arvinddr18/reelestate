@@ -13,25 +13,31 @@ export default function SocialCard({ data, onAction }) {
   const isGridItem = size === 'small';
   const navigate = useNavigate(); // 👈 Initialize navigation
 
-  // ─── SHARE FUNCTION ───
+  // ─── BULLETPROOF SHARE FUNCTION ───
   const handleShare = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Create a shareable link (adjust the /post/ path if your route is different)
     const postUrl = `${window.location.origin}/post/${data.id}`;
+    const shareData = {
+      title: `Post by ${user.name} on Nodexa`,
+      text: `Check out "${post.title}" on Nodexa!`,
+      url: postUrl,
+    };
     
+    // 1. Try to open the native mobile share sheet
     if (navigator.share) {
-      // Triggers the native mobile Share Menu (WhatsApp, Instagram, etc.)
       try {
-        await navigator.share({
-          title: `Post by ${user.name} on Nodexa`,
-          text: `Check out "${post.title}" on Nodexa!`,
-          url: postUrl,
-        });
-      } catch (error) { console.log("Share canceled"); }
+        await navigator.share(shareData);
+      } catch (error) { 
+        // 2. If the user cancels, do nothing. But if the browser BLOCKS it, fallback to copy!
+        if (error.name !== 'AbortError') {
+          navigator.clipboard.writeText(postUrl);
+          toast.success("Link copied to clipboard!");
+        }
+      }
     } else {
-      // Fallback for laptops: Copy to clipboard
+      // 3. Normal fallback for laptops
       navigator.clipboard.writeText(postUrl);
       toast.success("Link copied to clipboard!");
     }

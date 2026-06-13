@@ -369,16 +369,17 @@ const [showFullscreen, setShowFullscreen] = useState(false);
             )}
           </div> {/* 🚨 THIS IS THE CRITICAL DIV THAT CLOSES THE LEFT COLUMN! 🚨 */}
 
-          {/* 💻 LAPTOP MEDIA (Supports Video & Image) */}
+          {/* 💻 LAPTOP MEDIA (Supports Video & Image with ZERO Cropping) */}
           {post.media && (
-            <div className={`hidden md:flex shrink-0 ml-auto ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%]'}`}>
-              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-full max-h-[600px] bg-[#05070A]">
+            <div className={`hidden md:flex shrink-0 ml-auto justify-end ${isGridItem ? 'w-full aspect-video' : 'w-[50%] lg:w-[45%]'}`}>
+              
+              <div className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(168,85,247,0.25)] border-[3px] border-purple-500/40 w-fit h-fit max-w-full bg-[#05070A]">
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
                 
-                {post.media.match(/\.(mp4|webm|ogg|mov)$/i) || post.media.includes('/video/') ? (
-                  <video ref={desktopVideoRef} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-20" muted loop playsInline controls />
+                {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
+                  <video ref={desktopVideoRef} src={post.media} className="w-auto h-auto max-w-full max-h-[600px] object-contain object-center block relative z-20" muted loop playsInline controls />
                 ) : (
-                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full max-h-[600px] object-cover object-center block relative z-0" />
+                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-auto h-auto max-w-full max-h-[600px] object-contain object-center block relative z-0" />
                 )}
                 
               </div>

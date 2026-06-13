@@ -217,8 +217,7 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                       <video 
                         ref={mobileVideoRef}
                         src={post.media} 
-                        /* 👇 ZERO CROP: Changed to h-auto and object-contain 👇 */
-                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full h-auto max-h-[60vh] object-contain object-center block bg-[#05070A] relative z-50"} 
+                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[60vh] object-cover object-center block bg-[#05070A] relative z-50"}
                         muted={!isFullscreen} 
                         loop 
                         playsInline={true} 
@@ -256,8 +255,7 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.7 }}
                         src={post.media}
-                        /* 👇 ZERO CROP: Changed to h-auto and object-contain 👇 */
-                        className="w-full h-auto max-h-[60vh] object-contain object-center block relative z-0"
+                        className="w-full aspect-[4/5] max-h-[60vh] object-cover object-center block relative z-0"
                       />
                     </div>
                   )}
@@ -380,9 +378,9 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                 <div className="absolute inset-0 bg-purple-500/20 mix-blend-overlay z-10 pointer-events-none" />
                 
                 {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
-                  <video ref={desktopVideoRef} src={post.media} className="w-full h-full object-contain block relative z-20" muted loop playsInline controls />
+                  <video ref={desktopVideoRef} src={post.media} className="w-full h-full object-cover block relative z-20" muted loop playsInline controls />
                 ) : (
-                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-contain block relative z-0" />
+                  <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.7 }} src={post.media} className="w-full h-full object-cover block relative z-0" />
                 )}
                 
               </div>

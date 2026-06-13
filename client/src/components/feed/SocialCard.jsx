@@ -205,23 +205,24 @@ const [showFullscreen, setShowFullscreen] = useState(false);
               )}
             </div> {/* Closes Text Section */}
 
-              {/* 📱 MOBILE MEDIA (Custom React Fullscreen Modal) */}
+              {/* 📱 MOBILE MEDIA (Zero Cropping for Image & Video) */}
             {post.media && (
               <div className="md:hidden w-full my-4 -mx-4 bg-[#05070A]" style={{ width: 'calc(100% + 2rem)' }}>
-                <div className={`border-y border-purple-500/30 ${isGridItem ? 'aspect-video' : ''}`}>
+                <div className={`border-y border-purple-500/30 flex items-center justify-center bg-[#05070A] ${isGridItem ? 'aspect-video' : ''}`}>
                   
                   {post.media.includes('.mp4') || post.media.includes('.webm') || post.media.includes('/video/') ? (
                     
-                    <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative"}>
+                    <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative w-full"}>
                       
                       <video 
                         ref={mobileVideoRef}
                         src={post.media} 
-                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[55vh] object-cover object-center block bg-[#05070A] relative z-50"} 
+                        /* 👇 ZERO CROP: Changed to h-auto and object-contain 👇 */
+                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full h-auto max-h-[60vh] object-contain object-center block bg-[#05070A] relative z-50"} 
                         muted={!isFullscreen} 
                         loop 
-                        playsInline={true} /* 👈 Explicit true for iOS */
-                        preload="auto" /* 👈 PREVENTS THE BLACK SCREEN by forcing data load */
+                        playsInline={true} 
+                        preload="auto" 
                         controls={isFullscreen}
                         autoPlay={!isFullscreen} 
                         onClick={(e) => {
@@ -249,13 +250,14 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                     </div>
 
                   ) : (
-                    <div className="relative">
+                    <div className="relative w-full flex items-center justify-center bg-[#05070A]">
                       <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay z-10 pointer-events-none" />
                       <motion.img
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.7 }}
                         src={post.media}
-                        className="w-full object-cover object-top block max-h-[55vh]"
+                        /* 👇 ZERO CROP: Changed to h-auto and object-contain 👇 */
+                        className="w-full h-auto max-h-[60vh] object-contain object-center block relative z-0"
                       />
                     </div>
                   )}

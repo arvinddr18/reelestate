@@ -41,18 +41,21 @@ const [showFullscreen, setShowFullscreen] = useState(false);
   const mobileVideoRef = React.useRef(null);
   const desktopVideoRef = React.useRef(null);
 
-  React.useEffect(() => {
+ React.useEffect(() => {
     const handleVideoScroll = (entries) => {
       entries.forEach((entry) => {
         const video = entry.target;
         if (entry.isIntersecting) {
-          video.play().catch(e => console.log("Autoplay prevented:", e));
+          video.muted = true; // 👈 AGGRESSIVE OVERRIDE: Forces mobile to trust the mute state
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => console.log("Mobile autoplay blocked:", e));
+          }
         } else {
           video.pause();
         }
       });
     };
-
     // 👇 Lowered threshold to 40% so it easily triggers on small screens!
     const observer = new IntersectionObserver(handleVideoScroll, { threshold: 0.4 });
 
@@ -213,12 +216,13 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                       <video 
                         ref={mobileVideoRef}
                         src={post.media} 
-                        className={isFullscreen ? "w-full h-full object-contain" : "w-full aspect-[4/5] max-h-[55vh] object-cover object-center block bg-[#05070A] relative z-50"} 
+                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[55vh] object-cover object-center block bg-[#05070A] relative z-50"} 
                         muted={!isFullscreen} 
                         loop 
-                        playsInline 
+                        playsInline={true} /* 👈 Explicit true for iOS */
+                        preload="auto" /* 👈 PREVENTS THE BLACK SCREEN by forcing data load */
                         controls={isFullscreen}
-                        autoPlay={!isFullscreen} /* 👇 Added native autoplay helper 👇 */
+                        autoPlay={!isFullscreen} 
                         onClick={(e) => {
                           if (!isFullscreen) {
                             e.preventDefault();

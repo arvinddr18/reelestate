@@ -13,59 +13,29 @@ export default function SocialCard({ data, onAction }) {
   const isGridItem = size === 'small';
   const navigate = useNavigate(); // 👈 Initialize navigation
 
-  /// ─── INVINCIBLE SHARE FUNCTION ───
-  const handleShare = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  // ─── SHARE FUNCTION ───
+  const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${data.id}`;
-    const shareData = {
-      title: `Post by ${user.name} on Nodexa`,
-      text: `Check out "${post.title}" on Nodexa!`,
-      url: postUrl,
-    };
-    
-    // 1. Try Native Mobile Share First
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        return; // Success! Exit function.
-      } catch (error) { 
-        // If user just closed the menu, stop. Otherwise, trigger fallback!
-        if (error.name === 'AbortError' || error.message.includes('abort')) return;
-      }
-    }
-
-    // 2. Modern Clipboard Fallback (For Laptops & standard browsers)
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(postUrl);
-        toast.success("Link copied to clipboard!");
-        return;
-      }
-    } catch (error) {
-      console.log("Modern clipboard blocked, trying old school method...");
-    }
-
-    // 3. Old School Ultimate Fallback (For strict Mobile In-App Browsers like Snapchat/IG)
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = postUrl;
-      textArea.style.position = "absolute";
-      textArea.style.left = "-999999px"; // Hide it way off screen
-      document.body.prepend(textArea);
-      textArea.select();
-      
-      const successful = document.execCommand('copy');
-      textArea.remove(); // Clean up
-      
-      if (successful) {
-        toast.success("Link copied to clipboard!");
+      if (navigator.share) {
+        await navigator.share({
+          title: `${user.name} on Nodexa`,
+          text: `"${post.title}"`,
+          url: postUrl,
+        });
       } else {
-        toast.error("Could not copy link");
+        await navigator.clipboard.writeText(postUrl);
+        toast.success('Link copied!');
       }
     } catch (err) {
-      toast.error("Share feature blocked by this browser");
+      if (err.name === 'AbortError') return;
+      const el = document.createElement('textarea');
+      el.value = postUrl;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      toast.success('Link copied!');
     }
   };
   // 1. Initialize State for interactivity

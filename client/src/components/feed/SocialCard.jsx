@@ -214,15 +214,15 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                     
                     <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative w-full"}>
                       
-                      <video 
+                     <video 
                         ref={mobileVideoRef}
                         src={post.media} 
-                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[60vh] object-cover object-center block bg-[#05070A] relative z-50"}
+                        className={isFullscreen ? "w-full h-full object-contain bg-black" : "w-full aspect-[4/5] max-h-[60vh] object-cover object-center block bg-[#05070A] relative z-50"} 
                         muted={!isFullscreen} 
                         loop 
                         playsInline={true} 
                         preload="auto" 
-                        controls={isFullscreen}
+                        controls /* 👈 CHANGED: Now controls are always visible! */
                         autoPlay={!isFullscreen} 
                         onClick={(e) => {
                           if (!isFullscreen) {

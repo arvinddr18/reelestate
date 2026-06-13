@@ -74,7 +74,7 @@ export default function SocialCard({ data, onAction }) {
   
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
   const [savesCount, setSavesCount] = useState(post.stats?.shares || 0);
-const [showFullscreen, setShowFullscreen] = useState(false);
+
 
   // ─── COMMENT STATE & LOGIC ───
   const [comments, setComments] = useState([]);
@@ -464,22 +464,30 @@ const [showFullscreen, setShowFullscreen] = useState(false);
 
           {/* GRID LAYOUT ENGAGEMENT ROW (For small cards only) */}
           {isGridItem && (
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5 w-full">
-              <div className="flex items-center gap-1">
-                <button onClick={handleLike} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs ${isLiked ? 'bg-[#FF007A]/10 text-[#FF007A]' : 'hover:bg-white/5 text-gray-400 hover:text-[#FF007A]'}`}>
-                  {isLiked ? <IoHeart size={16} /> : <IoHeartOutline size={16} />}
-                  <span className="font-black">{likesCount}</span>
-                </button>
-                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs text-gray-400 hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]">
-                  <IoChatbubbleOutline size={16} />
-                  <span className="font-black">{post.stats?.comments}</span>
-                </button>
-              </div>
-              <button onClick={handleSave} className={`p-2 rounded-full transition-all duration-300 active:scale-95 ${isSaved ? 'text-[#00F0FF]' : 'text-gray-400 hover:text-[#00F0FF] hover:bg-white/5'}`}>
-                {isSaved ? <IoBookmark size={16} /> : <IoBookmarkOutline size={16} />}
-              </button>
-            </div>
-          )}
+  <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5 w-full">
+    <div className="flex items-center gap-1">
+      <button onClick={handleLike} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs ${isLiked ? 'bg-[#FF007A]/10 text-[#FF007A]' : 'hover:bg-white/5 text-gray-400 hover:text-[#FF007A]'}`}>
+        {isLiked ? <IoHeart size={16} /> : <IoHeartOutline size={16} />}
+        <span className="font-black">{likesCount}</span>
+      </button>
+      <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 active:scale-95 text-xs text-gray-400 hover:bg-[#00F0FF]/10 hover:text-[#00F0FF]">
+        <IoChatbubbleOutline size={16} />
+        <span className="font-black">{post.stats?.comments}</span>
+      </button>
+    </div>
+    <div className="flex items-center gap-1">
+      <button 
+        onClick={handleShare}
+        className="p-2 rounded-full transition-all duration-300 active:scale-95 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10"
+      >
+        <IoShareSocialOutline size={16} />
+      </button>
+      <button onClick={handleSave} className={`p-2 rounded-full transition-all duration-300 active:scale-95 ${isSaved ? 'text-[#00F0FF]' : 'text-gray-400 hover:text-[#00F0FF] hover:bg-white/5'}`}>
+        {isSaved ? <IoBookmark size={16} /> : <IoBookmarkOutline size={16} />}
+      </button>
+    </div>
+  </div>
+)}
 
         </div>
       </div>

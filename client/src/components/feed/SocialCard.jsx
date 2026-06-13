@@ -37,7 +37,7 @@ const [showFullscreen, setShowFullscreen] = useState(false);
     fetchComments();
   }, [data.id]);
 
-  // ─── VIDEO AUTO-PAUSE/PLAY ON SCROLL ───
+  // ─── VIDEO AUTO-PAUSE/PLAY ON SCROLL SENSOR (Optimized for Mobile) ───
   const mobileVideoRef = React.useRef(null);
   const desktopVideoRef = React.useRef(null);
 
@@ -45,7 +45,6 @@ const [showFullscreen, setShowFullscreen] = useState(false);
     const handleVideoScroll = (entries) => {
       entries.forEach((entry) => {
         const video = entry.target;
-        // If 60% of the video is visible on screen, play it. Otherwise, pause it.
         if (entry.isIntersecting) {
           video.play().catch(e => console.log("Autoplay prevented:", e));
         } else {
@@ -54,12 +53,19 @@ const [showFullscreen, setShowFullscreen] = useState(false);
       });
     };
 
-    const observer = new IntersectionObserver(handleVideoScroll, { threshold: 0.6 });
+    // 👇 Lowered threshold to 40% so it easily triggers on small screens!
+    const observer = new IntersectionObserver(handleVideoScroll, { threshold: 0.4 });
 
-    if (mobileVideoRef.current) observer.observe(mobileVideoRef.current);
-    if (desktopVideoRef.current) observer.observe(desktopVideoRef.current);
+    const currentMobile = mobileVideoRef.current;
+    const currentDesktop = desktopVideoRef.current;
 
-    return () => observer.disconnect();
+    if (currentMobile) observer.observe(currentMobile);
+    if (currentDesktop) observer.observe(currentDesktop);
+
+    return () => {
+      if (currentMobile) observer.unobserve(currentMobile);
+      if (currentDesktop) observer.unobserve(currentDesktop);
+    };
   }, [post.media]);
 
   // Handle posting a new comment
@@ -205,11 +211,14 @@ const [showFullscreen, setShowFullscreen] = useState(false);
                     <div className={isFullscreen ? "fixed inset-0 z-[99999] bg-black flex items-center justify-center touch-none" : "relative"}>
                       
                       <video 
+                        ref={mobileVideoRef}
                         src={post.media} 
-                        /* 👇 CHANGED: aspect-[4/5] and object-cover forces it edge-to-edge in the feed 👇 */
                         className={isFullscreen ? "w-full h-full object-contain" : "w-full aspect-[4/5] max-h-[55vh] object-cover object-center block bg-[#05070A] relative z-50"} 
                         muted={!isFullscreen} 
-                        loop playsInline controls={isFullscreen}
+                        loop 
+                        playsInline 
+                        controls={isFullscreen}
+                        autoPlay={!isFullscreen} /* 👇 Added native autoplay helper 👇 */
                         onClick={(e) => {
                           if (!isFullscreen) {
                             e.preventDefault();
